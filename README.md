@@ -78,7 +78,7 @@ export default style(
 );
 ```
 
-> Note that `.eslintignore` no longer works in Flat config, see
+> Note that `.eslintignore` no longer works in Flat config. Use the `ignores` option instead, see
 > [customization](#customization) for more details.
 
 </details>
@@ -227,7 +227,7 @@ export default style(
 );
 ```
 
-Check out the [configs](https://github.com/christopher-buss/roblox-ts-eslint-config/tree/main/src/configs) and [factory](https://github.com/christopher-buss/roblox-ts-eslint-config/blob/main/src/factory.ts) for more details.
+Check out the [configs](https://github.com/christopher-buss/eslint-config/tree/main/src/configs) and [factory](https://github.com/christopher-buss/eslint-config/blob/main/src/factory.ts) for more details.
 
 > Thanks to [antfu/eslint-config](https://github.com/antfu/eslint-config) and [sxzz/eslint-config](https://github.com/sxzz/eslint-config) for the inspiration and reference.
 
@@ -288,7 +288,7 @@ For more information on how to configure the spell checker, please refer to the
 
 #### `perfectionist` (sorting)
 
-This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sorted object keys, imports, etc, with auto-fix.
+This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sort object keys, imports, etc, with auto-fix.
 
 The plugin is installed and some rules are enabled by default, but these rules
 can be disabled or overridden by your own config. For example, I personally have
