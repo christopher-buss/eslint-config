@@ -47,7 +47,6 @@ export async function markdown(
 			},
 			name: "isentinel/markdown/parser",
 			rules: {
-				"isentinel/indent": "off",
 				// Recommended rules - enabled for both game and package
 				"markdown/fenced-code-language": "error",
 				"markdown/no-duplicate-definitions": "error",
@@ -86,8 +85,9 @@ export async function markdown(
 				"markdown/no-reversed-media-syntax": "error",
 				"markdown/no-unused-definitions": "warn",
 				"markdown/require-alt-text": "error",
-
 				"markdown/table-column-count": "error",
+
+				"style/indent": "off",
 
 				// Package-specific stricter rules
 				...(type === "package"
