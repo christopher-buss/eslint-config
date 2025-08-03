@@ -65,7 +65,7 @@ export async function react(
 
 	return [
 		{
-			name: "style/react/setup",
+			name: "isentinel/react/setup",
 			plugins: {
 				"react": plugins["@eslint-react"],
 				"react-hooks-extra": plugins["@eslint-react/hooks-extra"],
@@ -86,7 +86,7 @@ export async function react(
 				tsconfigPath,
 				typeAware: isTypeAware,
 			}),
-			name: "style/react/rules",
+			name: "isentinel/react/rules",
 			rules: {
 				// recommended rules from @eslint-react/hooks-extra
 				// react-lua does not seem to fully support the patterns that this rule enforces.
@@ -196,7 +196,7 @@ export async function react(
 					{
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "style/react/type-aware-rules",
+						name: "isentinel/react/type-aware-rules",
 						rules: {
 							"react/no-leaked-conditional-rendering": "warn",
 							"react/prefer-read-only-props": "error",

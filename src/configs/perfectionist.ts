@@ -76,7 +76,7 @@ export async function perfectionist(
 	return [
 		{
 			files: [GLOB_SRC],
-			name: "style/perfectionist",
+			name: "isentinel/perfectionist",
 			plugins: {
 				perfectionist: pluginPerfectionist,
 			},

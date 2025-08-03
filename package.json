@@ -8,10 +8,10 @@
 		"roblox-ts",
 		"rbxts"
 	],
-	"homepage": "https://github.com/christopher-buss/roblox-ts-eslint-config",
+	"homepage": "https://github.com/christopher-buss/eslint-config",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/christopher-buss/roblox-ts-eslint-config.git"
+		"url": "git+https://github.com/christopher-buss/eslint-config.git"
 	},
 	"license": "MIT",
 	"author": "Christopher Buss <christopher.buss@pm.me> (https://github.com/christopher-buss)",

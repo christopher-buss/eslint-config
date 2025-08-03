@@ -25,7 +25,7 @@ export async function yaml(
 
 	return [
 		{
-			name: "style/yaml:setup",
+			name: "isentinel/yaml/setup",
 			plugins: {
 				yaml: pluginYaml,
 			},
@@ -35,9 +35,9 @@ export async function yaml(
 			languageOptions: {
 				parser: parserYaml,
 			},
-			name: "style/yaml/rules",
+			name: "isentinel/yaml/rules",
 			rules: {
-				"style/spaced-comment": "off",
+				"isentinel/spaced-comment": "off",
 
 				"yaml/block-mapping": "error",
 				"yaml/block-sequence": "error",

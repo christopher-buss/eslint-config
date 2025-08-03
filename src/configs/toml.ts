@@ -21,7 +21,7 @@ export async function toml(
 
 	return [
 		{
-			name: "style/toml/setup",
+			name: "isentinel/toml/setup",
 			plugins: {
 				toml: pluginToml,
 			},
@@ -31,9 +31,9 @@ export async function toml(
 			languageOptions: {
 				parser: parserToml,
 			},
-			name: "style/toml/rules",
+			name: "isentinel/toml/rules",
 			rules: {
-				"style/spaced-comment": "off",
+				"isentinel/spaced-comment": "off",
 
 				"toml/comma-style": "error",
 				"toml/keys-order": "error",

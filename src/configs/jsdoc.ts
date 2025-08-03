@@ -17,7 +17,7 @@ export async function jsdoc(
 	return [
 		{
 			files: [GLOB_SRC],
-			name: "style/jsdoc",
+			name: "isentinel/jsdoc",
 			plugins: {
 				jsdoc: await interopDefault(import("eslint-plugin-jsdoc")),
 			},

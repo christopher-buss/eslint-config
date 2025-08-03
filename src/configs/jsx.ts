@@ -12,7 +12,7 @@ export async function jsx(): Promise<Array<TypedFlatConfigItem>> {
 					},
 				},
 			},
-			name: "style/jsx/setup",
+			name: "isentinel/jsx/setup",
 		},
 	];
 }

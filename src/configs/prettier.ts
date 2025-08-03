@@ -62,7 +62,7 @@ export async function prettier(
 	return [
 		{
 			files,
-			name: "style/prettier",
+			name: "isentinel/prettier",
 			plugins: {
 				format: pluginFormat,
 			},

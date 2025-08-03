@@ -7,7 +7,7 @@ export async function promise(): Promise<Array<TypedFlatConfigItem>> {
 
 	return [
 		{
-			name: "style/promise",
+			name: "isentinel/promise",
 			plugins: {
 				promise: pluginPromise,
 			},

@@ -34,7 +34,7 @@ export async function stylistic(
 	return [
 		{
 			files: [GLOB_SRC],
-			name: "style/stylistic",
+			name: "isentinel/stylistic",
 			plugins: {
 				"antfu": pluginAntfu,
 				"arrow-style": pluginArrowReturnStyle,

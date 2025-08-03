@@ -36,10 +36,10 @@ export async function javascript(
 			linterOptions: {
 				reportUnusedDisableDirectives: true,
 			},
-			name: "style/javascript/setup",
+			name: "isentinel/javascript/setup",
 		},
 		{
-			name: "style/javascript/rules",
+			name: "isentinel/javascript/rules",
 			plugins: {
 				antfu: pluginAntfu,
 			},

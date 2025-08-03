@@ -17,7 +17,7 @@ export async function packageJson(
 			languageOptions: {
 				parser: jsoncEslintParser,
 			},
-			name: "style/package-json",
+			name: "isentinel/package-json",
 			plugins: {
 				"package-json": pluginPackageJson,
 			},

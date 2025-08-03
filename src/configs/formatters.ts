@@ -49,7 +49,7 @@ export async function formatters(
 
 	const configs: Array<TypedFlatConfigItem> = [
 		{
-			name: "style/formatters/setup",
+			name: "isentinel/formatters/setup",
 			plugins: {
 				format: pluginFormat,
 			},
@@ -63,7 +63,7 @@ export async function formatters(
 				languageOptions: {
 					parser: pluginFormat.parserPlain,
 				},
-				name: "style/formatter/css",
+				name: "isentinel/formatter/css",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -79,7 +79,7 @@ export async function formatters(
 				languageOptions: {
 					parser: pluginFormat.parserPlain,
 				},
-				name: "style/formatter/scss",
+				name: "isentinel/formatter/scss",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -95,7 +95,7 @@ export async function formatters(
 				languageOptions: {
 					parser: pluginFormat.parserPlain,
 				},
-				name: "style/formatter/less",
+				name: "isentinel/formatter/less",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -115,7 +115,7 @@ export async function formatters(
 			languageOptions: {
 				parser: pluginFormat.parserPlain,
 			},
-			name: "style/formatter/html",
+			name: "isentinel/formatter/html",
 			rules: {
 				"format/prettier": [
 					"error",
@@ -137,7 +137,7 @@ export async function formatters(
 			languageOptions: {
 				parser: pluginFormat.parserPlain,
 			},
-			name: "style/formatter/markdown",
+			name: "isentinel/formatter/markdown",
 			rules: {
 				[`format/${formatter}`]: [
 					"error",
@@ -162,7 +162,7 @@ export async function formatters(
 			languageOptions: {
 				parser: pluginFormat.parserPlain,
 			},
-			name: "style/formatter/graphql",
+			name: "isentinel/formatter/graphql",
 			rules: {
 				"format/prettier": [
 					"error",

@@ -8,7 +8,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 
 	return [
 		{
-			name: "style/unicorn",
+			name: "isentinel/unicorn",
 			plugins: {
 				unicorn: pluginUnicorn,
 			},

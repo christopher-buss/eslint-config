@@ -9,7 +9,7 @@ export async function shopify(options: OptionsStylistic = {}): Promise<Array<Typ
 
 	return [
 		{
-			name: "style/shopify",
+			name: "isentinel/shopify",
 			plugins: {
 				shopify: eslintPluginShopify,
 			},
