@@ -16,7 +16,7 @@ export async function comments(
 
 	return [
 		{
-			name: "style/eslint/comments",
+			name: "isentinel/eslint/comments",
 			plugins: {
 				"comment-length": pluginCommentLength,
 				"eslint-comments": pluginComments,

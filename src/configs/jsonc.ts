@@ -25,7 +25,7 @@ export async function jsonc(
 
 	return [
 		{
-			name: "style/jsonc/setup",
+			name: "isentinel/jsonc/setup",
 			plugins: {
 				jsonc: pluginJsonc,
 			},
@@ -35,7 +35,7 @@ export async function jsonc(
 			languageOptions: {
 				parser: parserJsonc,
 			},
-			name: "style/jsonc/rules",
+			name: "isentinel/jsonc/rules",
 			rules: {
 				"jsonc/no-bigint-literals": "error",
 				"jsonc/no-binary-expression": "error",

@@ -15,7 +15,7 @@ export async function imports(
 
 	return [
 		{
-			name: "style/imports/rules",
+			name: "isentinel/imports/rules",
 			plugins: {
 				antfu: pluginAntfu,
 				import: pluginImport,
@@ -47,7 +47,7 @@ export async function imports(
 							sourceType: "script",
 						},
 					},
-					name: "style/import-sort",
+					name: "isentinel/import-sort",
 					plugins: {
 						"simple-import-sort": pluginSimpleImportSort,
 					},
@@ -66,7 +66,7 @@ export async function imports(
 			? [
 					{
 						files: [`src/${GLOB_SRC}`],
-						name: "style/imports/game",
+						name: "isentinel/imports/game",
 						rules: {
 							"no-restricted-syntax": [
 								"error",

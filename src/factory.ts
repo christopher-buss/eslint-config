@@ -62,7 +62,7 @@ export const defaultPluginRenaming = {
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
  */
-export function style(
+export function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem = {},
 	...userConfigs: Array<
 		Awaitable<

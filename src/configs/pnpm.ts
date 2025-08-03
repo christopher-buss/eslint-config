@@ -16,7 +16,7 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 			languageOptions: {
 				parser: jsoncParser,
 			},
-			name: "style/pnpm/package-json",
+			name: "isentinel/pnpm/package-json",
 			plugins: {
 				pnpm: pluginPnpm,
 			},
@@ -36,7 +36,7 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 			languageOptions: {
 				parser: yamlParser,
 			},
-			name: "style/pnpm/pnpm-workspace-yaml",
+			name: "isentinel/pnpm/pnpm-workspace-yaml",
 			plugins: {
 				pnpm: pluginPnpm,
 			},

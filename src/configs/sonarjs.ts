@@ -10,7 +10,7 @@ export async function sonarjs(
 
 	return [
 		{
-			name: "style/sonarjs",
+			name: "isentinel/sonarjs",
 			plugins: {
 				sonar: pluginSonar,
 			},

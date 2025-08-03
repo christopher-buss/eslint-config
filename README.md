@@ -32,9 +32,9 @@ With [`"type": "module"`](https://nodejs.org/api/packages.html#type) in `package
 
 ```ts
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style();
+export default isentinel();
 ```
 
 #### Optional: TypeScript Config Support
@@ -57,11 +57,11 @@ If you still use some configs from the legacy eslintrc format, you can use the [
 ```ts
 // eslint.config.ts
 import { FlatCompat } from "@eslint/eslintrc";
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
 const compat = new FlatCompat();
 
-export default style(
+export default isentinel(
 	{
 		ignores: [],
 	},
@@ -173,22 +173,22 @@ Add the following settings to your `.vscode/settings.json`:
 
 ## Customization
 
-Normally you only need to import the `style` preset:
+Normally you only need to import the `isentinel` preset:
 
 ```ts
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style();
+export default isentinel();
 ```
 
 And that's it! Or you can configure each integration individually, for example:
 
 ```ts
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style({
+export default isentinel({
 	// `.eslintignore` is no longer supported in Flat config, use `ignores`
 	// instead
 	ignores: [
@@ -204,13 +204,13 @@ export default style({
 });
 ```
 
-The `style` factory function also accepts any number of arbitrary custom config overrides:
+The `isentinel` factory function also accepts any number of arbitrary custom config overrides:
 
 ```ts
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style(
+export default isentinel(
 	{
 		// Configures for this config
 	},
@@ -276,9 +276,9 @@ To disable this, you can set the `spellCheck` option to `false`:
 
 ```js
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style({
+export default isentinel({
 	spellCheck: false,
 });
 ```
@@ -296,9 +296,9 @@ sort-objects set to:
 
 ```js
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style({
+export default isentinel({
 	rules: {
 		"perfectionist/sort-objects": [
 			"warn",
@@ -329,9 +329,9 @@ To enable React support, you need to explicitly turn it on:
 
 ```js
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style({
+export default isentinel({
 	react: true,
 });
 ```
@@ -342,9 +342,9 @@ To enable Jest support, you need to explicitly turn it on:
 
 ```js
 // eslint.config.ts
-import style from "@isentinel/eslint-config";
+import isentinel from "@isentinel/eslint-config";
 
-export default style({
+export default isentinel({
 	test: true,
 });
 ```

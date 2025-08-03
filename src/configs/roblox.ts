@@ -53,7 +53,7 @@ export async function roblox(
 			tsconfigPath,
 			typeAware: isTypeAware,
 		}),
-		name: "style/roblox",
+		name: "isentinel/roblox",
 		plugins: {
 			roblox: pluginRobloxTs,
 			sentinel: pluginSentinel,

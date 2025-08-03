@@ -24,7 +24,7 @@ export async function markdown(
 
 	return [
 		{
-			name: "style/markdown/setup",
+			name: "isentinel/markdown/setup",
 			plugins: {
 				markdown: markdownPlugin,
 			},
@@ -32,7 +32,7 @@ export async function markdown(
 		{
 			files,
 			ignores: [GLOB_MARKDOWN_IN_MARKDOWN],
-			name: "style/markdown/processor",
+			name: "isentinel/markdown/processor",
 			// `eslint-plugin-markdown` only creates virtual files for code blocks,
 			// but not the markdown file itself. We use `eslint-merge-processors` to
 			// add a pass-through processor for the markdown file itself.
@@ -45,8 +45,9 @@ export async function markdown(
 				frontmatter: "yaml",
 				parser: parserPlain,
 			},
-			name: "style/markdown/parser",
+			name: "isentinel/markdown/parser",
 			rules: {
+				"isentinel/indent": "off",
 				// Recommended rules - enabled for both game and package
 				"markdown/fenced-code-language": "error",
 				"markdown/no-duplicate-definitions": "error",
@@ -85,9 +86,8 @@ export async function markdown(
 				"markdown/no-reversed-media-syntax": "error",
 				"markdown/no-unused-definitions": "warn",
 				"markdown/require-alt-text": "error",
-				"markdown/table-column-count": "error",
 
-				"style/indent": "off",
+				"markdown/table-column-count": "error",
 
 				// Package-specific stricter rules
 				...(type === "package"
@@ -111,7 +111,7 @@ export async function markdown(
 					},
 				},
 			},
-			name: "style/markdown/disables",
+			name: "isentinel/markdown/disables",
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"import/newline-after-import": "off",

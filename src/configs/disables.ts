@@ -5,7 +5,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 	return [
 		{
 			files: [`**/scripts/${GLOB_SRC}`],
-			name: "style/disables/scripts",
+			name: "isentinel/disables/scripts",
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
@@ -14,7 +14,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 		},
 		{
 			files: [`**/cli/${GLOB_SRC}`, `**/cli.${GLOB_SRC_EXT}`],
-			name: "style/disables/cli",
+			name: "isentinel/disables/cli",
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
@@ -22,7 +22,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 		},
 		{
 			files: ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`],
-			name: "style/disables/bin",
+			name: "isentinel/disables/bin",
 			rules: {
 				"antfu/no-import-dist": "off",
 				"antfu/no-import-node-modules-by-path": "off",
@@ -30,7 +30,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 		},
 		{
 			files: [GLOB_DTS],
-			name: "style/disables/dts",
+			name: "isentinel/disables/dts",
 			rules: {
 				"eslint-comments/no-unlimited-disable": "off",
 				"import/no-default-export": "off",
@@ -43,7 +43,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 		},
 		{
 			files: [...GLOB_TESTS],
-			name: "style/disables/test",
+			name: "isentinel/disables/test",
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"max-lines": "off",
@@ -55,7 +55,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 		},
 		{
 			files: ["**/*.js", "**/*.cjs"],
-			name: "style/disables/cjs",
+			name: "isentinel/disables/cjs",
 			rules: {
 				"ts/no-require-imports": "off",
 			},

@@ -25,14 +25,14 @@ export async function test(
 
 	return [
 		{
-			name: "style/test/setup",
+			name: "isentinel/test/setup",
 			plugins: {
 				test: pluginTest,
 			},
 		},
 		{
 			files,
-			name: "style/test/rules",
+			name: "isentinel/test/rules",
 			rules: {
 				// Jest
 				"test/consistent-test-it": "error",

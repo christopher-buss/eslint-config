@@ -11,7 +11,7 @@ export function sortTsconfig(): Array<TypedFlatConfigItem> {
 	return [
 		{
 			files: ["**/tsconfig.json", "**/tsconfig.*.json"],
-			name: "style/sort-tsconfig",
+			name: "isentinel/sort-tsconfig",
 			rules: {
 				"jsonc/sort-keys": [
 					"error",

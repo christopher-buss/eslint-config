@@ -148,7 +148,7 @@ export async function typescript(
 		{
 			// Install the plugins without globs, so they can be configured
 			// separately.
-			name: "style/typescript/setup",
+			name: "isentinel/typescript/setup",
 			plugins: {
 				"antfu": pluginAntfu,
 				"better-max-params": pluginMaxParameters,
@@ -162,7 +162,7 @@ export async function typescript(
 			: [makeParser(false, files)]),
 		{
 			files,
-			name: "style/typescript/rules",
+			name: "isentinel/typescript/rules",
 			rules: {
 				...renameRules(pluginTs.configs["eslint-recommended"].overrides?.[0].rules ?? {}, {
 					"@typescript-eslint": "ts",
@@ -351,7 +351,7 @@ export async function typescript(
 					{
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "style/typescript/rules-type-aware",
+						name: "isentinel/typescript/rules-type-aware",
 						rules: {
 							...typeAwareRules,
 							...overridesTypeAware,

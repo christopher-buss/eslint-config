@@ -1,8 +1,8 @@
 import styleMigrate from "@stylistic/eslint-plugin-migrate";
 
-import { style } from "./src";
+import { isentinel } from "./src";
 
-export default style(
+export default isentinel(
 	{
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
 		pnpm: true,

@@ -5,9 +5,9 @@ export function getEslintConfigContent(
 	additionalConfigs?: Array<string>,
 ): string {
 	return `
-import style from '@isentinel/eslint-config'
+import isentinel from '@isentinel/eslint-config'
 
-export default style({
+export default isentinel({
 ${mainConfig}
 }${additionalConfigs?.map((config) => `,{\n${config}\n}`)})
 `.trimStart();

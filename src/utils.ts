@@ -90,7 +90,7 @@ export function createTsParser(options: {
 				...parserOptions,
 			},
 		},
-		name: `style/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
+		name: `isentinel/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
 	};
 }
 
