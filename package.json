@@ -67,6 +67,7 @@
 		"eslint-config-flat-gitignore": "catalog:prod",
 		"eslint-config-prettier": "catalog:prod",
 		"eslint-flat-config-utils": "catalog:prod",
+		"eslint-import-resolver-node": "catalog:prod",
 		"eslint-merge-processors": "catalog:prod",
 		"eslint-plugin-antfu": "catalog:prod",
 		"eslint-plugin-arrow-return-style": "catalog:prod",
