@@ -325,11 +325,7 @@ export interface RuleOptions {
    */
   'format-lua/stylua'?: Linter.RuleEntry<FormatLuaStylua>
   /**
-   * Use dprint to format code
-   */
-  'format/dprint'?: Linter.RuleEntry<FormatDprint>
-  /**
-   * Use Prettier to format code
+   * @see https://github.com/prettier/eslint-plugin-prettier#options
    */
   'format/prettier'?: Linter.RuleEntry<FormatPrettier>
   /**
@@ -7313,17 +7309,16 @@ type FormatLuaStylua = []|[{
   }
   [k: string]: unknown | undefined
 }]
-// ----- format/dprint -----
-type FormatDprint = []|[{
-  language?: string
-  languageOptions?: {
-    [k: string]: unknown | undefined
-  }
-  [k: string]: unknown | undefined
-}]
 // ----- format/prettier -----
 type FormatPrettier = []|[{
-  parser?: string
+  [k: string]: unknown | undefined
+}]|[{
+  [k: string]: unknown | undefined
+}, {
+  usePrettierrc?: boolean
+  fileInfoOptions?: {
+    [k: string]: unknown | undefined
+  }
   [k: string]: unknown | undefined
 }]
 // ----- func-call-spacing -----
@@ -15455,4 +15450,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/formatters/setup' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/import-sort' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/package-json' | 'isentinel/perfectionist' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling' | 'isentinel/stylistic' | 'isentinel/test/setup' | 'isentinel/test/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/formatters/setup' | 'isentinel/formatter/css' | 'isentinel/formatter/scss' | 'isentinel/formatter/less' | 'isentinel/formatter/html' | 'isentinel/formatter/markdown' | 'isentinel/formatter/graphql' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/import-sort' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/package-json' | 'isentinel/perfectionist' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling' | 'isentinel/stylistic' | 'isentinel/test/setup' | 'isentinel/test/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
