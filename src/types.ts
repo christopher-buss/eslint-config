@@ -306,6 +306,16 @@ export type ReactConfig = ESLintReactSettings &
 export interface Rules extends RuleOptions {}
 
 export interface SpellCheckConfig {
+	/**
+	 * Whether or not to run the spell checker in the editor.
+	 *
+	 * Some users have performance issues with the spell checker in the editor,
+	 * so this option allows you to disable it. It will still run in CI and in
+	 * git hooks / pre-commit checks.
+	 *
+	 * @default true
+	 */
+	inEditor?: boolean;
 	/** Defaults to `en-US`. */
 	language?: string;
 }

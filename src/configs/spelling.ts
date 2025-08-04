@@ -5,6 +5,7 @@ import { GLOB_SRC } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
+	OptionsIsInEditor,
 	SpellCheckConfig,
 	TypedFlatConfigItem,
 } from "../types";
@@ -13,9 +14,14 @@ import { interopDefault } from "../utils";
 const require = createRequire(import.meta.url);
 
 export async function spelling(
-	options: OptionsComponentExtensions & OptionsFiles & SpellCheckConfig = {},
+	options: OptionsComponentExtensions & OptionsFiles & OptionsIsInEditor & SpellCheckConfig = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { componentExts: componentExtensions = [], language = "en-US" } = options;
+	const {
+		componentExts: componentExtensions = [],
+		inEditor = true,
+		isInEditor = false,
+		language = "en-US",
+	} = options;
 
 	const files = options.files ?? [
 		GLOB_SRC,
@@ -32,6 +38,8 @@ export async function spelling(
 
 	const pluginCspell = await interopDefault(import("@cspell/eslint-plugin"));
 
+	const enabled = inEditor === false ? isInEditor : true;
+
 	return [
 		{
 			files,
@@ -41,7 +49,7 @@ export async function spelling(
 			},
 			rules: {
 				"@cspell/spellchecker": [
-					"warn",
+					enabled ? "warn" : "off",
 					{
 						autoFix: false,
 						checkComments: true,

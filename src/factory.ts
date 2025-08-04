@@ -203,6 +203,7 @@ export function isentinel(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
 				componentExts: componentExtensions,
+				isInEditor,
 			}),
 		);
 	}
