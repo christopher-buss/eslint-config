@@ -4,13 +4,13 @@
 
 ### Starter Wizard
 
-We provided a CLI tool to help you set up your project, or migrate from the legacy config to the new flat config with one command.
+We provided a CLI tool to help you set up your project, or migrate from the
+legacy config to the new flat config with one command.
 
 ### Example Usage
 
 For an existing template that already has this config setup, please refer to the
-[roblox-ts
-template](https://github.com/christopher-buss/roblox-ts-project-template)
+[roblox-ts template](https://github.com/christopher-buss/roblox-ts-project-template)
 repository. This includes all necessarily files and configurations to get you up
 and running.
 
@@ -28,7 +28,8 @@ pnpm i -D eslint @isentinel/eslint-config
 
 ### Create config file
 
-With [`"type": "module"`](https://nodejs.org/api/packages.html#type) in `package.json` (recommended):
+With [`"type": "module"`](https://nodejs.org/api/packages.html#type) in
+`package.json` (recommended):
 
 ```ts
 // eslint.config.ts
@@ -39,20 +40,25 @@ export default isentinel();
 
 #### Optional: TypeScript Config Support
 
-If you want to use `eslint.config.ts` instead of `.js`, install `jiti` v2.0.0 or greater:
+If you want to use `eslint.config.ts` instead of `.js`, install `jiti` v2.0.0 or
+greater:
 
 ```bash
 pnpm i -D jiti@^2.0.0
 ```
 
-See [ESLint's TypeScript configuration documentation](https://eslint.org/docs/latest/use/configure/configuration-files#typescript-configuration-files) for more details.
+See
+[ESLint's TypeScript configuration documentation](https://eslint.org/docs/latest/use/configure/configuration-files#typescript-configuration-files)
+for more details.
 
 <details>
 <summary>
 Combined with legacy config:
 </summary>
 
-If you still use some configs from the legacy eslintrc format, you can use the [`@eslint/eslintrc`](https://www.npmjs.com/package/@eslint/eslintrc) package to convert them to the flat config.
+If you still use some configs from the legacy eslintrc format, you can use the
+[`@eslint/eslintrc`](https://www.npmjs.com/package/@eslint/eslintrc) package to
+convert them to the flat config.
 
 ```ts
 // eslint.config.ts
@@ -78,8 +84,8 @@ export default isentinel(
 );
 ```
 
-> Note that `.eslintignore` no longer works in Flat config. Use the `ignores` option instead, see
-> [customization](#customization) for more details.
+> Note that `.eslintignore` no longer works in Flat config. Use the `ignores`
+> option instead, see [customization](#customization) for more details.
 
 </details>
 
@@ -118,7 +124,8 @@ when you use the `!` operator to assert that a value is not `undefined`. The
 caveat is that this rule will not always play nicely with
 `noUncheckedIndexedAccess`, and will often require you to disable it in certain
 places. I believe that this is a good trade-off, as it will help you catch
-potential bugs in your code, but you can disable it if you find it too restrictive.
+potential bugs in your code, but you can disable it if you find it too
+restrictive.
 
 ```json
 {
@@ -130,7 +137,8 @@ potential bugs in your code, but you can disable it if you find it too restricti
 
 ## VS Code support (auto fix)
 
-Install [VS Code ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+Install
+[VS Code ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
 
 Add the following settings to your `.vscode/settings.json`:
 
@@ -204,7 +212,8 @@ export default isentinel({
 });
 ```
 
-The `isentinel` factory function also accepts any number of arbitrary custom config overrides:
+The `isentinel` factory function also accepts any number of arbitrary custom
+config overrides:
 
 ```ts
 // eslint.config.ts
@@ -227,13 +236,21 @@ export default isentinel(
 );
 ```
 
-Check out the [configs](https://github.com/christopher-buss/eslint-config/tree/main/src/configs) and [factory](https://github.com/christopher-buss/eslint-config/blob/main/src/factory.ts) for more details.
+Check out the
+[configs](https://github.com/christopher-buss/eslint-config/tree/main/src/configs)
+and
+[factory](https://github.com/christopher-buss/eslint-config/blob/main/src/factory.ts)
+for more details.
 
-> Thanks to [antfu/eslint-config](https://github.com/antfu/eslint-config) and [sxzz/eslint-config](https://github.com/sxzz/eslint-config) for the inspiration and reference.
+> Thanks to [antfu/eslint-config](https://github.com/antfu/eslint-config) and
+> [sxzz/eslint-config](https://github.com/sxzz/eslint-config) for the
+> inspiration and reference.
 
 ### Plugins Renaming
 
-Since flat config requires us to explicitly provide the plugin names (instead of the mandatory convention from npm package name), we renamed some plugins to make the overall scope more consistent and easier to write.
+Since flat config requires us to explicitly provide the plugin names (instead of
+the mandatory convention from npm package name), we renamed some plugins to make
+the overall scope more consistent and easier to write.
 
 | New Prefix | Original Prefix        | Source Plugin                                                                              |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------------ |
@@ -243,7 +260,8 @@ Since flat config requires us to explicitly provide the plugin names (instead of
 | `ts/*`     | `@typescript-eslint/*` | [@typescript-eslint/eslint-plugin](https://github.com/typescript-eslint/typescript-eslint) |
 | `style/*`  | `@stylistic/*`         | [@stylistic/eslint-plugin](https://github.com/eslint-stylistic/eslint-stylistic)           |
 
-When you want to override rules, or disable them inline, you need to update to the new prefix:
+When you want to override rules, or disable them inline, you need to update to
+the new prefix:
 
 ```diff
 -// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -263,7 +281,8 @@ repository rather than this one.
 
 Sometimes you will have words that are not in the dictionary, but are still
 valid for your project. To add these words to the dictionary, you can create a
-`cspell.config.yaml` file in the root of your project with the following content:
+`cspell.config.yaml` file in the root of your project with the following
+content:
 
 ```yaml
 # cspell.config.yaml
@@ -288,7 +307,9 @@ For more information on how to configure the spell checker, please refer to the
 
 #### `perfectionist` (sorting)
 
-This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sort object keys, imports, etc, with auto-fix.
+This plugin
+[`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist)
+allows you to sort object keys, imports, etc, with auto-fix.
 
 The plugin is installed and some rules are enabled by default, but these rules
 can be disabled or overridden by your own config. For example, I personally have
@@ -321,7 +342,8 @@ export default isentinel({
 
 ### Optional Configs
 
-We provide some optional configs for specific use cases, that we don't include their dependencies by default.
+We provide some optional configs for specific use cases, that we don't include
+their dependencies by default.
 
 #### React
 
@@ -349,7 +371,8 @@ export default isentinel({
 });
 ```
 
-Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+Running `npx eslint` should prompt you to install the required dependencies,
+otherwise, you can install them manually:
 
 ```bash
 pnpm i -D @eslint-react/eslint-plugin eslint-plugin-react-roblox-hooks eslint-plugin-jest
@@ -357,7 +380,8 @@ pnpm i -D @eslint-react/eslint-plugin eslint-plugin-react-roblox-hooks eslint-pl
 
 ### Lint Staged
 
-If you want to apply lint and auto-fix before every commit, you can add the following to your `package.json`:
+If you want to apply lint and auto-fix before every commit, you can add the
+following to your `package.json`:
 
 ```json
 {
@@ -378,7 +402,9 @@ pnpm i -D lint-staged simple-git-hooks
 
 ## View what rules are enabled
 
-There is a visual tool to help you view what rules are enabled in your project and apply them to what files, [eslint-config-inspector](https://github.com/eslint/config-inspector)
+There is a visual tool to help you view what rules are enabled in your project
+and apply them to what files,
+[eslint-config-inspector](https://github.com/eslint/config-inspector)
 
 Go to your project root that contains `eslint.config.ts` and run:
 
@@ -388,7 +414,9 @@ npx eslint-config-inspector
 
 ## Versioning Policy
 
-This project follows [Semantic Versioning](https://semver.org/) for releases. However, since this is just a config and involves opinions and many moving parts, we don't treat rules changes as breaking changes.
+This project follows [Semantic Versioning](https://semver.org/) for releases.
+However, since this is just a config and involves opinions and many moving
+parts, we don't treat rules changes as breaking changes.
 
 ### Changes Considered as Breaking Changes
 

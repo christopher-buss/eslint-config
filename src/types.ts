@@ -192,13 +192,6 @@ export interface OptionsFormatters {
 	 */
 	css?: "prettier" | boolean;
 
-	/**
-	 * Custom options for dprint.
-	 *
-	 * By default it's controlled by our own config.
-	 */
-	dprintOptions?: boolean;
-
 	/** Enable formatting support for GraphQL. */
 	graphql?: "prettier" | boolean;
 
@@ -219,11 +212,9 @@ export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for Markdown.
 	 *
-	 * Support both Prettier and dprint.
-	 *
 	 * When set to `true`, it will use Prettier.
 	 */
-	markdown?: "dprint" | "prettier" | boolean;
+	markdown?: boolean;
 
 	/**
 	 * Custom options for Prettier.

@@ -8,7 +8,7 @@ import type {
 	OptionsProjectType,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault, parserPlain } from "../utils";
+import { interopDefault } from "../utils";
 
 export async function markdown(
 	options: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {},
@@ -43,7 +43,6 @@ export async function markdown(
 			language: "markdown/gfm",
 			languageOptions: {
 				frontmatter: "yaml",
-				parser: parserPlain,
 			},
 			name: "isentinel/markdown/parser",
 			rules: {

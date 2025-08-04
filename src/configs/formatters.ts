@@ -12,17 +12,14 @@ export type PrettierRuleOptions = Pick<Partial<PrettierOptions>, "parser"> &
 export async function formatters(
 	options: OptionsFormatters | true = {},
 	stylistic: StylisticConfig = {},
-	markdownEnabled = true,
 ): Promise<Array<TypedFlatConfigItem>> {
-	let formattingOptions = options;
-	if (formattingOptions === true) {
-		formattingOptions = {
-			css: true,
-			graphql: true,
-			html: true,
-			markdown: true,
-		};
-	}
+	const formattingOptions = {
+		css: true,
+		graphql: true,
+		html: true,
+		markdown: true,
+		...(options === true ? {} : options),
+	};
 
 	const { indent, quotes, semi } = {
 		...StylisticConfigDefaults,
@@ -40,22 +37,13 @@ export async function formatters(
 		formattingOptions.prettierOptions ?? {},
 	);
 
-	const dprintOptions = Object.assign(
-		{
-			indentWidth: typeof indent === "number" ? indent : 2,
-			quoteStyle: quotes === "single" ? "preferSingle" : "preferDouble",
-			useTabs: indent === "tab",
-		},
-		formattingOptions.dprintOptions ?? {},
-	);
-
-	const pluginFormat = await interopDefault(import("eslint-plugin-format"));
+	const pluginPrettier = await interopDefault(import("eslint-plugin-prettier"));
 
 	const configs: Array<TypedFlatConfigItem> = [
 		{
 			name: "isentinel/formatters/setup",
 			plugins: {
-				format: pluginFormat,
+				format: pluginPrettier,
 			},
 		},
 	];
@@ -129,27 +117,18 @@ export async function formatters(
 	}
 
 	if (formattingOptions.markdown) {
-		const formatter =
-			formattingOptions.markdown === true ? "prettier" : formattingOptions.markdown;
-
 		configs.push({
-			files: markdownEnabled ? ["**/*.__markdown_content__"] : [GLOB_MARKDOWN],
-			languageOptions: {
-				parser: parserPlain,
-			},
+			files: [GLOB_MARKDOWN],
 			name: "isentinel/formatter/markdown",
 			rules: {
-				[`format/${formatter}`]: [
+				"format/prettier": [
 					"error",
-					formatter === "prettier"
-						? mergePrettierOptions(prettierOptions, {
-								embeddedLanguageFormatting: "off",
-								parser: "markdown",
-							})
-						: {
-								...dprintOptions,
-								language: "markdown",
-							},
+					mergePrettierOptions(prettierOptions, {
+						embeddedLanguageFormatting: "off",
+						parser: "markdown",
+						printWidth: 80,
+						proseWrap: "always",
+					}),
 				],
 			},
 		});
@@ -186,3 +165,38 @@ function mergePrettierOptions(
 		plugins: [...(overrides.plugins || []), ...(options.plugins || [])],
 	};
 }
+
+export const parserMd = {
+	meta: {
+		name: "parser-md",
+	},
+	parseForESLint: (code: string) => {
+		console.log("parseForESLint", code);
+
+		return {
+			// ast: espree.parse(code, options),
+			ast: {
+				// ast is JS ast. We don't have JS, so this AST is for empty JS file
+				body: [],
+				comments: [],
+				end: 0,
+				loc: { end: { column: 0, line: 1 }, start: { column: 0, line: 1 } },
+				mdCode: code,
+				range: [0, 0],
+				start: 0,
+				tokens: [],
+				// Used only by eslint-plugin-markdown-language
+				type: "root",
+			},
+
+			scopeManager: null,
+			services: {
+				foo() {
+					console.log("foo");
+				},
+				isPlain: true,
+			},
+			visitorKeys: null,
+		};
+	},
+};

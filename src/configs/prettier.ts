@@ -31,9 +31,9 @@ export async function prettier(
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
-	const [configPrettier, pluginFormat] = await Promise.all([
+	const [configPrettier, pluginPrettier] = await Promise.all([
 		interopDefault(import("eslint-config-prettier/flat")),
-		interopDefault(import("eslint-plugin-format")),
+		interopDefault(import("eslint-plugin-prettier")),
 	]);
 
 	const defaultPrettierOptions = {
@@ -64,7 +64,7 @@ export async function prettier(
 			files,
 			name: "isentinel/prettier",
 			plugins: {
-				format: pluginFormat,
+				format: pluginPrettier,
 			},
 			rules: {
 				...rules,

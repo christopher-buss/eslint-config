@@ -257,7 +257,6 @@ export function isentinel(
 			formatters(
 				options.formatters,
 				typeof stylisticOptions === "boolean" ? {} : stylisticOptions,
-				options.markdown !== false,
 			),
 		);
 	}
