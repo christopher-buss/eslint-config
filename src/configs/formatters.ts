@@ -165,38 +165,3 @@ function mergePrettierOptions(
 		plugins: [...(overrides.plugins || []), ...(options.plugins || [])],
 	};
 }
-
-export const parserMd = {
-	meta: {
-		name: "parser-md",
-	},
-	parseForESLint: (code: string) => {
-		console.log("parseForESLint", code);
-
-		return {
-			// ast: espree.parse(code, options),
-			ast: {
-				// ast is JS ast. We don't have JS, so this AST is for empty JS file
-				body: [],
-				comments: [],
-				end: 0,
-				loc: { end: { column: 0, line: 1 }, start: { column: 0, line: 1 } },
-				mdCode: code,
-				range: [0, 0],
-				start: 0,
-				tokens: [],
-				// Used only by eslint-plugin-markdown-language
-				type: "root",
-			},
-
-			scopeManager: null,
-			services: {
-				foo() {
-					console.log("foo");
-				},
-				isPlain: true,
-			},
-			visitorKeys: null,
-		};
-	},
-};
