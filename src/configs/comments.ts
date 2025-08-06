@@ -50,8 +50,6 @@ export async function comments(
 		{
 			files: [GLOB_YAML],
 			rules: {
-				// TODO: Seems to be a false positive
-				"comment-length/limit-multi-line-comments": "off",
 				"no-inline-comments": "off",
 			},
 		},
