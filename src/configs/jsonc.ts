@@ -5,7 +5,7 @@ import type {
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault } from "../utils";
+import { interopDefault, resolveWithDefaults } from "../utils";
 
 export async function jsonc(
 	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},
@@ -16,7 +16,7 @@ export async function jsonc(
 		stylistic = true,
 	} = options;
 
-	const { indent = "tab" } = typeof stylistic === "boolean" ? {} : stylistic;
+	const { indent = "tab" } = resolveWithDefaults(stylistic, {}) || {};
 
 	const [pluginJsonc, parserJsonc] = await Promise.all([
 		interopDefault(import("eslint-plugin-jsonc")),

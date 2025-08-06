@@ -5,14 +5,14 @@ import type {
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault } from "../utils";
+import { interopDefault, resolveWithDefaults } from "../utils";
 
 export async function toml(
 	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { files = [GLOB_TOML], overrides = {}, stylistic = true } = options;
 
-	const { indent = 2 } = typeof stylistic === "boolean" ? {} : stylistic;
+	const { indent = 2 } = resolveWithDefaults(stylistic, {}) || {};
 
 	const [pluginToml, parserToml] = await Promise.all([
 		interopDefault(import("eslint-plugin-toml")),

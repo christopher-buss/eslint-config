@@ -2,7 +2,9 @@ import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import prettier from "prettier";
 
+import type { PrettierOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
 export const parserPlain = {
@@ -259,11 +261,81 @@ export function renameRules(
 	);
 }
 
+/**
+ * Resolve Prettier configuration options for the project.
+ *
+ * @returns The Prettier configuration options, or an empty object if none
+ *   found.
+ */
+export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
+	try {
+		// Use package.json as file path since it exists in all projects and allows
+		// prettier to resolve project-wide configuration (prettierrc, EditorConfig, etc.)
+		const config = await prettier.resolveConfig("package.json", {
+			editorconfig: true,
+		});
+		return config ?? {};
+	} catch {
+		return {};
+	}
+}
+
 export function resolveSubOptions<K extends keyof OptionsConfig>(
 	options: OptionsConfig,
 	key: K,
 ): ResolvedOptions<OptionsConfig[K]> {
-	return typeof options[key] === "boolean" ? ({} as any) : options[key] || ({} as any);
+	return resolveWithDefaults(options[key], {} as any) || ({} as any);
+}
+
+/**
+ * Resolve options with default values. Handles the pattern where `true` means
+ * "use defaults", `false` disables the feature, and objects are used as-is.
+ *
+ * @template T - The type of the defaults object.
+ * @param value - The option value (true | false | undefined | object).
+ * @param defaults - Default values to use when value is true or undefined.
+ * @returns The resolved options.
+ */
+export function resolveWithDefaults<T extends Record<string, any>>(
+	value: boolean | T | undefined,
+	defaults: T,
+): false | T {
+	if (value === false) {
+		return false;
+	}
+
+	if (value === true || value === undefined) {
+		return defaults;
+	}
+
+	return value;
+}
+
+/**
+ * Check if a feature should be enabled based on options. Handles the pattern
+ * where features can be disabled globally or individually.
+ *
+ * @template T - The type of the options object.
+ * @template K - The key type within the options object.
+ * @param options - The options object (true | false | undefined | object).
+ * @param key - The key to check within the options object.
+ * @param defaultValue - Default value when key is not specified.
+ * @returns Whether the feature should be enabled.
+ */
+export function shouldEnableFeature<T extends Record<string, any>, K extends keyof T>(
+	options: boolean | T | undefined,
+	key: K,
+	defaultValue = true,
+): boolean {
+	if (options === false) {
+		return false;
+	}
+
+	if (options === true || options === undefined) {
+		return defaultValue;
+	}
+
+	return options[key] !== false;
 }
 
 export function toArray<T>(value: Array<T> | T): Array<T> {

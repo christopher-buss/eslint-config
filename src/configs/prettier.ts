@@ -1,4 +1,3 @@
-import { createRequire } from "module";
 import type { Options as PrettierOptions } from "prettier";
 
 import { defaultPluginRenaming } from "../factory";
@@ -21,9 +20,7 @@ import type {
 	StylisticConfig,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault, parserPlain, renameRules } from "../utils";
-
-const require = createRequire(import.meta.url);
+import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils";
 
 export type PrettierRuleOptions = Pick<Partial<PrettierOptions>, "parser"> &
 	PrettierOptions &
@@ -43,7 +40,7 @@ export async function prettier(
 		componentExts: componentExtensions = [],
 		files: prettierFiles,
 		formatters = {},
-		prettierOptions,
+		prettierOptions = {},
 	} = options ?? {};
 
 	const formattingOptions = {
@@ -53,31 +50,13 @@ export async function prettier(
 		json: true,
 		markdown: true,
 		yaml: true,
-		...(formatters === true ? {} : formatters),
+		...resolveWithDefaults(formatters, {}),
 	} satisfies OptionsFormatters;
 
 	const [configPrettier, pluginPrettier] = await Promise.all([
 		interopDefault(import("eslint-config-prettier/flat")),
 		interopDefault(import("eslint-plugin-prettier")),
 	]);
-
-	const basePrettierOptions: PrettierOptions = Object.assign(
-		{
-			arrowParens: "always",
-			jsdocPreferCodeFences: true,
-			jsdocPrintWidth: 80,
-			plugins: [require.resolve("prettier-plugin-jsdoc")],
-			printWidth: 100,
-			quoteProps: "consistent",
-			semi: true,
-			singleQuote: false,
-			tabWidth: 4,
-			trailingComma: "all",
-			tsdoc: true,
-			useTabs: true,
-		} satisfies PrettierOptions,
-		prettierOptions ?? {},
-	);
 
 	const rulesToIgnore = ["curly", "style/quotes"];
 	const rules = renameRules(configPrettier.rules, defaultPluginRenaming);
@@ -107,7 +86,7 @@ export async function prettier(
 			"arrow-body-style": "off",
 			"format/prettier": [
 				"error",
-				mergePrettierOptions(basePrettierOptions, {
+				mergePrettierOptions(prettierOptions, {
 					parser: "typescript",
 				}),
 			],
@@ -126,7 +105,7 @@ export async function prettier(
 				rules: {
 					"format/prettier": [
 						"error",
-						mergePrettierOptions(basePrettierOptions, {
+						mergePrettierOptions(prettierOptions, {
 							parser: "css",
 						}),
 					],
@@ -141,7 +120,7 @@ export async function prettier(
 				rules: {
 					"format/prettier": [
 						"error",
-						mergePrettierOptions(basePrettierOptions, {
+						mergePrettierOptions(prettierOptions, {
 							parser: "scss",
 						}),
 					],
@@ -156,7 +135,7 @@ export async function prettier(
 				rules: {
 					"format/prettier": [
 						"error",
-						mergePrettierOptions(basePrettierOptions, {
+						mergePrettierOptions(prettierOptions, {
 							parser: "less",
 						}),
 					],
@@ -175,7 +154,7 @@ export async function prettier(
 			rules: {
 				"format/prettier": [
 					"error",
-					mergePrettierOptions(basePrettierOptions, {
+					mergePrettierOptions(prettierOptions, {
 						parser: "html",
 					}),
 				],
@@ -190,7 +169,7 @@ export async function prettier(
 			rules: {
 				"format/prettier": [
 					"error",
-					mergePrettierOptions(basePrettierOptions, {
+					mergePrettierOptions(prettierOptions, {
 						embeddedLanguageFormatting: "off",
 						parser: "markdown",
 						printWidth: 80,
@@ -211,7 +190,7 @@ export async function prettier(
 			rules: {
 				"format/prettier": [
 					"error",
-					mergePrettierOptions(basePrettierOptions, {
+					mergePrettierOptions(prettierOptions, {
 						parser: "graphql",
 					}),
 				],
@@ -226,7 +205,7 @@ export async function prettier(
 			rules: {
 				"format/prettier": [
 					"error",
-					mergePrettierOptions(basePrettierOptions, {
+					mergePrettierOptions(prettierOptions, {
 						parser: "json",
 					}),
 				],
@@ -234,7 +213,6 @@ export async function prettier(
 		});
 	}
 
-	// YAML formatting - uses context-dependent quoting (unquoted → single → double quotes)
 	if (formattingOptions.yaml) {
 		configs.push({
 			files: [GLOB_YAML],
@@ -242,7 +220,7 @@ export async function prettier(
 			rules: {
 				"format/prettier": [
 					"error",
-					mergePrettierOptions(basePrettierOptions, {
+					mergePrettierOptions(prettierOptions, {
 						parser: "yaml",
 						tabWidth: 2,
 						useTabs: false,
@@ -265,3 +243,5 @@ function mergePrettierOptions(
 		plugins: [...(overrides.plugins || []), ...(options.plugins || [])],
 	};
 }
+
+export { type Options as PrettierOptions } from "prettier";

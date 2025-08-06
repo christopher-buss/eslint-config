@@ -2,6 +2,7 @@ import type { Linter } from "eslint";
 import { FlatConfigComposer } from "eslint-flat-config-utils";
 import fs from "node:fs";
 
+import type { PrettierOptions } from "./configs";
 import {
 	comments,
 	disables,
@@ -30,7 +31,15 @@ import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
 import { test } from "./configs/test";
 import type { Awaitable, ConfigNames, OptionsConfig, TypedFlatConfigItem } from "./types";
-import { getOverrides, interopDefault, isInEditorEnvironment, resolveSubOptions } from "./utils";
+import {
+	getOverrides,
+	interopDefault,
+	isInEditorEnvironment,
+	resolvePrettierConfigOptions,
+	resolveSubOptions,
+	resolveWithDefaults,
+	shouldEnableFeature,
+} from "./utils";
 
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",
@@ -61,7 +70,7 @@ export const defaultPluginRenaming = {
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
  */
-export function isentinel(
+export async function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem = {},
 	...userConfigs: Array<
 		Awaitable<
@@ -71,7 +80,7 @@ export function isentinel(
 			| TypedFlatConfigItem
 		>
 	>
-): FlatConfigComposer<TypedFlatConfigItem, ConfigNames> {
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>> {
 	const {
 		autoRenamePlugins = true,
 		componentExts: componentExtensions = [],
@@ -110,6 +119,31 @@ export function isentinel(
 	if (stylisticOptions && !("jsx" in stylisticOptions)) {
 		stylisticOptions.jsx = enableJsx;
 	}
+
+	const prettierOptions =
+		(typeof options["formatters"] === "object"
+			? options["formatters"]?.prettierOptions
+			: undefined) || {};
+	const editorConfigOptions = await resolvePrettierConfigOptions();
+
+	const prettierSettings: PrettierOptions = Object.assign(
+		{
+			arrowParens: "always",
+			jsdocPreferCodeFences: true,
+			jsdocPrintWidth: 80,
+			plugins: [require.resolve("prettier-plugin-jsdoc")],
+			printWidth: 100,
+			quoteProps: "consistent",
+			semi: true,
+			singleQuote: false,
+			tabWidth: 4,
+			trailingComma: "all",
+			tsdoc: true,
+			useTabs: true,
+		} satisfies PrettierOptions,
+		editorConfigOptions,
+		prettierOptions,
+	);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -160,6 +194,7 @@ export function isentinel(
 	}
 
 	if (enableRoblox) {
+		const shouldFormatLua = shouldEnableFeature(formatters, "lua");
 		configs.push(
 			roblox(
 				{
@@ -167,7 +202,7 @@ export function isentinel(
 					componentExts: componentExtensions,
 					stylistic: stylisticOptions,
 				},
-				formatters === undefined && formatters !== false,
+				shouldFormatLua,
 			),
 		);
 	}
@@ -259,15 +294,12 @@ export function isentinel(
 		// We require prettier to be the last config
 		configs.push(
 			prettier({
-				...(typeof enableTypeScript !== "boolean" ? enableTypeScript : {}),
+				...resolveWithDefaults(enableTypeScript, {}),
 				componentExts: componentExtensions,
 				formatters: formatters !== false ? formatters : undefined,
 				overrides: getOverrides(options, "typescript"),
-				prettierOptions:
-					typeof options["formatters"] === "boolean"
-						? ({} as any)
-						: options["formatters"]?.prettierOptions || {},
-				stylistic: typeof stylisticOptions === "boolean" ? {} : stylisticOptions,
+				prettierOptions: prettierSettings,
+				stylistic: Boolean(stylisticOptions) === true ? {} : stylisticOptions,
 			}),
 		);
 	}
