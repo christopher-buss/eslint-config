@@ -188,19 +188,30 @@ export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for CSS, Less, Sass, and SCSS.
 	 *
-	 * Currently only support Prettier.
+	 * @default true
 	 */
-	css?: "prettier" | boolean;
+	css?: boolean;
 
-	/** Enable formatting support for GraphQL. */
-	graphql?: "prettier" | boolean;
+	/**
+	 * Enable formatting support for GraphQL.
+	 *
+	 * @default true
+	 */
+	graphql?: boolean;
 
 	/**
 	 * Enable formatting support for HTML.
 	 *
-	 * Currently only support Prettier.
+	 * @default true
 	 */
-	html?: "prettier" | boolean;
+	html?: boolean;
+
+	/**
+	 * Enable formatting support for JSON(C|5).
+	 *
+	 * @default true
+	 */
+	json?: boolean;
 
 	/**
 	 * Enable formatting support for Lua files (powered by stylua).
@@ -212,7 +223,7 @@ export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for Markdown.
 	 *
-	 * When set to `true`, it will use Prettier.
+	 * @default true
 	 */
 	markdown?: boolean;
 
@@ -222,6 +233,13 @@ export interface OptionsFormatters {
 	 * By default it's controlled by our own config.
 	 */
 	prettierOptions?: PrettierOptions;
+
+	/**
+	 * Enable formatting support for YAML.
+	 *
+	 * @default true
+	 */
+	yaml?: boolean;
 }
 
 export interface OptionsHasTypeScript {

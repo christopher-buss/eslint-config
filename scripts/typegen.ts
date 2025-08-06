@@ -6,7 +6,6 @@ import { test } from "src/configs/test";
 import {
 	combine,
 	comments,
-	formatters,
 	ignores,
 	imports,
 	javascript,
@@ -39,7 +38,6 @@ const configs = await combine(
 		},
 	},
 	comments(),
-	formatters(),
 	ignores(),
 	imports(),
 	javascript(),

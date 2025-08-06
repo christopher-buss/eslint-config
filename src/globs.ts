@@ -19,6 +19,7 @@ export const GLOB_SCSS = "**/*.scss";
 export const GLOB_JSON = "**/*.json";
 export const GLOB_JSON5 = "**/*.json5";
 export const GLOB_JSONC = "**/*.jsonc";
+export const GLOB_ALL_JSON = "**/*.json?(5|c)";
 
 export const GLOB_MARKDOWN = "**/*.md";
 export const GLOB_MARKDOWN_IN_MARKDOWN = "**/*.md/*.md";
@@ -36,7 +37,15 @@ export const GLOB_TESTS = [
 	`**/*.benchmark.${GLOB_SRC_EXT}`,
 ];
 
-export const GLOB_ALL_SRC = [GLOB_SRC, GLOB_STYLE, GLOB_JSON, GLOB_JSON5, GLOB_MARKDOWN, GLOB_HTML];
+export const GLOB_ALL_SRC = [
+	GLOB_SRC,
+	GLOB_STYLE,
+	GLOB_JSON,
+	GLOB_JSON5,
+	GLOB_MARKDOWN,
+	GLOB_YAML,
+	GLOB_HTML,
+];
 
 export const GLOB_EXCLUDE = [
 	"**/node_modules",

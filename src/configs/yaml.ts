@@ -16,8 +16,6 @@ export async function yaml(
 		stylistic = true,
 	} = options;
 
-	const { indent = 2, quotes = "single" } = typeof stylistic === "boolean" ? {} : stylistic;
-
 	const [pluginYaml, parserYaml] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
 		interopDefault(import("yaml-eslint-parser")),
@@ -37,7 +35,7 @@ export async function yaml(
 			},
 			name: "isentinel/yaml/rules",
 			rules: {
-				"isentinel/spaced-comment": "off",
+				"style/spaced-comment": "off",
 
 				"yaml/block-mapping": "error",
 				"yaml/block-sequence": "error",
@@ -49,30 +47,19 @@ export async function yaml(
 
 				...(stylistic
 					? {
+							"yaml/block-mapping": "error",
 							"yaml/block-mapping-colon-indicator-newline": "error",
 							"yaml/block-mapping-question-indicator-newline": "error",
 							"yaml/block-sequence-hyphen-indicator-newline": "error",
 							"yaml/flow-mapping-curly-newline": "error",
-							"yaml/flow-mapping-curly-spacing": "error",
+							"yaml/flow-mapping-curly-spacing": "off",
 							"yaml/flow-sequence-bracket-newline": "error",
 							"yaml/flow-sequence-bracket-spacing": "error",
-							"yaml/indent": [
-								"error",
-								indent === "tab" ? 2 : indent,
-								{
-									alignMultilineFlowScalars: true,
-								},
-							],
 							"yaml/key-spacing": "error",
 							"yaml/no-tab-indent": "error",
-							"yaml/quotes": [
-								"error",
-								{
-									avoidEscape: true,
-									prefer: quotes === "backtick" ? "single" : quotes,
-								},
-							],
+							"yaml/no-trailing-zeros": "error",
 							"yaml/spaced-comment": "error",
+							"yml/block-sequence-hyphen-indicator-newline": "error",
 						}
 					: {}),
 
