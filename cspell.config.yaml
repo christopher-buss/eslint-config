@@ -1,11 +1,12 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json
-
-version: '0.2'
+# yaml-language-server:
+# $schema=https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json
+name: my-project
+version: "0.2"
 language: en
 files:
   - .github/**/*.{md,txt,yaml,yml}
   - .git/COMMIT_EDITMSG
-  - '*.{md,txt,yaml,yml}'
+  - "*.{md,txt,yaml,yml}"
   - LICENSE
 words:
   - EDITMSG
@@ -36,16 +37,16 @@ maxNumberOfProblems: 1000
 ignorePaths:
   - .gitignore
   - .vscode/**
-  - '*-lock.yaml'
-  - '*.aff'
-  - '*.dic'
-  - '*.gz'
-  - '*.lock'
-  - '*.log'
-  - '*.snap'
-  - '*.trie'
-  - '**/.git/!(COMMIT_EDITMSG)'
-  - '**/.git/!(COMMIT_EDITMSG)/**'
+  - "*-lock.yaml"
+  - "*.aff"
+  - "*.dic"
+  - "*.gz"
+  - "*.lock"
+  - "*.log"
+  - "*.snap"
+  - "*.trie"
+  - "**/.git/!(COMMIT_EDITMSG)"
+  - "**/.git/!(COMMIT_EDITMSG)/**"
   - CHANGELOG.md
   - cspell.json
   - node_modules

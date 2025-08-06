@@ -25,7 +25,6 @@ import {
 	unicorn,
 	yaml,
 } from "./configs";
-import { formatters } from "./configs/formatters";
 import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
@@ -76,6 +75,7 @@ export function isentinel(
 	const {
 		autoRenamePlugins = true,
 		componentExts: componentExtensions = [],
+		formatters,
 		gitignore: enableGitignore = true,
 		jsx: enableJsx = true,
 		pnpm: enableCatalogs = false,
@@ -167,7 +167,7 @@ export function isentinel(
 					componentExts: componentExtensions,
 					stylistic: stylisticOptions,
 				},
-				options.formatters === undefined && options.formatters !== false,
+				formatters === undefined && formatters !== false,
 			),
 		);
 	}
@@ -253,15 +253,6 @@ export function isentinel(
 		);
 	}
 
-	if (options.formatters !== false) {
-		configs.push(
-			formatters(
-				options.formatters,
-				typeof stylisticOptions === "boolean" ? {} : stylisticOptions,
-			),
-		);
-	}
-
 	configs.push(disables());
 
 	if (stylisticOptions) {
@@ -270,11 +261,13 @@ export function isentinel(
 			prettier({
 				...(typeof enableTypeScript !== "boolean" ? enableTypeScript : {}),
 				componentExts: componentExtensions,
+				formatters: formatters !== false ? formatters : undefined,
 				overrides: getOverrides(options, "typescript"),
 				prettierOptions:
 					typeof options["formatters"] === "boolean"
 						? ({} as any)
 						: options["formatters"]?.prettierOptions || {},
+				stylistic: typeof stylisticOptions === "boolean" ? {} : stylisticOptions,
 			}),
 		);
 	}
