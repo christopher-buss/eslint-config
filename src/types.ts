@@ -149,11 +149,12 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * Requires installing:
 	 *
-	 * - 'eslint-plugin-jest'.
+	 * - 'eslint-plugin-jest' for Jest.
+	 * - '@vitest/eslint-plugin' for Vitest.
 	 *
 	 * @default false
 	 */
-	test?: boolean | OptionsOverrides;
+	test?: boolean | (OptionsOverrides & OptionsTestFramework);
 
 	/**
 	 * Enable TOML support.
@@ -264,8 +265,20 @@ export interface OptionsProjectType {
 	type?: "game" | "package";
 }
 
+export interface OptionsRoblox {
+	/** Enable or disable Roblox-specific rules. */
+	roblox?: boolean;
+}
+
 export interface OptionsStylistic {
 	stylistic?: boolean | StylisticConfig;
+}
+
+export interface OptionsTestFramework {
+	/** Enable Jest support. */
+	jest?: boolean;
+	/** Enable Vitest support. */
+	vitest?: boolean;
 }
 
 export type OptionsTypescript =

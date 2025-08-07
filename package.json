@@ -32,7 +32,7 @@
 		"release": "bumpp",
 		"stub": "tsup",
 		"typecheck": "tsc --noEmit",
-		"watch": "tsup --watch"
+		"watch": "tsup --watch --dts"
 	},
 	"simple-git-hooks": {
 		"pre-commit": "pnpm lint-staged"
@@ -101,6 +101,7 @@
 		"@types/node": "catalog:dev",
 		"@types/prompts": "catalog:dev",
 		"@types/yargs": "catalog:dev",
+		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
 		"eslint": "catalog:peer",
 		"eslint-plugin-jest": "catalog:peer",
@@ -122,6 +123,7 @@
 	},
 	"peerDependencies": {
 		"@eslint-react/eslint-plugin": "^1.45.0",
+		"@vitest/eslint-plugin": "^1.0.0",
 		"eslint": "^9.10.0",
 		"eslint-plugin-jest": "^28.9.0 || ^29.0.0",
 		"eslint-plugin-n": "^17.0.0",
@@ -129,6 +131,9 @@
 	},
 	"peerDependenciesMeta": {
 		"@eslint-react/eslint-plugin": {
+			"optional": true
+		},
+		"@vitest/eslint-plugin": {
 			"optional": true
 		},
 		"eslint-plugin-jest": {
