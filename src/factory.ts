@@ -225,10 +225,14 @@ export async function isentinel(
 	}
 
 	if (options.test ?? false) {
+		const testOptions = typeof options.test === "object" ? options.test : {};
 		configs.push(
 			test({
 				isInEditor,
 				overrides: getOverrides(options, "test"),
+				roblox: options.roblox,
+				type: options.type,
+				...testOptions,
 			}),
 		);
 	}
