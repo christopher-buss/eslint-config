@@ -12,6 +12,7 @@ import {
 	jsdoc,
 	jsonc,
 	markdown,
+	node,
 	perfectionist,
 	pnpm,
 	prettier,
@@ -62,6 +63,7 @@ export const defaultPluginRenaming = {
 	"@eslint-react/naming-convention": "react-naming-convention",
 	"@stylistic": "style",
 	"@typescript-eslint": "ts",
+	"n": "node",
 	"yml": "yaml",
 };
 
@@ -191,6 +193,11 @@ export async function isentinel(
 		}),
 		unicorn({ stylistic: stylisticOptions }),
 	);
+
+	// Enable Node.js rules for non-Roblox packages
+	if (options.type === "package" && options.roblox === false) {
+		configs.push(node());
+	}
 
 	if (enableJsx) {
 		configs.push(jsx());
