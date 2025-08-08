@@ -177,7 +177,7 @@ export async function isentinel(
 	// Base configs
 	configs.push(
 		comments({ stylistic: stylisticOptions }),
-		ignores(),
+		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: options.type }),
 		jsdoc({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: options.roblox, type: options.type }),
