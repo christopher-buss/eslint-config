@@ -113,9 +113,12 @@ export async function markdown(
 			name: "isentinel/markdown/disables",
 			rules: {
 				"antfu/no-top-level-await": "off",
+				"antfu/top-level-function": "off",
 				"import/newline-after-import": "off",
+				"jsdoc/convert-to-jsdoc-comments": "off",
 				"no-alert": "off",
 				"no-console": "off",
+				"no-inline-comments": "off",
 				"no-labels": "off",
 				"no-lone-blocks": "off",
 				"no-restricted-syntax": "off",
