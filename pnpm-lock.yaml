@@ -46,8 +46,8 @@ catalogs:
       specifier: 3.3.3
       version: 3.3.3
     fs-extra:
-      specifier: 11.3.0
-      version: 11.3.0
+      specifier: 11.3.1
+      version: 11.3.1
     jiti:
       specifier: 2.5.1
       version: 2.5.1
@@ -445,7 +445,7 @@ importers:
         version: 3.3.3
       fs-extra:
         specifier: catalog:dev
-        version: 11.3.0
+        version: 11.3.1
       jiti:
         specifier: catalog:dev
         version: 2.5.1
@@ -2564,8 +2564,8 @@ packages:
     resolution: {integrity: sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww==}
     engines: {node: '>=0.4.x'}
 
-  fs-extra@11.3.0:
-    resolution: {integrity: sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==}
+  fs-extra@11.3.1:
+    resolution: {integrity: sha512-eXvGGwZ5CL17ZSwHWd3bbgk7UUpF6IFHtP57NYYakPvHOs8GDgDe5KJI36jIJzDkJ6eJjuzRA8eBQb6SkKue0g==}
     engines: {node: '>=14.14'}
 
   fsevents@2.3.3:
@@ -6604,7 +6604,7 @@ snapshots:
 
   format@0.2.2: {}
 
-  fs-extra@11.3.0:
+  fs-extra@11.3.1:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0

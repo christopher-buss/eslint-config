@@ -16,7 +16,7 @@ catalogs:
     esno: 4.8.0
     execa: 9.6.0
     fast-glob: 3.3.3
-    fs-extra: 11.3.0
+    fs-extra: 11.3.1
     jiti: 2.5.1
     lint-staged: 16.1.2
     pnpm-workspace-yaml: 1.1.0
