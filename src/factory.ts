@@ -1,12 +1,12 @@
 import type { Linter } from "eslint";
 import { FlatConfigComposer } from "eslint-flat-config-utils";
-import fs from "node:fs";
 import { createRequire } from "node:module";
 
 import type { PrettierOptions } from "./configs";
 import {
 	comments,
 	disables,
+	gitignore,
 	ignores,
 	imports,
 	jsdoc,
@@ -35,7 +35,6 @@ import { test } from "./configs/test";
 import type { Awaitable, ConfigNames, OptionsConfig, TypedFlatConfigItem } from "./types";
 import {
 	getOverrides,
-	interopDefault,
 	isInEditorEnvironment,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
@@ -152,27 +151,14 @@ export async function isentinel(
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
-	/* eslint-disable arrow-style/arrow-return-style -- Bug with line length. */
 	if (enableGitignore) {
-		if (typeof enableGitignore !== "boolean") {
-			configs.push(
-				interopDefault(import("eslint-config-flat-gitignore")).then((resolved) => [
-					resolved(enableGitignore),
-				]),
-			);
-		} else if (fs.existsSync(".gitignore")) {
-			configs.push(
-				interopDefault(import("eslint-config-flat-gitignore")).then((resolved) => [
-					resolved(),
-				]),
-			);
-		} else {
-			throw new Error(
-				"gitignore option is enabled but no .gitignore file was found in the current directory",
-			);
-		}
+		configs.push(
+			gitignore({
+				config: enableGitignore,
+				explicit: "gitignore" in options,
+			}),
+		);
 	}
-	/* eslint-enable arrow-style/arrow-return-style -- Bug with line length. */
 
 	// Base configs
 	configs.push(
