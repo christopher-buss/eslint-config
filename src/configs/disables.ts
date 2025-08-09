@@ -60,5 +60,12 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 				"ts/no-require-imports": "off",
 			},
 		},
+		{
+			files: ["*.?([cm])[jt]s?(x)", `*.md/${GLOB_SRC}`],
+			name: "isentinel/disables/root",
+			rules: {
+				"unicorn/filename-case": "off",
+			},
+		},
 	];
 }

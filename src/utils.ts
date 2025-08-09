@@ -72,14 +72,14 @@ export function createTsParser(options: {
 		languageOptions: {
 			parser,
 			parserOptions: {
-				ecmaVersion: 2018,
+				ecmaVersion: "latest",
 				extraFileExtensions: componentExtensions.map((extension) => `.${extension}`),
 				sourceType: "module",
 				useJSXTextNode: true,
 				...(typeAware
 					? {
 							projectService: {
-								allowDefaultProject: ["*.js", "*.ts"],
+								allowDefaultProject: ["*.js", "*.ts", ".*.js", ".*.ts"],
 								defaultProject: tsconfigPath,
 							},
 							tsconfigRootDir: process.cwd(),

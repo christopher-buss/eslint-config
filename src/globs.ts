@@ -1,3 +1,5 @@
+export const GLOB_ROOT = "*.?([cm])[jt]s?(x)";
+
 export const GLOB_SRC_EXT = "?([cm])[jt]s?(x)";
 export const GLOB_SRC = "**/*.?([cm])[jt]s?(x)";
 
@@ -23,11 +25,13 @@ export const GLOB_ALL_JSON = "**/*.json?(5|c)";
 
 export const GLOB_MARKDOWN = "**/*.md";
 export const GLOB_MARKDOWN_IN_MARKDOWN = "**/*.md/*.md";
+export const GLOB_MARKDOWN_CODE = `${GLOB_MARKDOWN}/${GLOB_SRC}`;
+
 export const GLOB_YAML = "**/*.y?(a)ml";
 export const GLOB_TOML = "**/*.toml";
 export const GLOB_HTML = "**/*.htm?(l)";
-
-export const GLOB_MARKDOWN_CODE = `${GLOB_MARKDOWN}/${GLOB_SRC}`;
+export const GLOB_XML = "**/*.xml";
+export const GLOB_GRAPHQL = "**/*.{g,graph}ql";
 
 export const GLOB_TESTS = [
 	`**/__tests__/**/*.${GLOB_SRC_EXT}`,
@@ -56,6 +60,7 @@ export const GLOB_EXCLUDE = [
 	"**/bun.lockb",
 	"**/.pnpm-store",
 
+	"**/out",
 	"**/output",
 	"**/coverage",
 	"**/temp",
