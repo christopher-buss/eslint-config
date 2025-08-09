@@ -281,10 +281,10 @@ export async function typescript(
 				"ts/no-unused-vars": [
 					"error",
 					{
-						argsIgnorePattern: "^_",
-						caughtErrorsIgnorePattern: "^_",
+						argsIgnorePattern: "^_+",
+						caughtErrorsIgnorePattern: "^_+",
 						reportUsedIgnorePattern: true,
-						varsIgnorePattern: "^_",
+						varsIgnorePattern: "^_+",
 					},
 				],
 				"ts/no-use-before-define": "off",
