@@ -18,7 +18,7 @@ export async function stylistic(
 	};
 
 	const [pluginArrowReturnStyle, pluginStylistic, pluginAntfu] = await Promise.all([
-		interopDefault(import("eslint-plugin-arrow-return-style")),
+		interopDefault(import("eslint-plugin-arrow-return-style-x")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("eslint-plugin-antfu")),
 	]);
@@ -54,7 +54,7 @@ export async function stylistic(
 					"warn",
 					{
 						jsxAlwaysUseExplicitReturn: true,
-						maxLen: 80,
+						maxLen: 100,
 					},
 				],
 
