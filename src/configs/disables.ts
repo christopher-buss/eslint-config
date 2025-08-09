@@ -64,6 +64,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 			files: ["*.?([cm])[jt]s?(x)", `*.md/${GLOB_SRC}`],
 			name: "isentinel/disables/root",
 			rules: {
+				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
 			},
 		},
