@@ -33,13 +33,16 @@ export async function stylistic(
 
 	return [
 		{
-			files: [GLOB_SRC],
-			name: "isentinel/stylistic",
+			name: "isentinel/stylistic/setup",
 			plugins: {
 				"antfu": pluginAntfu,
 				"arrow-style": pluginArrowReturnStyle,
 				"style": pluginStylistic,
 			},
+		},
+		{
+			files: [GLOB_SRC],
+			name: "isentinel/stylistic",
 			rules: {
 				...config.rules,
 

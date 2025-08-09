@@ -42,11 +42,14 @@ export async function spelling(
 
 	return [
 		{
-			files,
-			name: "isentinel/spelling",
+			name: "isentinel/spelling/setup",
 			plugins: {
 				"@cspell": pluginCspell,
 			},
+		},
+		{
+			files,
+			name: "isentinel/spelling",
 			rules: {
 				"@cspell/spellchecker": [
 					enabled ? "warn" : "off",

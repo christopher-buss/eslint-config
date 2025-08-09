@@ -10,7 +10,8 @@ import type { TypedFlatConfigItem } from "../types";
 export function sortTsconfig(): Array<TypedFlatConfigItem> {
 	return [
 		{
-			files: ["**/tsconfig.json", "**/tsconfig.*.json"],
+			// cspell:disable-next-line
+			files: ["**/[jt]sconfig.json", "**/[jt]sconfig.*.json"],
 			name: "isentinel/sort-tsconfig",
 			rules: {
 				"jsonc/sort-keys": [

@@ -14,13 +14,18 @@ export async function jsdoc(
 
 	const isPackage = type === "package" || full;
 
+	const pluginJsdoc = await interopDefault(import("eslint-plugin-jsdoc"));
+
 	return [
+		{
+			name: "isentinel/jsdoc/setup",
+			plugins: {
+				jsdoc: pluginJsdoc,
+			},
+		},
 		{
 			files: [GLOB_SRC],
 			name: "isentinel/jsdoc",
-			plugins: {
-				jsdoc: await interopDefault(import("eslint-plugin-jsdoc")),
-			},
 			rules: {
 				"jsdoc/check-access": "warn",
 				"jsdoc/check-param-names": ["warn", { checkDestructured: false }],

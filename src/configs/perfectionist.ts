@@ -75,11 +75,14 @@ export async function perfectionist(
 
 	return [
 		{
-			files: [GLOB_SRC],
-			name: "isentinel/perfectionist",
+			name: "isentinel/perfectionist/setup",
 			plugins: {
 				perfectionist: pluginPerfectionist,
 			},
+		},
+		{
+			files: [GLOB_SRC],
+			name: "isentinel/perfectionist",
 			rules: {
 				"perfectionist/sort-array-includes": ["error", { type: "natural" }],
 				"perfectionist/sort-classes": [

@@ -12,14 +12,17 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 
 	return [
 		{
+			name: "isentinel/pnpm/setup",
+			plugins: {
+				pnpm: pluginPnpm,
+			},
+		},
+		{
 			files: ["package.json", "**/package.json"],
 			languageOptions: {
 				parser: jsoncParser,
 			},
 			name: "isentinel/pnpm/package-json",
-			plugins: {
-				pnpm: pluginPnpm,
-			},
 			rules: {
 				"pnpm/json-enforce-catalog": "error",
 				"pnpm/json-prefer-workspace-settings": "error",

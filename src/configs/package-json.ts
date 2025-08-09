@@ -13,14 +13,17 @@ export async function packageJson(
 
 	return [
 		{
+			name: "isentinel/package-json/setup",
+			plugins: {
+				"package-json": pluginPackageJson,
+			},
+		},
+		{
 			files: ["**/package.json"],
 			languageOptions: {
 				parser: jsoncEslintParser,
 			},
 			name: "isentinel/package-json",
-			plugins: {
-				"package-json": pluginPackageJson,
-			},
 			rules: {
 				"package-json/no-empty-fields": "error",
 				"package-json/no-redundant-files": "error",

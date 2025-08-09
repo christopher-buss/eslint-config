@@ -41,7 +41,15 @@ export async function roblox(
 		...componentExtensions.map((extension) => `**/*/*.${extension}`),
 	];
 
-	const configs: Array<TypedFlatConfigItem> = [];
+	const configs: Array<TypedFlatConfigItem> = [
+		{
+			name: "isentinel/roblox/setup",
+			plugins: {
+				roblox: pluginRobloxTs,
+				sentinel: pluginSentinel,
+			},
+		},
+	];
 
 	configs.push({
 		...createTsParser({
@@ -54,10 +62,6 @@ export async function roblox(
 			typeAware: isTypeAware,
 		}),
 		name: "isentinel/roblox",
-		plugins: {
-			roblox: pluginRobloxTs,
-			sentinel: pluginSentinel,
-		},
 		rules: {
 			"roblox/lua-truthiness": "warn",
 			"roblox/misleading-lua-tuple-checks": "error",
@@ -96,16 +100,21 @@ export async function roblox(
 	if (formatLua) {
 		const [pluginFormatLua] = await Promise.all([
 			interopDefault(import("eslint-plugin-format-lua")),
-		] as const);
+		]);
+
+		configs.push({
+			name: "isentinel/roblox/format-lua/setup",
+			plugins: {
+				"format-lua": pluginFormatLua,
+			},
+		});
 
 		configs.push({
 			files: [GLOB_LUA],
 			languageOptions: {
 				parser: parserPlain,
 			},
-			plugins: {
-				"format-lua": pluginFormatLua,
-			},
+			name: "isentinel/roblox/format-lua",
 			rules: {
 				"format-lua/stylua": "error",
 			},
