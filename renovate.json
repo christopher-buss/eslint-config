@@ -13,6 +13,7 @@
 	"packageRules": [
 		{
 			"matchUpdateTypes": ["patch"],
+			"groupName": "Patches",
 			"groupSlug": "patch"
 		}
 	]
