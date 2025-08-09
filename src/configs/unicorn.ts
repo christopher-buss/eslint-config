@@ -1,5 +1,38 @@
+import { GLOB_ROOT } from "../globs";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
+
+/* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
+const abbreviations = {
+	args: false,
+	dist: {
+		distance: true,
+	},
+	e: false,
+	err: false,
+	fn: {
+		func: true,
+		function: false,
+	},
+	func: false,
+	inst: {
+		instance: true,
+	},
+	jsdoc: false,
+	nums: {
+		numbers: true,
+	},
+	pos: {
+		position: true,
+	},
+	props: false,
+	ref: false,
+	refs: false,
+	str: false,
+	util: false,
+	utils: false,
+} as const;
+/* eslint-enable @cspell/spellchecker */
 
 export async function unicorn(options: OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const { stylistic = true } = options;
@@ -59,37 +92,8 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 				"unicorn/prevent-abbreviations": [
 					"error",
 					{
-						/* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
-						replacements: {
-							args: false,
-							dist: {
-								distance: true,
-							},
-							e: false,
-							err: false,
-							fn: {
-								func: true,
-								function: false,
-							},
-							func: false,
-							inst: {
-								instance: true,
-							},
-							jsdoc: false,
-							nums: {
-								numbers: true,
-							},
-							pos: {
-								position: true,
-							},
-							props: false,
-							ref: false,
-							refs: false,
-							str: false,
-							util: false,
-							utils: false,
-						},
-						/* eslint-enable @cspell/spellchecker */
+						checkFilenames: true,
+						replacements: abbreviations,
 					},
 				],
 
@@ -100,6 +104,19 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 							"unicorn/switch-case-braces": "error",
 						}
 					: {}),
+			},
+		},
+		{
+			files: [GLOB_ROOT],
+			name: "isentinel/unicorn/root",
+			rules: {
+				"unicorn/prevent-abbreviations": [
+					"error",
+					{
+						checkFilenames: false,
+						replacements: abbreviations,
+					},
+				],
 			},
 		},
 	];
