@@ -60,7 +60,7 @@
 		"eslint-import-resolver-node": "catalog:prod",
 		"eslint-merge-processors": "catalog:prod",
 		"eslint-plugin-antfu": "catalog:prod",
-		"eslint-plugin-arrow-return-style": "catalog:prod",
+		"eslint-plugin-arrow-return-style-x": "catalog:prod",
 		"eslint-plugin-better-max-params": "catalog:prod",
 		"eslint-plugin-comment-length": "catalog:prod",
 		"eslint-plugin-de-morgan": "catalog:prod",

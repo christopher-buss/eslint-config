@@ -113,9 +113,9 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 		message: `${nonExistingPackages.length === 1 ? "Package is" : "Packages are"} required for this config: ${nonExistingPackages.join(", ")}. Do you want to install them?`,
 	});
 	if (result) {
-		await import("@antfu/install-pkg").then((index) =>
-			index.installPackage(nonExistingPackages, { dev: true }),
-		);
+		await import("@antfu/install-pkg").then((index) => {
+			return index.installPackage(nonExistingPackages, { dev: true });
+		});
 	}
 }
 
