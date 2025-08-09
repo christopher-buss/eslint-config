@@ -6,10 +6,15 @@
 		"helpers:pinGitHubActionDigests",
 		"npm:unpublishSafe"
 	],
+	"schedule": ["* 9 * * 1"],
+	"vulnerabilityAlerts": {
+		"enabled": true
+	},
 	"packageRules": [
 		{
-			"matchDepTypes": ["devDependencies"],
-			"automerge": true
+			"matchUpdateTypes": ["patch"],
+			"groupName": "🔧 Patch fixes",
+			"groupSlug": "patch"
 		}
 	]
 }
