@@ -165,8 +165,8 @@ catalogs:
       specifier: 0.3.0
       version: 0.3.0
     eslint-plugin-jsdoc:
-      specifier: 52.0.2
-      version: 52.0.2
+      specifier: 52.0.4
+      version: 52.0.4
     eslint-plugin-jsonc:
       specifier: 2.20.1
       version: 2.20.1
@@ -315,7 +315,7 @@ importers:
         version: 0.3.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       eslint-plugin-jsdoc:
         specifier: catalog:prod
-        version: 52.0.2(eslint@9.32.0(jiti@2.5.1))
+        version: 52.0.4(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-jsonc:
         specifier: catalog:prod
         version: 2.20.1(eslint@9.32.0(jiti@2.5.1))
@@ -2221,8 +2221,8 @@ packages:
       jest:
         optional: true
 
-  eslint-plugin-jsdoc@52.0.2:
-    resolution: {integrity: sha512-fYrnc7OpRifxxKjH78Y9/D/EouQDYD3G++bpR1Y+A+fy+CMzKZAdGIiHTIxCd2U10hb2y1NxN5TJt9aupq1vmw==}
+  eslint-plugin-jsdoc@52.0.4:
+    resolution: {integrity: sha512-be5OzGlLExvcK13Il3noU7/v7WmAQGenTmCaBKf1pwVtPOb6X+PGFVnJad0QhMj4KKf45XjE4hbsBxv25q1fTg==}
     engines: {node: '>=20.11.0'}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
@@ -6063,7 +6063,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jsdoc@52.0.2(eslint@9.32.0(jiti@2.5.1)):
+  eslint-plugin-jsdoc@52.0.4(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
       '@es-joy/jsdoccomment': 0.52.0
       are-docs-informative: 0.0.2
