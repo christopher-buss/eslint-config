@@ -147,8 +147,8 @@ catalogs:
       specifier: 3.1.1
       version: 3.1.1
     eslint-plugin-arrow-return-style-x:
-      specifier: 1.0.1
-      version: 1.0.1
+      specifier: 1.2.1
+      version: 1.2.1
     eslint-plugin-better-max-params:
       specifier: 0.0.1
       version: 0.0.1
@@ -297,7 +297,7 @@ importers:
         version: 3.1.1(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-arrow-return-style-x:
         specifier: catalog:prod
-        version: 1.0.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
+        version: 1.2.1(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3)
       eslint-plugin-better-max-params:
         specifier: catalog:prod
         version: 0.0.1(eslint@9.32.0(jiti@2.5.1))
@@ -2126,11 +2126,15 @@ packages:
     peerDependencies:
       eslint: '*'
 
-  eslint-plugin-arrow-return-style-x@1.0.1:
-    resolution: {integrity: sha512-6tUrsZZRGP4vcHgCtIR1+Te+7eMREKSi6CdXJHQlyvIBPBgUXibSAcyO4WCGUOHzOXiRu+xDX0iXF/xqn7D2nw==}
+  eslint-plugin-arrow-return-style-x@1.2.1:
+    resolution: {integrity: sha512-NWZT9BA/PfNumg1pqCBx6yl4M50e8ja66DbrqOI+Pplrd2Ye5QHqMienuxORA2fPZ3GL4aSn/eGE61Y7Ruk/LA==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       eslint: '>=9.15.0'
+      prettier: '*'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
 
   eslint-plugin-better-max-params@0.0.1:
     resolution: {integrity: sha512-W9od+HV5KpXEGI1A+4ZYGSkceyX50eAGGSandP/TFPUIu781KoOu2Nru8aOE2SbEr+8stmhfsYmpu+iD9vl1NA==}
@@ -5947,12 +5951,14 @@ snapshots:
     dependencies:
       eslint: 9.32.0(jiti@2.5.1)
 
-  eslint-plugin-arrow-return-style-x@1.0.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3):
+  eslint-plugin-arrow-return-style-x@1.2.1(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/type-utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       '@typescript-eslint/utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       detect-indent: 7.0.1
       eslint: 9.32.0(jiti@2.5.1)
+      synckit: 0.11.11
+    optionalDependencies:
+      prettier: 3.6.2
     transitivePeerDependencies:
       - supports-color
       - typescript

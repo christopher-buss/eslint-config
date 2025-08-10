@@ -1,6 +1,7 @@
 import { GLOB_SRC } from "../globs";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
+import type { PrettierOptions } from "./prettier";
 
 export const StylisticConfigDefaults: StylisticConfig = {
 	indent: "tab",
@@ -11,6 +12,7 @@ export const StylisticConfigDefaults: StylisticConfig = {
 
 export async function stylistic(
 	options: StylisticConfig = {},
+	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { indent, jsx, quotes, semi } = {
 		...StylisticConfigDefaults,
@@ -51,14 +53,17 @@ export async function stylistic(
 				"antfu/top-level-function": "error",
 
 				"arrow-style/arrow-return-style": [
-					"warn",
+					"error",
 					{
 						jsxAlwaysUseExplicitReturn: true,
 						maxLen: 100,
+						maxObjectProperties: 2,
+						namedExportsAlwaysUseExplicitReturn: true,
+						objectReturnStyle: "complex-explicit",
+						usePrettier: prettierOptions,
 					},
 				],
-
-				"arrow-style/no-export-default-arrow": "warn",
+				"arrow-style/no-export-default-arrow": "error",
 
 				"curly": ["error", "all"],
 

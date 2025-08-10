@@ -109,12 +109,12 @@ export interface RuleOptions {
   'arrow-spacing'?: Linter.RuleEntry<ArrowSpacing>
   /**
    * Enforce consistent arrow function return style based on length, multiline expressions, JSX usage, and export context
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.0.1/docs/rules/arrow-return-style.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.1/docs/rules/arrow-return-style.md
    */
   'arrow-style/arrow-return-style'?: Linter.RuleEntry<ArrowStyleArrowReturnStyle>
   /**
    * Disallow anonymous arrow functions as export default declarations
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.0.1/docs/rules/no-export-default-arrow.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.1/docs/rules/no-export-default-arrow.md
    */
   'arrow-style/no-export-default-arrow'?: Linter.RuleEntry<[]>
   /**
@@ -7149,7 +7149,15 @@ type ArrowStyleArrowReturnStyle = []|[{
   
   maxLen?: number
   
+  maxObjectProperties?: number
+  
   namedExportsAlwaysUseExplicitReturn?: boolean
+  
+  objectReturnStyle?: ("always-explicit" | "complex-explicit" | "off")
+  
+  usePrettier?: (boolean | {
+    [k: string]: unknown | undefined
+  } | null)
   [k: string]: unknown | undefined
 }]
 // ----- better-max-params/better-max-params -----
