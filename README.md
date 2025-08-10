@@ -287,8 +287,8 @@ content:
 ```yaml
 # cspell.config.yaml
 words:
-  - isentinel
-  - isverycool
+    - isentinel
+    - isverycool
 ```
 
 To disable this, you can set the `spellCheck` option to `false`:
