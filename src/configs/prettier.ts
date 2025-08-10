@@ -6,6 +6,7 @@ import {
 	GLOB_CSS,
 	GLOB_LESS,
 	GLOB_MARKDOWN,
+	GLOB_MARKDOWN_CODE,
 	GLOB_POSTCSS,
 	GLOB_SCSS,
 	GLOB_SRC,
@@ -75,6 +76,7 @@ export async function prettier(
 
 	const tsFiles = prettierFiles ?? [
 		GLOB_SRC,
+		GLOB_MARKDOWN_CODE,
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
@@ -170,7 +172,7 @@ export async function prettier(
 				"format/prettier": [
 					"error",
 					mergePrettierOptions(prettierOptions, {
-						embeddedLanguageFormatting: "off",
+						embeddedLanguageFormatting: "auto",
 						parser: "markdown",
 						printWidth: 80,
 						proseWrap: "always",
