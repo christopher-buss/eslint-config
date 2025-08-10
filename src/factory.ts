@@ -206,7 +206,7 @@ export async function isentinel(
 
 	if (stylisticOptions) {
 		configs.push(
-			stylistic(stylisticOptions),
+			stylistic(stylisticOptions, prettierSettings),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: options.type }),
 		);
 	}
