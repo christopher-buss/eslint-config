@@ -59,7 +59,6 @@ export async function yaml(
 							"yaml/no-tab-indent": "error",
 							"yaml/no-trailing-zeros": "error",
 							"yaml/spaced-comment": "error",
-							"yml/block-sequence-hyphen-indicator-newline": "error",
 						}
 					: {}),
 
