@@ -333,15 +333,17 @@ export async function isentinel(
 	}
 
 	if (isInEditor) {
-		composer = composer.disableRulesFix(
-			["no-useless-return", "prefer-const", "unicorn/no-array-for-each"],
-			{
-				builtinRules: async () => {
-					const rules = await import("eslint/use-at-your-own-risk");
-					return rules.builtinRules;
-				},
+		const disableAutofixRules = ["no-useless-return", "prefer-const"];
+		if (enableRoblox) {
+			disableAutofixRules.push("unicorn/no-array-for-each");
+		}
+
+		composer = composer.disableRulesFix(disableAutofixRules, {
+			builtinRules: async () => {
+				const rules = await import("eslint/use-at-your-own-risk");
+				return rules.builtinRules;
 			},
-		);
+		});
 	}
 
 	return composer;
