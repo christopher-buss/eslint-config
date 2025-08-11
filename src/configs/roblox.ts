@@ -102,23 +102,24 @@ export async function roblox(
 			interopDefault(import("eslint-plugin-format-lua")),
 		]);
 
-		configs.push({
-			name: "isentinel/roblox/format-lua/setup",
-			plugins: {
-				"format-lua": pluginFormatLua,
+		configs.push(
+			{
+				name: "isentinel/roblox/format-lua/setup",
+				plugins: {
+					"format-lua": pluginFormatLua,
+				},
 			},
-		});
-
-		configs.push({
-			files: [GLOB_LUA],
-			languageOptions: {
-				parser: parserPlain,
+			{
+				files: [GLOB_LUA],
+				languageOptions: {
+					parser: parserPlain,
+				},
+				name: "isentinel/roblox/format-lua",
+				rules: {
+					"format-lua/stylua": "error",
+				},
 			},
-			name: "isentinel/roblox/format-lua",
-			rules: {
-				"format-lua/stylua": "error",
-			},
-		});
+		);
 	}
 
 	return configs;
