@@ -64,7 +64,6 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 					},
 				],
 				"unicorn/no-array-for-each": "error",
-				"unicorn/no-array-push-push": "error",
 				"unicorn/no-await-expression-member": "error",
 				"unicorn/no-empty-file": "error",
 				"unicorn/no-for-loop": "error",
@@ -87,6 +86,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 				"unicorn/prefer-math-min-max": "off",
 				"unicorn/prefer-optional-catch-binding": "error",
 				"unicorn/prefer-set-has": "error",
+				"unicorn/prefer-single-call": "error",
 				"unicorn/prefer-switch": "error",
 				"unicorn/prefer-ternary": ["error", "only-single-line"],
 				"unicorn/prevent-abbreviations": [
