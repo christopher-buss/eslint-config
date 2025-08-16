@@ -10,7 +10,7 @@ import { interopDefault } from "../utils";
 export async function jsdoc(
 	options: JsDocumentOptions & OptionsProjectType & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { full = "false", stylistic = true, type = "game" } = options;
+	const { full = false, stylistic = true, type = "game" } = options;
 
 	const isPackage = type === "package" || full;
 
@@ -62,7 +62,7 @@ export async function jsdoc(
 						}
 					: {}),
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"jsdoc/check-alignment": "warn",
 							"jsdoc/convert-to-jsdoc-comments": "warn",

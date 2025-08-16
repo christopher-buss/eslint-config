@@ -25,7 +25,7 @@ import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from ".
 
 export type PrettierRuleOptions = Pick<Partial<PrettierOptions>, "parser"> &
 	PrettierOptions &
-	Record<string, undefined | unknown>;
+	Record<string, unknown>;
 
 export async function prettier(
 	options?: OptionsComponentExtensions &
@@ -242,7 +242,7 @@ function mergePrettierOptions(
 	return {
 		...options,
 		...overrides,
-		plugins: [...(overrides.plugins || []), ...(options.plugins || [])],
+		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
 	};
 }
 

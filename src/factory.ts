@@ -99,7 +99,7 @@ export async function isentinel(
 		typescript: enableTypeScript,
 	} = options;
 
-	let isInEditor = options.isInEditor;
+	let { isInEditor } = options;
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
@@ -121,14 +121,13 @@ export async function isentinel(
 		return {};
 	})();
 
-	if (stylisticOptions && !("jsx" in stylisticOptions)) {
+	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
 		stylisticOptions.jsx = enableJsx;
 	}
 
 	const prettierOptions =
-		(typeof options["formatters"] === "object"
-			? options["formatters"]?.prettierOptions
-			: undefined) || {};
+		(typeof options.formatters === "object" ? options.formatters.prettierOptions : undefined) ??
+		{};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
 
 	const prettierSettings: PrettierOptions = Object.assign(
@@ -152,7 +151,7 @@ export async function isentinel(
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
-	if (enableGitignore) {
+	if (enableGitignore !== false) {
 		configs.push(
 			gitignore({
 				config: enableGitignore,
@@ -204,14 +203,14 @@ export async function isentinel(
 		);
 	}
 
-	if (stylisticOptions) {
+	if (stylisticOptions !== false) {
 		configs.push(
 			stylistic(stylisticOptions, prettierSettings),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: options.type }),
 		);
 	}
 
-	if (options.test ?? false) {
+	if (options.test !== false) {
 		const testOptions = typeof options.test === "object" ? options.test : {};
 		configs.push(
 			test({
@@ -224,17 +223,16 @@ export async function isentinel(
 		);
 	}
 
-	if (enableReact) {
+	if (enableReact !== false) {
 		configs.push(
 			react({
 				...resolveSubOptions(options, "react"),
 				overrides: getOverrides(options, "react"),
-				tsconfigPath: getOverrides(options, "typescript").tsconfigPath,
 			}),
 		);
 	}
 
-	if (enableSpellCheck ?? true) {
+	if (enableSpellCheck !== false) {
 		configs.push(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
@@ -244,7 +242,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.jsonc ?? true) {
+	if (options.jsonc !== false) {
 		configs.push(
 			jsonc({
 				overrides: getOverrides(options, "jsonc"),
@@ -252,7 +250,7 @@ export async function isentinel(
 			}),
 		);
 
-		if (stylisticOptions) {
+		if (stylisticOptions !== false) {
 			configs.push(sortTsconfig());
 		}
 	}
@@ -261,7 +259,7 @@ export async function isentinel(
 		configs.push(pnpm());
 	}
 
-	if (options.yaml ?? true) {
+	if (options.yaml !== false) {
 		configs.push(
 			yaml({
 				overrides: getOverrides(options, "yaml"),
@@ -270,7 +268,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.toml ?? true) {
+	if (options.toml !== false) {
 		configs.push(
 			toml({
 				overrides: getOverrides(options, "toml"),
@@ -279,7 +277,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.markdown ?? true) {
+	if (options.markdown !== false) {
 		configs.push(
 			markdown({
 				componentExts: componentExtensions,
@@ -291,7 +289,7 @@ export async function isentinel(
 
 	configs.push(disables());
 
-	if (stylisticOptions) {
+	if (stylisticOptions !== false) {
 		// We require prettier to be the last config
 		configs.push(
 			prettier({
@@ -300,7 +298,7 @@ export async function isentinel(
 				formatters: formatters !== false ? formatters : undefined,
 				overrides: getOverrides(options, "typescript"),
 				prettierOptions: prettierSettings,
-				stylistic: Boolean(stylisticOptions) === true ? {} : stylisticOptions,
+				stylistic: stylisticOptions,
 			}),
 		);
 	}
@@ -313,20 +311,20 @@ export async function isentinel(
 
 	// User can optionally pass a flat config item to the first argument
 	// We pick the known keys as ESLint would do schema validation
-	const fusedConfig = flatConfigProps.reduce((accumulator, key) => {
+	const fusedConfig = flatConfigProps.reduce<TypedFlatConfigItem>((accumulator, key) => {
 		if (key in options) {
 			accumulator[key] = options[key] as any;
 		}
 
 		return accumulator;
-	}, {} as TypedFlatConfigItem);
+	}, {});
 	if (Object.keys(fusedConfig).length) {
 		configs.push([fusedConfig]);
 	}
 
 	let composer = new FlatConfigComposer<TypedFlatConfigItem, ConfigNames>();
 
-	composer = composer.append(...configs, ...(userConfigs as any));
+	composer = composer.append(...configs, ...(userConfigs as Array<TypedFlatConfigItem>));
 
 	if (autoRenamePlugins) {
 		composer = composer.renamePlugins(defaultPluginRenaming);

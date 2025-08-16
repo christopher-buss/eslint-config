@@ -39,7 +39,7 @@ export async function comments(
 					},
 				],
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"no-inline-comments": "error",
 							"style/multiline-comment-style": ["error", "separate-lines"],

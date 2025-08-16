@@ -18,7 +18,7 @@ export async function spelling(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
-		inEditor = true,
+		inEditor,
 		isInEditor = false,
 		language = "en-US",
 	} = options;

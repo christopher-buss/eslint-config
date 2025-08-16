@@ -52,7 +52,7 @@ const configs = await combine(
 	react(),
 	roblox(),
 	shopify(),
-	sonarjs(),
+	sonarjs({ isInEditor: false }),
 	sortTsconfig(),
 	spelling(),
 	stylistic(),

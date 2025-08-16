@@ -1,3 +1,7 @@
+import type PluginVitest from "@vitest/eslint-plugin";
+
+import type PluginJest from "eslint-plugin-jest";
+
 import { GLOB_TESTS } from "../globs";
 import type {
 	OptionsFiles,
@@ -12,8 +16,8 @@ import type {
 import { ensurePackages, interopDefault } from "../utils";
 
 // Hold the references so we don't redeclare the plugins on each call
-let pluginTest: any;
-let pluginVitest: any;
+let pluginTest: typeof PluginJest | undefined;
+let pluginVitest: typeof PluginVitest | undefined;
 
 export async function test(
 	options: OptionsFiles &
@@ -35,15 +39,15 @@ export async function test(
 		vitest = false,
 	} = options;
 
-	const enableJest = jest || (!vitest && (type === "game" || roblox === true));
-	const enableVitest = vitest || (!jest && type === "package" && roblox === false);
+	const enableJest = jest || (!vitest && (type === "game" || roblox));
+	const enableVitest = vitest || (!jest && type === "package" && !roblox);
 
 	const configs: Array<TypedFlatConfigItem> = [];
 
 	if (enableJest) {
 		await ensurePackages(["eslint-plugin-jest"]);
 		const pluginJest = await interopDefault(import("eslint-plugin-jest"));
-		pluginTest ||= {
+		pluginTest ??= {
 			...pluginJest,
 		};
 
@@ -114,7 +118,7 @@ export async function test(
 	if (enableVitest) {
 		await ensurePackages(["@vitest/eslint-plugin"]);
 		const vitestPlugin = await interopDefault(import("@vitest/eslint-plugin"));
-		pluginVitest ||= {
+		pluginVitest ??= {
 			...vitestPlugin,
 		};
 
@@ -135,7 +139,7 @@ export async function test(
 					"vitest/prefer-hooks-in-order": "error",
 					"vitest/prefer-lowercase-title": "error",
 
-					...(stylistic
+					...(stylistic !== false
 						? {
 								"vitest/consistent-test-filename": [
 									"error",

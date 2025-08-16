@@ -10,7 +10,7 @@ import { run } from "./run";
 
 function header(): void {
 	console.log("\n");
-	const introText = `${ansis.green("@isentinel/eslint-config")}`;
+	const introText = ansis.green("@isentinel/eslint-config");
 	const versionText = `v${packageJson.version}`;
 	intro(introText + ansis.dim(versionText));
 }
@@ -41,7 +41,7 @@ const instance = yargs(hideBin(process.argv))
 			try {
 				await run({
 					...args,
-					frameworks: args.template ? [args.template] : undefined,
+					frameworks: args.template !== undefined ? [args.template] : undefined,
 				});
 			} catch (err) {
 				log.error(ansis.inverse(ansis.red(" Failed to migrate ")));
@@ -55,5 +55,4 @@ const instance = yargs(hideBin(process.argv))
 	.version("version", packageJson.version)
 	.alias("v", "version");
 
-// eslint-disable-next-line ts/no-unused-expressions -- yargs API
-instance.help().argv;
+void instance.help().argv;

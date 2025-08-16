@@ -14,7 +14,7 @@ export async function gitignore(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { config = true, explicit = false } = options;
 
-	if (!config) {
+	if (config === false) {
 		return [];
 	}
 

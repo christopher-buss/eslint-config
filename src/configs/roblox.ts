@@ -89,7 +89,7 @@ export async function roblox(
 
 			"sentinel/explicit-size-check": "error",
 
-			...(stylistic
+			...(stylistic !== false
 				? {
 						"sentinel/prefer-math-min-max": "error",
 					}

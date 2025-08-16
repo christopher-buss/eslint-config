@@ -99,7 +99,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 
 				"unicorn/throw-new-error": "off",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"unicorn/switch-case-braces": "error",
 						}

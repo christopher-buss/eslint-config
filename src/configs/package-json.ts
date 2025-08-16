@@ -57,7 +57,7 @@ export async function packageJson(
 						}
 					: {}),
 
-				...(type === "package" && roblox === false
+				...(type === "package" && !roblox
 					? {
 							"package-json/require-engines": "error",
 						}

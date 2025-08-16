@@ -135,12 +135,12 @@ export async function perfectionist(
 				"perfectionist/sort-heritage-clauses": [
 					"error",
 					{
-						customGroups: customClassGroups.reduce(
+						customGroups: customClassGroups.reduce<Record<string, string>>(
 							(accumulator, item) => {
 								accumulator[item] = "^" + capitalizeFirstLetter(item) + "$";
 								return accumulator;
 							},
-							{} as Record<string, string>,
+							{},
 						),
 						groups: [...customClassGroups, "unknown"],
 						type: "natural",

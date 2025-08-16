@@ -4,6 +4,7 @@ import ansis from "ansis";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import type { PackageJson } from "type-fest";
 
 import { version } from "../../../package.json";
 import { dependenciesMap } from "../constants";
@@ -18,7 +19,7 @@ export async function updatePackageJson(result: PromptResult): Promise<void> {
 	log.step(ansis.cyan(`Bumping @isentinel/eslint-config to v${version}`));
 
 	const packageContent = await fsp.readFile(pathPackageJSON, "utf-8");
-	const parsedPackage: Record<string, any> = JSON.parse(packageContent);
+	const parsedPackage: PackageJson = JSON.parse(packageContent);
 
 	parsedPackage.devDependencies ??= {};
 	parsedPackage.devDependencies["@isentinel/eslint-config"] = `^${version}`;
@@ -36,7 +37,7 @@ export async function updatePackageJson(result: PromptResult): Promise<void> {
 	}
 
 	if (addedPackages.length) {
-		note(`${ansis.dim(addedPackages.join(", "))}`, "Added packages");
+		note(ansis.dim(addedPackages.join(", ")), "Added packages");
 	}
 
 	await fsp.writeFile(pathPackageJSON, JSON.stringify(parsedPackage, null, 2));

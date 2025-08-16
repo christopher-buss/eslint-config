@@ -9,5 +9,5 @@ export interface PromItem<T> {
 export interface PromptResult {
 	frameworks: Array<FrameworkOption>;
 	uncommittedConfirmed: boolean;
-	updateVscodeSettings: unknown;
+	updateVscodeSettings: boolean;
 }

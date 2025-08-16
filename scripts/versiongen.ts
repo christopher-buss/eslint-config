@@ -9,19 +9,19 @@ const yaml = parsePnpmWorkspaceYaml(
 	await fs.readFile(new URL("../pnpm-workspace.yaml", import.meta.url), "utf-8"),
 ).toJSON();
 const catalogs = Object.values({
-	default: yaml.catalog || {},
+	default: yaml.catalog ?? {},
 	...yaml.catalogs,
 });
 
 const versions = Object.fromEntries(
 	Array.from(names)
 		.map((name) => {
-			const version = catalogs.map((catalog) => catalog[name]).filter(Boolean)[0];
-			if (!version) {
+			const version = catalogs.map((catalog) => catalog[name]).find(Boolean);
+			if (version === undefined) {
 				throw new Error(`Package ${name} not found`);
 			}
 
-			return [name, version];
+			return [name, version] as const;
 		})
 		.sort((a, b) => a[0].localeCompare(b[0])),
 );

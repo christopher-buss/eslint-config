@@ -10,7 +10,7 @@ export default isentinel(
 		test: true,
 		type: "package",
 		typescript: {
-			typeAware: false,
+			typeAware: true,
 		},
 	},
 	{
@@ -19,6 +19,9 @@ export default isentinel(
 			"max-lines": "off",
 			"max-lines-per-function": "off",
 			"sonar/cognitive-complexity": "off",
+
+			// Lots of configs are still untyped so we can't rely on this
+			"ts/no-unsafe-assignment": "off",
 		},
 	},
 	{

@@ -1,3 +1,4 @@
+import type { FixupPluginDefinition } from "@eslint/compat";
 import { fixupPluginRules } from "@eslint/compat";
 
 import { GLOB_MARKDOWN, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../globs";
@@ -49,7 +50,7 @@ export async function react(
 			interopDefault(import("eslint-plugin-unicorn")),
 		] as const);
 
-	const plugins = pluginReact.configs.all.plugins;
+	const { plugins } = pluginReact.configs.all;
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
@@ -69,7 +70,7 @@ export async function react(
 			plugins: {
 				"react": plugins["@eslint-react"],
 				"react-hooks-extra": plugins["@eslint-react/hooks-extra"],
-				"react-hooks-roblox": fixupPluginRules(pluginReactHooks),
+				"react-hooks-roblox": fixupPluginRules(pluginReactHooks as FixupPluginDefinition),
 				"react-naming-convention": plugins["@eslint-react/naming-convention"],
 				"style": pluginStylistic,
 				"ts": pluginTs,
@@ -152,7 +153,7 @@ export async function react(
 				"react/no-use-context": "off",
 				"react/no-useless-forward-ref": "error",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"one-var": "off",
 							"react/avoid-shorthand-boolean": "warn",

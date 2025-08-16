@@ -1,4 +1,3 @@
-/* eslint-disable import/newline-after-import -- #2673 */
 import { log, note } from "@clack/prompts";
 
 import ansis from "ansis";
@@ -6,8 +5,7 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-// @ts-expect-error missing types
-import parse from "parse-gitignore";
+import parse from "parse-gitignore-ts";
 
 import type { PromptResult } from "../types";
 import { getEslintConfigContent } from "../utils";
@@ -29,12 +27,13 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 		log.step(ansis.cyan("Migrating existing .eslintignore"));
 		const content = await fsp.readFile(pathESLintIgnore, "utf-8");
 		const parsed = parse(content);
+
 		const globs = parsed.globs();
 
 		for (const glob of globs) {
 			if (glob.type === "ignore") {
 				eslintIgnores.push(...glob.patterns);
-			} else if (glob.type === "unignore") {
+			} else {
 				eslintIgnores.push(...glob.patterns.map((pattern: string) => `!${pattern}`));
 			}
 		}
@@ -61,12 +60,12 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const files = fs.readdirSync(cwd);
 	const legacyConfig: Array<string> = [];
 	for (const file of files) {
-		if (/eslint|prettier/.test(file) && !/eslint\.config\./.test(file)) {
+		if (/eslint|prettier/.test(file) && !file.includes("eslint.config.")) {
 			legacyConfig.push(file);
 		}
 	}
 
 	if (legacyConfig.length) {
-		note(`${ansis.dim(legacyConfig.join(", "))}`, "You can now remove those files manually");
+		note(ansis.dim(legacyConfig.join(", ")), "You can now remove those files manually");
 	}
 }

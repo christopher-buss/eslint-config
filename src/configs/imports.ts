@@ -29,7 +29,7 @@ export async function imports(
 				"import/no-mutable-exports": "error",
 				"import/no-named-default": "error",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"import/newline-after-import": [
 								"error",

@@ -5,6 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  default:
+    type-fest:
+      specifier: 4.41.0
+      version: 4.41.0
   dev:
     '@antfu/ni':
       specifier: 25.0.0
@@ -209,9 +213,9 @@ catalogs:
     local-pkg:
       specifier: 1.1.1
       version: 1.1.1
-    parse-gitignore:
-      specifier: 2.0.0
-      version: 2.0.0
+    parse-gitignore-ts:
+      specifier: 1.0.0
+      version: 1.0.0
     prettier:
       specifier: 3.6.2
       version: 3.6.2
@@ -361,9 +365,9 @@ importers:
       local-pkg:
         specifier: catalog:prod
         version: 1.1.1
-      parse-gitignore:
+      parse-gitignore-ts:
         specifier: catalog:prod
-        version: 2.0.0
+        version: 1.0.0
       prettier:
         specifier: catalog:prod
         version: 3.6.2
@@ -458,6 +462,9 @@ importers:
       tsup:
         specifier: catalog:dev
         version: 8.5.0(jiti@2.5.1)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
       typescript:
         specifier: catalog:dev
         version: 5.8.3
@@ -3374,8 +3381,8 @@ packages:
     resolution: {integrity: sha512-uo0Z9JJeWzv8BG+tRcapBKNJ0dro9cLyczGzulS6EfeyAdeC9sbojtW6XwvYxJkEne9En+J2XEl4zyglVeIwFg==}
     engines: {node: '>=8'}
 
-  parse-gitignore@2.0.0:
-    resolution: {integrity: sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==}
+  parse-gitignore-ts@1.0.0:
+    resolution: {integrity: sha512-TKHnaWbGmsqoBNzQBxY7HJyT16jjjFVHwkTLuJDX6vHAoddYvtY/6SIJf4fVSCo1maZ/dkHnNSBrZrREaVjyxA==}
     engines: {node: '>=14'}
 
   parse-imports-exports@0.2.4:
@@ -3910,6 +3917,10 @@ packages:
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
+
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
 
   typed-array-buffer@1.0.3:
     resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
@@ -7623,7 +7634,7 @@ snapshots:
     dependencies:
       callsites: 3.1.0
 
-  parse-gitignore@2.0.0: {}
+  parse-gitignore-ts@1.0.0: {}
 
   parse-imports-exports@0.2.4:
     dependencies:
@@ -8219,6 +8230,8 @@ snapshots:
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
+
+  type-fest@4.41.0: {}
 
   typed-array-buffer@1.0.3:
     dependencies:

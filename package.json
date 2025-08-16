@@ -83,7 +83,7 @@
 		"eslint-plugin-yml": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
-		"parse-gitignore": "catalog:prod",
+		"parse-gitignore-ts": "catalog:prod",
 		"prettier": "catalog:prod",
 		"prettier-plugin-jsdoc": "catalog:prod",
 		"prompts": "catalog:prod",
@@ -118,6 +118,7 @@
 		"rimraf": "catalog:dev",
 		"simple-git-hooks": "catalog:dev",
 		"tsup": "catalog:dev",
+		"type-fest": "catalog:",
 		"typescript": "catalog:dev"
 	},
 	"peerDependencies": {

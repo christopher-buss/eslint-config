@@ -2,7 +2,7 @@ import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
 export async function sonarjs(
-	options: OptionsIsInEditor = {},
+	options: Required<OptionsIsInEditor>,
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { isInEditor } = options;
 
