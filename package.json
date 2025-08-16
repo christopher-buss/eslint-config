@@ -20,7 +20,7 @@
 	"bin": "./bin/index.js",
 	"files": ["bin", "dist"],
 	"scripts": {
-		"build": "nr gen && tsup --clean --dts",
+		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && npx @eslint/config-inspector build",
 		"dev": "npx @eslint/config-inspector --config eslint.config.ts",
 		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts",
@@ -30,9 +30,9 @@
 		"prepack": "nr build",
 		"prepare": "simple-git-hooks",
 		"release": "bumpp",
-		"stub": "tsup",
+		"stub": "tsdown",
 		"typecheck": "tsc --noEmit",
-		"watch": "tsup --watch --dts"
+		"watch": "tsdown --watch --dts"
 	},
 	"simple-git-hooks": {
 		"pre-commit": "pnpm lint-staged"
@@ -88,6 +88,8 @@
 		"prettier-plugin-jsdoc": "catalog:prod",
 		"prompts": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
+		"tsdown": "catalog:dev",
+		"type-fest": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
 		"yargs": "catalog:prod"
 	},
@@ -117,8 +119,6 @@
 		"pnpm-workspace-yaml": "catalog:dev",
 		"rimraf": "catalog:dev",
 		"simple-git-hooks": "catalog:dev",
-		"tsup": "catalog:dev",
-		"type-fest": "catalog:",
 		"typescript": "catalog:dev"
 	},
 	"peerDependencies": {
