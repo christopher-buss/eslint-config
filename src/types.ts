@@ -37,6 +37,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	autoRenamePlugins?: boolean;
 
 	/**
+	 * Enable ESLint plugin development rules.
+	 *
+	 * @default false
+	 * @requires eslint-plugin-eslint-plugin
+	 */
+	eslintPlugin?: boolean | OptionsOverrides;
+
+	/**
 	 * Use external formatters to format files.
 	 *
 	 * When set to `true`, it will enable all formatters.

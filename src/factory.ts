@@ -6,6 +6,7 @@ import type { PrettierOptions } from "./configs";
 import {
 	comments,
 	disables,
+	eslintPlugin,
 	gitignore,
 	ignores,
 	imports,
@@ -89,6 +90,7 @@ export async function isentinel(
 	const {
 		autoRenamePlugins = true,
 		componentExts: componentExtensions = [],
+		eslintPlugin: enableEslintPlugin = false,
 		formatters,
 		gitignore: enableGitignore = true,
 		jsx: enableJsx = true,
@@ -187,6 +189,14 @@ export async function isentinel(
 
 	if (enableJsx) {
 		configs.push(jsx());
+	}
+
+	if (enableEslintPlugin !== false) {
+		configs.push(
+			eslintPlugin({
+				overrides: getOverrides(options, "eslintPlugin"),
+			}),
+		);
 	}
 
 	if (enableRoblox) {

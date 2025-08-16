@@ -1,5 +1,6 @@
 export * from "./comments";
 export * from "./disables";
+export * from "./eslint-plugin";
 export * from "./gitignore";
 export * from "./ignores";
 export * from "./imports";
