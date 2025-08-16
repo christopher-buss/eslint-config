@@ -41,8 +41,8 @@ catalogs:
     "@isentinel/dict-roblox": 1.0.3
     "@shopify/eslint-plugin": 50.0.0
     "@stylistic/eslint-plugin": 6.0.0-beta.1
-    "@typescript-eslint/eslint-plugin": 8.38.0
-    "@typescript-eslint/parser": 8.38.0
+    "@typescript-eslint/eslint-plugin": 8.39.1
+    "@typescript-eslint/parser": 8.39.1
     ansis: 4.1.0
     eslint-config-flat-gitignore: 2.1.0
     eslint-config-prettier: 10.1.8
