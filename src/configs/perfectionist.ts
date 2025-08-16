@@ -123,6 +123,7 @@ export async function perfectionist(
 						type: "natural",
 					},
 				],
+				"perfectionist/sort-decorators": ["error", { type: "natural" }],
 				"perfectionist/sort-enums": [
 					"error",
 					{
