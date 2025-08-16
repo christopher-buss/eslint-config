@@ -9,7 +9,7 @@ const yaml = parsePnpmWorkspaceYaml(
 	await fs.readFile(new URL("../pnpm-workspace.yaml", import.meta.url), "utf-8"),
 ).toJSON();
 const catalogs = Object.values({
-	default: yaml.catalog || {},
+	default: yaml.catalog ?? {},
 	...yaml.catalogs,
 });
 

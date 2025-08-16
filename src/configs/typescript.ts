@@ -297,7 +297,7 @@ export async function typescript(
 
 				"ts/unified-signatures": "off",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"camelcase": [
 								"error",

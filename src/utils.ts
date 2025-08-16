@@ -1,3 +1,6 @@
+import type { FlatConfig } from "@eslint/compat";
+import type { ParserOptions } from "@typescript-eslint/parser";
+
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import path from "node:path";
@@ -6,6 +9,11 @@ import prettier from "prettier";
 
 import type { PrettierOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
+
+// Type for dynamic module imports that may have a default export
+type ModuleImport<T> = Promise<T | { default: T }>;
+
+type Parser = NonNullable<FlatConfig["languageOptions"]>["parser"];
 
 export const parserPlain = {
 	meta: {
@@ -50,8 +58,8 @@ export function createTsParser(options: {
 	configName: string;
 	files: Array<string>;
 	ignores?: Array<string>;
-	parser: any;
-	parserOptions?: any;
+	parser: Parser;
+	parserOptions?: ParserOptions;
 	tsconfigPath?: string;
 	typeAware: boolean;
 }): TypedFlatConfigItem {
@@ -97,12 +105,12 @@ export function createTsParser(options: {
 }
 
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
-	if (process.env.CI || process.stdout.isTTY === false) {
+	if ((process.env.CI ?? "") || !process.stdout.isTTY) {
 		return;
 	}
 
 	const nonExistingPackages = packages.filter(
-		(index) => index && !isPackageExists(index),
+		(index) => index !== undefined && !isPackageExists(index),
 	) as Array<string>;
 	if (nonExistingPackages.length === 0) {
 		return;
@@ -112,18 +120,20 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 	const result = await prompts.confirm({
 		message: `${nonExistingPackages.length === 1 ? "Package is" : "Packages are"} required for this config: ${nonExistingPackages.join(", ")}. Do you want to install them?`,
 	});
-	if (result) {
-		await import("@antfu/install-pkg").then((index) => {
+	if (result === true) {
+		await import("@antfu/install-pkg").then(async (index) => {
 			return index.installPackage(nonExistingPackages, { dev: true });
 		});
 	}
 }
 
-export function getOverrides<K extends keyof OptionsConfig>(options: OptionsConfig, key: K): any {
+export function getOverrides(options: OptionsConfig, key: keyof OptionsConfig): any {
 	const sub = resolveSubOptions(options, key);
 
 	return {
-		...("overrides" in sub ? sub.overrides : {}),
+		...(typeof sub === "object" && sub !== null && "overrides" in sub
+			? (sub as { overrides: any }).overrides
+			: {}),
 	};
 }
 
@@ -142,15 +152,19 @@ export function getTsConfig(tsconfigPath?: string): string | undefined {
 	return undefined;
 }
 
-export async function interopDefault<T>(
-	dynamicImport: Awaitable<T>,
-): Promise<T extends { default: infer U } ? U : T> {
+export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise<T> {
 	const resolved = await dynamicImport;
-	return (resolved as any).default || resolved;
+	// Handle both ESM default exports and direct exports
+	// Type narrowing for modules with default export
+	if (typeof resolved === "object" && resolved !== null && "default" in resolved) {
+		return resolved.default;
+	}
+
+	return resolved;
 }
 
 export function isInEditorEnvironment(): boolean {
-	if (process.env.CI) {
+	if (process.env.CI ?? "") {
 		return false;
 	}
 
@@ -169,8 +183,8 @@ export function isInEditorEnvironment(): boolean {
 
 export function isInGitHooksOrLintStaged(): boolean {
 	return [
-		process.env.GIT_PARAMS ||
-			process.env.VSCODE_GIT_COMMAND ||
+		process.env.GIT_PARAMS ??
+			process.env.VSCODE_GIT_COMMAND ??
 			process.env.npm_lifecycle_script?.startsWith("lint-staged"),
 	].some(Boolean);
 }
@@ -280,11 +294,13 @@ export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 	}
 }
 
-export function resolveSubOptions<K extends keyof OptionsConfig>(
-	options: OptionsConfig,
-	key: K,
-): ResolvedOptions<OptionsConfig[K]> {
-	return resolveWithDefaults(options[key], {} as any) || ({} as any);
+export function resolveSubOptions(options: OptionsConfig, key: keyof OptionsConfig): any {
+	const optionValue = options[key];
+	const defaults = resolveWithDefaults(
+		optionValue as boolean | Record<string, any> | undefined,
+		{},
+	);
+	return defaults === false ? {} : defaults;
 }
 
 /**
@@ -296,10 +312,7 @@ export function resolveSubOptions<K extends keyof OptionsConfig>(
  * @param defaults - Default values to use when value is true or undefined.
  * @returns The resolved options.
  */
-export function resolveWithDefaults<T extends Record<string, any>>(
-	value: boolean | T | undefined,
-	defaults: T,
-): false | T {
+export function resolveWithDefaults<T>(value: boolean | T | undefined, defaults: T): false | T {
 	if (value === false) {
 		return false;
 	}
@@ -322,9 +335,9 @@ export function resolveWithDefaults<T extends Record<string, any>>(
  * @param defaultValue - Default value when key is not specified.
  * @returns Whether the feature should be enabled.
  */
-export function shouldEnableFeature<T extends Record<string, any>, K extends keyof T>(
+export function shouldEnableFeature<T extends Record<string, any>>(
 	options: boolean | T | undefined,
-	key: K,
+	key: keyof T,
 	defaultValue = true,
 ): boolean {
 	if (options === false) {

@@ -19,7 +19,7 @@ export async function shopify(options: OptionsStylistic = {}): Promise<Array<Typ
 				"shopify/react-hooks-strict-return": "error",
 				"shopify/strict-component-boundaries": "error",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"shopify/prefer-module-scope-constants": "error",
 							"shopify/typescript-prefer-pascal-case-enums": "error",

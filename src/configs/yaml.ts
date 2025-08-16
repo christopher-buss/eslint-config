@@ -45,7 +45,7 @@ export async function yaml(
 				"yaml/no-irregular-whitespace": "error",
 				"yaml/plain-scalar": "error",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"yaml/block-mapping": "error",
 							"yaml/block-mapping-colon-indicator-newline": "error",

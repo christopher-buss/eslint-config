@@ -12,7 +12,8 @@ export async function toml(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { files = [GLOB_TOML], overrides = {}, stylistic = true } = options;
 
-	const { indent = 2 } = resolveWithDefaults(stylistic, {}) || {};
+	const defaults = resolveWithDefaults(stylistic, {});
+	const { indent = 2 } = defaults === false ? {} : defaults;
 
 	const [pluginToml, parserToml] = await Promise.all([
 		interopDefault(import("eslint-plugin-toml")),
@@ -43,7 +44,7 @@ export async function toml(
 				"toml/precision-of-integer": "error",
 				"toml/tables-order": "error",
 
-				...(stylistic
+				...(stylistic !== false
 					? {
 							"toml/array-bracket-newline": "error",
 							"toml/array-bracket-spacing": "error",
