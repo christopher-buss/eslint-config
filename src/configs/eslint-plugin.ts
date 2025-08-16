@@ -1,11 +1,11 @@
-import { GLOB_TS, GLOB_TSX } from "../globs";
+import { GLOB_SRC } from "../globs";
 import type { OptionsFiles, OptionsOverrides, TypedFlatConfigItem } from "../types";
 import { ensurePackages, interopDefault } from "../utils";
 
 export async function eslintPlugin(
 	options: OptionsFiles & OptionsOverrides = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { files = [GLOB_TS, GLOB_TSX], overrides = {} } = options;
+	const { files = [GLOB_SRC], overrides = {} } = options;
 
 	await ensurePackages(["eslint-plugin-eslint-plugin"]);
 
@@ -47,7 +47,7 @@ export async function eslintPlugin(
 				"eslint-plugin/require-meta-docs-description": [
 					"error",
 					{
-						pattern: "^(Enforce|Require|Disallow).*[^\.!]$",
+						pattern: "^(Enforce|Require|Disallow).*[^.!]$",
 					},
 				],
 				"eslint-plugin/require-meta-docs-recommended": "error",
