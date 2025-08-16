@@ -351,7 +351,10 @@ export interface SpellCheckConfig {
 	language?: string;
 }
 
-export type StylisticConfig = Pick<StylisticCustomizeOptions, "indent" | "jsx" | "quotes" | "semi">;
+export type StylisticConfig = Pick<
+	StylisticCustomizeOptions,
+	"indent" | "jsx" | "quotes" | "semi"
+> & { arrowLength?: number };
 
 export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>, "plugins"> & {
 	// Relax plugins type limitation, as most of the plugins did not have correct

@@ -14,7 +14,7 @@ export async function stylistic(
 	options: StylisticConfig = {},
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { indent, jsx, quotes, semi } = {
+	const { arrowLength, indent, jsx, quotes, semi } = {
 		...StylisticConfigDefaults,
 		...options,
 	};
@@ -56,7 +56,7 @@ export async function stylistic(
 					"error",
 					{
 						jsxAlwaysUseExplicitReturn: true,
-						maxLen: 100,
+						maxLen: arrowLength ?? prettierOptions.printWidth ?? 100,
 						maxObjectProperties: 2,
 						namedExportsAlwaysUseExplicitReturn: true,
 						objectReturnStyle: "complex-explicit",
