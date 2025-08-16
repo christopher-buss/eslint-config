@@ -7,9 +7,8 @@ export async function imports(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { stylistic = true, type = "game" } = options;
 
-	const [pluginImport, pluginSimpleImportSort, pluginAntfu] = await Promise.all([
+	const [pluginImport, pluginAntfu] = await Promise.all([
 		interopDefault(import("eslint-plugin-import-lite")),
-		interopDefault(import("eslint-plugin-simple-import-sort")),
 		interopDefault(import("eslint-plugin-antfu")),
 	]);
 
@@ -40,28 +39,6 @@ export async function imports(
 					: {}),
 			},
 		},
-		stylistic
-			? {
-					languageOptions: {
-						parserOptions: {
-							sourceType: "script",
-						},
-					},
-					name: "isentinel/import-sort",
-					plugins: {
-						"simple-import-sort": pluginSimpleImportSort,
-					},
-					rules: {
-						"simple-import-sort/exports": "error",
-						"simple-import-sort/imports": [
-							"error",
-							{
-								groups: [["^react"], ["@?"], ["^\\w"], ["^\\."]],
-							},
-						],
-					},
-				}
-			: {},
 		...(type === "game"
 			? [
 					{

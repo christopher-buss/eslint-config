@@ -107,7 +107,6 @@
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-pnpm": "catalog:prod",
 		"eslint-plugin-react-roblox-hooks": "catalog:peer",
-		"eslint-plugin-simple-import-sort": "catalog:dev",
 		"eslint-typegen": "catalog:dev",
 		"esno": "catalog:dev",
 		"execa": "catalog:dev",

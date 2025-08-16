@@ -30,9 +30,6 @@ catalogs:
     bumpp:
       specifier: 10.2.2
       version: 10.2.2
-    eslint-plugin-simple-import-sort:
-      specifier: 12.1.1
-      version: 12.1.1
     eslint-typegen:
       specifier: 2.3.0
       version: 2.3.0
@@ -428,9 +425,6 @@ importers:
       eslint-plugin-react-roblox-hooks:
         specifier: catalog:peer
         version: 5.1.0-rbx.1(eslint@9.32.0(jiti@2.5.1))
-      eslint-plugin-simple-import-sort:
-        specifier: catalog:dev
-        version: 12.1.1(eslint@9.32.0(jiti@2.5.1))
       eslint-typegen:
         specifier: catalog:dev
         version: 2.3.0(eslint@9.32.0(jiti@2.5.1))
@@ -2393,11 +2387,6 @@ packages:
     resolution: {integrity: sha512-hiiRhzypgjgLtn/PfOer2K6mO0kiCe4Xog7agOedTrTfAsF7RXvb5LNPuV8y2whHCE+u9UrEAxw5cF6SnGZpWA==}
     peerDependencies:
       eslint: '*'
-
-  eslint-plugin-simple-import-sort@12.1.1:
-    resolution: {integrity: sha512-6nuzu4xwQtE3332Uz0to+TxDQYRLTKRESSc2hefVT48Zc8JthmN23Gx9lnYhu0FtkRSL1oxny3kJ2aveVhmOVA==}
-    peerDependencies:
-      eslint: '>=5.0.0'
 
   eslint-plugin-sonarjs@3.0.4:
     resolution: {integrity: sha512-ftQcP811kRJNXapqpQXHErEoVOdTPfYPPYd7n3AExIPwv4qWKKHf4slFvXmodiOnfgy1Tl3waPZZLD7lcvJOtw==}
@@ -6367,10 +6356,6 @@ snapshots:
       - supports-color
 
   eslint-plugin-sentinel@0.1.1(eslint@9.32.0(jiti@2.5.1)):
-    dependencies:
-      eslint: 9.32.0(jiti@2.5.1)
-
-  eslint-plugin-simple-import-sort@12.1.1(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
       eslint: 9.32.0(jiti@2.5.1)
 

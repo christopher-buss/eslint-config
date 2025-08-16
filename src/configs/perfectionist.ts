@@ -131,6 +131,7 @@ export async function perfectionist(
 						type: "natural",
 					},
 				],
+				"perfectionist/sort-exports": ["error", { type: "natural" }],
 				"perfectionist/sort-heritage-clauses": [
 					"error",
 					{
@@ -142,6 +143,41 @@ export async function perfectionist(
 							{} as Record<string, string>,
 						),
 						groups: [...customClassGroups, "unknown"],
+						type: "natural",
+					},
+				],
+				// Import and export sorting
+				"perfectionist/sort-imports": [
+					"error",
+					{
+						customGroups: [
+							{
+								elementNamePattern: "^react$",
+								groupName: "react",
+							},
+							{
+								elementNamePattern: "^@",
+								groupName: "scoped",
+							},
+						],
+						groups: [
+							"react",
+							"scoped",
+							["type-builtin", "type-external", "value-builtin", "value-external"],
+							[
+								"type-internal",
+								"value-internal",
+								"type-parent",
+								"type-sibling",
+								"type-index",
+								"value-parent",
+								"value-sibling",
+								"value-index",
+							],
+							"unknown",
+						],
+						newlinesBetween: "always",
+						order: "asc",
 						type: "natural",
 					},
 				],
@@ -163,6 +199,7 @@ export async function perfectionist(
 				],
 				"perfectionist/sort-sets": ["error", { type: "natural" }],
 				"perfectionist/sort-switch-case": ["error", { type: "natural" }],
+
 				"perfectionist/sort-union-types": ["error", { type: "natural" }],
 				"perfectionist/sort-variable-declarations": ["error", { type: "natural" }],
 

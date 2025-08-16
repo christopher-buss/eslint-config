@@ -109,12 +109,12 @@ export interface RuleOptions {
   'arrow-spacing'?: Linter.RuleEntry<ArrowSpacing>
   /**
    * Enforce consistent arrow function return style based on length, multiline expressions, JSX usage, and export context
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.1/docs/rules/arrow-return-style.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.2/docs/rules/arrow-return-style.md
    */
   'arrow-style/arrow-return-style'?: Linter.RuleEntry<ArrowStyleArrowReturnStyle>
   /**
    * Disallow anonymous arrow functions as export default declarations
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.1/docs/rules/no-export-default-arrow.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/tree/v1.2.2/docs/rules/no-export-default-arrow.md
    */
   'arrow-style/no-export-default-arrow'?: Linter.RuleEntry<[]>
   /**
@@ -3203,16 +3203,6 @@ export interface RuleOptions {
    * Require that all dynamic imports contain a `webpackChunkName` comment.
    */
   'shopify/webpack-no-unnamed-dynamic-imports'?: Linter.RuleEntry<[]>
-  /**
-   * Automatically sort exports.
-   * @see https://github.com/lydell/eslint-plugin-simple-import-sort#sort-order
-   */
-  'simple-import-sort/exports'?: Linter.RuleEntry<[]>
-  /**
-   * Automatically sort imports.
-   * @see https://github.com/lydell/eslint-plugin-simple-import-sort#sort-order
-   */
-  'simple-import-sort/imports'?: Linter.RuleEntry<SimpleImportSortImports>
   /**
    * Alternatives in regular expressions should be grouped when used with anchors
    * @see https://sonarsource.github.io/rspec/#/rspec/S5850/javascript
@@ -12414,10 +12404,6 @@ type ShopifyStrictComponentBoundaries = []|[{
   allow?: string[]
   maxDepth?: number
 }]
-// ----- simple-import-sort/imports -----
-type SimpleImportSortImports = []|[{
-  groups?: string[][]
-}]
 // ----- sonar/arrow-function-convention -----
 type SonarArrowFunctionConvention = []|[{
   requireParameterParentheses?: boolean
@@ -15461,4 +15447,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/import-sort' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
