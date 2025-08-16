@@ -76,6 +76,9 @@ catalogs:
     eslint:
       specifier: 9.32.0
       version: 9.32.0
+    eslint-plugin-eslint-plugin:
+      specifier: 7.0.0
+      version: 7.0.0
     eslint-plugin-jest:
       specifier: 29.0.1
       version: 29.0.1
@@ -144,8 +147,8 @@ catalogs:
       specifier: 3.1.1
       version: 3.1.1
     eslint-plugin-arrow-return-style-x:
-      specifier: 1.2.2
-      version: 1.2.2
+      specifier: 1.2.5
+      version: 1.2.5
     eslint-plugin-better-max-params:
       specifier: 0.0.1
       version: 0.0.1
@@ -297,7 +300,7 @@ importers:
         version: 3.1.1(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-arrow-return-style-x:
         specifier: catalog:prod
-        version: 1.2.2(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3)
+        version: 1.2.5(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3)
       eslint-plugin-better-max-params:
         specifier: catalog:prod
         version: 0.0.1(eslint@9.32.0(jiti@2.5.1))
@@ -428,6 +431,9 @@ importers:
       eslint:
         specifier: catalog:peer
         version: 9.32.0(jiti@2.5.1)
+      eslint-plugin-eslint-plugin:
+        specifier: catalog:peer
+        version: 7.0.0(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-jest:
         specifier: catalog:peer
         version: 29.0.1(@typescript-eslint/eslint-plugin@8.39.1(@typescript-eslint/parser@8.39.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
@@ -2294,8 +2300,8 @@ packages:
     peerDependencies:
       eslint: '*'
 
-  eslint-plugin-arrow-return-style-x@1.2.2:
-    resolution: {integrity: sha512-LDMey69HLSfYsgN+kimiN0CEEaVAgGYr5SVQlCwWPgcgs3ISA7rzg5a9tnbzxwjc4c/sEdtF6Jw8wo4+kthAyQ==}
+  eslint-plugin-arrow-return-style-x@1.2.5:
+    resolution: {integrity: sha512-q2Ge+2JcWWA/dEpvUvwXjA6LsG8uT29Ksz/iDY1QUwrAF2lj9SrQXyZvju4BZIJCXErlWd2AkuUL6SyGRImTvw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       eslint: '>=9.15.0'
@@ -2332,6 +2338,12 @@ packages:
     engines: {node: '>=6.5.0'}
     peerDependencies:
       eslint: '>=4.19.1'
+
+  eslint-plugin-eslint-plugin@7.0.0:
+    resolution: {integrity: sha512-EgiW9zf4PbqA+yN9T6Z8bHx46+fWtAIXFrYkL4nSTnI84LnTKmzjh+cIJaVAyFVZveKUSG8LcVe1suGG78qZPw==}
+    engines: {node: ^20.19.0 || ^22.13.1 || >=24.0.0}
+    peerDependencies:
+      eslint: '>=9.0.0'
 
   eslint-plugin-format-lua@1.0.1-beta.2:
     resolution: {integrity: sha512-7BSRyPKj7Jll4tLrywH8CjABBWnq4TY46Lzy9MsvSr7+r9C2htcPAmUQ4YMkBUDeg2uwv1Z89Owu39QLSZ9Meg==}
@@ -6235,7 +6247,7 @@ snapshots:
     dependencies:
       eslint: 9.32.0(jiti@2.5.1)
 
-  eslint-plugin-arrow-return-style-x@1.2.2(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3):
+  eslint-plugin-arrow-return-style-x@1.2.5(eslint@9.32.0(jiti@2.5.1))(prettier@3.6.2)(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       detect-indent: 7.0.1
@@ -6275,6 +6287,12 @@ snapshots:
       escape-string-regexp: 1.0.5
       eslint: 9.32.0(jiti@2.5.1)
       ignore: 5.3.2
+
+  eslint-plugin-eslint-plugin@7.0.0(eslint@9.32.0(jiti@2.5.1)):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.7.0(eslint@9.32.0(jiti@2.5.1))
+      eslint: 9.32.0(jiti@2.5.1)
+      estraverse: 5.3.0
 
   eslint-plugin-format-lua@1.0.1-beta.2(eslint@9.32.0(jiti@2.5.1)):
     dependencies:
@@ -6345,7 +6363,7 @@ snapshots:
 
   eslint-plugin-jest@28.11.0(@typescript-eslint/eslint-plugin@8.39.1(@typescript-eslint/parser@8.39.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.39.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       eslint: 9.32.0(jiti@2.5.1)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.39.1(@typescript-eslint/parser@8.39.1(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
