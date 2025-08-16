@@ -40,6 +40,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * Enable ESLint plugin development rules.
 	 *
 	 * @default false
+	 * @requires eslint-plugin-eslint-plugin
 	 */
 	eslintPlugin?: boolean | OptionsOverrides;
 

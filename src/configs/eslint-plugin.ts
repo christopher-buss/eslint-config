@@ -1,11 +1,11 @@
 import { GLOB_TS, GLOB_TSX } from "../globs";
-import type { OptionsOverrides, TypedFlatConfigItem } from "../types";
+import type { OptionsFiles, OptionsOverrides, TypedFlatConfigItem } from "../types";
 import { ensurePackages, interopDefault } from "../utils";
 
 export async function eslintPlugin(
-	options: OptionsOverrides = {},
+	options: OptionsFiles & OptionsOverrides = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { overrides } = options;
+	const { files = [GLOB_TS, GLOB_TSX], overrides = {} } = options;
 
 	await ensurePackages(["eslint-plugin-eslint-plugin"]);
 
@@ -13,13 +13,14 @@ export async function eslintPlugin(
 
 	return [
 		{
-			name: "isentinel/eslint/setup",
+			name: "isentinel/eslint-plugin/setup",
 			plugins: {
 				"eslint-plugin": pluginEslintPlugin,
 			},
 		},
 		{
-			files: [GLOB_TS, GLOB_TSX],
+			files,
+			name: "isentinel/eslint-plugin/rules",
 			rules: {
 				"eslint-plugin/consistent-output": "error",
 				"eslint-plugin/fixer-return": "error",

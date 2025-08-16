@@ -194,7 +194,6 @@ export async function isentinel(
 	if (enableEslintPlugin !== false) {
 		configs.push(
 			eslintPlugin({
-				...resolveSubOptions(options, "eslintPlugin"),
 				overrides: getOverrides(options, "eslintPlugin"),
 			}),
 		);

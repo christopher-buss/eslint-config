@@ -378,6 +378,27 @@ otherwise, you can install them manually:
 pnpm i -D @eslint-react/eslint-plugin eslint-plugin-react-roblox-hooks eslint-plugin-jest
 ```
 
+#### ESLint Plugin Development
+
+If you're developing an ESLint plugin, you can enable specialized rules to help
+ensure your plugin follows best practices:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	eslintPlugin: true,
+});
+```
+
+Running `npx eslint` should prompt you to install the required dependencies,
+otherwise, you can install them manually:
+
+```bash
+pnpm i -D eslint-plugin-eslint-plugin
+```
+
 ### Lint Staged
 
 If you want to apply lint and auto-fix before every commit, you can add the
