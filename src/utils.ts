@@ -337,7 +337,3 @@ export function shouldEnableFeature<T extends Record<string, any>, K extends key
 
 	return options[key] !== false;
 }
-
-export function toArray<T>(value: Array<T> | T): Array<T> {
-	return Array.isArray(value) ? value : [value];
-}
