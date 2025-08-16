@@ -189,8 +189,8 @@ catalogs:
       specifier: 7.2.1
       version: 7.2.1
     eslint-plugin-roblox-ts:
-      specifier: 1.0.0
-      version: 1.0.0
+      specifier: 1.1.0
+      version: 1.1.0
     eslint-plugin-sentinel:
       specifier: 0.1.1
       version: 0.1.1
@@ -345,7 +345,7 @@ importers:
         version: 7.2.1(eslint@9.32.0(jiti@2.5.1))
       eslint-plugin-roblox-ts:
         specifier: catalog:prod
-        version: 1.0.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
+        version: 1.1.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       eslint-plugin-sentinel:
         specifier: catalog:prod
         version: 0.1.1(eslint@9.32.0(jiti@2.5.1))
@@ -2562,8 +2562,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-roblox-ts@1.0.0:
-    resolution: {integrity: sha512-ybLUiGgnXvNvRqF+ls59pL7As5NTnLbOps+4FvLpNS3Q3MY3IzdG4gWXoNRxVAgTc/z1tJrXtb0CZHo3CqqIag==}
+  eslint-plugin-roblox-ts@1.1.0:
+    resolution: {integrity: sha512-VsT+m6hEH7+KRsHvI3ixApFcT9H4PhInohM37cffySjv0XGtak1QojNRz4K+CEYYk90masVISZG+9SMCRwLAbw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=22.5.1}
     peerDependencies:
       eslint: '>=8.0.0'
@@ -6659,7 +6659,7 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-roblox-ts@1.0.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3):
+  eslint-plugin-roblox-ts@1.1.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/type-utils': 8.36.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
       '@typescript-eslint/utils': 8.36.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.8.3)
