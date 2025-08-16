@@ -21,7 +21,7 @@ export default isentinel(
 			"sonar/cognitive-complexity": "off",
 
 			// Lots of configs are still untyped so we can't rely on this
-			"ts/no-unsafe-assignment": "off"
+			"ts/no-unsafe-assignment": "off",
 		},
 	},
 	{

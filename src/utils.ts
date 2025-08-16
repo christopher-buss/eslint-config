@@ -10,7 +10,6 @@ import prettier from "prettier";
 import type { PrettierOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
-// Type for dynamic module imports that may have a default export
 type ModuleImport<T> = Promise<T | { default: T }>;
 
 type Parser = NonNullable<FlatConfig["languageOptions"]>["parser"];
@@ -127,12 +126,15 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 	}
 }
 
-export function getOverrides(options: OptionsConfig, key: keyof OptionsConfig): any {
+export function getOverrides(
+	options: OptionsConfig,
+	key: keyof OptionsConfig,
+): TypedFlatConfigItem["rules"] {
 	const sub = resolveSubOptions(options, key);
 
 	return {
-		...(typeof sub === "object" && sub !== null && "overrides" in sub
-			? (sub as { overrides: any }).overrides
+		...(typeof sub === "object" && "overrides" in sub
+			? (sub as { overrides: TypedFlatConfigItem["rules"] }).overrides
 			: {}),
 	};
 }
@@ -294,13 +296,16 @@ export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 	}
 }
 
-export function resolveSubOptions(options: OptionsConfig, key: keyof OptionsConfig): any {
+export function resolveSubOptions<K extends keyof OptionsConfig>(
+	options: OptionsConfig,
+	key: K,
+): ResolvedOptions<OptionsConfig[K]> {
 	const optionValue = options[key];
 	const defaults = resolveWithDefaults(
-		optionValue as boolean | Record<string, any> | undefined,
-		{},
+		optionValue as boolean | OptionsConfig[K] | undefined,
+		{} as OptionsConfig[K],
 	);
-	return defaults === false ? {} : defaults;
+	return (defaults === false ? {} : defaults) as ResolvedOptions<OptionsConfig[K]>;
 }
 
 /**

@@ -228,7 +228,6 @@ export async function isentinel(
 			react({
 				...resolveSubOptions(options, "react"),
 				overrides: getOverrides(options, "react"),
-				tsconfigPath: getOverrides(options, "typescript").tsconfigPath,
 			}),
 		);
 	}
@@ -299,7 +298,7 @@ export async function isentinel(
 				formatters: formatters !== false ? formatters : undefined,
 				overrides: getOverrides(options, "typescript"),
 				prettierOptions: prettierSettings,
-				stylistic: stylisticOptions ? {} : stylisticOptions,
+				stylistic: stylisticOptions,
 			}),
 		);
 	}
@@ -325,7 +324,7 @@ export async function isentinel(
 
 	let composer = new FlatConfigComposer<TypedFlatConfigItem, ConfigNames>();
 
-	composer = composer.append(...configs, ...(userConfigs as any));
+	composer = composer.append(...configs, ...(userConfigs as Array<TypedFlatConfigItem>));
 
 	if (autoRenamePlugins) {
 		composer = composer.renamePlugins(defaultPluginRenaming);

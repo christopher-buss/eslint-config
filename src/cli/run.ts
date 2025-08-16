@@ -19,10 +19,12 @@ export interface CliRunOptions {
 }
 
 export async function run(options: CliRunOptions = {}): Promise<undefined> {
-	const argumentSkipPrompt = !!process.env.SKIP_PROMPT || options.yes;
-	const argumentTemplate = <Array<FrameworkOption>>(
-		options.frameworks?.map((framework) => framework.trim())
-	);
+	const argumentSkipPrompt = !!(process.env.SKIP_PROMPT ?? "") || options.yes;
+	const argumentTemplate = options.frameworks
+		?.map((framework) => framework.trim())
+		.filter((framework): framework is FrameworkOption => {
+			return frameworks.includes(framework as FrameworkOption);
+		});
 
 	const eslintConfigFiles = fs
 		.readdirSync(process.cwd())
@@ -40,12 +42,12 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 		updateVscodeSettings: true,
 	};
 
-	if (!argumentSkipPrompt) {
+	if (argumentSkipPrompt !== true) {
 		result = (await group(
 			{
-				uncommittedConfirmed: () => {
-					if (argumentSkipPrompt || isGitClean()) {
-						return Promise.resolve(true);
+				uncommittedConfirmed: async () => {
+					if (isGitClean()) {
+						return true;
 					}
 
 					return confirm({
@@ -56,18 +58,18 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 				},
 
 				// eslint-disable-next-line perfectionist/sort-objects -- keep the order of prompts
-				frameworks: ({ results }) => {
+				frameworks: async ({ results }) => {
 					const isArgumentTemplateValid =
 						argumentTemplate &&
 						argumentTemplate.length > 0 &&
 						argumentTemplate.every((template) => frameworks.includes(template));
 
-					if (!results.uncommittedConfirmed || isArgumentTemplateValid) {
+					if (results.uncommittedConfirmed !== true || isArgumentTemplateValid === true) {
 						return;
 					}
 
 					const message =
-						argumentTemplate && argumentTemplate.length > 0 && !isArgumentTemplateValid
+						argumentTemplate && argumentTemplate.length > 0
 							? `"${argumentTemplate.join(", ")}" isn't a valid template. Please choose from below: `
 							: "Select a framework:";
 
@@ -78,8 +80,8 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					});
 				},
 
-				updateVscodeSettings: ({ results }) => {
-					if (!results.uncommittedConfirmed) {
+				updateVscodeSettings: async ({ results }) => {
+					if (results.uncommittedConfirmed !== true) {
 						return;
 					}
 
