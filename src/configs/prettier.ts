@@ -21,7 +21,14 @@ import type {
 	StylisticConfig,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils";
+import {
+	interopDefault,
+	mergePrettierOptions,
+	parserPlain,
+	renameRules,
+	require,
+	resolveWithDefaults,
+} from "../utils";
 
 export type PrettierRuleOptions = Pick<Partial<PrettierOptions>, "parser"> &
 	PrettierOptions &
@@ -89,7 +96,8 @@ export async function prettier(
 			"format/prettier": [
 				"error",
 				mergePrettierOptions(prettierOptions, {
-					parser: "typescript",
+					parser: "oxc-ts",
+					plugins: [require.resolve("@prettier/plugin-oxc")],
 				}),
 			],
 			"prefer-arrow-callback": "off",
@@ -233,17 +241,6 @@ export async function prettier(
 	}
 
 	return configs;
-}
-
-function mergePrettierOptions(
-	options: PrettierOptions,
-	overrides: PrettierRuleOptions = {},
-): Record<string, any> {
-	return {
-		...options,
-		...overrides,
-		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
-	};
 }
 
 export { type Options as PrettierOptions } from "prettier";

@@ -3,16 +3,19 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import prettier from "prettier";
 
-import type { PrettierOptions } from "./configs";
+import type { PrettierOptions, PrettierRuleOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
 type ModuleImport<T> = Promise<T | { default: T }>;
 
 type Parser = NonNullable<FlatConfig["languageOptions"]>["parser"];
+
+export const require = createRequire(import.meta.url);
 
 export const parserPlain = {
 	meta: {
@@ -189,6 +192,17 @@ export function isInGitHooksOrLintStaged(): boolean {
 			process.env.VSCODE_GIT_COMMAND ??
 			process.env.npm_lifecycle_script?.startsWith("lint-staged"),
 	].some(Boolean);
+}
+
+export function mergePrettierOptions(
+	options: PrettierOptions,
+	overrides: PrettierRuleOptions = {},
+): Record<string, any> {
+	return {
+		...options,
+		...overrides,
+		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
+	};
 }
 
 /**

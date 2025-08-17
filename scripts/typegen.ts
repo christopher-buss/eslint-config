@@ -6,13 +6,15 @@ import { test } from "src/configs/test";
 import {
 	combine,
 	comments,
-	ignores,
 	eslintPlugin,
+	gitignore,
+	ignores,
 	imports,
 	javascript,
 	jsdoc,
 	jsonc,
 	markdown,
+	node,
 	packageJson,
 	perfectionist,
 	pnpm,
@@ -25,12 +27,10 @@ import {
 	sortTsconfig,
 	spelling,
 	stylistic,
+	toml,
 	typescript,
 	unicorn,
 	yaml,
-	toml,
-	node,
-	gitignore,
 } from "../src";
 
 const configs = await combine(

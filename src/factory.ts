@@ -1,6 +1,5 @@
 import type { Linter } from "eslint";
 import { FlatConfigComposer } from "eslint-flat-config-utils";
-import { createRequire } from "node:module";
 
 import type { PrettierOptions } from "./configs";
 import {
@@ -37,13 +36,12 @@ import type { Awaitable, ConfigNames, OptionsConfig, TypedFlatConfigItem } from 
 import {
 	getOverrides,
 	isInEditorEnvironment,
+	require,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
 	resolveWithDefaults,
 	shouldEnableFeature,
 } from "./utils";
-
-const require = createRequire(import.meta.url);
 
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",

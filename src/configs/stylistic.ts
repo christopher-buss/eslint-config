@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../globs";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { interopDefault, mergePrettierOptions, require } from "../utils";
 import type { PrettierOptions } from "./prettier";
 
 export const StylisticConfigDefaults: StylisticConfig = {
@@ -60,7 +60,10 @@ export async function stylistic(
 						maxObjectProperties: 2,
 						namedExportsAlwaysUseExplicitReturn: true,
 						objectReturnStyle: "complex-explicit",
-						usePrettier: prettierOptions,
+						usePrettier: mergePrettierOptions(prettierOptions, {
+							parser: "oxc-ts",
+							plugins: [require.resolve("@prettier/plugin-oxc")],
+						}),
 					},
 				],
 				"arrow-style/no-export-default-arrow": "error",

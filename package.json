@@ -49,6 +49,7 @@
 		"@eslint/markdown": "catalog:prod",
 		"@isentinel/dict-rbxts": "catalog:prod",
 		"@isentinel/dict-roblox": "catalog:prod",
+		"@prettier/plugin-oxc": "catalog:prod",
 		"@shopify/eslint-plugin": "catalog:prod",
 		"@stylistic/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/eslint-plugin": "catalog:prod",
