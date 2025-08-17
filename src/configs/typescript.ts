@@ -156,7 +156,8 @@ export async function typescript(
 				"ts": pluginTs,
 			},
 		},
-		// assign type-aware parser for type-aware files and type-unaware parser for the rest
+		// assign type-aware parser for type-aware files and type-unaware parser
+		// for the rest
 		...(isTypeAware
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),

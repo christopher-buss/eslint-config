@@ -90,7 +90,8 @@ export async function react(
 			name: "isentinel/react/rules",
 			rules: {
 				// recommended rules from @eslint-react/hooks-extra
-				// react-lua does not seem to fully support the patterns that this rule enforces.
+				// react-lua does not seem to fully support the patterns that
+				// this rule enforces.
 				"react-hooks-extra/no-direct-set-state-in-use-effect": "off",
 				"react-hooks-extra/no-direct-set-state-in-use-layout-effect": "off",
 				"react-hooks-extra/no-unnecessary-use-callback": "error",

@@ -33,9 +33,10 @@ export async function markdown(
 			files,
 			ignores: [GLOB_MARKDOWN_IN_MARKDOWN],
 			name: "isentinel/markdown/processor",
-			// `eslint-plugin-markdown` only creates virtual files for code blocks,
-			// but not the markdown file itself. We use `eslint-merge-processors` to
-			// add a pass-through processor for the markdown file itself.
+			// `eslint-plugin-markdown` only creates virtual files for code
+			// blocks, but not the markdown file itself.
+			// We use `eslint-merge-processors` to add a pass-through processor
+			// for the markdown file itself.
 			processor: mergeProcessors([markdownPlugin.processors.markdown, processorPassThrough]),
 		},
 		{

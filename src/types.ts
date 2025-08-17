@@ -365,8 +365,8 @@ export type StylisticConfig = Pick<
 > & { arrowLength?: number };
 
 export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>, "plugins"> & {
-	// Relax plugins type limitation, as most of the plugins did not have correct
-	// type info yet.
+	// Relax plugins type limitation, as most of the plugins do not have
+	// correct type info yet.
 	/**
 	 * An object containing a name-value mapping of plugin names to plugin
 	 * objects. When `files` is specified, these plugins are only available to

@@ -1,11 +1,11 @@
-import { GLOB_YAML } from "../globs";
-import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
+import { GLOB_SRC, GLOB_YAML } from "../globs";
+import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
 export async function comments(
-	options: OptionsStylistic = {},
+	options: OptionsFormatters & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { stylistic = true } = options;
+	const { prettierOptions = {}, stylistic = true } = options;
 
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
 		interopDefault(import("eslint-plugin-comment-length")),
@@ -13,6 +13,8 @@ export async function comments(
 		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 	]);
+
+	console.log(prettierOptions.tabWidth);
 
 	return [
 		{
@@ -25,7 +27,6 @@ export async function comments(
 			rules: {
 				// We cover these with prettier
 				"comment-length/limit-multi-line-comments": "off",
-				"comment-length/limit-single-line-comments": "off",
 
 				"eslint-comments/disable-enable-pair": ["error", { allowWholeFile: true }],
 				"eslint-comments/no-aggregating-enable": "error",
@@ -53,5 +54,21 @@ export async function comments(
 				"no-inline-comments": "off",
 			},
 		},
+		...(stylistic !== false
+			? [
+					{
+						files: [GLOB_SRC],
+						rules: {
+							"comment-length/limit-single-line-comments": [
+								"error",
+								{
+									maxLength: Number(prettierOptions.jsdocPrintWidth) + 2,
+									tabSize: prettierOptions.tabWidth,
+								},
+							],
+						},
+					} as TypedFlatConfigItem,
+				]
+			: []),
 	];
 }

@@ -299,8 +299,9 @@ export function renameRules(
  */
 export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 	try {
-		// Use package.json as file path since it exists in all projects and allows
-		// prettier to resolve project-wide configuration (prettierrc, EditorConfig, etc.)
+		// Use package.json as file path since it exists in all projects and
+		// allows prettier to resolve project-wide configuration (prettierrc,
+		// EditorConfig, etc.)
 		const config = await prettier.resolveConfig("package.json", {
 			editorconfig: true,
 		});
