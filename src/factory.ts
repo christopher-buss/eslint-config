@@ -241,16 +241,6 @@ export async function isentinel(
 		);
 	}
 
-	if (enableSpellCheck !== false) {
-		configs.push(
-			spelling({
-				...resolveSubOptions(options, "spellCheck"),
-				componentExts: componentExtensions,
-				isInEditor,
-			}),
-		);
-	}
-
 	if (options.jsonc !== false) {
 		configs.push(
 			jsonc({
@@ -296,6 +286,16 @@ export async function isentinel(
 				componentExts: componentExtensions,
 				overrides: getOverrides(options, "markdown"),
 				type: options.type,
+			}),
+		);
+	}
+
+	if (enableSpellCheck !== false) {
+		configs.push(
+			spelling({
+				...resolveSubOptions(options, "spellCheck"),
+				componentExts: componentExtensions,
+				isInEditor,
 			}),
 		);
 	}
