@@ -220,7 +220,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.test !== false) {
+	if (options.test !== undefined && options.test !== false) {
 		const testOptions = typeof options.test === "object" ? options.test : {};
 		configs.push(
 			test({
