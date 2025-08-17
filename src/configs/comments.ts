@@ -14,8 +14,6 @@ export async function comments(
 		interopDefault(import("@stylistic/eslint-plugin")),
 	]);
 
-	console.log(prettierOptions.tabWidth);
-
 	return [
 		{
 			name: "isentinel/eslint/comments",
