@@ -23,9 +23,6 @@ export async function comments(
 				"style": pluginStylistic,
 			},
 			rules: {
-				// We cover these with prettier
-				"comment-length/limit-multi-line-comments": "off",
-
 				"eslint-comments/disable-enable-pair": ["error", { allowWholeFile: true }],
 				"eslint-comments/no-aggregating-enable": "error",
 				"eslint-comments/no-duplicate-disable": "error",
@@ -56,6 +53,7 @@ export async function comments(
 			? [
 					{
 						files: [GLOB_SRC],
+						name: "isentinel/eslint/comments/src",
 						rules: {
 							"comment-length/limit-single-line-comments": [
 								"error",
