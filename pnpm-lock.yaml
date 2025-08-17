@@ -195,8 +195,8 @@ catalogs:
       specifier: 1.1.0
       version: 1.1.0
     eslint-plugin-sentinel:
-      specifier: 0.1.1
-      version: 0.1.1
+      specifier: 0.1.2
+      version: 0.1.2
     eslint-plugin-sonarjs:
       specifier: 3.0.4
       version: 3.0.4
@@ -354,7 +354,7 @@ importers:
         version: 1.1.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.8.3)
       eslint-plugin-sentinel:
         specifier: catalog:prod
-        version: 0.1.1(eslint@9.33.0(jiti@2.5.1))
+        version: 0.1.2(eslint@9.33.0(jiti@2.5.1))(typescript@5.8.3)
       eslint-plugin-sonarjs:
         specifier: catalog:prod
         version: 3.0.4(eslint@9.33.0(jiti@2.5.1))
@@ -2840,10 +2840,12 @@ packages:
       eslint: '>=8.0.0'
       typescript: '>=5.2.0 <5.9.0'
 
-  eslint-plugin-sentinel@0.1.1:
-    resolution: {integrity: sha512-hiiRhzypgjgLtn/PfOer2K6mO0kiCe4Xog7agOedTrTfAsF7RXvb5LNPuV8y2whHCE+u9UrEAxw5cF6SnGZpWA==}
+  eslint-plugin-sentinel@0.1.2:
+    resolution: {integrity: sha512-QaSTB4seprec6Em+zWmWTqyvlbOpd6cFATQwSk63wDfPN/Ir/ZFpVrJGlT5L4XRk6TwM4Qn0bLpaff5JC77Fmw==}
+    engines: {node: '>=20.0.0'}
     peerDependencies:
       eslint: '*'
+      typescript: '>=4.7.0'
 
   eslint-plugin-sonarjs@3.0.4:
     resolution: {integrity: sha512-ftQcP811kRJNXapqpQXHErEoVOdTPfYPPYd7n3AExIPwv4qWKKHf4slFvXmodiOnfgy1Tl3waPZZLD7lcvJOtw==}
@@ -7112,9 +7114,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-sentinel@0.1.1(eslint@9.33.0(jiti@2.5.1)):
+  eslint-plugin-sentinel@0.1.2(eslint@9.33.0(jiti@2.5.1))(typescript@5.8.3):
     dependencies:
       eslint: 9.33.0(jiti@2.5.1)
+      typescript: 5.8.3
 
   eslint-plugin-sonarjs@3.0.4(eslint@9.33.0(jiti@2.5.1)):
     dependencies:
