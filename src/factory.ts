@@ -21,6 +21,7 @@ import {
 	roblox,
 	shopify,
 	sonarjs,
+	sortGithubAction,
 	sortTsconfig,
 	stylistic,
 	toml,
@@ -274,6 +275,10 @@ export async function isentinel(
 				stylistic: stylisticOptions,
 			}),
 		);
+
+		if (stylisticOptions !== false) {
+			configs.push(sortGithubAction());
+		}
 	}
 
 	if (options.toml !== false) {

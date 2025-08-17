@@ -1,13 +1,13 @@
 name: Release
 
-permissions:
-  id-token: write
-  contents: write
-
 on:
   push:
     tags:
       - "v*"
+
+permissions:
+  contents: write
+  id-token: write
 
 jobs:
   release:
@@ -23,12 +23,12 @@ jobs:
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
 
-      - run: pnpm npx changelogithub
-        env:
+      - env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+        run: pnpm npx changelogithub
       - run: pnpm install
-      - run: pnpm publish --no-git-checks -r --access public
-        env:
+      - env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
+        run: pnpm publish --no-git-checks -r --access public
