@@ -67,7 +67,7 @@ catalogs:
     eslint-plugin-prettier: 5.5.4
     eslint-plugin-promise: 7.2.1
     eslint-plugin-roblox-ts: 1.1.0
-    eslint-plugin-sentinel: 0.1.1
+    eslint-plugin-sentinel: 0.1.2
     eslint-plugin-sonarjs: 3.0.4
     eslint-plugin-toml: 0.12.0
     eslint-plugin-unicorn: 60.0.0
