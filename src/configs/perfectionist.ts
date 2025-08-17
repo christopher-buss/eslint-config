@@ -193,6 +193,7 @@ export async function perfectionist(
 				"perfectionist/sort-intersection-types": ["error", { type: "natural" }],
 				"perfectionist/sort-jsx-props": "off",
 				"perfectionist/sort-maps": ["error", { type: "natural" }],
+				"perfectionist/sort-named-imports": ["error", { type: "natural" }],
 				"perfectionist/sort-object-types": ["error", { type: "natural" }],
 				"perfectionist/sort-objects": [
 					"error",
