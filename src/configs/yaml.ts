@@ -58,6 +58,13 @@ export async function yaml(
 							"yaml/key-spacing": "error",
 							"yaml/no-tab-indent": "error",
 							"yaml/no-trailing-zeros": "error",
+							"yaml/sort-keys": [
+								"error",
+								{
+									order: { natural: true, type: "asc" },
+									pathPattern: "^(?!$).*",
+								},
+							],
 							"yaml/spaced-comment": "error",
 						}
 					: {}),
