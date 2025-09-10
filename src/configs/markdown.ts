@@ -53,33 +53,17 @@ export async function markdown(
 				"markdown/no-empty-definitions": "error",
 				"markdown/no-empty-images": "error",
 				"markdown/no-empty-links": "error",
-				"markdown/no-html": [
-					"error",
-					{
-						allowed: [
-							"dd",
-							"details",
-							"div",
-							"dl",
-							"dt",
-							"ins",
-							"kbd",
-							"q",
-							"rp",
-							"rt",
-							"ruby",
-							"samp",
-							"span",
-							"sub",
-							"summary",
-							"sup",
-							"var",
-						],
-					},
-				],
+
+				// Would be nice if it worked only in cases that there is a
+				// markdown equivalent.
+				"markdown/no-html": "off",
+
 				"markdown/no-invalid-label-refs": "error",
 				"markdown/no-missing-atx-heading-space": "error",
-				"markdown/no-missing-label-refs": "error",
+
+				// https://github.com/eslint/markdown/issues/294
+				"markdown/no-missing-label-refs": "off",
+
 				"markdown/no-missing-link-fragments": "error",
 				"markdown/no-multiple-h1": "error",
 				"markdown/no-reversed-media-syntax": "error",

@@ -1200,7 +1200,7 @@ export interface RuleOptions {
    * Enforce heading levels increment by one
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/heading-increment.md
    */
-  'markdown/heading-increment'?: Linter.RuleEntry<[]>
+  'markdown/heading-increment'?: Linter.RuleEntry<MarkdownHeadingIncrement>
   /**
    * Disallow bare URLs
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-bare-urls.md
@@ -1245,7 +1245,7 @@ export interface RuleOptions {
    * Disallow headings without a space after the hash characters
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-missing-atx-heading-space.md
    */
-  'markdown/no-missing-atx-heading-space'?: Linter.RuleEntry<[]>
+  'markdown/no-missing-atx-heading-space'?: Linter.RuleEntry<MarkdownNoMissingAtxHeadingSpace>
   /**
    * Disallow missing label references
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-missing-label-refs.md
@@ -1266,6 +1266,11 @@ export interface RuleOptions {
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-reversed-media-syntax.md
    */
   'markdown/no-reversed-media-syntax'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow spaces around emphasis markers
+   * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-space-in-emphasis.md
+   */
+  'markdown/no-space-in-emphasis'?: Linter.RuleEntry<MarkdownNoSpaceInEmphasis>
   /**
    * Disallow unused definitions
    * @see https://github.com/eslint/markdown/blob/main/docs/rules/no-unused-definitions.md
@@ -9198,6 +9203,10 @@ type LogicalAssignmentOperators = (([]|["always"]|["always", {
 type MarkdownFencedCodeLanguage = []|[{
   required?: string[]
 }]
+// ----- markdown/heading-increment -----
+type MarkdownHeadingIncrement = []|[{
+  frontmatterTitle?: string
+}]
 // ----- markdown/no-duplicate-definitions -----
 type MarkdownNoDuplicateDefinitions = []|[{
   allowDefinitions?: string[]
@@ -9216,6 +9225,11 @@ type MarkdownNoEmptyDefinitions = []|[{
 // ----- markdown/no-html -----
 type MarkdownNoHtml = []|[{
   allowed?: string[]
+  allowedIgnoreCase?: boolean
+}]
+// ----- markdown/no-missing-atx-heading-space -----
+type MarkdownNoMissingAtxHeadingSpace = []|[{
+  checkClosedHeadings?: boolean
 }]
 // ----- markdown/no-missing-link-fragments -----
 type MarkdownNoMissingLinkFragments = []|[{
@@ -9225,6 +9239,10 @@ type MarkdownNoMissingLinkFragments = []|[{
 // ----- markdown/no-multiple-h1 -----
 type MarkdownNoMultipleH1 = []|[{
   frontmatterTitle?: string
+}]
+// ----- markdown/no-space-in-emphasis -----
+type MarkdownNoSpaceInEmphasis = []|[{
+  checkStrikethrough?: boolean
 }]
 // ----- markdown/no-unused-definitions -----
 type MarkdownNoUnusedDefinitions = []|[{
@@ -16562,4 +16580,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/typescript/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
