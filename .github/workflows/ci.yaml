@@ -34,7 +34,7 @@ jobs:
         run: nr build
     strategy:
       matrix:
-        node: [22.1.0, lts/*, current]
+        node: [22.16.0, lts/*, current]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
 
@@ -105,4 +105,4 @@ jobs:
       fail-fast: false
 
       matrix:
-        node: [22.1.0, 22.x, 24.x]
+        node: [22.16.0, 22.x, 24.x]
