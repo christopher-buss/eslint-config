@@ -87,6 +87,7 @@ export async function roblox(
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),
 		{
+			files,
 			name: "isentinel/roblox",
 			rules: {
 				"roblox/no-any": "error",
