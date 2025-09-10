@@ -11,7 +11,7 @@ import type {
 	ReactConfig,
 	TypedFlatConfigItem,
 } from "../types";
-import { createTsParser, ensurePackages, getTsConfig, interopDefault } from "../utils";
+import { ensurePackages, getTsConfig, interopDefault } from "../utils";
 
 export async function react(
 	options: OptionsComponentExtensions &
@@ -24,7 +24,6 @@ export async function react(
 	const {
 		additionalComponents,
 		additionalHooks,
-		componentExts: componentExtensions = [],
 		filenameCase = "kebabCase",
 		files = [GLOB_SRC],
 		filesTypeAware = [GLOB_TS, GLOB_TSX],
@@ -32,7 +31,6 @@ export async function react(
 		importSource,
 		jsxPragma,
 		overrides = {},
-		parserOptions,
 		skipImportCheck,
 		stylistic = true,
 		typeAware = true,
@@ -40,12 +38,11 @@ export async function react(
 
 	await ensurePackages(["@eslint-react/eslint-plugin", "eslint-plugin-react-roblox-hooks"]);
 
-	const [pluginReact, pluginReactHooks, pluginStylistic, parserTs, pluginTs, pluginUnicorn] =
+	const [pluginReact, pluginReactHooks, pluginStylistic, pluginTs, pluginUnicorn] =
 		await Promise.all([
 			interopDefault(import("@eslint-react/eslint-plugin")),
 			interopDefault(import("eslint-plugin-react-roblox-hooks")),
 			interopDefault(import("@stylistic/eslint-plugin")),
-			interopDefault(import("@typescript-eslint/parser")),
 			interopDefault(import("@typescript-eslint/eslint-plugin")),
 			interopDefault(import("eslint-plugin-unicorn")),
 		] as const);
@@ -64,6 +61,11 @@ export async function react(
 		version: "17.0.2",
 	};
 
+	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"react/no-leaked-conditional-rendering": "warn",
+		"react/prefer-read-only-props": "error",
+	};
+
 	return [
 		{
 			name: "isentinel/react/setup",
@@ -78,15 +80,15 @@ export async function react(
 			},
 		},
 		{
-			...createTsParser({
-				componentExtensions,
-				configName: "roblox",
-				files,
-				parser: parserTs,
-				parserOptions,
-				tsconfigPath,
-				typeAware: isTypeAware,
-			}),
+			files,
+			languageOptions: {
+				parserOptions: {
+					ecmaFeatures: {
+						jsx: true,
+					},
+				},
+				sourceType: "module",
+			},
 			name: "isentinel/react/rules",
 			rules: {
 				// recommended rules from @eslint-react/hooks-extra
@@ -200,9 +202,8 @@ export async function react(
 						ignores: ignoresTypeAware,
 						name: "isentinel/react/type-aware-rules",
 						rules: {
-							"react/no-leaked-conditional-rendering": "warn",
-							"react/prefer-read-only-props": "error",
-						} satisfies TypedFlatConfigItem["rules"],
+							...typeAwareRules,
+						},
 					},
 				]
 			: []),
