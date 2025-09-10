@@ -306,7 +306,7 @@ export interface OptionsTypeScriptParserOptions {
 	 * virtual files created by processors (e.g., markdown TypeScript code
 	 * blocks).
 	 *
-	 * @default \["**\/*.md\/**.*"]
+	 * @default \["**\/*.md\/**"]
 	 */
 	ignoresTypeAware?: Array<string>;
 

@@ -1,4 +1,4 @@
-import { GLOB_LUA, GLOB_MARKDOWN, GLOB_TS } from "../globs";
+import { GLOB_LUA, GLOB_MARKDOWN } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -50,9 +50,8 @@ export async function roblox(
 		parserFiles: Array<string>,
 		ignores?: Array<string>,
 	): TypedFlatConfigItem {
-		console.log(usesTypeInformation);
 		return createTsParser({
-			componentExtensions: [GLOB_TS],
+			componentExtensions,
 			configName: "roblox",
 			files: parserFiles,
 			ignores,
@@ -121,7 +120,7 @@ export async function roblox(
 					{
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/typescript/rules-type-aware",
+						name: "isentinel/roblox/rules-type-aware",
 						rules: {
 							...typeAwareRules,
 							...overridesTypeAware,

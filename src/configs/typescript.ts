@@ -133,7 +133,7 @@ export async function typescript(
 		ignores?: Array<string>,
 	): TypedFlatConfigItem {
 		return createTsParser({
-			componentExtensions: [GLOB_TS],
+			componentExtensions,
 			configName: "typescript",
 			files: parserFiles,
 			ignores,
