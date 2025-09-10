@@ -37,7 +37,7 @@ export async function typescript(
 	];
 
 	const filesTypeAware = options.filesTypeAware ?? [GLOB_TS, GLOB_TSX];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**.*`];
+	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 
@@ -133,7 +133,7 @@ export async function typescript(
 		ignores?: Array<string>,
 	): TypedFlatConfigItem {
 		return createTsParser({
-			componentExtensions: [GLOB_TS],
+			componentExtensions,
 			configName: "typescript",
 			files: parserFiles,
 			ignores,

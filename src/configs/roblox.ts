@@ -1,4 +1,4 @@
-import { GLOB_LUA } from "../globs";
+import { GLOB_LUA, GLOB_MARKDOWN } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -21,13 +21,12 @@ export async function roblox(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
+		overrides = {},
+		overridesTypeAware = {},
 		parserOptions = {},
 		stylistic = true,
 		typeAware = true,
 	} = options;
-
-	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
-	const isTypeAware = tsconfigPath !== undefined;
 
 	const [parserTs, pluginRobloxTs, pluginSentinel] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
@@ -41,6 +40,39 @@ export async function roblox(
 		...componentExtensions.map((extension) => `**/*/*.${extension}`),
 	];
 
+	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.?([cm])ts", "**/*/*.?([cm])tsx"];
+	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
+	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
+	const isTypeAware = tsconfigPath !== undefined;
+
+	function makeParser(
+		usesTypeInformation: boolean,
+		parserFiles: Array<string>,
+		ignores?: Array<string>,
+	): TypedFlatConfigItem {
+		return createTsParser({
+			componentExtensions,
+			configName: "roblox",
+			files: parserFiles,
+			ignores,
+			parser: parserTs,
+			parserOptions,
+			tsconfigPath,
+			typeAware: usesTypeInformation,
+		});
+	}
+
+	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"roblox/lua-truthiness": "warn",
+		"roblox/misleading-lua-tuple-checks": "error",
+		"roblox/no-array-pairs": "warn",
+		"roblox/no-object-math": "error",
+		"roblox/no-post-fix-new": "error",
+		"roblox/no-preceding-spread-element": "error",
+		"roblox/size-method": "error",
+		"sentinel/explicit-size-check": "error",
+	};
+
 	const configs: Array<TypedFlatConfigItem> = [
 		{
 			name: "isentinel/roblox/setup",
@@ -49,53 +81,55 @@ export async function roblox(
 				sentinel: pluginSentinel,
 			},
 		},
-	];
-
-	configs.push({
-		...createTsParser({
-			componentExtensions,
-			configName: "roblox",
+		// assign type-aware parser for type-aware files and type-unaware
+		// parser for the rest
+		...(isTypeAware
+			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
+			: [makeParser(false, files)]),
+		{
 			files,
-			parser: parserTs,
-			parserOptions,
-			tsconfigPath,
-			typeAware: isTypeAware,
-		}),
-		name: "isentinel/roblox",
-		rules: {
-			"roblox/lua-truthiness": "warn",
-			"roblox/misleading-lua-tuple-checks": "error",
-			"roblox/no-any": "error",
-			"roblox/no-array-pairs": "warn",
-			"roblox/no-enum-merging": "error",
-			"roblox/no-export-assignment-let": "error",
-			"roblox/no-for-in": "error",
-			"roblox/no-function-expression-name": "error",
-			"roblox/no-get-set": "error",
-			"roblox/no-implicit-self": "error",
-			"roblox/no-invalid-identifier": "error",
-			"roblox/no-namespace-merging": "error",
-			"roblox/no-null": "error",
-			"roblox/no-object-math": "error",
-			"roblox/no-post-fix-new": "error",
-			"roblox/no-preceding-spread-element": "error",
-			"roblox/no-private-identifier": "error",
-			"roblox/no-unsupported-syntax": "error",
-			"roblox/no-user-defined-lua-tuple": "error",
-			"roblox/no-value-typeof": "error",
-			"roblox/prefer-get-players": "error",
-			"roblox/prefer-task-library": "error",
-			"roblox/size-method": "error",
+			name: "isentinel/roblox",
+			rules: {
+				"roblox/no-any": "error",
+				"roblox/no-enum-merging": "error",
+				"roblox/no-export-assignment-let": "error",
+				"roblox/no-for-in": "error",
+				"roblox/no-function-expression-name": "error",
+				"roblox/no-get-set": "error",
+				"roblox/no-implicit-self": "error",
+				"roblox/no-invalid-identifier": "error",
+				"roblox/no-namespace-merging": "error",
+				"roblox/no-null": "error",
+				"roblox/no-private-identifier": "error",
+				"roblox/no-unsupported-syntax": "error",
+				"roblox/no-user-defined-lua-tuple": "error",
+				"roblox/no-value-typeof": "error",
+				"roblox/prefer-get-players": "error",
+				"roblox/prefer-task-library": "error",
 
-			"sentinel/explicit-size-check": "error",
+				...(stylistic !== false
+					? {
+							"sentinel/prefer-math-min-max": "error",
+						}
+					: {}),
 
-			...(stylistic !== false
-				? {
-						"sentinel/prefer-math-min-max": "error",
-					}
-				: {}),
+				...overrides,
+			},
 		},
-	});
+		...(isTypeAware
+			? [
+					{
+						files: filesTypeAware,
+						ignores: ignoresTypeAware,
+						name: "isentinel/roblox/rules-type-aware",
+						rules: {
+							...typeAwareRules,
+							...overridesTypeAware,
+						},
+					},
+				]
+			: []),
+	];
 
 	if (formatLua) {
 		const [pluginFormatLua] = await Promise.all([
