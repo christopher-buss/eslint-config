@@ -1,16 +1,24 @@
 import globals from "globals";
 
 import { GLOB_SRC } from "../globs";
-import type { OptionsIsInEditor, OptionsOverrides, TypedFlatConfigItem } from "../types";
+import type {
+	OptionsIsInEditor,
+	OptionsOverrides,
+	OptionsStylistic,
+	TypedFlatConfigItem,
+} from "../types";
 import { interopDefault } from "../utils";
 
 export async function javascript(
-	options: OptionsIsInEditor & OptionsOverrides = {},
+	options: OptionsIsInEditor & OptionsOverrides & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { isInEditor = false, overrides = {} } = options;
+	const { isInEditor = false, overrides = {}, stylistic = true } = options;
 
-	const [pluginAntfu] = await Promise.all([
+	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters] = await Promise.all([
 		interopDefault(import("eslint-plugin-antfu")),
+		interopDefault(import("eslint-plugin-de-morgan")),
+		// @ts-expect-error -- No types
+		interopDefault(import("eslint-plugin-better-max-params")),
 	] as const);
 
 	return [
@@ -43,19 +51,42 @@ export async function javascript(
 			files: [GLOB_SRC],
 			name: "isentinel/javascript/rules",
 			plugins: {
-				antfu: pluginAntfu,
+				"antfu": pluginAntfu,
+				"better-max-params": pluginMaxParameters,
+				"de-morgan": pluginDeMorgan,
 			},
 			rules: {
 				"accessor-pairs": ["error", { enforceForClassMembers: true, setWithoutGet: true }],
 
 				"antfu/no-top-level-await": "error",
 
-				"array-callback-return": "error",
+				"array-callback-return": [
+					"error",
+					{
+						allowImplicit: true,
+					},
+				],
+
+				"better-max-params/better-max-params": [
+					"error",
+					{
+						func: 4,
+					},
+				],
 				"block-scoped-var": "error",
+
 				"constructor-super": "error",
+
+				"de-morgan/no-negated-conjunction": "error",
+				"de-morgan/no-negated-disjunction": "error",
 				"default-case-last": "error",
 				"dot-notation": ["error", { allowKeywords: true }],
-				"eqeqeq": ["error", "smart"],
+				"eqeqeq": "error",
+
+				"for-direction": "error",
+				"logical-assignment-operators": "error",
+				"max-classes-per-file": "error",
+				"max-depth": "error",
 				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
 				"new-cap": ["error", { capIsNew: false, newIsCap: true, properties: true }],
 				"no-alert": "error",
@@ -68,6 +99,12 @@ export async function javascript(
 				"no-cond-assign": ["error", "always"],
 				"no-console": ["error", { allow: ["warn", "error"] }],
 				"no-const-assign": "error",
+				"no-constant-condition": [
+					"error",
+					{
+						checkLoops: false,
+					},
+				],
 				"no-control-regex": "error",
 				"no-debugger": "error",
 				"no-delete-var": "error",
@@ -75,9 +112,12 @@ export async function javascript(
 				"no-dupe-class-members": "error",
 				"no-dupe-keys": "error",
 				"no-duplicate-case": "error",
+				"no-else-return": ["error", { allowElseIf: false }],
 				"no-empty": ["error", { allowEmptyCatch: true }],
 				"no-empty-character-class": "error",
+				"no-empty-function": "error",
 				"no-empty-pattern": "error",
+				"no-empty-static-block": "error",
 				"no-eval": "error",
 				"no-ex-assign": "error",
 				"no-extend-native": "error",
@@ -92,10 +132,9 @@ export async function javascript(
 				"no-irregular-whitespace": "error",
 				"no-iterator": "error",
 				"no-labels": ["error", { allowLoop: false, allowSwitch: false }],
-				"no-lone-blocks": "error",
+				"no-lonely-if": "error",
 				"no-loss-of-precision": "error",
 				"no-misleading-character-class": "error",
-				"no-multi-str": "error",
 				"no-new": "error",
 				"no-new-func": "error",
 				"no-new-native-nonconstructor": "error",
@@ -140,6 +179,7 @@ export async function javascript(
 					"TSEnumDeclaration[const=true]",
 					"TSExportAssignment",
 				],
+				"no-return-assign": ["error", "always"],
 				"no-self-assign": ["error", { props: true }],
 				"no-self-compare": "error",
 				"no-sequences": "error",
@@ -187,15 +227,6 @@ export async function javascript(
 				"no-useless-return": "error",
 				"no-var": "error",
 				"no-with": "error",
-				"object-shorthand": [
-					"error",
-					"always",
-					{
-						avoidQuotes: true,
-						ignoreConstructors: false,
-					},
-				],
-				"one-var": ["error", { initialized: "never" }],
 				"prefer-arrow-callback": [
 					"error",
 					{
@@ -221,7 +252,47 @@ export async function javascript(
 				"use-isnan": ["error", { enforceForIndexOf: true, enforceForSwitchCase: true }],
 				"valid-typeof": ["error", { requireStringLiterals: true }],
 				"vars-on-top": "error",
-				"yoda": ["error", "never"],
+
+				...(stylistic !== false
+					? {
+							"camelcase": [
+								"error",
+								{
+									ignoreImports: true,
+								},
+							],
+							"id-length": [
+								"error",
+								{
+									exceptions: ["_", "x", "y", "z", "a", "b", "e"],
+									max: 30,
+									min: 2,
+									properties: "never",
+								},
+							],
+							"max-lines": [
+								"warn",
+								{ max: 300, skipBlankLines: true, skipComments: true },
+							],
+							"max-lines-per-function": [
+								"warn",
+								{ max: 30, skipBlankLines: true, skipComments: true },
+							],
+							"no-lone-blocks": "error",
+							"no-multi-str": "error",
+							// "object-shorthand": "error",
+							"object-shorthand": [
+								"error",
+								"always",
+								{
+									avoidQuotes: true,
+									ignoreConstructors: false,
+								},
+							],
+							"one-var": ["error", { initialized: "never" }],
+							"yoda": ["error", "never"],
+						}
+					: {}),
 
 				...overrides,
 			},

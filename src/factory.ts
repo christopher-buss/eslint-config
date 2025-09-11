@@ -177,7 +177,6 @@ export async function isentinel(
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			componentExts: componentExtensions,
-			isInEditor,
 			overrides: getOverrides(options, "typescript"),
 			stylistic: stylisticOptions,
 		}),

@@ -2,7 +2,6 @@ import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
-	OptionsIsInEditor,
 	OptionsOverrides,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
@@ -14,7 +13,6 @@ import { createTsParser, getTsConfig, interopDefault, renameRules } from "../uti
 export async function typescript(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
-		OptionsIsInEditor &
 		OptionsOverrides &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
@@ -22,7 +20,6 @@ export async function typescript(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
-		isInEditor = false,
 		overrides = {},
 		overridesTypeAware = {},
 		parserOptions = {},
@@ -117,15 +114,11 @@ export async function typescript(
 		"ts/use-unknown-in-catch-callback-variable": "error",
 	};
 
-	const [parserTs, pluginTs, pluginDeMorgan, pluginAntfu, pluginMaxParameters] =
-		await Promise.all([
-			interopDefault(import("@typescript-eslint/parser")),
-			interopDefault(import("@typescript-eslint/eslint-plugin")),
-			interopDefault(import("eslint-plugin-de-morgan")),
-			interopDefault(import("eslint-plugin-antfu")),
-			// @ts-expect-error -- No types
-			interopDefault(import("eslint-plugin-better-max-params")),
-		] as const);
+	const [parserTs, pluginTs, pluginAntfu] = await Promise.all([
+		interopDefault(import("@typescript-eslint/parser")),
+		interopDefault(import("@typescript-eslint/eslint-plugin")),
+		interopDefault(import("eslint-plugin-antfu")),
+	] as const);
 
 	function makeParser(
 		usesTypeInformation: boolean,
@@ -150,10 +143,8 @@ export async function typescript(
 			// separately.
 			name: "isentinel/typescript/setup",
 			plugins: {
-				"antfu": pluginAntfu,
-				"better-max-params": pluginMaxParameters,
-				"de-morgan": pluginDeMorgan,
-				"ts": pluginTs,
+				antfu: pluginAntfu,
+				ts: pluginTs,
 			},
 		},
 		// assign type-aware parser for type-aware files and type-unaware parser
@@ -170,79 +161,20 @@ export async function typescript(
 				}),
 				...renameRules(pluginTs.configs.strict.rules ?? {}, { "@typescript-eslint": "ts" }),
 
-				"antfu/no-top-level-await": "error",
-				"array-callback-return": [
-					"error",
-					{
-						allowImplicit: true,
-					},
-				],
-				"better-max-params/better-max-params": [
-					"error",
-					{
-						func: 4,
-					},
-				],
-
-				"de-morgan/no-negated-conjunction": "error",
-				"de-morgan/no-negated-disjunction": "error",
-
-				"eqeqeq": "error",
-				"for-direction": "error",
-				"logical-assignment-operators": "error",
-				"max-classes-per-file": "error",
-				"max-depth": "error",
-				"no-async-promise-executor": "error",
-				"no-cond-assign": ["error", "always"],
-				"no-constant-condition": [
-					"error",
-					{
-						checkLoops: false,
-					},
-				],
-				"no-control-regex": "error",
 				"no-dupe-class-members": "off",
-				"no-else-return": ["error", { allowElseIf: false }],
-				"no-empty": ["error", { allowEmptyCatch: true }],
-				"no-empty-character-class": "error",
+
 				"no-empty-function": "off",
-				"no-empty-pattern": "error",
-				"no-empty-static-block": "error",
-				"no-ex-assign": "error",
-				"no-extra-boolean-cast": "error",
-				"no-irregular-whitespace": "error",
-				"no-lonely-if": "error",
 				"no-loss-of-precision": "off",
 				"no-redeclare": "off",
-				"no-regex-spaces": "error",
 				"no-restricted-syntax": ["error", "[declare=true]"],
-				"no-return-assign": ["error", "always"],
-				"no-self-assign": "error",
-				"no-self-compare": "error",
+
 				"no-shadow": "off",
-				"no-sparse-arrays": "error",
-				"no-template-curly-in-string": "error",
-				"no-undef-init": "error",
-				"no-unmodified-loop-condition": "error",
-				"no-unneeded-ternary": "error",
-				"no-unsafe-finally": "error",
 				"no-unused-expressions": "off",
 				"no-unused-private-class-members": "off",
 				"no-unused-vars": "off",
 				"no-use-before-define": "off",
-				"no-useless-backreference": "error",
 
-				"no-useless-computed-key": "error",
 				"no-useless-constructor": "off",
-				"no-useless-rename": "error",
-				"no-useless-return": "error",
-				"prefer-const": [
-					isInEditor ? "warn" : "error",
-					{
-						destructuring: "all",
-						ignoreReadBeforeAssign: true,
-					},
-				],
 				"prefer-destructuring": "off",
 				"ts/adjacent-overload-signatures": "off",
 				"ts/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description" }],
@@ -301,33 +233,6 @@ export async function typescript(
 
 				...(stylistic !== false
 					? {
-							"camelcase": [
-								"error",
-								{
-									ignoreImports: true,
-								},
-							],
-							"id-length": [
-								"error",
-								{
-									exceptions: ["_", "x", "y", "z", "a", "b", "e"],
-									max: 30,
-									min: 2,
-									properties: "never",
-								},
-							],
-							"max-lines": [
-								"warn",
-								{ max: 300, skipBlankLines: true, skipComments: true },
-							],
-							"max-lines-per-function": [
-								"warn",
-								{ max: 30, skipBlankLines: true, skipComments: true },
-							],
-							"no-lone-blocks": "error",
-							"no-multi-str": "error",
-							"object-shorthand": "error",
-							"one-var": ["error", { initialized: "never" }],
 							"ts/array-type": [
 								"error",
 								{
@@ -342,7 +247,6 @@ export async function typescript(
 								"error",
 								{ disallowTypeAnnotations: false, prefer: "type-imports" },
 							],
-							"yoda": ["error", "never"],
 						}
 					: {}),
 				...overrides,

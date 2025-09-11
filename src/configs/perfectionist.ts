@@ -138,7 +138,7 @@ export async function perfectionist(
 					{
 						customGroups: customClassGroups.reduce<Record<string, string>>(
 							(accumulator, item) => {
-								accumulator[item] = "^" + capitalizeFirstLetter(item) + "$";
+								accumulator[item] = `^${capitalizeFirstLetter(item)}$`;
 								return accumulator;
 							},
 							{},
