@@ -4287,7 +4287,7 @@ export interface RuleOptions {
    */
   'sonar/no-equals-in-for-termination'?: Linter.RuleEntry<[]>
   /**
-   * Exclusive tests should not be commited to version control
+   * Exclusive tests should not be committed to version control
    * @see https://sonarsource.github.io/rspec/#/rspec/S6426/javascript
    */
   'sonar/no-exclusive-tests'?: Linter.RuleEntry<[]>
@@ -4491,11 +4491,6 @@ export interface RuleOptions {
    * @see https://sonarsource.github.io/rspec/#/rspec/S4624/javascript
    */
   'sonar/no-nested-template-literals'?: Linter.RuleEntry<[]>
-  /**
-   * Loops with at most one iteration should be refactored
-   * @see https://sonarsource.github.io/rspec/#/rspec/S1751/javascript
-   */
-  'sonar/no-one-iteration-loop'?: Linter.RuleEntry<[]>
   /**
    * Searching OS commands in PATH is security-sensitive
    * @see https://sonarsource.github.io/rspec/#/rspec/S4036/javascript
@@ -4956,7 +4951,6 @@ export interface RuleOptions {
   /**
    * Loop counters should not be assigned within the loop body
    * @see https://sonarsource.github.io/rspec/#/rspec/S2310/javascript
-   * @deprecated
    */
   'sonar/updated-loop-counter'?: Linter.RuleEntry<[]>
   /**

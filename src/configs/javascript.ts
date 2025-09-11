@@ -1,5 +1,6 @@
 import globals from "globals";
 
+import { GLOB_SRC } from "../globs";
 import type { OptionsIsInEditor, OptionsOverrides, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
@@ -39,6 +40,7 @@ export async function javascript(
 			name: "isentinel/javascript/setup",
 		},
 		{
+			files: [GLOB_SRC],
 			name: "isentinel/javascript/rules",
 			plugins: {
 				antfu: pluginAntfu,

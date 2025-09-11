@@ -71,6 +71,11 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	isInEditor?: boolean;
 
 	/**
+	 * Core rules. Can't be disabled.
+	 */
+	javascript?: OptionsOverrides;
+
+	/**
 	 * Enable JSDoc support.
 	 *
 	 * @default true

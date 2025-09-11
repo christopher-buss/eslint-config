@@ -9,6 +9,7 @@ import {
 	gitignore,
 	ignores,
 	imports,
+	javascript,
 	jsdoc,
 	jsonc,
 	markdown,
@@ -104,6 +105,7 @@ export async function isentinel(
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
+			// eslint-disable-next-line no-console -- Info for plugin
 			console.log(
 				"[@isentinel/eslint-config] Detected running in editor, some rules are disabled.",
 			);
@@ -168,6 +170,7 @@ export async function isentinel(
 		imports({ stylistic: stylisticOptions, type: options.type }),
 		jsdoc({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: options.roblox, type: options.type }),
+		javascript({ isInEditor, overrides: getOverrides(options, "javascript") }),
 		promise(),
 		shopify({ stylistic: stylisticOptions }),
 		sonarjs({ isInEditor }),
