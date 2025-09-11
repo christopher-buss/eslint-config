@@ -1,4 +1,6 @@
-import { GLOB_SRC } from "../globs";
+import type { Linter } from "eslint";
+
+import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../globs";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types";
 import { interopDefault, mergePrettierOptions, require } from "../utils";
 import type { PrettierOptions } from "./prettier";
@@ -33,6 +35,25 @@ export async function stylistic(
 		semi,
 	});
 
+	const createArrowStyleRule = (parser: string, maxLength?: number): Linter.RulesRecord => {
+		return {
+			"arrow-style/arrow-return-style": [
+				"error",
+				{
+					jsxAlwaysUseExplicitReturn: true,
+					maxLen: maxLength ?? arrowLength ?? prettierOptions.printWidth ?? 100,
+					maxObjectProperties: 2,
+					namedExportsAlwaysUseExplicitReturn: true,
+					objectReturnStyle: "complex-explicit" as const,
+					usePrettier: mergePrettierOptions(prettierOptions, {
+						parser,
+						plugins: [require.resolve("@prettier/plugin-oxc")],
+					}),
+				},
+			],
+		};
+	};
+
 	return [
 		{
 			name: "isentinel/stylistic/setup",
@@ -52,20 +73,6 @@ export async function stylistic(
 				"antfu/if-newline": "off",
 				"antfu/top-level-function": "error",
 
-				"arrow-style/arrow-return-style": [
-					"error",
-					{
-						jsxAlwaysUseExplicitReturn: true,
-						maxLen: arrowLength ?? prettierOptions.printWidth ?? 100,
-						maxObjectProperties: 2,
-						namedExportsAlwaysUseExplicitReturn: true,
-						objectReturnStyle: "complex-explicit",
-						usePrettier: mergePrettierOptions(prettierOptions, {
-							parser: "oxc-ts",
-							plugins: [require.resolve("@prettier/plugin-oxc")],
-						}),
-					},
-				],
 				"arrow-style/no-export-default-arrow": "error",
 
 				"curly": ["error", "all"],
@@ -110,6 +117,24 @@ export async function stylistic(
 					},
 				],
 				"style/spaced-comment": ["error", "always", { markers: ["!native", "!optimize"] }],
+			},
+		},
+		{
+			files: [GLOB_TS, GLOB_TSX],
+			rules: {
+				...createArrowStyleRule("oxc-ts"),
+			},
+		},
+		{
+			files: [GLOB_JS, GLOB_JSX],
+			rules: {
+				...createArrowStyleRule("oxc"),
+			},
+		},
+		{
+			files: [GLOB_MARKDOWN_CODE],
+			rules: {
+				...createArrowStyleRule("oxc", Number(prettierOptions.jsdocPrintWidth) || 80),
 			},
 		},
 	];
