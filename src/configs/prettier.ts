@@ -8,7 +8,6 @@ import {
 	GLOB_JSX,
 	GLOB_LESS,
 	GLOB_MARKDOWN,
-	GLOB_MARKDOWN_CODE,
 	GLOB_POSTCSS,
 	GLOB_SCSS,
 	GLOB_TS,
@@ -84,16 +83,24 @@ export async function prettier(
 		},
 	];
 
+	const jsFiles = prettierFiles ?? [
+		GLOB_JS,
+		GLOB_JSX,
+		`${GLOB_MARKDOWN}/${GLOB_JS}`,
+		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+	];
+
 	const tsFiles = prettierFiles ?? [
 		GLOB_TS,
 		GLOB_TSX,
-		GLOB_MARKDOWN_CODE,
+		`${GLOB_MARKDOWN}/${GLOB_TS}`,
+		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
 	configs.push(
 		{
-			files: [GLOB_JS, GLOB_JSX],
+			files: jsFiles,
 			name: "isentinel/prettier/javascript",
 			rules: {
 				...rules,
