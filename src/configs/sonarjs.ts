@@ -48,7 +48,6 @@ export async function sonarjs(
 				"sonar/no-nested-incdec": "error",
 				"sonar/no-nested-switch": "error",
 				"sonar/no-nested-template-literals": "error",
-				"sonar/no-one-iteration-loop": "error",
 				"sonar/no-parameter-reassignment": "error",
 				"sonar/no-redundant-boolean": "error",
 				"sonar/no-redundant-jump": "error",
