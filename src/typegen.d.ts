@@ -7713,9 +7713,12 @@ type ArrowStyleArrowReturnStyle = []|[{
 }]
 // ----- better-max-params/better-max-params -----
 type BetterMaxParamsBetterMaxParams = []|[({
+  
   func?: number
 } | {
+  
   func?: number
+  
   constructor?: number
 })]
 // ----- block-spacing -----
