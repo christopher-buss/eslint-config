@@ -109,12 +109,12 @@ export interface RuleOptions {
   'arrow-spacing'?: Linter.RuleEntry<ArrowSpacing>
   /**
    * Enforce consistent arrow function return style based on length, multiline expressions, JSX usage, and export context
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/blob/v1.2.5/src/rules/arrow-return-style/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/blob/v1.2.6/src/rules/arrow-return-style/documentation.md
    */
   'arrow-style/arrow-return-style'?: Linter.RuleEntry<ArrowStyleArrowReturnStyle>
   /**
    * Disallow anonymous arrow functions as export default declarations
-   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/blob/v1.2.5/src/rules/no-export-default-arrow/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-arrow-return-style-x/blob/v1.2.6/src/rules/no-export-default-arrow/documentation.md
    */
   'arrow-style/no-export-default-arrow'?: Linter.RuleEntry<[]>
   /**
