@@ -4,12 +4,14 @@ import { defaultPluginRenaming } from "../factory";
 import {
 	GLOB_ALL_JSON,
 	GLOB_CSS,
+	GLOB_JS,
+	GLOB_JSX,
 	GLOB_LESS,
 	GLOB_MARKDOWN,
-	GLOB_MARKDOWN_CODE,
 	GLOB_POSTCSS,
 	GLOB_SCSS,
-	GLOB_SRC,
+	GLOB_TS,
+	GLOB_TSX,
 	GLOB_YAML,
 } from "../globs";
 import type {
@@ -81,28 +83,55 @@ export async function prettier(
 		},
 	];
 
+	const jsFiles = prettierFiles ?? [
+		GLOB_JS,
+		GLOB_JSX,
+		`${GLOB_MARKDOWN}/${GLOB_JS}`,
+		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+	];
+
 	const tsFiles = prettierFiles ?? [
-		GLOB_SRC,
-		GLOB_MARKDOWN_CODE,
+		GLOB_TS,
+		GLOB_TSX,
+		`${GLOB_MARKDOWN}/${GLOB_TS}`,
+		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
-	configs.push({
-		files: tsFiles,
-		name: "isentinel/prettier",
-		rules: {
-			...rules,
-			"arrow-body-style": "off",
-			"format/prettier": [
-				"error",
-				mergePrettierOptions(prettierOptions, {
-					parser: "oxc-ts",
-					plugins: [require.resolve("@prettier/plugin-oxc")],
-				}),
-			],
-			"prefer-arrow-callback": "off",
+	configs.push(
+		{
+			files: jsFiles,
+			name: "isentinel/prettier/javascript",
+			rules: {
+				...rules,
+				"arrow-body-style": "off",
+				"format/prettier": [
+					"error",
+					mergePrettierOptions(prettierOptions, {
+						parser: "oxc",
+						plugins: [require.resolve("@prettier/plugin-oxc")],
+					}),
+				],
+				"prefer-arrow-callback": "off",
+			},
 		},
-	});
+		{
+			files: tsFiles,
+			name: "isentinel/prettier",
+			rules: {
+				...rules,
+				"arrow-body-style": "off",
+				"format/prettier": [
+					"error",
+					mergePrettierOptions(prettierOptions, {
+						parser: "oxc-ts",
+						plugins: [require.resolve("@prettier/plugin-oxc")],
+					}),
+				],
+				"prefer-arrow-callback": "off",
+			},
+		},
+	);
 
 	if (formattingOptions.css) {
 		configs.push(
