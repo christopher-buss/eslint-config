@@ -8,30 +8,11 @@ files:
   - .git/COMMIT_EDITMSG
   - "*.{md,txt,yaml,yml}"
   - LICENSE
-words:
-  - EDITMSG
-  - antfu
-  - changelogithub
-  - dprint
-  - ependencies
-  - isentinel
-  - johnnymorganz
-  - lockb
-  - luatuple
-  - multilines
-  - nocheck
-  - nonblock
-  - nonconstructor
-  - pico
-  - rbxts
-  - setstate
-  - sonarjs
-  - stylua
-  - sxzz
-  - textnodes
-  - tsdoc
-  - typecheck
-  - unthrown
+dictionaryDefinitions:
+  - name: project-words
+    path: ./project-words.txt
+dictionaries:
+  - project-words
 flagWords: []
 maxNumberOfProblems: 1000
 ignorePaths:
