@@ -215,6 +215,7 @@ export async function typescript(
 				"no-loss-of-precision": "off",
 				"no-redeclare": "off",
 				"no-regex-spaces": "error",
+				"no-restricted-syntax": ["error", "[declare=true]"],
 				"no-return-assign": ["error", "always"],
 				"no-self-assign": "error",
 				"no-self-compare": "error",
