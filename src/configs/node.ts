@@ -1,7 +1,9 @@
 import type { TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { ensurePackages, interopDefault } from "../utils";
 
 export async function node(): Promise<Array<TypedFlatConfigItem>> {
+	await ensurePackages(["eslint-plugin-n"]);
+
 	const pluginNode = await interopDefault(import("eslint-plugin-n"));
 
 	return [
