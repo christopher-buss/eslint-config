@@ -1,4 +1,4 @@
-import { GLOB_DTS, GLOB_SRC, GLOB_SRC_EXT, GLOB_TESTS } from "../globs";
+import { GLOB_BUILD_TOOLS, GLOB_DTS, GLOB_SRC, GLOB_SRC_EXT, GLOB_TESTS } from "../globs";
 import type { TypedFlatConfigItem } from "../types";
 
 export async function disables(): Promise<Array<TypedFlatConfigItem>> {
@@ -18,6 +18,15 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
+			},
+		},
+		{
+			files: GLOB_BUILD_TOOLS,
+			name: "isentinel/disables/build-tools",
+			rules: {
+				"antfu/no-top-level-await": "off",
+				"no-console": "off",
+				"ts/explicit-function-return-type": "off",
 			},
 		},
 		{

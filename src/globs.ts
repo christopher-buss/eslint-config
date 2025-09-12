@@ -41,6 +41,19 @@ export const GLOB_TESTS = [
 	`**/*.benchmark.${GLOB_SRC_EXT}`,
 ];
 
+export const GLOB_BUILD_TOOLS = [
+	"**/.husky/**/*",
+	`**/config/${GLOB_SRC}`,
+	`**/*config.${GLOB_SRC_EXT}`,
+	`**/*config.*.${GLOB_SRC_EXT}`,
+	`**/build/${GLOB_SRC}`,
+	`**/tools/${GLOB_SRC}`,
+	`**/setup/${GLOB_SRC}`,
+	`**/dev/${GLOB_SRC}`,
+	`**/tasks/${GLOB_SRC}`,
+	"**/.github/scripts/**/*",
+];
+
 export const GLOB_ALL_SRC = [
 	GLOB_SRC,
 	GLOB_STYLE,
