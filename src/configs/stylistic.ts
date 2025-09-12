@@ -134,7 +134,7 @@ export async function stylistic(
 		{
 			files: [GLOB_MARKDOWN_CODE],
 			rules: {
-				...createArrowStyleRule("oxc", Number(prettierOptions.jsdocPrintWidth) || 80),
+				...createArrowStyleRule("oxc", Number(prettierOptions["jsdocPrintWidth"]) || 80),
 			},
 		},
 	];

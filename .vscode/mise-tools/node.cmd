@@ -1,0 +1,1 @@
+c:/users/christopher/.local/share/mise/shims/node.cmd

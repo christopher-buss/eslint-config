@@ -8,7 +8,7 @@ export async function comments(
 	const { prettierOptions = {}, stylistic = true } = options;
 
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
-		interopDefault(import("eslint-plugin-comment-length")),
+		interopDefault(import("@isentinel/eslint-plugin-comment-length")),
 		// @ts-expect-error -- No types
 		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
 		interopDefault(import("@stylistic/eslint-plugin")),
@@ -58,7 +58,7 @@ export async function comments(
 							"comment-length/limit-single-line-comments": [
 								"error",
 								{
-									maxLength: Number(prettierOptions.jsdocPrintWidth) + 2,
+									maxLength: Number(prettierOptions["jsdocPrintWidth"]) + 2,
 									tabSize: prettierOptions.tabWidth,
 								},
 							],

@@ -211,7 +211,7 @@ export async function prettier(
 					mergePrettierOptions(prettierOptions, {
 						embeddedLanguageFormatting: "auto",
 						parser: "markdown",
-						printWidth: Number(prettierOptions.jsdocPrintWidth) || 80,
+						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
 						proseWrap: "always",
 					}),
 				],

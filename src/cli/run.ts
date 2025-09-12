@@ -19,7 +19,7 @@ export interface CliRunOptions {
 }
 
 export async function run(options: CliRunOptions = {}): Promise<undefined> {
-	const argumentSkipPrompt = !!(process.env.SKIP_PROMPT ?? "") || options.yes;
+	const argumentSkipPrompt = !!(process.env["SKIP_PROMPT"] ?? "") || options.yes;
 	const argumentTemplate = options.frameworks
 		?.map((framework) => framework.trim())
 		.filter((framework): framework is FrameworkOption => {

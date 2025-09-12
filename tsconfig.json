@@ -1,13 +1,4 @@
 {
-	"compilerOptions": {
-		"target": "ESNext",
-		"baseUrl": ".",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true
-	},
-	"include": ["**/*/*.*"],
-	"exclude": ["./fixtures/**/*.*"]
+	"extends": "@isentinel/tsconfig/typescript",
+	"exclude": ["**/node_modules", "./**/.*/", "./fixtures/**/*.*"]
 }

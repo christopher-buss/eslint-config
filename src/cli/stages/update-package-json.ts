@@ -23,7 +23,7 @@ export async function updatePackageJson(result: PromptResult): Promise<void> {
 
 	parsedPackage.devDependencies ??= {};
 	parsedPackage.devDependencies["@isentinel/eslint-config"] = `^${version}`;
-	parsedPackage.devDependencies.eslint ??= versionsMap.eslint;
+	parsedPackage.devDependencies["eslint"] ??= versionsMap.eslint;
 
 	const addedPackages: Array<string> = [];
 

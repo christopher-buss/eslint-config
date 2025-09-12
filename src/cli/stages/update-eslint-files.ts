@@ -19,7 +19,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const parsedPackage: Record<string, any> = JSON.parse(packageContent);
 
 	const configFileName =
-		parsedPackage.type === "module" ? "eslint.config.js" : "eslint.config.mjs";
+		parsedPackage["type"] === "module" ? "eslint.config.js" : "eslint.config.mjs";
 	const pathFlatConfig = path.join(cwd, configFileName);
 
 	const eslintIgnores: Array<string> = [];

@@ -156,10 +156,15 @@ export async function typescript(
 			files,
 			name: "isentinel/typescript/rules",
 			rules: {
-				...renameRules(pluginTs.configs["eslint-recommended"].overrides?.[0].rules ?? {}, {
+				...renameRules(
+					pluginTs.configs["eslint-recommended"]?.overrides?.[0]?.rules ?? {},
+					{
+						"@typescript-eslint": "ts",
+					},
+				),
+				...renameRules(pluginTs.configs["strict"]?.rules ?? {}, {
 					"@typescript-eslint": "ts",
 				}),
-				...renameRules(pluginTs.configs.strict.rules ?? {}, { "@typescript-eslint": "ts" }),
 
 				"no-dupe-class-members": "off",
 

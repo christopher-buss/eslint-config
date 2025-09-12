@@ -107,7 +107,7 @@ export function createTsParser(options: {
 }
 
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
-	if ((process.env.CI ?? "") || !process.stdout.isTTY) {
+	if ((process.env["CI"] ?? "") || !process.stdout.isTTY) {
 		return;
 	}
 
@@ -169,7 +169,7 @@ export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise
 }
 
 export function isInEditorEnvironment(): boolean {
-	if (process.env.CI ?? "") {
+	if (process.env["CI"] ?? "") {
 		return false;
 	}
 
@@ -178,19 +178,19 @@ export function isInEditorEnvironment(): boolean {
 	}
 
 	return [
-		process.env.VSCODE_PID,
-		process.env.VSCODE_CWD,
-		process.env.JETBRAINS_IDE,
-		process.env.VIM,
-		process.env.NVIM,
+		process.env["VSCODE_PID"],
+		process.env["VSCODE_CWD"],
+		process.env["JETBRAINS_IDE"],
+		process.env["VIM"],
+		process.env["NVIM"],
 	].some(Boolean);
 }
 
 export function isInGitHooksOrLintStaged(): boolean {
 	return [
-		process.env.GIT_PARAMS ??
-			process.env.VSCODE_GIT_COMMAND ??
-			process.env.npm_lifecycle_script?.startsWith("lint-staged"),
+		process.env["GIT_PARAMS"] ??
+			process.env["VSCODE_GIT_COMMAND"] ??
+			process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
 	].some(Boolean);
 }
 
