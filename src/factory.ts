@@ -94,6 +94,7 @@ export async function isentinel(
 		eslintPlugin: enableEslintPlugin = false,
 		formatters,
 		gitignore: enableGitignore = true,
+		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
 		pnpm: enableCatalogs = false,
 		react: enableReact = false,
@@ -169,7 +170,6 @@ export async function isentinel(
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: options.type }),
-		jsdoc({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: options.roblox, type: options.type }),
 		javascript({
 			isInEditor,
@@ -188,6 +188,10 @@ export async function isentinel(
 		}),
 		unicorn({ stylistic: stylisticOptions }),
 	);
+
+	if (enableJsdoc !== false) {
+		configs.push(jsdoc({ stylistic: stylisticOptions, type: options.type }));
+	}
 
 	// Enable Node.js rules for non-Roblox packages
 	if (options.type === "package" && options.roblox === false) {
