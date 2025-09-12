@@ -38,7 +38,17 @@ export async function jsdoc(
 				"jsdoc/no-types": "warn",
 				"jsdoc/require-description": [
 					"warn",
-					{ exemptedBy: ["hidden, ignore", "inheritdoc", "client", "server", "see"] },
+					{
+						exemptedBy: [
+							"hidden",
+							"ignore",
+							"inheritdoc",
+							"client",
+							"server",
+							"see",
+							"metadata",
+						],
+					},
 				],
 				"jsdoc/require-description-complete-sentence": "warn",
 				"jsdoc/require-param-description": "warn",
