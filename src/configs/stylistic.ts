@@ -121,18 +121,21 @@ export async function stylistic(
 		},
 		{
 			files: [GLOB_TS, GLOB_TSX],
+			name: "isentinel/stylistic/ts",
 			rules: {
 				...createArrowStyleRule("oxc-ts"),
 			},
 		},
 		{
 			files: [GLOB_JS, GLOB_JSX],
+			name: "isentinel/stylistic/js",
 			rules: {
 				...createArrowStyleRule("oxc"),
 			},
 		},
 		{
 			files: [GLOB_MARKDOWN_CODE],
+			name: "isentinel/stylistic/markdown-code",
 			rules: {
 				...createArrowStyleRule("oxc", Number(prettierOptions["jsdocPrintWidth"]) || 80),
 			},
