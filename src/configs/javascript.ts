@@ -4,22 +4,25 @@ import { GLOB_SRC } from "../globs";
 import type {
 	OptionsIsInEditor,
 	OptionsOverrides,
+	OptionsRoblox,
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault } from "../utils";
 
 export async function javascript(
-	options: OptionsIsInEditor & OptionsOverrides & OptionsStylistic = {},
+	options: OptionsIsInEditor & OptionsOverrides & OptionsRoblox & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { isInEditor = false, overrides = {}, stylistic = true } = options;
+	const { isInEditor = false, overrides = {}, roblox = true, stylistic = true } = options;
 
-	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters] = await Promise.all([
-		interopDefault(import("eslint-plugin-antfu")),
-		interopDefault(import("eslint-plugin-de-morgan")),
-		// @ts-expect-error -- No types
-		interopDefault(import("eslint-plugin-better-max-params")),
-	] as const);
+	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters, pluginUnusedImports] =
+		await Promise.all([
+			interopDefault(import("eslint-plugin-antfu")),
+			interopDefault(import("eslint-plugin-de-morgan")),
+			// @ts-expect-error -- No types
+			interopDefault(import("eslint-plugin-better-max-params")),
+			interopDefault(import("eslint-plugin-unused-imports")),
+		] as const);
 
 	return [
 		{
@@ -54,6 +57,7 @@ export async function javascript(
 				"antfu": pluginAntfu,
 				"better-max-params": pluginMaxParameters,
 				"de-morgan": pluginDeMorgan,
+				"unused-imports": pluginUnusedImports,
 			},
 			rules: {
 				"accessor-pairs": ["error", { enforceForClassMembers: true, setWithoutGet: true }],
@@ -205,15 +209,7 @@ export async function javascript(
 						allowTernary: true,
 					},
 				],
-				"no-unused-vars": [
-					"error",
-					{
-						args: "none",
-						caughtErrors: "none",
-						ignoreRestSiblings: true,
-						vars: "all",
-					},
-				],
+				"no-unused-vars": "off",
 				"no-use-before-define": [
 					"error",
 					{ classes: false, functions: false, variables: true },
@@ -249,6 +245,21 @@ export async function javascript(
 				"prefer-template": "error",
 				"symbol-description": "error",
 				"unicode-bom": ["error", "never"],
+				"unused-imports/no-unused-imports": isInEditor ? "warn" : "error",
+				"unused-imports/no-unused-vars": [
+					"error",
+					{
+						args: "all",
+						argsIgnorePattern: "^_+",
+						caughtErrors: "all",
+						caughtErrorsIgnorePattern: "^_+",
+						destructuredArrayIgnorePattern: "^_+",
+						ignoreRestSiblings: true,
+						reportUsedIgnorePattern: true,
+						vars: "all",
+						varsIgnorePattern: "^_+",
+					},
+				],
 				"use-isnan": ["error", { enforceForIndexOf: true, enforceForSwitchCase: true }],
 				"valid-typeof": ["error", { requireStringLiterals: true }],
 				"vars-on-top": "error",
@@ -290,7 +301,14 @@ export async function javascript(
 								},
 							],
 							"one-var": ["error", { initialized: "never" }],
+
 							"yoda": ["error", "never"],
+
+							...(!roblox
+								? {
+										"func-style": ["error", "declaration"],
+									}
+								: {}),
 						}
 					: {}),
 

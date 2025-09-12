@@ -12,6 +12,7 @@ catalogs:
     "@types/prompts": 2.4.9
     "@types/yargs": 17.0.33
     bumpp: 10.2.3
+    eslint-plugin-unused-imports: 4.2.0
     eslint-typegen: 2.3.0
     esno: 4.8.0
     execa: 9.6.0

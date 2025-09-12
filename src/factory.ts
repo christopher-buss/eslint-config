@@ -171,7 +171,12 @@ export async function isentinel(
 		imports({ stylistic: stylisticOptions, type: options.type }),
 		jsdoc({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: options.roblox, type: options.type }),
-		javascript({ isInEditor, overrides: getOverrides(options, "javascript") }),
+		javascript({
+			isInEditor,
+			overrides: getOverrides(options, "javascript"),
+			roblox: options.roblox,
+			stylistic: stylisticOptions,
+		}),
 		promise(),
 		shopify({ stylistic: stylisticOptions }),
 		sonarjs({ isInEditor }),
@@ -347,7 +352,11 @@ export async function isentinel(
 	}
 
 	if (isInEditor) {
-		const disableAutofixRules = ["no-useless-return", "prefer-const"];
+		const disableAutofixRules = [
+			"no-useless-return",
+			"prefer-const",
+			"unused-imports/no-unused-imports",
+		];
 		if (enableRoblox) {
 			disableAutofixRules.push("unicorn/no-array-for-each");
 		}

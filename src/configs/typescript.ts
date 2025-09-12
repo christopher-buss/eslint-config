@@ -42,6 +42,7 @@ export async function typescript(
 		"dot-notation": "off",
 		"no-implied-eval": "off",
 		"no-unsafe-optional-chaining": "error",
+		"prefer-promise-reject-errors": "off",
 		"ts/await-thenable": "error",
 		"ts/consistent-type-assertions": [
 			"error",
@@ -167,20 +168,17 @@ export async function typescript(
 				}),
 
 				"no-dupe-class-members": "off",
-
 				"no-empty-function": "off",
 				"no-loss-of-precision": "off",
 				"no-redeclare": "off",
 				"no-restricted-syntax": ["error", "[declare=true]"],
-
 				"no-shadow": "off",
 				"no-unused-expressions": "off",
 				"no-unused-private-class-members": "off",
-				"no-unused-vars": "off",
 				"no-use-before-define": "off",
-
 				"no-useless-constructor": "off",
 				"prefer-destructuring": "off",
+
 				"ts/adjacent-overload-signatures": "off",
 				"ts/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description" }],
 				"ts/default-param-last": "error",
@@ -217,15 +215,7 @@ export async function typescript(
 				"ts/no-require-imports": "error",
 				"ts/no-shadow": "error",
 				"ts/no-unused-expressions": "error",
-				"ts/no-unused-vars": [
-					"error",
-					{
-						argsIgnorePattern: "^_+",
-						caughtErrorsIgnorePattern: "^_+",
-						reportUsedIgnorePattern: true,
-						varsIgnorePattern: "^_+",
-					},
-				],
+				"ts/no-unused-vars": "off",
 				"ts/no-use-before-define": "off",
 				"ts/no-useless-constructor": "error",
 				"ts/no-wrapper-object-types": "error",
