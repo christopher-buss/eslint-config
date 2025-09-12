@@ -117,6 +117,20 @@ set:
 }
 ```
 
+Alternatively, you can install `@isentinel/tsconfig` from pnpm:
+
+```bash
+pnpm install --save-dev @isentinel/tsconfig
+```
+
+And use it in your `tsconfig.json`:
+
+```json
+{
+	"extends": "@isentinel/tsconfig/roblox"
+}
+```
+
 ### ESLint
 
 The `ts/no-non-null-assertion` rule is enabled by default, which will warn you
