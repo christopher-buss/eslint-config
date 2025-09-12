@@ -35,7 +35,7 @@ export async function stylistic(
 		semi,
 	});
 
-	const createArrowStyleRule = (parser: string, maxLength?: number): Linter.RulesRecord => {
+	function createArrowStyleRule(parser: string, maxLength?: number): Linter.RulesRecord {
 		return {
 			"arrow-style/arrow-return-style": [
 				"error",
@@ -52,7 +52,7 @@ export async function stylistic(
 				},
 			],
 		};
-	};
+	}
 
 	return [
 		{

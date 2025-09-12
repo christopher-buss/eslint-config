@@ -171,7 +171,12 @@ export async function isentinel(
 		imports({ stylistic: stylisticOptions, type: options.type }),
 		jsdoc({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: options.roblox, type: options.type }),
-		javascript({ isInEditor, overrides: getOverrides(options, "javascript") }),
+		javascript({
+			isInEditor,
+			overrides: getOverrides(options, "javascript"),
+			roblox: options.roblox,
+			stylistic: stylisticOptions,
+		}),
 		promise(),
 		shopify({ stylistic: stylisticOptions }),
 		sonarjs({ isInEditor }),

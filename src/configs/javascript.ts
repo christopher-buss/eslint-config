@@ -4,15 +4,16 @@ import { GLOB_SRC } from "../globs";
 import type {
 	OptionsIsInEditor,
 	OptionsOverrides,
+	OptionsRoblox,
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault } from "../utils";
 
 export async function javascript(
-	options: OptionsIsInEditor & OptionsOverrides & OptionsStylistic = {},
+	options: OptionsIsInEditor & OptionsOverrides & OptionsRoblox & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { isInEditor = false, overrides = {}, stylistic = true } = options;
+	const { isInEditor = false, overrides = {}, roblox = true, stylistic = true } = options;
 
 	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters] = await Promise.all([
 		interopDefault(import("eslint-plugin-antfu")),
@@ -290,7 +291,14 @@ export async function javascript(
 								},
 							],
 							"one-var": ["error", { initialized: "never" }],
+
 							"yoda": ["error", "never"],
+
+							...(!roblox
+								? {
+										"func-style": ["error", "declaration"],
+									}
+								: {}),
 						}
 					: {}),
 
