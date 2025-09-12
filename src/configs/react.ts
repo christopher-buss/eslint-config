@@ -38,14 +38,21 @@ export async function react(
 
 	await ensurePackages(["@eslint-react/eslint-plugin", "eslint-plugin-react-roblox-hooks"]);
 
-	const [pluginReact, pluginReactHooks, pluginStylistic, pluginTs, pluginUnicorn] =
-		await Promise.all([
-			interopDefault(import("@eslint-react/eslint-plugin")),
-			interopDefault(import("eslint-plugin-react-roblox-hooks")),
-			interopDefault(import("@stylistic/eslint-plugin")),
-			interopDefault(import("@typescript-eslint/eslint-plugin")),
-			interopDefault(import("eslint-plugin-unicorn")),
-		] as const);
+	const [
+		pluginReact,
+		pluginReactHooks,
+		pluginStylistic,
+		pluginTs,
+		pluginUnicorn,
+		pluginUnusedImports,
+	] = await Promise.all([
+		interopDefault(import("@eslint-react/eslint-plugin")),
+		interopDefault(import("eslint-plugin-react-roblox-hooks")),
+		interopDefault(import("@stylistic/eslint-plugin")),
+		interopDefault(import("@typescript-eslint/eslint-plugin")),
+		interopDefault(import("eslint-plugin-unicorn")),
+		interopDefault(import("eslint-plugin-unused-imports")),
+	] as const);
 
 	const { plugins } = pluginReact.configs.all;
 
@@ -77,6 +84,7 @@ export async function react(
 				"style": pluginStylistic,
 				"ts": pluginTs,
 				"unicorn": pluginUnicorn,
+				"unused-imports": pluginUnusedImports,
 			},
 		},
 		{
@@ -111,8 +119,8 @@ export async function react(
 				"react/ensure-forward-ref-using-ref": "warn",
 				"react/jsx-no-duplicate-props": "off",
 				"react/jsx-no-undef": "off",
-				"react/jsx-uses-react": "off",
-				"react/jsx-uses-vars": "off",
+				"react/jsx-uses-react": "error",
+				"react/jsx-uses-vars": "error",
 				"react/no-access-state-in-setstate": "error",
 				"react/no-array-index-key": "warn",
 				"react/no-children-count": "warn",

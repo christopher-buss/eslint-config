@@ -352,7 +352,11 @@ export async function isentinel(
 	}
 
 	if (isInEditor) {
-		const disableAutofixRules = ["no-useless-return", "prefer-const"];
+		const disableAutofixRules = [
+			"no-useless-return",
+			"prefer-const",
+			"unused-imports/no-unused-imports",
+		];
 		if (enableRoblox) {
 			disableAutofixRules.push("unicorn/no-array-for-each");
 		}

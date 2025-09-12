@@ -108,6 +108,7 @@
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-n": "catalog:peer",
 		"eslint-plugin-react-roblox-hooks": "catalog:peer",
+		"eslint-plugin-unused-imports": "catalog:dev",
 		"eslint-typegen": "catalog:dev",
 		"esno": "catalog:dev",
 		"execa": "catalog:dev",

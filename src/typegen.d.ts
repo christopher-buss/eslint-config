@@ -7348,6 +7348,16 @@ export interface RuleOptions {
    */
   'unicorn/throw-new-error'?: Linter.RuleEntry<[]>
   /**
+   * Disallow unused variables
+   * @see https://github.com/sweepline/eslint-plugin-unused-imports/blob/master/docs/rules/no-unused-imports.md
+   */
+  'unused-imports/no-unused-imports'?: Linter.RuleEntry<UnusedImportsNoUnusedImports>
+  /**
+   * Disallow unused variables
+   * @see https://github.com/sweepline/eslint-plugin-unused-imports/blob/master/docs/rules/no-unused-vars.md
+   */
+  'unused-imports/no-unused-vars'?: Linter.RuleEntry<UnusedImportsNoUnusedVars>
+  /**
    * Require calls to `isNaN()` when checking for `NaN`
    * @see https://eslint.org/docs/latest/rules/use-isnan
    */
@@ -16345,6 +16355,52 @@ type UnicornTemplateIndent = []|[{
   selectors?: string[]
   comments?: string[]
 }]
+// ----- unused-imports/no-unused-imports -----
+type UnusedImportsNoUnusedImports = []|[(("all" | "local") | {
+  
+  args?: ("all" | "after-used" | "none")
+  
+  argsIgnorePattern?: string
+  
+  caughtErrors?: ("all" | "none")
+  
+  caughtErrorsIgnorePattern?: string
+  
+  destructuredArrayIgnorePattern?: string
+  
+  ignoreClassWithStaticInitBlock?: boolean
+  
+  ignoreRestSiblings?: boolean
+  
+  reportUsedIgnorePattern?: boolean
+  
+  vars?: ("all" | "local")
+  
+  varsIgnorePattern?: string
+})]
+// ----- unused-imports/no-unused-vars -----
+type UnusedImportsNoUnusedVars = []|[(("all" | "local") | {
+  
+  args?: ("all" | "after-used" | "none")
+  
+  argsIgnorePattern?: string
+  
+  caughtErrors?: ("all" | "none")
+  
+  caughtErrorsIgnorePattern?: string
+  
+  destructuredArrayIgnorePattern?: string
+  
+  ignoreClassWithStaticInitBlock?: boolean
+  
+  ignoreRestSiblings?: boolean
+  
+  reportUsedIgnorePattern?: boolean
+  
+  vars?: ("all" | "local")
+  
+  varsIgnorePattern?: string
+})]
 // ----- use-isnan -----
 type UseIsnan = []|[{
   enforceForSwitchCase?: boolean
