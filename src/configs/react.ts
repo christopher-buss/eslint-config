@@ -1,7 +1,7 @@
 import type { FixupPluginDefinition } from "@eslint/compat";
 import { fixupPluginRules } from "@eslint/compat";
 
-import { GLOB_MARKDOWN, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../globs";
+import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -25,8 +25,8 @@ export async function react(
 		additionalComponents,
 		additionalHooks,
 		filenameCase = "kebabCase",
-		files = [GLOB_SRC],
-		filesTypeAware = [GLOB_TS, GLOB_TSX],
+		files = [GLOB_JSX, GLOB_TSX],
+		filesTypeAware = [GLOB_TSX],
 		ignoresTypeAware = [`${GLOB_MARKDOWN}/**`],
 		importSource,
 		jsxPragma,
@@ -99,6 +99,7 @@ export async function react(
 			},
 			name: "isentinel/react/rules",
 			rules: {
+				"max-lines-per-function": "off",
 				// recommended rules from @eslint-react/hooks-extra
 				// react-lua does not seem to fully support the patterns that
 				// this rule enforces.
@@ -113,7 +114,7 @@ export async function react(
 				"react-hooks-roblox/rules-of-hooks": "error",
 				// recommended rules from @eslint-react/naming-convention
 				"react-naming-convention/context-name": "error",
-				"react-naming-convention/filename-extension": ["warn", "as-needed"],
+				"react-naming-convention/filename-extension": "off",
 				"react-naming-convention/use-state": "error",
 				// recommended rules from @eslint-react
 				"react/ensure-forward-ref-using-ref": "warn",
@@ -163,6 +164,14 @@ export async function react(
 				"react/no-unused-state": "warn",
 				"react/no-use-context": "off",
 				"react/no-useless-forward-ref": "error",
+				"unicorn/filename-case": [
+					"error",
+					{
+						case: filenameCase,
+						ignore: ["^[A-Z0-9]+\.md$"],
+						multipleFileExtensions: true,
+					},
+				],
 
 				...(stylistic !== false
 					? {
@@ -215,19 +224,5 @@ export async function react(
 					},
 				]
 			: []),
-		{
-			files: [GLOB_TSX],
-			rules: {
-				"max-lines-per-function": "off",
-				"unicorn/filename-case": [
-					"error",
-					{
-						case: filenameCase,
-						ignore: ["^[A-Z0-9]+\.md$"],
-						multipleFileExtensions: true,
-					},
-				],
-			},
-		},
 	];
 }
