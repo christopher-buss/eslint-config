@@ -9,6 +9,9 @@ export default isentinel(
 		roblox: false,
 		test: true,
 		type: "package",
+		typescript: {
+			erasableOnly: true,
+		},
 	},
 	{
 		files: ["src/**/*.ts"],

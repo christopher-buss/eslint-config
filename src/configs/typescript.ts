@@ -4,22 +4,25 @@ import type {
 	OptionsFiles,
 	OptionsOverrides,
 	OptionsStylistic,
+	OptionsTypeScriptErasableOnly,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
 } from "../types";
-import { createTsParser, getTsConfig, interopDefault, renameRules } from "../utils";
+import { createTsParser, ensurePackages, getTsConfig, interopDefault, renameRules } from "../utils";
 
 export async function typescript(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
 		OptionsOverrides &
 		OptionsStylistic &
+		OptionsTypeScriptErasableOnly &
 		OptionsTypeScriptParserOptions &
 		OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
+		erasableOnly = false,
 		overrides = {},
 		overridesTypeAware = {},
 		parserOptions = {},
@@ -120,6 +123,15 @@ export async function typescript(
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-antfu")),
 	] as const);
+
+	const erasablePlugin = await (async () => {
+		if (!erasableOnly) {
+			return;
+		}
+
+		await ensurePackages(["eslint-plugin-erasable-syntax-only"]);
+		return interopDefault(import("eslint-plugin-erasable-syntax-only"));
+	})();
 
 	function makeParser(
 		usesTypeInformation: boolean,
@@ -257,6 +269,23 @@ export async function typescript(
 							...typeAwareRules,
 							...overridesTypeAware,
 						},
+					},
+				]
+			: []),
+
+		...(erasableOnly
+			? [
+					{
+						name: "isentinel/typescript/erasable-syntax-only",
+						plugins: {
+							"erasable-syntax-only": erasablePlugin,
+						},
+						rules: {
+							"erasable-syntax-only/enums": "error",
+							"erasable-syntax-only/import-aliases": "error",
+							"erasable-syntax-only/namespaces": "error",
+							"erasable-syntax-only/parameter-properties": "error",
+						} as const,
 					},
 				]
 			: []),

@@ -295,8 +295,18 @@ export interface OptionsTestFramework {
 }
 
 export type OptionsTypescript =
-	| (OptionsOverrides & OptionsTypeScriptParserOptions)
-	| (OptionsOverrides & OptionsTypeScriptWithTypes);
+	| (OptionsOverrides & OptionsTypeScriptErasableOnly & OptionsTypeScriptParserOptions)
+	| (OptionsOverrides & OptionsTypeScriptErasableOnly & OptionsTypeScriptWithTypes);
+
+export interface OptionsTypeScriptErasableOnly {
+	/**
+	 * Enable erasable syntax only rules.
+	 *
+	 * @see https://github.com/JoshuaKGoldberg/eslint-plugin-erasable-syntax-only
+	 * @default false
+	 */
+	erasableOnly?: boolean;
+}
 
 export interface OptionsTypeScriptParserOptions {
 	/**

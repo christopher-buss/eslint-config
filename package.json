@@ -104,6 +104,7 @@
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
 		"eslint": "catalog:peer",
+		"eslint-plugin-erasable-syntax-only": "catalog:peer",
 		"eslint-plugin-eslint-plugin": "catalog:peer",
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-n": "catalog:peer",
