@@ -20,7 +20,8 @@ export async function gitignore(
 
 	if (typeof config !== "boolean") {
 		const resolved = await interopDefault(import("eslint-config-flat-gitignore"));
-		return [resolved(config)];
+		const configWithName = Object.assign({}, config, { name: "isentinel/gitignore" });
+		return [resolved(configWithName)];
 	}
 
 	if (fs.existsSync(".gitignore")) {
@@ -28,6 +29,7 @@ export async function gitignore(
 		return [
 			resolved({
 				files: [".gitignore", ".git/info/exclude"],
+				name: "isentinel/gitignore",
 				strict: false,
 			}),
 		];
