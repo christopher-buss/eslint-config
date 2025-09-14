@@ -1,4 +1,4 @@
-import { GLOB_SRC, GLOB_YAML } from "../globs";
+import { GLOB_SRC } from "../globs";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
@@ -41,12 +41,6 @@ export async function comments(
 							"style/multiline-comment-style": ["error", "separate-lines"],
 						}
 					: {}),
-			},
-		},
-		{
-			files: [GLOB_YAML],
-			rules: {
-				"no-inline-comments": "off",
 			},
 		},
 		...(stylistic !== false

@@ -1,4 +1,11 @@
-import { GLOB_BUILD_TOOLS, GLOB_DTS, GLOB_SRC, GLOB_SRC_EXT, GLOB_TESTS } from "../globs";
+import {
+	GLOB_BUILD_TOOLS,
+	GLOB_DTS,
+	GLOB_SRC,
+	GLOB_SRC_EXT,
+	GLOB_TESTS,
+	GLOB_YAML,
+} from "../globs";
 import type { TypedFlatConfigItem } from "../types";
 
 export async function disables(): Promise<Array<TypedFlatConfigItem>> {
@@ -75,6 +82,13 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 			rules: {
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
+			},
+		},
+		{
+			files: [GLOB_YAML],
+			name: "isentinel/disables/yaml",
+			rules: {
+				"no-inline-comments": "off",
 			},
 		},
 	];
