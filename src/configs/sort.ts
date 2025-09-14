@@ -259,13 +259,13 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 							"continue-on-error",
 							"timeout-minutes",
 						],
-						pathPattern: "^runs\\.steps\\.[^.]+$",
+						pathPattern: "^runs\\.steps\\[\\d+\\]$",
 					},
 					// General nested key sorting for everything else
 					{
 						order: { type: "asc" },
 						pathPattern:
-							"^(?!^$|inputs\\.[^.]+$|outputs\\.[^.]+$|runs$|runs\\.steps\\.[^.]+$).*",
+							"^(?!^$|inputs\\.[^.]+$|outputs\\.[^.]+$|runs$|runs\\.steps\\[\\d+\\]$).*$",
 					},
 				],
 			},
