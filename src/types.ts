@@ -7,6 +7,7 @@ import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { Options as PrettierOptions } from "prettier";
 
 import type { ConfigNames, RuleOptions } from "./typegen";
+import type { ExtractRuleOptions } from "./utils";
 
 export type Awaitable<T> = Promise<T> | T;
 
@@ -350,6 +351,13 @@ export interface OptionsTypeScriptWithTypes {
 
 export interface PerfectionistConfig {
 	customClassGroups?: Array<string>;
+	/**
+	 * Custom configuration for perfectionist/sort-objects rule.
+	 * Merges with default config.
+	 */
+	sortObjects?: Partial<
+		ExtractRuleOptions<NonNullable<RuleOptions["perfectionist/sort-objects"]>>[0]
+	>;
 }
 
 export type ReactConfig = ESLintReactSettings &

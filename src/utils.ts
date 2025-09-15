@@ -1,6 +1,7 @@
 import type { FlatConfig } from "@eslint/compat";
 import type { ParserOptions } from "@typescript-eslint/parser";
 
+import type { Linter } from "eslint";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -10,6 +11,8 @@ import prettier from "prettier";
 
 import type { PrettierOptions, PrettierRuleOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
+
+export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
 type ModuleImport<T> = Promise<T | { default: T }>;
 

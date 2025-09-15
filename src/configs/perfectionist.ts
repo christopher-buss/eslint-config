@@ -38,7 +38,7 @@ const constructorGroup = {
 export async function perfectionist(
 	config?: OptionsProjectType & PerfectionistConfig,
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { customClassGroups = [], type = "game" } = config ?? {};
+	const { customClassGroups = [], sortObjects, type = "game" } = config ?? {};
 
 	const customGroups = [];
 	for (const customGroup of customClassGroups) {
@@ -197,7 +197,7 @@ export async function perfectionist(
 				"perfectionist/sort-object-types": ["error", { type: "natural" }],
 				"perfectionist/sort-objects": [
 					"error",
-					{ partitionByComment: "^Part:\\s*(.*)$", type: "natural" },
+					{ partitionByComment: "^Part:\\s*(.*)$", type: "natural", ...sortObjects },
 				],
 				"perfectionist/sort-sets": ["error", { type: "natural" }],
 				"perfectionist/sort-switch-case": ["error", { type: "natural" }],
