@@ -275,6 +275,54 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 }
 
 /**
+ * Sort Rojo .project.json files.
+ *
+ * Requires `jsonc` config.
+ *
+ * @returns An array of flat configuration items.
+ */
+export function sortRojoProject(): Array<TypedFlatConfigItem> {
+	return [
+		{
+			files: ["**/*.project.json", "**/project.json"],
+			name: "isentinel/sort/rojo-project",
+			rules: {
+				"jsonc/sort-keys": [
+					"error",
+					{
+						order: [
+							"name",
+							"servePort",
+							"servePlaceIds",
+							"placeId",
+							"gameId",
+							"serveAddress",
+							"globIgnorePaths",
+							"tree",
+						],
+						pathPattern: "^$",
+					},
+					{
+						hasProperties: [
+							"$className",
+							"$path",
+							"$properties",
+							"$ignoreUnknownInstances",
+						],
+						order: ["$className", "$path", "$properties", "$ignoreUnknownInstances"],
+						pathPattern: "^tree\\..+$",
+					},
+					{
+						order: { type: "asc" },
+						pathPattern: ".*",
+					},
+				],
+			},
+		},
+	];
+}
+
+/**
  * Sort tsconfig.json.
  *
  * Requires `jsonc` config.

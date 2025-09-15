@@ -13,6 +13,7 @@ nonblock
 nonconstructor
 pico
 rbxts
+rojo
 setstate
 sonarjs
 stylua

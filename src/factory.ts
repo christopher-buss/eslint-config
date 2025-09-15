@@ -23,6 +23,7 @@ import {
 	shopify,
 	sonarjs,
 	sortGithubAction,
+	sortRojoProject,
 	sortTsconfig,
 	stylistic,
 	toml,
@@ -263,6 +264,10 @@ export async function isentinel(
 
 		if (stylisticOptions !== false) {
 			configs.push(sortTsconfig());
+		}
+
+		if (enableRoblox) {
+			configs.push(sortRojoProject());
 		}
 	}
 
