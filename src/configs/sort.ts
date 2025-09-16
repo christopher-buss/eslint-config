@@ -298,6 +298,7 @@ export function sortRojoProject(): Array<TypedFlatConfigItem> {
 							"gameId",
 							"serveAddress",
 							"globIgnorePaths",
+							"emitLegacyScripts",
 							"tree",
 						],
 						pathPattern: "^$",
