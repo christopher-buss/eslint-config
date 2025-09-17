@@ -21,8 +21,8 @@
 	"files": ["bin", "dist"],
 	"scripts": {
 		"build": "nr gen && tsdown --clean --dts",
-		"build:inspector": "pnpm build && npx @eslint/config-inspector build",
-		"dev": "npx @eslint/config-inspector --config eslint.config.ts",
+		"build:inspector": "pnpm build && npx @eslint/config-inspector build --config eslint-inspector.config.ts",
+		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "eslint --cache",
