@@ -642,7 +642,7 @@ export interface RuleOptions {
    * Reports invalid alignment of JSDoc block asterisks.
    * @see https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/check-alignment.md#repos-sticky-header
    */
-  'jsdoc/check-alignment'?: Linter.RuleEntry<[]>
+  'jsdoc/check-alignment'?: Linter.RuleEntry<JsdocCheckAlignment>
   /**
    * Ensures that (JavaScript) examples within JSDoc adhere to ESLint rules.
    * @see https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/check-examples.md#repos-sticky-header
@@ -2539,7 +2539,7 @@ export interface RuleOptions {
    */
   'package-json/restrict-dependency-ranges'?: Linter.RuleEntry<PackageJsonRestrictDependencyRanges>
   /**
-   * Dependencies, scripts, and configuration values must be declared in alphabetical order.
+   * Selected collections must be in a consistent order (lexicographical for most; lifecycle-aware for scripts).
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/sort-collections.md
    */
   'package-json/sort-collections'?: Linter.RuleEntry<PackageJsonSortCollections>
@@ -2588,6 +2588,16 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-devDependencies.md
    */
   'package-json/valid-devDependencies'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `directories` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-directories.md
+   */
+  'package-json/valid-directories'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `exports` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-exports.md
+   */
+  'package-json/valid-exports'?: Linter.RuleEntry<[]>
   /**
    * Enforce that the `license` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-license.md
@@ -2847,6 +2857,11 @@ export interface RuleOptions {
    * @see https://eslint.org/docs/latest/rules/prefer-template
    */
   'prefer-template'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow losing originally caught error when re-throwing custom errors
+   * @see https://eslint.org/docs/latest/rules/preserve-caught-error
+   */
+  'preserve-caught-error'?: Linter.RuleEntry<PreserveCaughtError>
   /**
    * Require returning inside each `then()` to create readable and reusable Promise chains.
    * @see https://github.com/eslint-community/eslint-plugin-promise/blob/main/docs/rules/always-return.md
@@ -3241,7 +3256,7 @@ export interface RuleOptions {
   'react/no-nested-components'?: Linter.RuleEntry<[]>
   /**
    * Disallow nesting lazy component declarations inside other components.
-   * @see https://eslint-react.xyz/docs/rules/no-nested-component-definitions
+   * @see https://eslint-react.xyz/docs/rules/no-nested-lazy-component-declarations
    */
   'react/no-nested-lazy-component-declarations'?: Linter.RuleEntry<[]>
   /**
@@ -8092,6 +8107,10 @@ type IndentLegacy = []|[("tab" | number)]|[("tab" | number), {
 type InitDeclarations = ([]|["always"] | []|["never"]|["never", {
   ignoreForLoopInit?: boolean
 }])
+// ----- jsdoc/check-alignment -----
+type JsdocCheckAlignment = []|[{
+  innerIndent?: number
+}]
 // ----- jsdoc/check-examples -----
 type JsdocCheckExamples = []|[{
   allowInlineConfig?: boolean
@@ -8381,6 +8400,7 @@ type JsdocRequireJsdoc = []|[{
   enableFixer?: boolean
   exemptEmptyConstructors?: boolean
   exemptEmptyFunctions?: boolean
+  exemptOverloadedImplementations?: boolean
   fixerMessage?: string
   minLineCount?: number
   publicOnly?: (boolean | {
@@ -8397,6 +8417,7 @@ type JsdocRequireJsdoc = []|[{
     FunctionExpression?: boolean
     MethodDefinition?: boolean
   }
+  skipInterveningOverloadedDeclarations?: boolean
 }]
 // ----- jsdoc/require-param -----
 type JsdocRequireParam = []|[{
@@ -8487,6 +8508,7 @@ type JsdocRequireReturnsType = []|[{
 }]
 // ----- jsdoc/require-template -----
 type JsdocRequireTemplate = []|[{
+  exemptedBy?: string[]
   requireSeparateTemplates?: boolean
 }]
 // ----- jsdoc/require-throws -----
@@ -13235,6 +13257,11 @@ type PreferReflect = []|[{
 type PreferRegexLiterals = []|[{
   disallowRedundantWrapping?: boolean
 }]
+// ----- preserve-caught-error -----
+type PreserveCaughtError = []|[{
+  
+  requireCatchParameter?: boolean
+}]
 // ----- promise/always-return -----
 type PromiseAlwaysReturn = []|[{
   ignoreLastCallback?: boolean
@@ -13295,8 +13322,6 @@ type ReactHooksRobloxExhaustiveDeps = []|[{
 // ----- react-naming-convention/component-name -----
 type ReactNamingConventionComponentName = []|[(("PascalCase" | "CONSTANT_CASE") | {
   allowAllCaps?: boolean
-  allowLeadingUnderscore?: boolean
-  allowNamespace?: boolean
   excepts?: string[]
   rule?: ("PascalCase" | "CONSTANT_CASE")
 })]

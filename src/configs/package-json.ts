@@ -37,6 +37,8 @@ export async function packageJson(
 				"package-json/valid-bundleDependencies": "error",
 				"package-json/valid-config": "error",
 				"package-json/valid-cpu": "error",
+				"package-json/valid-directories": "error",
+				"package-json/valid-exports": "error",
 				"package-json/valid-license": "error",
 				"package-json/valid-name": "error",
 				"package-json/valid-package-definition": "error",
