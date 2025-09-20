@@ -185,6 +185,7 @@ export async function typescript(
 				"no-redeclare": "off",
 				"no-restricted-syntax": ["error", "[declare=true]"],
 				"no-shadow": "off",
+				"no-throw-literal": "off",
 				"no-unused-expressions": "off",
 				"no-unused-private-class-members": "off",
 				"no-use-before-define": "off",
