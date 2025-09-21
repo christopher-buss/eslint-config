@@ -476,6 +476,11 @@ export interface RuleOptions {
    */
   'eslint-plugin/test-case-shorthand-strings'?: Linter.RuleEntry<EslintPluginTestCaseShorthandStrings>
   /**
+   * Enforce naming conventions for everything across a codebase
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.0/src/rules/naming-convention/documentation.md
+   */
+  'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
+  /**
    * Enforce `for` loop update clause moving the counter in the right direction
    * @see https://eslint.org/docs/latest/rules/for-direction
    */
@@ -7931,6 +7936,336 @@ type EslintPluginRequireMetaSchema = []|[{
 type EslintPluginTestCasePropertyOrdering = []|[unknown[]]
 // ----- eslint-plugin/test-case-shorthand-strings -----
 type EslintPluginTestCaseShorthandStrings = []|[("as-needed" | "never" | "consistent" | "consistent-as-needed")]
+// ----- flawless/naming-convention -----
+type _FlawlessNamingConventionFormatOptionsConfig = (_FlawlessNamingConventionPredefinedFormats[] | null)
+type _FlawlessNamingConventionPredefinedFormats = ("camelCase" | "strictCamelCase" | "PascalCase" | "StrictPascalCase" | "snake_case" | "UPPER_CASE")
+type _FlawlessNamingConventionUnderscoreOptions = ("forbid" | "allow" | "require" | "requireDouble" | "allowDouble" | "allowSingleOrDouble")
+type _FlawlessNamingConvention_PrefixSuffixConfig = string[]
+type _FlawlessNamingConventionTypeModifiers = ("boolean" | "string" | "number" | "function" | "array")
+type FlawlessNamingConvention = ({
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  modifiers?: ("const" | "readonly" | "static" | "public" | "protected" | "private" | "#private" | "abstract" | "destructured" | "global" | "exported" | "unused" | "requiresQuotes" | "override" | "async" | "default" | "namespace")[]
+  selector: ("default" | "variableLike" | "memberLike" | "typeLike" | "method" | "property" | "accessor" | "variable" | "function" | "parameter" | "objectStyleEnum" | "parameterProperty" | "classicAccessor" | "enumMember" | "classMethod" | "objectLiteralMethod" | "typeMethod" | "classProperty" | "objectLiteralProperty" | "typeProperty" | "autoAccessor" | "class" | "interface" | "typeAlias" | "enum" | "typeParameter" | "import")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "default"
+  modifiers?: ("const" | "readonly" | "static" | "public" | "protected" | "private" | "#private" | "abstract" | "destructured" | "global" | "exported" | "unused" | "requiresQuotes" | "override" | "async" | "default" | "namespace")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "variableLike"
+  modifiers?: ("unused" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "variable"
+  modifiers?: ("const" | "destructured" | "exported" | "global" | "unused" | "async")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "function"
+  modifiers?: ("exported" | "global" | "unused" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "parameter"
+  modifiers?: ("destructured" | "unused")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "objectStyleEnum"
+  modifiers?: ("const" | "exported" | "global" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "memberLike"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "classProperty"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "objectLiteralProperty"
+  modifiers?: ("public" | "requiresQuotes")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "typeProperty"
+  modifiers?: ("public" | "readonly" | "requiresQuotes")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "parameterProperty"
+  modifiers?: ("private" | "protected" | "public" | "readonly")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "property"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "classMethod"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "objectLiteralMethod"
+  modifiers?: ("public" | "requiresQuotes" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "typeMethod"
+  modifiers?: ("public" | "requiresQuotes")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "method"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "classicAccessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "autoAccessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "accessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _FlawlessNamingConventionTypeModifiers[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "enumMember"
+  modifiers?: ("requiresQuotes")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "typeLike"
+  modifiers?: ("abstract" | "exported" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "class"
+  modifiers?: ("abstract" | "exported" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "interface"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "typeAlias"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "enum"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "typeParameter"
+  modifiers?: ("unused")[]
+} | {
+  custom?: _FlawlessNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _FlawlessNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  prefix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  suffix?: _FlawlessNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _FlawlessNamingConventionUnderscoreOptions
+  filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
+  selector: "import"
+  modifiers?: ("default" | "namespace")[]
+})[]
+interface _FlawlessNamingConvention_MatchRegexConfig {
+  match: boolean
+  regex: string
+}
 // ----- format-lua/stylua -----
 type FormatLuaStylua = []|[{
   language?: string
@@ -16658,4 +16993,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'

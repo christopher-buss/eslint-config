@@ -65,6 +65,7 @@
 		"eslint-plugin-arrow-return-style-x": "catalog:prod",
 		"eslint-plugin-better-max-params": "catalog:prod",
 		"eslint-plugin-de-morgan": "catalog:prod",
+		"eslint-plugin-flawless": "catalog:prod",
 		"eslint-plugin-format-lua": "catalog:prod",
 		"eslint-plugin-import-lite": "catalog:prod",
 		"eslint-plugin-jsdoc": "catalog:prod",

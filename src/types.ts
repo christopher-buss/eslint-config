@@ -46,6 +46,13 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	eslintPlugin?: boolean | OptionsOverrides;
 
 	/**
+	 * Enable eslint-plugin-flawless.
+	 *
+	 * @default false
+	 */
+	flawless?: boolean;
+
+	/**
 	 * Use external formatters to format files.
 	 *
 	 * When set to `true`, it will enable all formatters.
