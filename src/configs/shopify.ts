@@ -22,7 +22,6 @@ export async function shopify(options: OptionsStylistic = {}): Promise<Array<Typ
 				...(stylistic !== false
 					? {
 							"shopify/prefer-module-scope-constants": "error",
-							"shopify/typescript-prefer-pascal-case-enums": "error",
 							"shopify/typescript-prefer-singular-enums": "error",
 						}
 					: {}),

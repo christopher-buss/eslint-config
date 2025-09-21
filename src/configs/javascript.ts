@@ -266,12 +266,6 @@ export async function javascript(
 
 				...(stylistic !== false
 					? {
-							"camelcase": [
-								"error",
-								{
-									ignoreImports: true,
-								},
-							],
 							"id-length": [
 								"error",
 								{

@@ -6,6 +6,7 @@ import {
 	comments,
 	disables,
 	eslintPlugin,
+	flawless,
 	gitignore,
 	ignores,
 	imports,
@@ -189,6 +190,10 @@ export async function isentinel(
 		}),
 		unicorn({ stylistic: stylisticOptions }),
 	);
+
+	if (options.flawless === true) {
+		configs.push(flawless());
+	}
 
 	if (enableJsdoc !== false) {
 		configs.push(jsdoc({ stylistic: stylisticOptions, type: options.type }));

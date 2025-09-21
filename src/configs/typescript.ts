@@ -52,17 +52,6 @@ export async function typescript(
 			{ assertionStyle: "as", objectLiteralTypeAssertions: "allow" },
 		],
 		"ts/dot-notation": ["error", { allowKeywords: true }],
-		"ts/naming-convention": [
-			"error",
-			{
-				custom: {
-					match: false,
-					regex: "^I[A-Z]",
-				},
-				format: ["PascalCase"],
-				selector: "interface",
-			},
-		],
 		"ts/no-confusing-void-expression": "error",
 		"ts/no-duplicate-type-constituents": "error",
 		"ts/no-empty-object-type": "error",
