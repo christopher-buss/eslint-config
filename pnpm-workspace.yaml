@@ -76,7 +76,7 @@ catalogs:
     eslint-plugin-sentinel: 0.1.2
     eslint-plugin-sonarjs: 3.0.5
     eslint-plugin-toml: 0.12.0
-    eslint-plugin-unicorn: 60.0.0
+    eslint-plugin-unicorn: 61.0.2
     eslint-plugin-yml: 1.18.0
     jsonc-eslint-parser: 2.4.0
     local-pkg: 1.1.2
