@@ -6,6 +6,7 @@ on:
       - "v*"
 
 permissions:
+  attestations: write
   contents: write
   id-token: write
 
@@ -27,8 +28,13 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
         run: pnpm npx changelogithub
+
       - run: pnpm install
       - env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
         run: pnpm publish --no-git-checks -r --access public
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "dist/*"
