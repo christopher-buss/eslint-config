@@ -5,36 +5,12 @@ on:
     tags:
       - "v*"
 
-permissions:
-  attestations: write
-  contents: write
-  id-token: write
-
 jobs:
   release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
-        with:
-          fetch-depth: 0
+    permissions:
+      contents: write
+      id-token: write
 
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: lts/*
-          registry-url: https://registry.npmjs.org/
-
-      - env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-        run: pnpm npx changelogithub
-
-      - run: pnpm install
-      - env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-          NPM_CONFIG_PROVENANCE: true
-        run: pnpm publish --no-git-checks -r --access public
-
-      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
-        with:
-          subject-path: "dist/*"
+    uses: sxzz/workflows/.github/workflows/release.yml@v1
+    with:
+      publish: true
