@@ -5,12 +5,19 @@ on:
     tags:
       - "v*"
 
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+
 jobs:
   release:
-    permissions:
-      contents: write
-      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: sxzz/workflows/.github/workflows/release.yml@v1
+        with:
+          publish: true
 
-    uses: sxzz/workflows/.github/workflows/release.yml@v1
-    with:
-      publish: true
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "dist/*"
