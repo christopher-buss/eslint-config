@@ -5,6 +5,7 @@ import { interopDefault } from "../utils";
 /* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
 	args: false,
+	ctx: false,
 	dist: {
 		distance: true,
 	},
