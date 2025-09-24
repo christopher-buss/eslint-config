@@ -9,6 +9,8 @@ jobs:
   attest:
     permissions:
       attestations: write
+      contents: read
+      id-token: write
 
     needs: release
     runs-on: ubuntu-latest
