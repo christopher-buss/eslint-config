@@ -1,6 +1,6 @@
 import { mergeProcessors, processorPassThrough } from "eslint-merge-processors";
 
-import { GLOB_MARKDOWN, GLOB_MARKDOWN_CODE, GLOB_MARKDOWN_IN_MARKDOWN } from "../globs";
+import { GLOB_MARKDOWN, GLOB_MARKDOWN_BLOCKS, GLOB_MARKDOWN_IN_MARKDOWN } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -85,7 +85,7 @@ export async function markdown(
 		},
 		{
 			files: [
-				GLOB_MARKDOWN_CODE,
+				GLOB_MARKDOWN_BLOCKS,
 				...componentExtensions.map((extension) => `${GLOB_MARKDOWN}/**/*.${extension}`),
 			],
 			languageOptions: {
