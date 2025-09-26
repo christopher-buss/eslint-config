@@ -132,9 +132,7 @@ export async function roblox(
 	];
 
 	if (formatLua) {
-		const [pluginFormatLua] = await Promise.all([
-			interopDefault(import("eslint-plugin-format-lua")),
-		]);
+		const pluginFormatLua = await interopDefault(import("eslint-plugin-format-lua"));
 
 		configs.push(
 			{

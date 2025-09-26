@@ -73,6 +73,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 				"unicorn/no-negated-condition": "off",
 				"unicorn/no-negation-in-equality-check": "error",
 				"unicorn/no-object-as-default-parameter": "error",
+				"unicorn/no-single-promise-in-promise-methods": "error",
 				"unicorn/no-static-only-class": "error",
 				"unicorn/no-unreadable-array-destructuring": "error",
 				"unicorn/no-unused-properties": "error",
