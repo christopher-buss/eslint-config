@@ -6,13 +6,12 @@ import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { Options as PrettierOptions } from "prettier";
 
-import type { ConfigNames, RuleOptions } from "./typegen";
+import type { RuleOptions } from "./typegen";
 import type { ExtractRuleOptions } from "./utils";
 
 export type Awaitable<T> = Promise<T> | T;
 
-// eslint-disable-next-line unicorn/prevent-abbreviations -- `JsDoc` is a name
-export interface JsDocOptions {
+export interface JsdocOptions {
 	/**
 	 * By default we have different rules enabled for different project types.
 	 * This option allows you to enable the package rules regardless of the
@@ -20,9 +19,6 @@ export interface JsDocOptions {
 	 */
 	full?: boolean;
 }
-
-// eslint-disable-next-line unicorn/prefer-export-from -- Required due to build issues
-export type { ConfigNames };
 
 export interface OptionsComponentExtensions {
 	/** Additional extensions for components. */
@@ -86,7 +82,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default true
 	 */
-	jsdoc?: boolean | JsDocOptions;
+	jsdoc?: boolean | JsdocOptions;
 
 	/**
 	 * Enable JSONC support.
@@ -426,3 +422,5 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	 */
 	rules?: Rules;
 };
+
+export { type ConfigNames } from "./typegen";

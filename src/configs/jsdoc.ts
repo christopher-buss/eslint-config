@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../globs";
 import type {
-	JsDocOptions as JsDocumentOptions,
+	JsdocOptions,
 	OptionsProjectType,
 	OptionsStylistic,
 	TypedFlatConfigItem,
@@ -8,7 +8,7 @@ import type {
 import { interopDefault } from "../utils";
 
 export async function jsdoc(
-	options: JsDocumentOptions & OptionsProjectType & OptionsStylistic = {},
+	options: JsdocOptions & OptionsProjectType & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { full = false, stylistic = true, type = "game" } = options;
 
