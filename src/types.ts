@@ -1,6 +1,5 @@
 import type { ESLintReactSettings } from "@eslint-react/shared";
 import type { StylisticCustomizeOptions } from "@stylistic/eslint-plugin";
-import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
@@ -78,9 +77,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	isInEditor?: boolean;
 
-	/**
-	 * Core rules. Can't be disabled.
-	 */
+	/** Core rules. Can't be disabled. */
 	javascript?: OptionsOverrides;
 
 	/**
@@ -310,8 +307,8 @@ export interface OptionsTypeScriptErasableOnly {
 	/**
 	 * Enable erasable syntax only rules.
 	 *
-	 * @see https://github.com/JoshuaKGoldberg/eslint-plugin-erasable-syntax-only
 	 * @default false
+	 * @see https://github.com/JoshuaKGoldberg/eslint-plugin-erasable-syntax-only
 	 */
 	erasableOnly?: boolean;
 }
@@ -320,7 +317,7 @@ export interface OptionsTypeScriptParserOptions {
 	/**
 	 * Glob patterns for files that should be type aware.
 	 *
-	 * @default \['**\/*.{ts,tsx}']
+	 * @default ["**\/*.{ts,tsx}"]
 	 */
 	filesTypeAware?: Array<string>;
 
@@ -329,12 +326,9 @@ export interface OptionsTypeScriptParserOptions {
 	 * virtual files created by processors (e.g., markdown TypeScript code
 	 * blocks).
 	 *
-	 * @default \["**\/*.md\/**"]
+	 * @default ["**\/*.md\/**"]
 	 */
 	ignoresTypeAware?: Array<string>;
-
-	/** Additional parser options for TypeScript. */
-	parserOptions?: Partial<ParserOptions>;
 }
 
 export interface OptionsTypeScriptWithTypes {
@@ -359,8 +353,8 @@ export interface OptionsTypeScriptWithTypes {
 export interface PerfectionistConfig {
 	customClassGroups?: Array<string>;
 	/**
-	 * Custom configuration for perfectionist/sort-objects rule.
-	 * Merges with default config.
+	 * Custom configuration for perfectionist/sort-objects rule. Merges with
+	 * default config.
 	 */
 	sortObjects?: Partial<
 		ExtractRuleOptions<NonNullable<RuleOptions["perfectionist/sort-objects"]>>[0]
@@ -401,8 +395,9 @@ export type StylisticConfig = Pick<
  */
 export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>, "plugins"> & {
 	/**
-	 * An object containing a name-value mapping of plugin names to plugin objects.
-	 * When `files` is specified, these plugins are only available to the matching files.
+	 * An object containing a name-value mapping of plugin names to plugin
+	 * objects. When `files` is specified, these plugins are only available to
+	 * the matching files.
 	 *
 	 * @see [Using plugins in your configuration](https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration)
 	 */
@@ -410,7 +405,8 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 
 	/**
 	 * An object containing the configured rules. When `files` or `ignores` are
-	 * specified, these rule configurations are only available to the matching files.
+	 * specified, these rule configurations are only available to the matching
+	 * files.
 	 */
 	rules?: Rules;
 };
