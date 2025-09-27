@@ -4,9 +4,10 @@
 		"config:recommended",
 		":pinAllExceptPeerDependencies",
 		"helpers:pinGitHubActionDigests",
+		":configMigration",
 		"npm:unpublishSafe"
 	],
-	"schedule": ["* 9 * * 1"],
+	"schedule": ["* 9 * * 1,4,6"],
 	"vulnerabilityAlerts": {
 		"enabled": true
 	},
