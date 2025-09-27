@@ -23,9 +23,12 @@ export async function typescript(
 	const {
 		componentExts: componentExtensions = [],
 		erasableOnly = false,
+		outOfProjectFiles,
 		overrides = {},
 		overridesTypeAware = {},
 		parserOptions = {},
+		parserOptionsNonTypeAware = {},
+		parserOptionsTypeAware = {},
 		stylistic = true,
 		typeAware = true,
 	} = options;
@@ -132,8 +135,11 @@ export async function typescript(
 			configName: "typescript",
 			files: parserFiles,
 			ignores,
+			outOfProjectFiles,
 			parser: parserTs,
 			parserOptions,
+			parserOptionsNonTypeAware,
+			parserOptionsTypeAware,
 			tsconfigPath,
 			typeAware: usesTypeInformation,
 		});

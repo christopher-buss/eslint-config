@@ -63,8 +63,11 @@ export function createTsParser(options: {
 	configName: string;
 	files: Array<string>;
 	ignores?: Array<string>;
+	outOfProjectFiles?: Array<string>;
 	parser: Parser;
 	parserOptions?: ParserOptions;
+	parserOptionsNonTypeAware?: ParserOptions;
+	parserOptionsTypeAware?: ParserOptions;
 	tsconfigPath?: string;
 	typeAware: boolean;
 }): TypedFlatConfigItem {
@@ -73,8 +76,11 @@ export function createTsParser(options: {
 		configName,
 		files,
 		ignores,
+		outOfProjectFiles,
 		parser,
 		parserOptions = {},
+		parserOptionsNonTypeAware = {},
+		parserOptionsTypeAware = {},
 		tsconfigPath,
 		typeAware,
 	} = options;
@@ -92,15 +98,22 @@ export function createTsParser(options: {
 				...(typeAware
 					? {
 							projectService: {
-								allowDefaultProject: ["*.js", "*.ts", ".*.js", ".*.ts"],
+								allowDefaultProject: outOfProjectFiles ?? [
+									"*.js",
+									"*.ts",
+									".*.js",
+									".*.ts",
+								],
 								defaultProject: tsconfigPath,
 							},
 							tsconfigRootDir: process.cwd(),
+							...parserOptionsTypeAware,
 						}
 					: {
 							program: null,
 							project: false,
 							projectService: false,
+							...parserOptionsNonTypeAware,
 						}),
 				...parserOptions,
 			},

@@ -1,5 +1,6 @@
 import type { ESLintReactSettings } from "@eslint-react/shared";
 import type { StylisticCustomizeOptions } from "@stylistic/eslint-plugin";
+import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
@@ -329,6 +330,23 @@ export interface OptionsTypeScriptParserOptions {
 	 * @default ["**\/*.md\/**"]
 	 */
 	ignoresTypeAware?: Array<string>;
+
+	/**
+	 * Globs of files to allow running with the default project compiler options
+	 * despite not being matched by the project service.
+	 *
+	 * @default ["*.js", "*.ts", ".*.js", ".*.ts"]
+	 */
+	outOfProjectFiles?: Array<string>;
+
+	/** Additional parser options for all TypeScript files. */
+	parserOptions?: Partial<ParserOptions>;
+
+	/** Additional parser options for non-type-aware files. */
+	parserOptionsNonTypeAware?: Partial<ParserOptions>;
+
+	/** Additional parser options for type-aware files. */
+	parserOptionsTypeAware?: Partial<ParserOptions>;
 }
 
 export interface OptionsTypeScriptWithTypes {
