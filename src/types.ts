@@ -268,6 +268,10 @@ export interface OptionsOverrides {
 	overrides?: TypedFlatConfigItem["rules"];
 }
 
+export interface OptionsOverridesTypeAware extends OptionsOverrides {
+	overridesTypeAware?: TypedFlatConfigItem["rules"];
+}
+
 export interface OptionsProjectType {
 	/**
 	 * Type of the project. `package` will enable more strict rules for
@@ -344,8 +348,6 @@ export interface OptionsTypeScriptParserOptions {
 }
 
 export interface OptionsTypeScriptWithTypes {
-	/** Override type aware rules. */
-	overridesTypeAware?: TypedFlatConfigItem["rules"];
 	/**
 	 * Provide a path to the TypeScript configuration file to use a different
 	 * default to 'tsconfig.json'.
@@ -374,7 +376,7 @@ export interface PerfectionistConfig {
 }
 
 export type ReactConfig = ESLintReactSettings &
-	OptionsOverrides & {
+	OptionsOverridesTypeAware & {
 		filenameCase?: "kebabCase" | "pascalCase";
 	};
 

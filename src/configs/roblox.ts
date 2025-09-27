@@ -2,7 +2,7 @@ import { GLOB_LUA, GLOB_MARKDOWN } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
-	OptionsOverrides,
+	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
@@ -13,7 +13,7 @@ import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../uti
 export async function roblox(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
-		OptionsOverrides &
+		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
 		OptionsTypeScriptWithTypes = {},

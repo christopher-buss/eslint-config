@@ -1,5 +1,6 @@
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
 import type {
+	OptionsOverridesTypeAware,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
@@ -7,7 +8,9 @@ import type {
 import { getTsConfig, interopDefault } from "../utils";
 
 export async function flawless(
-	options: OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
+	options: OptionsOverridesTypeAware &
+		OptionsTypeScriptParserOptions &
+		OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { overridesTypeAware = {}, typeAware = true } = options;
 

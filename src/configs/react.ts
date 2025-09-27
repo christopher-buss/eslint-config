@@ -31,6 +31,7 @@ export async function react(
 		importSource,
 		jsxPragma,
 		overrides = {},
+		overridesTypeAware,
 		skipImportCheck,
 		stylistic = true,
 		typeAware = true,
@@ -220,6 +221,7 @@ export async function react(
 						name: "isentinel/react/type-aware-rules",
 						rules: {
 							...typeAwareRules,
+							...overridesTypeAware,
 						},
 					},
 				]

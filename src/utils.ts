@@ -148,13 +148,20 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 export function getOverrides(
 	options: OptionsConfig,
 	key: keyof OptionsConfig,
-): TypedFlatConfigItem["rules"] {
+): { overrides: TypedFlatConfigItem["rules"]; overridesTypeAware: TypedFlatConfigItem["rules"] } {
 	const sub = resolveSubOptions(options, key);
 
 	return {
-		...(typeof sub === "object" && "overrides" in sub
-			? (sub as { overrides: TypedFlatConfigItem["rules"] }).overrides
-			: {}),
+		overrides: {
+			...(typeof sub === "object" && "overrides" in sub
+				? (sub as { overrides: TypedFlatConfigItem["rules"] }).overrides
+				: {}),
+		},
+		overridesTypeAware: {
+			...(typeof sub === "object" && "overridesTypeAware" in sub
+				? (sub as { overridesTypeAware: TypedFlatConfigItem["rules"] }).overridesTypeAware
+				: {}),
+		},
 	};
 }
 

@@ -175,8 +175,8 @@ export async function isentinel(
 		imports({ stylistic: stylisticOptions, type: options.type }),
 		packageJson({ roblox: enableRoblox, type: options.type }),
 		javascript({
+			...getOverrides(options, "javascript"),
 			isInEditor,
-			overrides: getOverrides(options, "javascript"),
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
@@ -185,15 +185,19 @@ export async function isentinel(
 		sonarjs({ isInEditor }),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
+			...getOverrides(options, "typescript"),
 			componentExts: componentExtensions,
-			overrides: getOverrides(options, "typescript"),
 			stylistic: stylisticOptions,
 		}),
 		unicorn({ stylistic: stylisticOptions }),
 	);
 
 	if (options.flawless === true) {
-		configs.push(flawless());
+		configs.push(
+			flawless({
+				...getOverrides(options, "flawless"),
+			}),
+		);
 	}
 
 	if (enableJsdoc !== false) {
@@ -212,7 +216,7 @@ export async function isentinel(
 	if (enableEslintPlugin !== false) {
 		configs.push(
 			eslintPlugin({
-				overrides: getOverrides(options, "eslintPlugin"),
+				...getOverrides(options, "eslintPlugin"),
 			}),
 		);
 	}
@@ -223,8 +227,8 @@ export async function isentinel(
 			roblox(
 				{
 					...resolveSubOptions(options, "typescript"),
+					...getOverrides(options, "roblox"),
 					componentExts: componentExtensions,
-					overrides: getOverrides(options, "roblox"),
 					stylistic: stylisticOptions,
 				},
 				shouldFormatLua,
@@ -243,8 +247,8 @@ export async function isentinel(
 		const testOptions = typeof options.test === "object" ? options.test : {};
 		configs.push(
 			test({
+				...getOverrides(options, "test"),
 				isInEditor,
-				overrides: getOverrides(options, "test"),
 				roblox: enableRoblox,
 				type: options.type,
 				...testOptions,
@@ -256,7 +260,7 @@ export async function isentinel(
 		configs.push(
 			react({
 				...resolveSubOptions(options, "react"),
-				overrides: getOverrides(options, "react"),
+				...getOverrides(options, "react"),
 			}),
 		);
 	}
@@ -264,7 +268,7 @@ export async function isentinel(
 	if (options.jsonc !== false) {
 		configs.push(
 			jsonc({
-				overrides: getOverrides(options, "jsonc"),
+				...getOverrides(options, "jsonc"),
 				stylistic: stylisticOptions,
 			}),
 		);
@@ -285,7 +289,7 @@ export async function isentinel(
 	if (options.yaml !== false) {
 		configs.push(
 			yaml({
-				overrides: getOverrides(options, "yaml"),
+				...getOverrides(options, "yaml"),
 				stylistic: stylisticOptions,
 			}),
 		);
@@ -298,7 +302,7 @@ export async function isentinel(
 	if (options.toml !== false) {
 		configs.push(
 			toml({
-				overrides: getOverrides(options, "toml"),
+				...getOverrides(options, "toml"),
 				stylistic: stylisticOptions,
 			}),
 		);
@@ -307,8 +311,8 @@ export async function isentinel(
 	if (options.markdown !== false) {
 		configs.push(
 			markdown({
+				...getOverrides(options, "markdown"),
 				componentExts: componentExtensions,
-				overrides: getOverrides(options, "markdown"),
 				type: options.type,
 			}),
 		);
@@ -331,9 +335,9 @@ export async function isentinel(
 		configs.push(
 			prettier({
 				...resolveWithDefaults(enableTypeScript, {}),
+				...getOverrides(options, "typescript"),
 				componentExts: componentExtensions,
 				formatters: formatters !== false ? formatters : undefined,
-				overrides: getOverrides(options, "typescript"),
 				prettierOptions: prettierSettings,
 				stylistic: stylisticOptions,
 			}),

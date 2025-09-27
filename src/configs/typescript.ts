@@ -2,7 +2,7 @@ import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
-	OptionsOverrides,
+	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptErasableOnly,
 	OptionsTypeScriptParserOptions,
@@ -14,7 +14,7 @@ import { createTsParser, ensurePackages, getTsConfig, interopDefault, renameRule
 export async function typescript(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
-		OptionsOverrides &
+		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptErasableOnly &
 		OptionsTypeScriptParserOptions &
