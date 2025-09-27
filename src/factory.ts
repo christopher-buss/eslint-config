@@ -100,10 +100,11 @@ export async function isentinel(
 		jsx: enableJsx = true,
 		pnpm: enableCatalogs = false,
 		react: enableReact = false,
-		roblox: enableRoblox = true,
 		spellCheck: enableSpellCheck,
 		typescript: enableTypeScript,
 	} = options;
+
+	const enableRoblox = options.roblox !== false;
 
 	let { isInEditor } = options;
 	if (isInEditor === undefined) {
@@ -172,11 +173,11 @@ export async function isentinel(
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: options.type }),
-		packageJson({ roblox: options.roblox, type: options.type }),
+		packageJson({ roblox: enableRoblox, type: options.type }),
 		javascript({
 			isInEditor,
 			overrides: getOverrides(options, "javascript"),
-			roblox: options.roblox,
+			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
 		promise(),
@@ -200,7 +201,7 @@ export async function isentinel(
 	}
 
 	// Enable Node.js rules for non-Roblox packages
-	if (options.type === "package" && options.roblox === false) {
+	if (options.type === "package" && !enableRoblox) {
 		configs.push(node());
 	}
 
@@ -223,6 +224,7 @@ export async function isentinel(
 				{
 					...resolveSubOptions(options, "typescript"),
 					componentExts: componentExtensions,
+					overrides: getOverrides(options, "roblox"),
 					stylistic: stylisticOptions,
 				},
 				shouldFormatLua,
@@ -243,7 +245,7 @@ export async function isentinel(
 			test({
 				isInEditor,
 				overrides: getOverrides(options, "test"),
-				roblox: options.roblox,
+				roblox: enableRoblox,
 				type: options.type,
 				...testOptions,
 			}),

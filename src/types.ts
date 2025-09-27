@@ -141,13 +141,11 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	react?: boolean | ReactConfig;
 
 	/**
-	 * Enable Roblox-TS support.
+	 * Enable Roblox linting rules.
 	 *
-	 * @ignore
-	 * @note This is only required as we are linting this
-	 * project with its own rule-set, despite not being a roblox project.
+	 * @default true
 	 */
-	roblox?: boolean;
+	roblox?: boolean | OptionsOverrides;
 
 	/**
 	 * Enable CSpell support.
