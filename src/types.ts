@@ -46,7 +46,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default false
 	 */
-	flawless?: boolean;
+	flawless?: boolean | OptionsOverridesTypeAware;
 
 	/**
 	 * Use external formatters to format files.
@@ -141,7 +141,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default true
 	 */
-	roblox?: boolean | OptionsOverrides;
+	roblox?: boolean | OptionsOverridesTypeAware;
 
 	/**
 	 * Enable CSpell support.
@@ -183,7 +183,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default auto-detect based on the dependencies
 	 */
-	typescript?: OptionsTypescript;
+	typescript?: OptionsOverridesTypeAware;
 
 	/**
 	 * Enable YAML support.
