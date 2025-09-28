@@ -183,7 +183,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default auto-detect based on the dependencies
 	 */
-	typescript?: OptionsOverridesTypeAware;
+	typescript?: OptionsOverridesTypeAware & OptionsTypescript;
 
 	/**
 	 * Enable YAML support.
