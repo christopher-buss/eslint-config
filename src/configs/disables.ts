@@ -53,6 +53,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 				"import/no-duplicates": "off",
 				"max-lines": "off",
 				"no-restricted-syntax": "off",
+				"shopify/prefer-class-properties": "off",
 				"sonar/no-duplicate-string": "off",
 				"unused-imports/no-unused-vars": "off",
 			},
