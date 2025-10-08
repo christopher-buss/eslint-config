@@ -117,6 +117,18 @@ export async function isentinel(
 		}
 	}
 
+	const projectType = (() => {
+		if (options.type === "app") {
+			return "game";
+		}
+
+		if (options.type !== undefined) {
+			return options.type;
+		}
+
+		return enableRoblox ? "game" : "package";
+	})();
+
 	const stylisticOptions = (() => {
 		if (options.stylistic === false) {
 			return false;
@@ -172,8 +184,8 @@ export async function isentinel(
 	configs.push(
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
-		imports({ stylistic: stylisticOptions, type: options.type }),
-		packageJson({ roblox: enableRoblox, type: options.type }),
+		imports({ stylistic: stylisticOptions, type: projectType }),
+		packageJson({ roblox: enableRoblox, type: projectType }),
 		javascript({
 			...getOverrides(options, "javascript"),
 			isInEditor,
@@ -201,11 +213,11 @@ export async function isentinel(
 	}
 
 	if (enableJsdoc !== false) {
-		configs.push(jsdoc({ stylistic: stylisticOptions, type: options.type }));
+		configs.push(jsdoc({ stylistic: stylisticOptions, type: projectType }));
 	}
 
 	// Enable Node.js rules for non-Roblox packages
-	if (options.type === "package" && !enableRoblox) {
+	if (projectType === "package" && !enableRoblox) {
 		configs.push(node());
 	}
 
@@ -239,7 +251,7 @@ export async function isentinel(
 	if (stylisticOptions !== false) {
 		configs.push(
 			stylistic(stylisticOptions, prettierSettings),
-			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: options.type }),
+			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
 		);
 	}
 
@@ -250,7 +262,7 @@ export async function isentinel(
 				...getOverrides(options, "test"),
 				isInEditor,
 				roblox: enableRoblox,
-				type: options.type,
+				type: projectType,
 				...testOptions,
 			}),
 		);
@@ -313,7 +325,7 @@ export async function isentinel(
 			markdown({
 				...getOverrides(options, "markdown"),
 				componentExts: componentExtensions,
-				type: options.type,
+				type: projectType,
 			}),
 		);
 	}

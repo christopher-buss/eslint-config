@@ -277,9 +277,11 @@ export interface OptionsProjectType {
 	 * Type of the project. `package` will enable more strict rules for
 	 * packages.
 	 *
+	 * `app` and `game` are treated the same.
+	 *
 	 * @default "game"
 	 */
-	type?: "game" | "package";
+	type?: "app" | "game" | "package";
 }
 
 export interface OptionsRoblox {
