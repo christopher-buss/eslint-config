@@ -5,15 +5,19 @@
 		":pinAllExceptPeerDependencies",
 		"helpers:pinGitHubActionDigests",
 		":configMigration",
-		"npm:unpublishSafe"
+		"security:minimumReleaseAgeNpm"
 	],
-	"schedule": ["* 9 * * 1,4,6"],
+	"schedule": [
+		"* 9 * * 1,4,6"
+	],
 	"vulnerabilityAlerts": {
 		"enabled": true
 	},
 	"packageRules": [
 		{
-			"matchUpdateTypes": ["patch"],
+			"matchUpdateTypes": [
+				"patch"
+			],
 			"groupName": "Patches",
 			"groupSlug": "patch"
 		}
