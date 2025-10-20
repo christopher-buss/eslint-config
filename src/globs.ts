@@ -1,4 +1,12 @@
-export const GLOB_ROOT = "*.?([cm])[jt]s?(x)";
+export const GLOB_ROOT = [
+	"*.?([cm])[jt]s?(x)",
+	"packages/*/*.?([cm])[jt]s?(x)",
+	"apps/*/*.?([cm])[jt]s?(x)",
+	"libs/*/*.?([cm])[jt]s?(x)",
+	"packages/*/*/*.?([cm])[jt]s?(x)",
+	"apps/*/*/*.?([cm])[jt]s?(x)",
+	"libs/*/*/*.?([cm])[jt]s?(x)",
+];
 
 export const GLOB_SRC_EXT = "?([cm])[jt]s?(x)";
 export const GLOB_SRC = "**/*.?([cm])[jt]s?(x)";
