@@ -1,4 +1,14 @@
 export const GLOB_ROOT = [
+	"*",
+	"packages/*/*",
+	"apps/*/*",
+	"libs/*/*",
+	"packages/*/*/*",
+	"apps/*/*/*",
+	"libs/*/*/*",
+];
+
+export const GLOB_ROOT_SRC = [
 	"*.?([cm])[jt]s?(x)",
 	"packages/*/*.?([cm])[jt]s?(x)",
 	"apps/*/*.?([cm])[jt]s?(x)",
