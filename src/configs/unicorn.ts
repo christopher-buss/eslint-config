@@ -109,7 +109,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 			},
 		},
 		{
-			files: [GLOB_ROOT],
+			files: [...GLOB_ROOT],
 			name: "isentinel/unicorn/root",
 			rules: {
 				"unicorn/prevent-abbreviations": [
