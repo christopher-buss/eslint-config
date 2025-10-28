@@ -100,6 +100,7 @@ export async function isentinel(
 		jsx: enableJsx = true,
 		pnpm: enableCatalogs = false,
 		react: enableReact = false,
+		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
 		typescript: enableTypeScript,
 	} = options;
@@ -201,7 +202,7 @@ export async function isentinel(
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
-		unicorn({ stylistic: stylisticOptions }),
+		unicorn({ root: customRootGlobs, stylistic: stylisticOptions }),
 	);
 
 	if (options.flawless === true) {

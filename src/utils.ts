@@ -229,6 +229,46 @@ export function mergePrettierOptions(
 }
 
 /**
+ * Merge custom root glob patterns with the default GLOB_ROOT.
+ *
+ * - Patterns starting with "!" are used to remove matching patterns from the
+ *   default GLOB_ROOT
+ * - Other patterns are added to the result.
+ *
+ * @example
+ *
+ * ```ts
+ * const result = mergeRootGlobs(GLOB_ROOT, ["places/**", "!apps/**"]);
+ * // Returns: ["*", "packages/**", "libs/**", "places/**"]
+ * ```
+ *
+ * @param defaultRoot - The default root glob patterns.
+ * @param customRoot - Custom root patterns to merge (optional).
+ * @returns The merged array of glob patterns.
+ */
+export function mergeRootGlobs(
+	defaultRoot: Array<string>,
+	customRoot?: Array<string>,
+): Array<string> {
+	if (!customRoot || customRoot.length === 0) {
+		return [...defaultRoot];
+	}
+
+	let result = [...defaultRoot];
+
+	for (const pattern of customRoot) {
+		if (pattern.startsWith("!")) {
+			const patternToRemove = pattern.slice(1);
+			result = result.filter((item) => item !== patternToRemove);
+		} else {
+			result.push(pattern);
+		}
+	}
+
+	return result;
+}
+
+/**
  * Rename plugin names a flat configs array.
  *
  * @example

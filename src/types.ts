@@ -144,6 +144,23 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	roblox?: boolean | OptionsOverridesTypeAware;
 
 	/**
+	 * Customize root-level glob patterns.
+	 *
+	 * These patterns are merged with the default `GLOB_ROOT`. Use "!" prefix to
+	 * exclude patterns.
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * root: ["places/**", "!apps/**"];
+	 * // Results in: ["*", "packages/**", "libs/**", "places/**"]
+	 * ```
+	 *
+	 * @default undefined
+	 */
+	root?: Array<string>;
+
+	/**
 	 * Enable CSpell support.
 	 *
 	 * @default true

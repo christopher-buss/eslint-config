@@ -1,6 +1,6 @@
 import { GLOB_ROOT } from "../globs";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { interopDefault, mergeRootGlobs } from "../utils";
 
 /* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
@@ -35,10 +35,13 @@ const abbreviations = {
 } as const;
 /* eslint-enable @cspell/spellchecker */
 
-export async function unicorn(options: OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
-	const { stylistic = true } = options;
+export async function unicorn(
+	options: OptionsStylistic & { root?: Array<string> } = {},
+): Promise<Array<TypedFlatConfigItem>> {
+	const { root: customRootGlobs, stylistic = true } = options;
 
 	const pluginUnicorn = await interopDefault(import("eslint-plugin-unicorn"));
+	const rootGlobs = mergeRootGlobs(GLOB_ROOT, customRootGlobs);
 
 	return [
 		{
@@ -109,7 +112,7 @@ export async function unicorn(options: OptionsStylistic = {}): Promise<Array<Typ
 			},
 		},
 		{
-			files: [...GLOB_ROOT],
+			files: rootGlobs,
 			name: "isentinel/unicorn/root",
 			rules: {
 				"unicorn/prevent-abbreviations": [
