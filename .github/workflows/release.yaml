@@ -6,19 +6,6 @@ on:
       - "v*"
 
 jobs:
-  attest:
-    permissions:
-      attestations: write
-      contents: read
-      id-token: write
-
-    needs: release
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
-        with:
-          subject-path: "dist/*"
   release:
     permissions:
       contents: write
