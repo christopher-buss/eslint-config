@@ -267,11 +267,12 @@ environment (VS Code, JetBrains IDEs, Vim, Neovim) and adjusts certain rules
 accordingly. In editor mode:
 
 - `unused-imports/no-unused-imports` is downgraded to "warn" instead of "error"
-- Auto-fix is disabled for certain rules to prevent unwanted changes while editing
+- Auto-fix is disabled for certain rules to prevent unwanted changes while
+  editing
 - Other rules are adjusted for a better development experience
 
-You can explicitly control this behavior using the `ESLINT_IN_EDITOR` environment
-variable:
+You can explicitly control this behavior using the `ESLINT_IN_EDITOR`
+environment variable:
 
 ```bash
 # Force editor mode (useful for AI agents or hooks)
