@@ -192,6 +192,12 @@ export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise
 }
 
 export function isInEditorEnvironment(): boolean {
+	// Allow explicit override via environment variable
+	const explicitValue = process.env["ESLINT_IN_EDITOR"];
+	if (explicitValue !== undefined) {
+		return explicitValue === "true" || explicitValue === "1";
+	}
+
 	if (process.env["CI"] ?? "") {
 		return false;
 	}

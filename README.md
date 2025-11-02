@@ -260,6 +260,42 @@ for more details.
 > [sxzz/eslint-config](https://github.com/sxzz/eslint-config) for the
 > inspiration and reference.
 
+### Editor Mode
+
+By default, this config auto-detects whether ESLint is running in an editor
+environment (VS Code, JetBrains IDEs, Vim, Neovim) and adjusts certain rules
+accordingly. In editor mode:
+
+- `unused-imports/no-unused-imports` is downgraded to "warn" instead of "error"
+- Auto-fix is disabled for certain rules to prevent unwanted changes while editing
+- Other rules are adjusted for a better development experience
+
+You can explicitly control this behavior using the `ESLINT_IN_EDITOR` environment
+variable:
+
+```bash
+# Force editor mode (useful for AI agents or hooks)
+ESLINT_IN_EDITOR=true eslint --fix
+
+# Force non-editor mode
+ESLINT_IN_EDITOR=false eslint --fix
+```
+
+This is particularly useful when running ESLint from CLI tools or AI agents that
+make multiple changes, as it prevents imports from being removed before the code
+that uses them is written.
+
+Alternatively, you can set it explicitly in your config:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	isInEditor: true, // or false
+});
+```
+
 ### Plugins Renaming
 
 Since flat config requires us to explicitly provide the plugin names (instead of
