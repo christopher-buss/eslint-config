@@ -5,7 +5,7 @@
 		":pinAllExceptPeerDependencies",
 		"helpers:pinGitHubActionDigests",
 		":configMigration",
-		"npm:unpublishSafe"
+		"security:minimumReleaseAgeNpm"
 	],
 	"vulnerabilityAlerts": {
 		"enabled": true
