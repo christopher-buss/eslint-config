@@ -4,7 +4,7 @@ packages:
 
 catalogs:
   dev:
-    "@antfu/ni": 25.0.0
+    "@antfu/ni": 27.0.1
     "@eslint/config-inspector": 1.3.0
     "@isentinel/tsconfig": 1.0.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
