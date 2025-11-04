@@ -1,4 +1,4 @@
-import { isentinel } from "./src";
+import isentinel from "@isentinel/eslint-config";
 
 export default isentinel({
 	eslintPlugin: true,

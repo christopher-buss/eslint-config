@@ -13,15 +13,15 @@
 	"contributors": ["Anthony Fu <anthonyfu117@hotmail.com> (https://github.com/antfu/)"],
 	"type": "module",
 	"exports": {
-		".": "./dist/index.js"
+		".": "./dist/index.mjs"
 	},
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
 	"files": ["bin", "dist"],
 	"scripts": {
 		"build": "nr gen && tsdown --clean --dts",
-		"build:inspector": "pnpm build && npx @eslint/config-inspector build --config eslint-inspector.config.ts",
+		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts",
 		"postgen": "echo 'Generation complete!'",
