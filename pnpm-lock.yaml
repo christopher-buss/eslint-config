@@ -31,8 +31,8 @@ catalogs:
       specifier: 17.0.34
       version: 17.0.34
     bumpp:
-      specifier: 10.2.3
-      version: 10.2.3
+      specifier: 10.3.1
+      version: 10.3.1
     eslint-plugin-unused-imports:
       specifier: 4.2.0
       version: 4.2.0
@@ -439,7 +439,7 @@ importers:
         version: 1.3.9(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.3)
       bumpp:
         specifier: catalog:dev
-        version: 10.2.3
+        version: 10.3.1
       eslint:
         specifier: catalog:peer
         version: 9.35.0(jiti@2.5.1)
@@ -2058,8 +2058,8 @@ packages:
     resolution: {integrity: sha512-bkXY9WsVpY7CvMhKSR6pZilZu9Ln5WDrKVBUXf2S443etkmEO4V58heTecXcUIsNsi4Rx8JUO4NfX1IcQl4deg==}
     engines: {node: '>=18.20'}
 
-  bumpp@10.2.3:
-    resolution: {integrity: sha512-nsFBZACxuBVu6yzDSaZZaWpX5hTQ+++9WtYkmO+0Bd3cpSq0Mzvqw5V83n+fOyRj3dYuZRFCQf5Z9NNfZj+Rnw==}
+  bumpp@10.3.1:
+    resolution: {integrity: sha512-cOKPRFCWvHcYPJQAHN6V7Jp/wAfnyqQRXQ+2fgWIL6Gao20rpu7xQ1cGGo1APOfmbQmmHngEPg9Fy7nJ3giRkQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2077,8 +2077,8 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
-  c12@3.2.0:
-    resolution: {integrity: sha512-ixkEtbYafL56E6HiFuonMm1ZjoKtIo7TH68/uiEq4DAwv9NcUX2nJ95F8TrbMeNjqIkZpruo3ojXQJ+MGG5gcQ==}
+  c12@3.3.1:
+    resolution: {integrity: sha512-LcWQ01LT9tkoUINHgpIOv3mMs+Abv7oVCrtpMRi1PaapVEpWoMga5WuT7/DqFTu7URP9ftbOmimNw1KNIGh9DQ==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -2358,8 +2358,8 @@ packages:
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
 
-  dotenv@17.2.2:
-    resolution: {integrity: sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q==}
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dts-resolver@2.1.2:
@@ -3414,6 +3414,10 @@ packages:
     resolution: {integrity: sha512-twQoecYPiVA5K/h6SxtORw/Bs3ar+mLUtoPSc7iMXzQzK8d7eJ/R09wmTwAjiamETn1cXYPGfNnu7DMoHgu12w==}
     hasBin: true
 
+  jiti@2.6.1:
+    resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
+    hasBin: true
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -3893,8 +3897,8 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  perfect-debounce@1.0.0:
-    resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
+  perfect-debounce@2.0.0:
+    resolution: {integrity: sha512-fkEH/OBiKrqqI/yIgjR92lMfs2K8105zt/VT6+7eTjNwisrsh47CeIED9z58zI7DfKdH3uHAn25ziRZn3kgAow==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -6038,16 +6042,16 @@ snapshots:
 
   builtin-modules@5.0.0: {}
 
-  bumpp@10.2.3:
+  bumpp@10.3.1:
     dependencies:
-      ansis: 4.1.0
+      ansis: 4.2.0
       args-tokenizer: 0.3.0
-      c12: 3.2.0
+      c12: 3.3.1
       cac: 6.7.14
       escalade: 3.2.0
       jsonc-parser: 3.3.1
       package-manager-detector: 1.3.0
-      semver: 7.7.2
+      semver: 7.7.3
       tinyexec: 1.0.1
       tinyglobby: 0.2.15
       yaml: 2.8.1
@@ -6065,18 +6069,18 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  c12@3.2.0:
+  c12@3.3.1:
     dependencies:
       chokidar: 4.0.3
       confbox: 0.2.2
       defu: 6.1.4
-      dotenv: 17.2.2
+      dotenv: 17.2.3
       exsolve: 1.0.7
       giget: 2.0.0
-      jiti: 2.5.1
+      jiti: 2.6.1
       ohash: 2.0.11
       pathe: 2.0.3
-      perfect-debounce: 1.0.0
+      perfect-debounce: 2.0.0
       pkg-types: 2.3.0
       rc9: 2.1.2
 
@@ -6376,7 +6380,7 @@ snapshots:
       no-case: 3.0.4
       tslib: 2.8.1
 
-  dotenv@17.2.2: {}
+  dotenv@17.2.3: {}
 
   dts-resolver@2.1.2: {}
 
@@ -6582,7 +6586,7 @@ snapshots:
   eslint-compat-utils@0.6.5(eslint@9.35.0(jiti@2.5.1)):
     dependencies:
       eslint: 9.35.0(jiti@2.5.1)
-      semver: 7.7.2
+      semver: 7.7.3
 
   eslint-config-flat-gitignore@2.1.0(eslint@9.35.0(jiti@2.5.1)):
     dependencies:
@@ -7715,6 +7719,8 @@ snapshots:
 
   jiti@2.5.1: {}
 
+  jiti@2.6.1: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@4.1.0:
@@ -8351,7 +8357,7 @@ snapshots:
 
   package-json-validator@0.30.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
       validate-npm-package-license: 3.0.4
       yargs: 18.0.0
 
@@ -8407,7 +8413,7 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  perfect-debounce@1.0.0: {}
+  perfect-debounce@2.0.0: {}
 
   picocolors@1.1.1: {}
 
@@ -8752,7 +8758,7 @@ snapshots:
       detect-newline: 4.0.1
       git-hooks-list: 4.1.1
       is-plain-obj: 4.1.0
-      semver: 7.7.2
+      semver: 7.7.3
       sort-object-keys: 1.1.3
       tinyglobby: 0.2.15
 
