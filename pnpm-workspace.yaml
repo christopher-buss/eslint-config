@@ -20,7 +20,7 @@ catalogs:
     fast-glob: 3.3.3
     fs-extra: 11.3.1
     jiti: 2.5.1
-    lint-staged: 16.1.6
+    lint-staged: 16.2.6
     parse-gitignore-ts: 1.0.0
     pnpm-workspace-yaml: 1.1.1
     rimraf: 6.0.1
