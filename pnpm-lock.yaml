@@ -78,10 +78,6 @@ catalogs:
     typescript:
       specifier: 5.9.3
       version: 5.9.3
-  node:
-    find-up-simple:
-      specifier: ^1.0.1
-      version: 1.0.1
   peer:
     '@eslint-react/eslint-plugin':
       specifier: 1.53.1
@@ -231,6 +227,9 @@ catalogs:
     eslint-plugin-yml:
       specifier: 1.18.0
       version: 1.18.0
+    find-up-simple:
+      specifier: 1.0.1
+      version: 1.0.1
     jsonc-eslint-parser:
       specifier: 2.4.1
       version: 2.4.1
@@ -389,7 +388,7 @@ importers:
         specifier: catalog:prod
         version: 1.18.0(eslint@9.35.0(jiti@2.5.1))
       find-up-simple:
-        specifier: catalog:node
+        specifier: catalog:prod
         version: 1.0.1
       jsonc-eslint-parser:
         specifier: catalog:prod
