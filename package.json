@@ -82,6 +82,7 @@
 		"eslint-plugin-toml": "catalog:prod",
 		"eslint-plugin-unicorn": "catalog:prod",
 		"eslint-plugin-yml": "catalog:prod",
+		"find-up-simple": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"prettier": "catalog:prod",

@@ -1,0 +1,13 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index aa41cbc30a4000f85710502833c108fc915796bb..219fad7809af3b6ff1ad8ff52b4486808ce38243 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -90,8 +90,6 @@ function relativeMinimatch(pattern, relativePath, cwd) {
+   const isParent = relativePath.startsWith("..");
+   if (!isParent)
+     return `${negated}${relativePath}${cleanPattern}`;
+-  if (!relativePath.match(/^(\.\.\/)+$/))
+-    throw new Error("The ignore file location should be either a parent or child directory");
+   if (cleanPattern.startsWith("**"))
+     return pattern;
+   const parents = relative(resolve(cwd, relativePath), cwd).split(/[/\\]/);

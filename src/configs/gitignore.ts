@@ -1,5 +1,6 @@
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
-import fs from "node:fs";
+import { findUpSync } from "find-up-simple";
+import process from "node:process";
 
 import type { TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
@@ -24,22 +25,25 @@ export async function gitignore(
 		return [resolved(configWithName)];
 	}
 
-	if (fs.existsSync(".gitignore")) {
-		const resolved = await interopDefault(import("eslint-config-flat-gitignore"));
-		return [
-			resolved({
-				files: [".gitignore", ".git/info/exclude"],
-				name: "isentinel/gitignore",
-				strict: false,
-			}),
-		];
+	const resolved = await interopDefault(import("eslint-config-flat-gitignore"));
+
+	const foundGitignore = findUpSync(".gitignore", { cwd: process.cwd() });
+	const foundGitExclude = findUpSync(".git/info/exclude", { cwd: process.cwd() });
+
+	const files = [];
+	if (foundGitignore !== undefined) {
+		files.push(foundGitignore);
 	}
 
-	if (explicit) {
-		throw new Error(
-			"gitignore option is enabled but no .gitignore file was found in the current directory",
-		);
+	if (foundGitExclude !== undefined) {
+		files.push(foundGitExclude);
 	}
 
-	return [];
+	return [
+		resolved({
+			files,
+			name: "isentinel/gitignore",
+			strict: explicit,
+		}),
+	];
 }
