@@ -3160,15 +3160,123 @@ export interface RuleOptions {
    */
   'react-hooks-extra/prefer-use-state-lazy-initialization'?: Linter.RuleEntry<[]>
   /**
+   * Verifies that automatic effect dependencies are compiled if opted-in
+   */
+  'react-hooks/automatic-effect-dependencies'?: Linter.RuleEntry<ReactHooksAutomaticEffectDependencies>
+  /**
+   * Validates against calling capitalized functions/methods instead of using JSX
+   */
+  'react-hooks/capitalized-calls'?: Linter.RuleEntry<ReactHooksCapitalizedCalls>
+  /**
+   * Validates against higher order functions defining nested components or hooks. Components and hooks should be defined at the module level
+   */
+  'react-hooks/component-hook-factories'?: Linter.RuleEntry<ReactHooksComponentHookFactories>
+  /**
+   * Validates the compiler configuration options
+   */
+  'react-hooks/config'?: Linter.RuleEntry<ReactHooksConfig>
+  /**
+   * Validates usage of error boundaries instead of try/catch for errors in child components
+   */
+  'react-hooks/error-boundaries'?: Linter.RuleEntry<ReactHooksErrorBoundaries>
+  /**
    * verifies the list of dependencies for Hooks like useEffect and similar
    * @see https://github.com/facebook/react/issues/14920
    */
-  'react-hooks-roblox/exhaustive-deps'?: Linter.RuleEntry<ReactHooksRobloxExhaustiveDeps>
+  'react-hooks/exhaustive-deps'?: Linter.RuleEntry<ReactHooksExhaustiveDeps>
+  /**
+   * Validates usage of fbt
+   */
+  'react-hooks/fbt'?: Linter.RuleEntry<ReactHooksFbt>
+  /**
+   * Validates usage of `fire`
+   */
+  'react-hooks/fire'?: Linter.RuleEntry<ReactHooksFire>
+  /**
+   * Validates configuration of [gating mode](https://react.dev/reference/react-compiler/gating)
+   */
+  'react-hooks/gating'?: Linter.RuleEntry<ReactHooksGating>
+  /**
+   * Validates against assignment/mutation of globals during render, part of ensuring that [side effects must render outside of render](https://react.dev/reference/rules/components-and-hooks-must-be-pure#side-effects-must-run-outside-of-render)
+   */
+  'react-hooks/globals'?: Linter.RuleEntry<ReactHooksGlobals>
+  /**
+   * Validates the rules of hooks
+   */
+  'react-hooks/hooks'?: Linter.RuleEntry<ReactHooksHooks>
+  /**
+   * Validates against mutating props, state, and other values that [are immutable](https://react.dev/reference/rules/components-and-hooks-must-be-pure#props-and-state-are-immutable)
+   */
+  'react-hooks/immutability'?: Linter.RuleEntry<ReactHooksImmutability>
+  /**
+   * Validates against usage of libraries which are incompatible with memoization (manual or automatic)
+   */
+  'react-hooks/incompatible-library'?: Linter.RuleEntry<ReactHooksIncompatibleLibrary>
+  /**
+   * Internal invariants
+   */
+  'react-hooks/invariant'?: Linter.RuleEntry<ReactHooksInvariant>
+  /**
+   * Validates that effect dependencies are memoized
+   */
+  'react-hooks/memoized-effect-dependencies'?: Linter.RuleEntry<ReactHooksMemoizedEffectDependencies>
+  /**
+   * Validates against deriving values from state in an effect
+   */
+  'react-hooks/no-deriving-state-in-effects'?: Linter.RuleEntry<ReactHooksNoDerivingStateInEffects>
+  /**
+   * Validates that existing manual memoized is preserved by the compiler. React Compiler will only compile components and hooks if its inference [matches or exceeds the existing manual memoization](https://react.dev/learn/react-compiler/introduction#what-should-i-do-about-usememo-usecallback-and-reactmemo)
+   */
+  'react-hooks/preserve-manual-memoization'?: Linter.RuleEntry<ReactHooksPreserveManualMemoization>
+  /**
+   * Validates that [components/hooks are pure](https://react.dev/reference/rules/components-and-hooks-must-be-pure) by checking that they do not call known-impure functions
+   */
+  'react-hooks/purity'?: Linter.RuleEntry<ReactHooksPurity>
+  /**
+   * Validates correct usage of refs, not reading/writing during render. See the "pitfalls" section in [`useRef()` usage](https://react.dev/reference/react/useRef#usage)
+   */
+  'react-hooks/refs'?: Linter.RuleEntry<ReactHooksRefs>
+  /**
+   * Validates against suppression of other rules
+   */
+  'react-hooks/rule-suppression'?: Linter.RuleEntry<ReactHooksRuleSuppression>
   /**
    * enforces the Rules of Hooks
-   * @see https://reactjs.org/docs/hooks-rules.html
+   * @see https://react.dev/reference/rules/rules-of-hooks
    */
-  'react-hooks-roblox/rules-of-hooks'?: Linter.RuleEntry<[]>
+  'react-hooks/rules-of-hooks'?: Linter.RuleEntry<ReactHooksRulesOfHooks>
+  /**
+   * Validates against calling setState synchronously in an effect, which can lead to re-renders that degrade performance
+   */
+  'react-hooks/set-state-in-effect'?: Linter.RuleEntry<ReactHooksSetStateInEffect>
+  /**
+   * Validates against setting state during render, which can trigger additional renders and potential infinite render loops
+   */
+  'react-hooks/set-state-in-render'?: Linter.RuleEntry<ReactHooksSetStateInRender>
+  /**
+   * Validates that components are static, not recreated every render. Components that are recreated dynamically can reset state and trigger excessive re-rendering
+   */
+  'react-hooks/static-components'?: Linter.RuleEntry<ReactHooksStaticComponents>
+  /**
+   * Validates against invalid syntax
+   */
+  'react-hooks/syntax'?: Linter.RuleEntry<ReactHooksSyntax>
+  /**
+   * Unimplemented features
+   */
+  'react-hooks/todo'?: Linter.RuleEntry<ReactHooksTodo>
+  /**
+   * Validates against syntax that we do not plan to support in React Compiler
+   */
+  'react-hooks/unsupported-syntax'?: Linter.RuleEntry<ReactHooksUnsupportedSyntax>
+  /**
+   * Validates usage of the useMemo() hook against common mistakes. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
+   */
+  'react-hooks/use-memo'?: Linter.RuleEntry<ReactHooksUseMemo>
+  /**
+   * Validates that useMemos always return a value and that the result of the useMemo is used by the component/hook. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
+   */
+  'react-hooks/void-use-memo'?: Linter.RuleEntry<ReactHooksVoidUseMemo>
   /**
    * Enforces naming conventions for components.
    * @see https://eslint-react.xyz/docs/rules/naming-convention-component-name
@@ -14149,10 +14257,124 @@ type Quotes = []|[("single" | "double" | "backtick")]|[("single" | "double" | "b
 })]
 // ----- radix -----
 type Radix = []|[("always" | "as-needed")]
-// ----- react-hooks-roblox/exhaustive-deps -----
-type ReactHooksRobloxExhaustiveDeps = []|[{
+// ----- react-hooks/automatic-effect-dependencies -----
+type ReactHooksAutomaticEffectDependencies = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/capitalized-calls -----
+type ReactHooksCapitalizedCalls = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/component-hook-factories -----
+type ReactHooksComponentHookFactories = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/config -----
+type ReactHooksConfig = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/error-boundaries -----
+type ReactHooksErrorBoundaries = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/exhaustive-deps -----
+type ReactHooksExhaustiveDeps = []|[{
   additionalHooks?: string
   enableDangerousAutofixThisMayCauseInfiniteLoops?: boolean
+  experimental_autoDependenciesHooks?: string[]
+  requireExplicitEffectDeps?: boolean
+}]
+// ----- react-hooks/fbt -----
+type ReactHooksFbt = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/fire -----
+type ReactHooksFire = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/gating -----
+type ReactHooksGating = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/globals -----
+type ReactHooksGlobals = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/hooks -----
+type ReactHooksHooks = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/immutability -----
+type ReactHooksImmutability = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/incompatible-library -----
+type ReactHooksIncompatibleLibrary = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/invariant -----
+type ReactHooksInvariant = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/memoized-effect-dependencies -----
+type ReactHooksMemoizedEffectDependencies = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/no-deriving-state-in-effects -----
+type ReactHooksNoDerivingStateInEffects = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/preserve-manual-memoization -----
+type ReactHooksPreserveManualMemoization = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/purity -----
+type ReactHooksPurity = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/refs -----
+type ReactHooksRefs = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/rule-suppression -----
+type ReactHooksRuleSuppression = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/rules-of-hooks -----
+type ReactHooksRulesOfHooks = []|[{
+  additionalHooks?: string
+}]
+// ----- react-hooks/set-state-in-effect -----
+type ReactHooksSetStateInEffect = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/set-state-in-render -----
+type ReactHooksSetStateInRender = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/static-components -----
+type ReactHooksStaticComponents = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/syntax -----
+type ReactHooksSyntax = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/todo -----
+type ReactHooksTodo = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/unsupported-syntax -----
+type ReactHooksUnsupportedSyntax = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/use-memo -----
+type ReactHooksUseMemo = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/void-use-memo -----
+type ReactHooksVoidUseMemo = []|[{
+  [k: string]: unknown | undefined
 }]
 // ----- react-naming-convention/component-name -----
 type ReactNamingConventionComponentName = []|[(("PascalCase" | "CONSTANT_CASE") | {

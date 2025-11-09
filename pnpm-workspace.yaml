@@ -35,7 +35,7 @@ catalogs:
     eslint-plugin-eslint-plugin: 7.2.0
     eslint-plugin-jest: 29.0.1
     eslint-plugin-n: 17.23.1
-    eslint-plugin-react-roblox-hooks: 5.1.0-rbx.1
+    eslint-plugin-react-hooks: 7.0.1
   prod:
     "@antfu/install-pkg": 1.1.0
     "@clack/prompts": 0.11.0

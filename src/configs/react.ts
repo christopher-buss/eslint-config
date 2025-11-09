@@ -1,6 +1,3 @@
-import type { FixupPluginDefinition } from "@eslint/compat";
-import { fixupPluginRules } from "@eslint/compat";
-
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../globs";
 import type {
 	OptionsComponentExtensions,
@@ -37,23 +34,17 @@ export async function react(
 		typeAware = true,
 	} = options;
 
-	await ensurePackages(["@eslint-react/eslint-plugin", "eslint-plugin-react-roblox-hooks"]);
+	await ensurePackages(["@eslint-react/eslint-plugin", "eslint-plugin-react-hooks"]);
 
-	const [
-		pluginReact,
-		pluginReactHooks,
-		pluginStylistic,
-		pluginTs,
-		pluginUnicorn,
-		pluginUnusedImports,
-	] = await Promise.all([
-		interopDefault(import("@eslint-react/eslint-plugin")),
-		interopDefault(import("eslint-plugin-react-roblox-hooks")),
-		interopDefault(import("@stylistic/eslint-plugin")),
-		interopDefault(import("@typescript-eslint/eslint-plugin")),
-		interopDefault(import("eslint-plugin-unicorn")),
-		interopDefault(import("eslint-plugin-unused-imports")),
-	] as const);
+	const [pluginReact, reactHooks, pluginStylistic, pluginTs, pluginUnicorn, pluginUnusedImports] =
+		await Promise.all([
+			interopDefault(import("@eslint-react/eslint-plugin")),
+			interopDefault(import("eslint-plugin-react-hooks")),
+			interopDefault(import("@stylistic/eslint-plugin")),
+			interopDefault(import("@typescript-eslint/eslint-plugin")),
+			interopDefault(import("eslint-plugin-unicorn")),
+			interopDefault(import("eslint-plugin-unused-imports")),
+		] as const);
 
 	const { plugins } = pluginReact.configs.all;
 
@@ -79,8 +70,8 @@ export async function react(
 			name: "isentinel/react/setup",
 			plugins: {
 				"react": plugins["@eslint-react"],
+				"react-hooks": reactHooks,
 				"react-hooks-extra": plugins["@eslint-react/hooks-extra"],
-				"react-hooks-roblox": fixupPluginRules(pluginReactHooks as FixupPluginDefinition),
 				"react-naming-convention": plugins["@eslint-react/naming-convention"],
 				"style": pluginStylistic,
 				"ts": pluginTs,
@@ -110,9 +101,24 @@ export async function react(
 				"react-hooks-extra/no-unnecessary-use-memo": "error",
 				"react-hooks-extra/no-unnecessary-use-prefix": "error",
 				"react-hooks-extra/prefer-use-state-lazy-initialization": "error",
-				// recommended rules react-hooks roblox
-				"react-hooks-roblox/exhaustive-deps": "warn",
-				"react-hooks-roblox/rules-of-hooks": "error",
+				// recommended rules react-hooks
+				"react-hooks/component-hook-factories": "error",
+				"react-hooks/config": "off",
+				"react-hooks/error-boundaries": "error",
+				"react-hooks/exhaustive-deps": "warn",
+				"react-hooks/gating": "off",
+				"react-hooks/globals": "error",
+				"react-hooks/immutability": "error",
+				"react-hooks/incompatible-library": "off",
+				"react-hooks/preserve-manual-memoization": "off",
+				"react-hooks/purity": "off",
+				"react-hooks/refs": "error",
+				"react-hooks/rules-of-hooks": "error",
+				"react-hooks/set-state-in-effect": "error",
+				"react-hooks/set-state-in-render": "error",
+				"react-hooks/static-components": "error",
+				"react-hooks/unsupported-syntax": "off",
+				"react-hooks/use-memo": "error",
 				// recommended rules from @eslint-react/naming-convention
 				"react-naming-convention/context-name": "error",
 				"react-naming-convention/filename-extension": "off",
