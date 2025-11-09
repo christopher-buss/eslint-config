@@ -2544,6 +2544,16 @@ export interface RuleOptions {
    */
   'operator-linebreak'?: Linter.RuleEntry<OperatorLinebreak>
   /**
+   * Enforce that names for bin properties are in kebab case.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/bin-name-casing.md
+   */
+  'package-json/bin-name-casing'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce consistent format for the exports field (implicit or explicit subpaths).
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/exports-subpaths-style.md
+   */
+  'package-json/exports-subpaths-style'?: Linter.RuleEntry<PackageJsonExportsSubpathsStyle>
+  /**
    * Reports on unnecessary empty arrays and objects.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/no-empty-fields.md
    */
@@ -2553,6 +2563,11 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/no-redundant-files.md
    */
   'package-json/no-redundant-files'?: Linter.RuleEntry<[]>
+  /**
+   * Warns when publishConfig.access is used in unscoped packages.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/no-redundant-publishConfig.md
+   */
+  'package-json/no-redundant-publishConfig'?: Linter.RuleEntry<[]>
   /**
    * Package properties must be declared in standard order
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/order-properties.md
@@ -2609,6 +2624,11 @@ export interface RuleOptions {
    */
   'package-json/require-keywords'?: Linter.RuleEntry<PackageJsonRequireKeywords>
   /**
+   * Requires the `license` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-license.md
+   */
+  'package-json/require-license'?: Linter.RuleEntry<PackageJsonRequireLicense>
+  /**
    * Requires the `name` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-name.md
    */
@@ -2644,6 +2664,16 @@ export interface RuleOptions {
    */
   'package-json/restrict-dependency-ranges'?: Linter.RuleEntry<PackageJsonRestrictDependencyRanges>
   /**
+   * Disallows unnecessary properties in private packages.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/restrict-private-properties.md
+   */
+  'package-json/restrict-private-properties'?: Linter.RuleEntry<PackageJsonRestrictPrivateProperties>
+  /**
+   * Enforce that names for `scripts` are in kebab case (optionally separated by colons).
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/scripts-name-casing.md
+   */
+  'package-json/scripts-name-casing'?: Linter.RuleEntry<[]>
+  /**
    * Selected collections must be in a consistent order (lexicographical for most; lifecycle-aware for scripts).
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/sort-collections.md
    */
@@ -2662,7 +2692,7 @@ export interface RuleOptions {
    * Enforce that the `bin` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-bin.md
    */
-  'package-json/valid-bin'?: Linter.RuleEntry<PackageJsonValidBin>
+  'package-json/valid-bin'?: Linter.RuleEntry<[]>
   /**
    * Enforce that the `bundleDependencies` (also: `bundledDependencies`) property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-bundleDependencies.md
@@ -10984,6 +11014,11 @@ type OperatorLinebreak = []|[("after" | "before" | "none" | null)]|[("after" | "
     [k: string]: ("after" | "before" | "none" | "ignore") | undefined
   }
 }]
+// ----- package-json/exports-subpaths-style -----
+type PackageJsonExportsSubpathsStyle = []|[{
+  
+  prefer?: ("implicit" | "explicit")
+}]
 // ----- package-json/no-empty-fields -----
 type PackageJsonNoEmptyFields = []|[{
   
@@ -11035,6 +11070,10 @@ type PackageJsonRequireFiles = []|[{
 type PackageJsonRequireKeywords = []|[{
   ignorePrivate?: boolean
 }]
+// ----- package-json/require-license -----
+type PackageJsonRequireLicense = []|[{
+  ignorePrivate?: boolean
+}]
 // ----- package-json/require-name -----
 type PackageJsonRequireName = []|[{
   ignorePrivate?: boolean
@@ -11079,13 +11118,13 @@ type PackageJsonRestrictDependencyRanges = []|[({
   
   rangeType: (("caret" | "pin" | "tilde") | ("caret" | "pin" | "tilde")[])
 }[])]
+// ----- package-json/restrict-private-properties -----
+type PackageJsonRestrictPrivateProperties = []|[{
+  
+  blockedProperties?: string[]
+}]
 // ----- package-json/sort-collections -----
 type PackageJsonSortCollections = []|[string[]]
-// ----- package-json/valid-bin -----
-type PackageJsonValidBin = []|[{
-  
-  enforceCase?: boolean
-}]
 // ----- package-json/valid-package-definition -----
 type PackageJsonValidPackageDefinition = []|[{
   

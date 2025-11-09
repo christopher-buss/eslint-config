@@ -1,10 +1,15 @@
-import type { OptionsProjectType, TypedFlatConfigItem } from "../types";
+import type {
+	OptionsProjectType,
+	OptionsRoblox,
+	OptionsStylistic,
+	TypedFlatConfigItem,
+} from "../types";
 import { interopDefault } from "../utils";
 
 export async function packageJson(
-	options: OptionsProjectType & { roblox?: boolean } = {},
+	options: OptionsProjectType & OptionsRoblox & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { roblox = true, type = "game" } = options;
+	const { roblox = true, stylistic = true, type = "game" } = options;
 
 	const [jsoncEslintParser, pluginPackageJson] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
@@ -27,11 +32,13 @@ export async function packageJson(
 			rules: {
 				"package-json/no-empty-fields": "error",
 				"package-json/no-redundant-files": "error",
+				"package-json/no-redundant-publishConfig": "error",
 				"package-json/order-properties": "error",
 				"package-json/repository-shorthand": "error",
 				"package-json/require-type": "error",
+				"package-json/restrict-private-properties": "error",
+				"package-json/scripts-name-casing": "error",
 				"package-json/sort-collections": "error",
-				"package-json/unique-dependencies": "error",
 				"package-json/valid-author": "error",
 				"package-json/valid-bin": "error",
 				"package-json/valid-bundleDependencies": "error",
@@ -47,12 +54,24 @@ export async function packageJson(
 				"package-json/valid-type": "error",
 				"package-json/valid-version": "error",
 
+				...(stylistic !== false
+					? {
+							"package-json/bin-name-casing": "error",
+							"package-json/exports-subpaths-style": [
+								"error",
+								{ prefer: "explicit" },
+							],
+							"package-json/unique-dependencies": "error",
+						}
+					: {}),
+
 				...(type === "package"
 					? {
 							"package-json/require-author": "error",
 							"package-json/require-description": "error",
 							"package-json/require-files": "error",
 							"package-json/require-keywords": "error",
+							"package-json/require-license": "error",
 							"package-json/require-name": "error",
 							"package-json/require-types": "error",
 							"package-json/require-version": "error",

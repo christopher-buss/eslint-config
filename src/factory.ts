@@ -186,7 +186,7 @@ export async function isentinel(
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
-		packageJson({ roblox: enableRoblox, type: projectType }),
+		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
 		javascript({
 			...getOverrides(options, "javascript"),
 			isInEditor,
