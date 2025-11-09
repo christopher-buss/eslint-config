@@ -54,7 +54,7 @@ export type ResolvedOptions<T> = T extends boolean ? never : NonNullable<T>;
 export async function combine(
 	...configs: Array<Awaitable<Array<TypedFlatConfigItem> | TypedFlatConfigItem>>
 ): Promise<Array<TypedFlatConfigItem>> {
-	const resolved = await Promise.all(configs);
+	const resolved = await Promise.all(configs.map(async (config) => config));
 	return resolved.flat();
 }
 
