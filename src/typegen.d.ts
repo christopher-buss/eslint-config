@@ -466,6 +466,11 @@ export interface RuleOptions {
    */
   'eslint-plugin/require-meta-type'?: Linter.RuleEntry<[]>
   /**
+   * require test cases to have a `name` property under certain conditions
+   * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/require-test-case-name.md
+   */
+  'eslint-plugin/require-test-case-name'?: Linter.RuleEntry<EslintPluginRequireTestCaseName>
+  /**
    * require the properties of a test case to be placed in a consistent order
    * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/test-case-property-ordering.md
    */
@@ -475,6 +480,11 @@ export interface RuleOptions {
    * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/test-case-shorthand-strings.md
    */
   'eslint-plugin/test-case-shorthand-strings'?: Linter.RuleEntry<EslintPluginTestCaseShorthandStrings>
+  /**
+   * enforce that all test cases with names have unique names
+   * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/unique-test-case-names.md
+   */
+  'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Enforce naming conventions for everything across a codebase
    * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.0/src/rules/naming-convention/documentation.md
@@ -7956,6 +7966,11 @@ type EslintPluginRequireMetaFixable = []|[{
 type EslintPluginRequireMetaSchema = []|[{
   
   requireSchemaPropertyWhenOptionless?: boolean
+}]
+// ----- eslint-plugin/require-test-case-name -----
+type EslintPluginRequireTestCaseName = []|[{
+  
+  require?: ("always" | "objects" | "objects-with-config")
 }]
 // ----- eslint-plugin/test-case-property-ordering -----
 type EslintPluginTestCasePropertyOrdering = []|[unknown[]]
