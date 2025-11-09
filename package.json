@@ -39,7 +39,7 @@
 	},
 	"lint-staged": {
 		"*": "eslint --fix --cache",
-		"*.ts": "typecheck"
+		"*.ts": ["sh -c 'tsc --noEmit'"]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
