@@ -38,7 +38,8 @@
 		"pre-commit": "pnpm lint-staged"
 	},
 	"lint-staged": {
-		"*": "eslint --fix --cache"
+		"*": "eslint --fix --cache",
+		"*.ts": "typecheck"
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
