@@ -69,7 +69,7 @@ export async function packageJson(
 					? {
 							"package-json/require-author": "error",
 							"package-json/require-description": "error",
-							"package-json/require-files": "error",
+							"package-json/require-files": ["error", { ignorePrivate: true }],
 							"package-json/require-keywords": "error",
 							"package-json/require-license": "error",
 							"package-json/require-name": "error",
