@@ -2792,6 +2792,11 @@ export interface RuleOptions {
    */
   'pnpm/yaml-no-unused-catalog-item'?: Linter.RuleEntry<[]>
   /**
+   * Ensure all package patterns in `pnpm-workspace.yaml` match at least one directory
+   * @see https://github.com/antfu/pnpm-workspace-utils/tree/main/packages/eslint-plugin-pnpm/src/rules/yaml/yaml-valid-packages.test.ts
+   */
+  'pnpm/yaml-valid-packages'?: Linter.RuleEntry<[]>
+  /**
    * Require using arrow functions for callbacks
    * @see https://eslint.org/docs/latest/rules/prefer-arrow-callback
    */
@@ -13539,6 +13544,8 @@ type PnpmJsonEnforceCatalog = []|[{
   conflicts?: ("new-catalog" | "overrides" | "error")
   
   fields?: string[]
+  
+  ignores?: string[]
 }]
 // ----- pnpm/json-prefer-workspace-settings -----
 type PnpmJsonPreferWorkspaceSettings = []|[{
@@ -13561,6 +13568,8 @@ type PnpmJsonValidCatalog = []|[{
 // ----- pnpm/yaml-no-duplicate-catalog-item -----
 type PnpmYamlNoDuplicateCatalogItem = []|[{
   allow?: string[]
+  
+  checkDuplicates?: ("name-only" | "exact-version")
 }]
 // ----- prefer-arrow-callback -----
 type PreferArrowCallback = []|[{

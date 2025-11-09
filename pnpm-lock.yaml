@@ -58,8 +58,8 @@ catalogs:
       specifier: 1.0.0
       version: 1.0.0
     pnpm-workspace-yaml:
-      specifier: 1.1.1
-      version: 1.1.1
+      specifier: 1.3.0
+      version: 1.3.0
     rimraf:
       specifier: 6.1.0
       version: 6.1.0
@@ -198,8 +198,8 @@ catalogs:
       specifier: 4.15.1
       version: 4.15.1
     eslint-plugin-pnpm:
-      specifier: 1.1.1
-      version: 1.1.1
+      specifier: 1.3.0
+      version: 1.3.0
     eslint-plugin-prettier:
       specifier: 5.5.4
       version: 5.5.4
@@ -362,7 +362,7 @@ importers:
         version: 4.15.1(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-pnpm:
         specifier: catalog:prod
-        version: 1.1.1(eslint@9.35.0(jiti@2.6.1))
+        version: 1.3.0(eslint@9.35.0(jiti@2.6.1))
       eslint-plugin-prettier:
         specifier: catalog:prod
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.6.1)))(eslint@9.35.0(jiti@2.6.1))(prettier@3.6.2)
@@ -498,7 +498,7 @@ importers:
         version: 1.0.0
       pnpm-workspace-yaml:
         specifier: catalog:dev
-        version: 1.1.1
+        version: 1.3.0
       rimraf:
         specifier: catalog:dev
         version: 6.1.0
@@ -2821,8 +2821,8 @@ packages:
     peerDependencies:
       eslint: '>=8.45.0'
 
-  eslint-plugin-pnpm@1.1.1:
-    resolution: {integrity: sha512-gNo+swrLCgvT8L6JX6hVmxuKeuStGK2l8IwVjDxmYIn+wP4SW/d0ORLKyUiYamsp+UxknQo3f2M1irrTpqahCw==}
+  eslint-plugin-pnpm@1.3.0:
+    resolution: {integrity: sha512-Lkdnj3afoeUIkDUu8X74z60nrzjQ2U55EbOeI+qz7H1He4IO4gmUKT2KQIl0It52iMHJeuyLDWWNgjr6UIK8nw==}
     peerDependencies:
       eslint: ^9.0.0
 
@@ -4000,8 +4000,8 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
-  pnpm-workspace-yaml@1.1.1:
-    resolution: {integrity: sha512-nGBB7h3Ped3g9dBrR6d3YNwXCKYsEg8K9J3GMmSrwGEXq3RHeGW44/B4MZW51p4FRMnyxJzTY5feSBbUjRhIHQ==}
+  pnpm-workspace-yaml@1.3.0:
+    resolution: {integrity: sha512-Krb5q8Totd5mVuLx7we+EFHq/AfxA75nbfTm25Q1pIf606+RlaKUG+PXH8SDihfe5b5k4H09gE+sL47L1t5lbw==}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -7094,13 +7094,13 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-pnpm@1.1.1(eslint@9.35.0(jiti@2.6.1)):
+  eslint-plugin-pnpm@1.3.0(eslint@9.35.0(jiti@2.6.1)):
     dependencies:
       empathic: 2.0.0
       eslint: 9.35.0(jiti@2.6.1)
       jsonc-eslint-parser: 2.4.1
       pathe: 2.0.3
-      pnpm-workspace-yaml: 1.1.1
+      pnpm-workspace-yaml: 1.3.0
       tinyglobby: 0.2.15
       yaml-eslint-parser: 1.3.0
 
@@ -8617,7 +8617,7 @@ snapshots:
 
   pluralize@8.0.0: {}
 
-  pnpm-workspace-yaml@1.1.1:
+  pnpm-workspace-yaml@1.3.0:
     dependencies:
       yaml: 2.8.1
 
