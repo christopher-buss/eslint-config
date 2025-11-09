@@ -54,7 +54,11 @@ export const frameworkOptions: Array<PromItem<FrameworkOption>> = [
 export const frameworks: Array<FrameworkOption> = frameworkOptions.map(({ value }) => value);
 
 export const dependenciesMap = {
-	react: ["@eslint-react/eslint-plugin", "eslint-plugin-react-hooks"],
+	react: [
+		"eslint-plugin-react-x",
+		"eslint-plugin-react-hooks",
+		"eslint-plugin-react-naming-convention",
+	],
 	test: ["eslint-plugin-jest"],
 } as const;
 
