@@ -33,9 +33,6 @@ catalogs:
     bumpp:
       specifier: 10.3.1
       version: 10.3.1
-    eslint-plugin-unused-imports:
-      specifier: 4.2.0
-      version: 4.2.0
     eslint-typegen:
       specifier: 2.3.0
       version: 2.3.0
@@ -224,6 +221,9 @@ catalogs:
     eslint-plugin-unicorn:
       specifier: 61.0.2
       version: 61.0.2
+    eslint-plugin-unused-imports:
+      specifier: 4.2.0
+      version: 4.2.0
     eslint-plugin-yml:
       specifier: 1.18.0
       version: 1.18.0
@@ -384,6 +384,9 @@ importers:
       eslint-plugin-unicorn:
         specifier: catalog:prod
         version: 61.0.2(eslint@9.35.0(jiti@2.6.1))
+      eslint-plugin-unused-imports:
+        specifier: catalog:prod
+        version: 4.2.0(@typescript-eslint/eslint-plugin@8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.35.0(jiti@2.6.1))
       eslint-plugin-yml:
         specifier: catalog:prod
         version: 1.18.0(eslint@9.35.0(jiti@2.6.1))
@@ -469,9 +472,6 @@ importers:
       eslint-plugin-react-roblox-hooks:
         specifier: catalog:peer
         version: 5.1.0-rbx.1(eslint@9.35.0(jiti@2.6.1))
-      eslint-plugin-unused-imports:
-        specifier: catalog:dev
-        version: 4.2.0(@typescript-eslint/eslint-plugin@8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.35.0(jiti@2.6.1))
       eslint-typegen:
         specifier: catalog:dev
         version: 2.3.0(eslint@9.35.0(jiti@2.6.1))
