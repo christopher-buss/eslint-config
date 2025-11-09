@@ -3223,6 +3223,31 @@ export interface RuleOptions {
    */
   'react-hooks/void-use-memo'?: Linter.RuleEntry<ReactHooksVoidUseMemo>
   /**
+   * Enforces naming conventions for components.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-component-name
+   */
+  'react-naming-convention/component-name'?: Linter.RuleEntry<ReactNamingConventionComponentName>
+  /**
+   * Enforces context name to be a valid component name with the suffix `Context`.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-context-name
+   */
+  'react-naming-convention/context-name'?: Linter.RuleEntry<[]>
+  /**
+   * Enforces consistent file naming conventions.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-filename
+   */
+  'react-naming-convention/filename'?: Linter.RuleEntry<ReactNamingConventionFilename>
+  /**
+   * Enforces consistent file naming conventions.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-filename-extension
+   */
+  'react-naming-convention/filename-extension'?: Linter.RuleEntry<ReactNamingConventionFilenameExtension>
+  /**
+   * Enforces destructuring and symmetric naming of `useState` hook value and setter.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-use-state
+   */
+  'react-naming-convention/use-state'?: Linter.RuleEntry<[]>
+  /**
    * Prevents dollar signs from being inserted as text nodes before expressions.
    * @see https://eslint-react.xyz/docs/rules/jsx-dollar
    */
@@ -14296,6 +14321,24 @@ type ReactHooksUseMemo = []|[{
 type ReactHooksVoidUseMemo = []|[{
   [k: string]: unknown | undefined
 }]
+// ----- react-naming-convention/component-name -----
+type ReactNamingConventionComponentName = []|[(("PascalCase" | "CONSTANT_CASE") | {
+  allowAllCaps?: boolean
+  excepts?: string[]
+  rule?: ("PascalCase" | "CONSTANT_CASE")
+})]
+// ----- react-naming-convention/filename -----
+type ReactNamingConventionFilename = []|[(("PascalCase" | "camelCase" | "kebab-case" | "snake_case") | {
+  excepts?: string[]
+  extensions?: string[]
+  rule?: ("PascalCase" | "camelCase" | "kebab-case" | "snake_case")
+})]
+// ----- react-naming-convention/filename-extension -----
+type ReactNamingConventionFilenameExtension = []|[(("always" | "as-needed") | {
+  allow?: ("always" | "as-needed")
+  extensions?: string[]
+  ignoreFilesWithoutCode?: boolean
+})]
 // ----- react/jsx-shorthand-boolean -----
 type ReactJsxShorthandBoolean = []|[(-1 | 1)]
 // ----- react/jsx-shorthand-fragment -----

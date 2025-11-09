@@ -85,7 +85,7 @@ export async function react(
 					{
 						name: "isentinel/react/setup/naming",
 						plugins: {
-							"react-naming-convention": interopDefault(
+							"react-naming-convention": await interopDefault(
 								import("eslint-plugin-react-naming-convention"),
 							),
 						},
