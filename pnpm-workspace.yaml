@@ -39,16 +39,16 @@ catalogs:
   prod:
     "@antfu/install-pkg": 1.1.0
     "@clack/prompts": 0.11.0
-    "@cspell/eslint-plugin": 9.2.2
+    "@cspell/eslint-plugin": 9.3.0
     "@eslint/compat": 1.4.1
-    "@eslint/markdown": 7.2.0
+    "@eslint/markdown": 7.5.1
     "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
     "@isentinel/dict-rbxts": 1.0.1
     "@isentinel/dict-roblox": 1.0.3
     "@isentinel/eslint-plugin-comment-length": 2.2.0
     "@prettier/plugin-oxc": 0.0.4
     "@shopify/eslint-plugin": 50.0.0
-    "@stylistic/eslint-plugin": 6.0.0-beta.1
+    "@stylistic/eslint-plugin": 5.5.0
     "@typescript-eslint/eslint-plugin": 8.46.3
     "@typescript-eslint/parser": 8.46.3
     ansis: 4.2.0
@@ -64,8 +64,8 @@ catalogs:
     eslint-plugin-flawless: 0.1.0
     eslint-plugin-format-lua: 1.0.1-beta.2
     eslint-plugin-import-lite: 0.3.0
-    eslint-plugin-jsdoc: 54.7.0
-    eslint-plugin-jsonc: 2.20.1
+    eslint-plugin-jsdoc: 61.1.12
+    eslint-plugin-jsonc: 2.21.0
     eslint-plugin-no-only-tests: 3.3.0
     eslint-plugin-package-json: 0.56.3
     eslint-plugin-perfectionist: 4.15.1
@@ -77,13 +77,13 @@ catalogs:
     eslint-plugin-sonarjs: 3.0.5
     eslint-plugin-toml: 0.12.0
     eslint-plugin-unicorn: 61.0.2
-    eslint-plugin-unused-imports: 4.2.0
-    eslint-plugin-yml: 1.18.0
+    eslint-plugin-unused-imports: 4.3.0
+    eslint-plugin-yml: 1.19.0
     find-up-simple: 1.0.1
     jsonc-eslint-parser: 2.4.1
     local-pkg: 1.1.2
     prettier: 3.6.2
-    prettier-plugin-jsdoc: 1.3.3
+    prettier-plugin-jsdoc: 1.5.0
     prompts: 2.4.2
     toml-eslint-parser: 0.10.0
     yaml-eslint-parser: 1.3.0
