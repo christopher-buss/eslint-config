@@ -68,6 +68,18 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	gitignore?: boolean | FlatGitignoreOptions;
 
 	/**
+	 * Extend the global ignores.
+	 *
+	 * Passing an array to extends the ignores.
+	 *
+	 * Passing a function to modify the default ignores, or provide custom
+	 * ignores.
+	 *
+	 * @default [ ] - no additional ignores
+	 */
+	ignores?: ((originals: Array<string>) => Array<string>) | Array<string>;
+
+	/**
 	 * Control to disable some rules in editors.
 	 *
 	 * @default auto-detect based on the process.env
