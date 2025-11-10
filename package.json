@@ -130,19 +130,16 @@
 		"typescript": "catalog:dev"
 	},
 	"peerDependencies": {
-		"@eslint-react/eslint-plugin": "^2.3.1",
 		"@vitest/eslint-plugin": "^1.0.0",
 		"eslint": "^9.10.0",
 		"eslint-plugin-eslint-plugin": "^7.0.0",
 		"eslint-plugin-jest": "^28.9.0 || ^29.0.0",
 		"eslint-plugin-n": "^17.0.0",
 		"eslint-plugin-react-hooks": "^7.0.0",
-		"eslint-plugin-react-naming-convention": "^2.3.1"
+		"eslint-plugin-react-naming-convention": "^2.3.1",
+		"eslint-plugin-react-x": "^2.3.4"
 	},
 	"peerDependenciesMeta": {
-		"@eslint-react/eslint-plugin": {
-			"optional": true
-		},
 		"@vitest/eslint-plugin": {
 			"optional": true
 		},
@@ -156,6 +153,9 @@
 			"optional": true
 		},
 		"eslint-plugin-react-hooks": {
+			"optional": true
+		},
+		"eslint-plugin-react-x": {
 			"optional": true
 		}
 	},

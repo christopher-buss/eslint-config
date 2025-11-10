@@ -3390,6 +3390,7 @@ export interface RuleOptions {
   /**
    * Disallow certain props on components.
    * @see https://eslint-react.xyz/docs/rules/no-forbidden-props
+   * @deprecated
    */
   'react/no-forbidden-props'?: Linter.RuleEntry<ReactNoForbiddenProps>
   /**
@@ -3511,7 +3512,7 @@ export interface RuleOptions {
    * Prevents using referential-type values as default props in object destructuring.
    * @see https://eslint-react.xyz/docs/rules/no-unstable-default-props
    */
-  'react/no-unstable-default-props'?: Linter.RuleEntry<[]>
+  'react/no-unstable-default-props'?: Linter.RuleEntry<ReactNoUnstableDefaultProps>
   /**
    * Warns unused class component methods and properties.
    * @see https://eslint-react.xyz/docs/rules/no-unused-class-component-members
@@ -14352,6 +14353,10 @@ type ReactNoForbiddenProps = []|[{
     includedNodes?: string[]
     prop: string
   })[]
+}]
+// ----- react/no-unstable-default-props -----
+type ReactNoUnstableDefaultProps = []|[{
+  safeDefaultProps?: string[]
 }]
 // ----- react/no-useless-fragment -----
 type ReactNoUselessFragment = []|[{
