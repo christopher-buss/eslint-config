@@ -223,46 +223,34 @@ export function isInGitHooksOrLintStaged(): boolean {
 	].some(Boolean);
 }
 
-export function mergePrettierOptions(
-	options: PrettierOptions,
-	overrides: PrettierRuleOptions = {},
-): Record<string, any> {
-	return {
-		...options,
-		...overrides,
-		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
-	};
-}
-
 /**
- * Merge custom root glob patterns with the default GLOB_ROOT.
+ * Merge custom glob patterns.
  *
- * - Patterns starting with "!" are used to remove matching patterns from the
- *   default GLOB_ROOT
+ * - Patterns starting with "!" are used to remove matching patterns
  * - Other patterns are added to the result.
  *
  * @example
  *
  * ```ts
- * const result = mergeRootGlobs(GLOB_ROOT, ["places/**", "!apps/**"]);
+ * const result = mergeGlobs(GLOB_ROOT, ["places/**", "!apps/**"]);
  * // Returns: ["*", "packages/**", "libs/**", "places/**"]
  * ```
  *
- * @param defaultRoot - The default root glob patterns.
- * @param customRoot - Custom root patterns to merge (optional).
+ * @param globs - The default root glob patterns.
+ * @param additionalPatterns - Custom root patterns to merge (optional).
  * @returns The merged array of glob patterns.
  */
-export function mergeRootGlobs(
-	defaultRoot: Array<string>,
-	customRoot?: Array<string>,
+export function mergeGlobs(
+	globs: Array<string>,
+	additionalPatterns?: Array<string>,
 ): Array<string> {
-	if (!customRoot || customRoot.length === 0) {
-		return [...defaultRoot];
+	if (!additionalPatterns || additionalPatterns.length === 0) {
+		return [...globs];
 	}
 
-	let result = [...defaultRoot];
+	let result = [...globs];
 
-	for (const pattern of customRoot) {
+	for (const pattern of additionalPatterns) {
 		if (pattern.startsWith("!")) {
 			const patternToRemove = pattern.slice(1);
 			result = result.filter((item) => item !== patternToRemove);
@@ -272,6 +260,17 @@ export function mergeRootGlobs(
 	}
 
 	return result;
+}
+
+export function mergePrettierOptions(
+	options: PrettierOptions,
+	overrides: PrettierRuleOptions = {},
+): Record<string, any> {
+	return {
+		...options,
+		...overrides,
+		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
+	};
 }
 
 /**

@@ -1,6 +1,6 @@
 import { GLOB_ROOT } from "../globs";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
-import { interopDefault, mergeRootGlobs } from "../utils";
+import { interopDefault, mergeGlobs } from "../utils";
 
 /* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
@@ -41,7 +41,7 @@ export async function unicorn(
 	const { root: customRootGlobs, stylistic = true } = options;
 
 	const pluginUnicorn = await interopDefault(import("eslint-plugin-unicorn"));
-	const rootGlobs = mergeRootGlobs(GLOB_ROOT, customRootGlobs);
+	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 
 	return [
 		{
