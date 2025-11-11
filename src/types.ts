@@ -461,3 +461,4 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 };
 
 export { type ConfigNames } from "./typegen";
+export { type FlatConfigComposer } from "eslint-flat-config-utils";

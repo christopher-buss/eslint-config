@@ -1,5 +1,5 @@
 import type { Linter } from "eslint";
-import { FlatConfigComposer } from "eslint-flat-config-utils";
+import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 
 import type { PrettierOptions } from "./configs";
 import {
@@ -36,7 +36,13 @@ import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
 import { test } from "./configs/test";
-import type { Awaitable, ConfigNames, OptionsConfig, TypedFlatConfigItem } from "./types";
+import type {
+	Awaitable,
+	ConfigNames,
+	FlatConfigComposer,
+	OptionsConfig,
+	TypedFlatConfigItem,
+} from "./types";
 import {
 	getOverrides,
 	isInEditorEnvironment,
@@ -376,7 +382,7 @@ export async function isentinel(
 		configs.push([fusedConfig]);
 	}
 
-	let composer = new FlatConfigComposer<TypedFlatConfigItem, ConfigNames>();
+	let composer = new FlatConfigComposerClass<TypedFlatConfigItem, ConfigNames>();
 
 	composer = composer.append(...configs, ...(userConfigs as Array<TypedFlatConfigItem>));
 
