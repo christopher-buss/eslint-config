@@ -8,7 +8,11 @@ import {
 } from "../globs";
 import type { TypedFlatConfigItem } from "../types";
 
-export async function disables(): Promise<Array<TypedFlatConfigItem>> {
+export async function disables(options: {
+	root: Array<string>;
+}): Promise<Array<TypedFlatConfigItem>> {
+	const { root } = options;
+
 	return [
 		{
 			files: [`**/scripts/${GLOB_SRC}`],
@@ -80,7 +84,7 @@ export async function disables(): Promise<Array<TypedFlatConfigItem>> {
 			},
 		},
 		{
-			files: ["*.?([cm])[jt]s?(x)", `*.md/${GLOB_SRC}`],
+			files: [...root, `*.md/${GLOB_SRC}`],
 			name: "isentinel/disables/root",
 			rules: {
 				"sonar/file-name-differ-from-class": "off",

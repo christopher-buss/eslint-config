@@ -36,6 +36,7 @@ import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
 import { test } from "./configs/test";
+import { GLOB_ROOT } from "./globs";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -46,6 +47,7 @@ import type {
 import {
 	getOverrides,
 	isInEditorEnvironment,
+	mergeGlobs,
 	require,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
@@ -111,6 +113,7 @@ export async function isentinel(
 		typescript: enableTypeScript,
 	} = options;
 
+	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
 	let { isInEditor } = options;
@@ -208,7 +211,7 @@ export async function isentinel(
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
-		unicorn({ root: customRootGlobs, stylistic: stylisticOptions }),
+		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
 	);
 
 	if (options.flawless === true) {
@@ -347,7 +350,7 @@ export async function isentinel(
 		);
 	}
 
-	configs.push(disables());
+	configs.push(disables({ root: rootGlobs }));
 
 	if (stylisticOptions !== false) {
 		// We require prettier to be the last config
