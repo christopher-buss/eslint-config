@@ -69,6 +69,7 @@ export async function roblox(
 		"roblox/no-object-math": "error",
 		"roblox/no-post-fix-new": "error",
 		"roblox/no-preceding-spread-element": "error",
+		"roblox/no-undeclared-scope": "error",
 		"roblox/size-method": "error",
 		"sentinel/explicit-size-check": "error",
 	};

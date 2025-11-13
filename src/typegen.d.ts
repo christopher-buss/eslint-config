@@ -3675,6 +3675,11 @@ export interface RuleOptions {
    */
   'roblox/no-private-identifier'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that only npm scopes listed in typeRoots can be imported
+   * @see https://github.com/roblox-ts/eslint-plugin-roblox-ts/tree/main/src/rules/no-undeclared-scope/documentation.md
+   */
+  'roblox/no-undeclared-scope'?: Linter.RuleEntry<[]>
+  /**
    * Disallow unsupported syntax in roblox-ts
    * @see https://github.com/roblox-ts/eslint-plugin-roblox-ts/tree/main/src/rules/no-unsupported-syntax/documentation.md
    */
