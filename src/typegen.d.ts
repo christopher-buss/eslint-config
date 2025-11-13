@@ -2734,6 +2734,21 @@ export interface RuleOptions {
    */
   'package-json/valid-exports'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that the `files` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-files.md
+   */
+  'package-json/valid-files'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `homepage` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-homepage.md
+   */
+  'package-json/valid-homepage'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `keywords` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-keywords.md
+   */
+  'package-json/valid-keywords'?: Linter.RuleEntry<[]>
+  /**
    * Enforce that the `license` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-license.md
    */
@@ -2744,6 +2759,11 @@ export interface RuleOptions {
    * @deprecated
    */
   'package-json/valid-local-dependency'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `main` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-main.md
+   */
+  'package-json/valid-main'?: Linter.RuleEntry<[]>
   /**
    * Enforce that package names are valid npm package names
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-name.md
