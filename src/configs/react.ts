@@ -64,6 +64,7 @@ export async function react(
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
 		"react/no-leaked-conditional-rendering": "warn",
+		"react/no-unused-props": "error",
 		"react/prefer-read-only-props": "error",
 	};
 
@@ -221,7 +222,6 @@ export async function react(
 					},
 				],
 				"react/no-unused-class-component-members": "off",
-				"react/no-unused-props": "error",
 				"react/no-unused-state": "error",
 				"react/no-use-context": "off",
 				"react/no-useless-forward-ref": "error",
