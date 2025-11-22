@@ -69,11 +69,11 @@ export async function yaml(
 											order: { natural: true, type: "asc" },
 										},
 									],
-									pathPattern: "^\\[\\d+\\]$",
+									pathPattern: "(?!$).*",
 								},
 								{
 									order: { natural: true, type: "asc" },
-									pathPattern: "^(?!\\[\\d+\\]$).*",
+									pathPattern: "(?!$).*",
 								},
 							],
 							"yaml/spaced-comment": "error",
