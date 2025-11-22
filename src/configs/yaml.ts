@@ -61,8 +61,19 @@ export async function yaml(
 							"yaml/sort-keys": [
 								"error",
 								{
+									order: [
+										"name",
+										"id",
+										{
+											keyPattern: ".*",
+											order: { natural: true, type: "asc" },
+										},
+									],
+									pathPattern: "^\\[\\d+\\]$",
+								},
+								{
 									order: { natural: true, type: "asc" },
-									pathPattern: "^(?!$).*",
+									pathPattern: "^(?!\\[\\d+\\]$).*",
 								},
 							],
 							"yaml/spaced-comment": "error",
