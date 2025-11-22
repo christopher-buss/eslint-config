@@ -1,6 +1,6 @@
 {
 	"name": "@isentinel/eslint-config",
-	"version": "4.4.0",
+	"version": "4.4.1",
 	"description": "iSentinel's ESLint config",
 	"keywords": ["eslint-config", "roblox", "roblox-ts", "rbxts"],
 	"homepage": "https://github.com/christopher-buss/eslint-config",
