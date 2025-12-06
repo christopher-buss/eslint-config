@@ -1,6 +1,11 @@
+catalogMode: strict
+
 packages:
   - fixtures/*
   - src/*
+
+patchedDependencies:
+  eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
 
 catalogs:
   dev:
@@ -41,9 +46,9 @@ catalogs:
     "@antfu/install-pkg": 1.1.0
     "@clack/prompts": 0.11.0
     "@cspell/eslint-plugin": 9.3.1
+    "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
     "@eslint/compat": 1.4.1
     "@eslint/markdown": 7.5.1
-    "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
     "@isentinel/dict-rbxts": 1.0.1
     "@isentinel/dict-roblox": 1.0.3
     "@isentinel/eslint-plugin-comment-length": 2.2.0
@@ -94,6 +99,3 @@ onlyBuiltDependencies:
   - esbuild
   - simple-git-hooks
   - unrs-resolver
-
-patchedDependencies:
-  eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch

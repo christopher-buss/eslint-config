@@ -24,6 +24,7 @@ import {
 	shopify,
 	sonarjs,
 	sortGithubAction,
+	sortPnpmWorkspace,
 	sortRojoProject,
 	sortTsconfig,
 	stylistic,
@@ -304,10 +305,6 @@ export async function isentinel(
 		}
 	}
 
-	if (enableCatalogs) {
-		configs.push(pnpm());
-	}
-
 	if (options.yaml !== false) {
 		configs.push(
 			yaml({
@@ -318,6 +315,14 @@ export async function isentinel(
 
 		if (stylisticOptions !== false) {
 			configs.push(sortGithubAction());
+		}
+	}
+
+	if (enableCatalogs) {
+		configs.push(pnpm());
+
+		if (stylisticOptions !== false) {
+			configs.push(sortPnpmWorkspace());
 		}
 	}
 

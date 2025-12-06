@@ -274,6 +274,93 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 	/* eslint-enable sonar/no-duplicate-string*/
 }
 
+export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
+	return [
+		{
+			files: ["pnpm-workspace.yaml"],
+			name: "isentinel/sort/pnpm-workspace-yaml-sort",
+			rules: {
+				"yaml/sort-keys": [
+					"error",
+					{
+						order: [
+							...[
+								"cacheDir",
+								"catalogMode",
+								"cleanupUnusedCatalogs",
+								"dedupeDirectDeps",
+								"deployAllFiles",
+								"enablePrePostScripts",
+								"engineStrict",
+								"extendNodePath",
+								"hoist",
+								"hoistPattern",
+								"hoistWorkspacePackages",
+								"ignoreCompatibilityDb",
+								"ignoreDepScripts",
+								"ignoreScripts",
+								"ignoreWorkspaceRootCheck",
+								"managePackageManagerVersions",
+								"minimumReleaseAge",
+								"minimumReleaseAgeExclude",
+								"modulesDir",
+								"nodeLinker",
+								"nodeVersion",
+								"optimisticRepeatInstall",
+								"packageManagerStrict",
+								"packageManagerStrictVersion",
+								"preferSymlinkedExecutables",
+								"preferWorkspacePackages",
+								"publicHoistPattern",
+								"registrySupportsTimeField",
+								"requiredScripts",
+								"resolutionMode",
+								"savePrefix",
+								"scriptShell",
+								"shamefullyHoist",
+								"shellEmulator",
+								"stateDir",
+								"supportedArchitectures",
+								"symlink",
+								"tag",
+								"trustPolicy",
+								"trustPolicyExclude",
+								"updateNotifier",
+							],
+
+							// Packages and dependencies
+							"packages",
+							"overrides",
+							"patchedDependencies",
+							"catalog",
+							"catalogs",
+
+							// Other
+							...[
+								"allowedDeprecatedVersions",
+								"allowNonAppliedPatches",
+								"configDependencies",
+								"ignoredBuiltDependencies",
+								"ignoredOptionalDependencies",
+								"neverBuiltDependencies",
+								"onlyBuiltDependencies",
+								"onlyBuiltDependenciesFile",
+								"packageExtensions",
+								"peerDependencyRules",
+							],
+						],
+						pathPattern: "^$",
+					},
+					{
+						order: { type: "asc" },
+						pathPattern: ".*",
+					},
+				],
+			},
+		},
+	];
+}
+
 /**
  * Sort Rojo .project.json files.
  *
