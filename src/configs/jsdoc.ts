@@ -56,6 +56,7 @@ export async function jsdoc(
 				"jsdoc/require-property": "warn",
 				"jsdoc/require-property-description": "warn",
 				"jsdoc/require-property-name": "warn",
+				"jsdoc/require-rejects": "error",
 				"jsdoc/require-returns-check": "warn",
 				"jsdoc/require-returns-description": "warn",
 				"jsdoc/require-yields-check": "warn",
