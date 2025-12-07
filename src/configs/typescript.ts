@@ -223,6 +223,7 @@ export async function typescript(
 				"ts/no-require-imports": "error",
 				"ts/no-shadow": "error",
 				"ts/no-unused-expressions": "error",
+				"ts/no-unused-private-class-members": "error",
 				"ts/no-unused-vars": "off",
 				"ts/no-use-before-define": "off",
 				"ts/no-useless-constructor": "error",
