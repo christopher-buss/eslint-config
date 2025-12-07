@@ -51,19 +51,21 @@ export async function perfectionist(
 	const sortedObjectConfig = sortObjects ?? {
 		customGroups: {
 			id: "^id$",
+			key: "^key$",
 			name: "^name$",
 		},
-		groups: ["id", "name", "unknown"],
+		groups: ["id", "key", "name", "unknown"],
 	};
 
-	const sortedJsxObjectConfig = sortObjects ?? {
+	const sortedObjectJsxConfig = sortObjects ?? {
 		customGroups: {
 			id: "^id$",
+			key: "^key$",
 			name: "^name$",
 			callbacks: ["\b(on[A-Z][a-zA-Z]*)\b"],
 			react: ["^children$", "^ref$"],
 		},
-		groups: ["id", "name", "unknown", "react", "callbacks"],
+		groups: ["id", "key", "name", "unknown", "react", "callbacks"],
 	};
 
 	function createUnsortedMethod(methodType: MethodType): {
@@ -223,8 +225,8 @@ export async function perfectionist(
 			name: "isentinel/perfectionist/jsx",
 			files: [GLOB_JSX, GLOB_TSX],
 			rules: {
-				"perfectionist/sort-interfaces": ["error", { ...sortedJsxObjectConfig }],
-				"perfectionist/sort-objects": ["error", { ...sortedJsxObjectConfig }],
+				"perfectionist/sort-interfaces": ["error", { ...sortedObjectJsxConfig }],
+				"perfectionist/sort-objects": ["error", { ...sortedObjectJsxConfig }],
 			},
 		},
 	];
