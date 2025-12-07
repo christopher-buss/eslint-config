@@ -10,7 +10,14 @@
 	},
 	"license": "MIT",
 	"author": "Christopher Buss <christopher.buss@pm.me> (https://github.com/christopher-buss)",
-	"contributors": ["Anthony Fu <anthonyfu117@hotmail.com> (https://github.com/antfu/)"],
+	"contributors": [
+		{
+			"name": "Anthony Fu",
+			"email": "anthonyfu117@hotmail.com",
+			"url": "https://github.com/antfu"
+		}
+	],
+	"sideEffects": false,
 	"type": "module",
 	"exports": {
 		".": "./dist/index.mjs"
