@@ -319,7 +319,7 @@ export async function isentinel(
 	}
 
 	if (enableCatalogs) {
-		configs.push(pnpm());
+		configs.push(pnpm({ isInEditor }));
 
 		if (stylisticOptions !== false) {
 			configs.push(sortPnpmWorkspace());

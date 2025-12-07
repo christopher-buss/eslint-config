@@ -1,7 +1,11 @@
-import type { TypedFlatConfigItem } from "../types";
+import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types";
 import { ensurePackages, interopDefault } from "../utils";
 
-export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
+export async function pnpm(
+	options: Required<OptionsIsInEditor>,
+): Promise<Array<TypedFlatConfigItem>> {
+	const { isInEditor } = options;
+
 	await ensurePackages(["eslint-plugin-pnpm"]);
 
 	const [pluginPnpm, yamlParser, jsoncParser] = await Promise.all([
@@ -24,9 +28,9 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 				parser: jsoncParser,
 			},
 			rules: {
-				"pnpm/json-enforce-catalog": "error",
-				"pnpm/json-prefer-workspace-settings": "error",
-				"pnpm/json-valid-catalog": "error",
+				"pnpm/json-enforce-catalog": ["error", { autofix: !isInEditor }],
+				"pnpm/json-prefer-workspace-settings": ["error", { autofix: !isInEditor }],
+				"pnpm/json-valid-catalog": ["error", { autofix: !isInEditor }],
 			},
 			settings: {
 				pnpm: {
@@ -44,6 +48,17 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 				pnpm: pluginPnpm,
 			},
 			rules: {
+				"pnpm/yaml-enforce-settings": [
+					"error",
+					{
+						settings: {
+							catalogMode: "prefer",
+							cleanupUnusedCatalogs: true,
+							shellEmulator: true,
+							trustPolicy: "no-downgrade",
+						},
+					},
+				],
 				"pnpm/yaml-no-duplicate-catalog-item": "error",
 				"pnpm/yaml-no-unused-catalog-item": "error",
 			},

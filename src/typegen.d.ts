@@ -3018,6 +3018,11 @@ export interface RuleOptions {
    */
   'pnpm/json-valid-catalog'?: Linter.RuleEntry<PnpmJsonValidCatalog>
   /**
+   * Enforce settings in `pnpm-workspace.yaml`
+   * @see https://github.com/antfu/pnpm-workspace-utils/tree/main/packages/eslint-plugin-pnpm/src/rules/yaml/yaml-enforce-settings.test.ts
+   */
+  'pnpm/yaml-enforce-settings'?: Linter.RuleEntry<PnpmYamlEnforceSettings>
+  /**
    * Disallow duplicate catalog items in `pnpm-workspace.yaml`
    * @see https://github.com/antfu/pnpm-workspace-utils/tree/main/packages/eslint-plugin-pnpm/src/rules/yaml/yaml-no-duplicate-catalog-item.test.ts
    */
@@ -14622,6 +14627,20 @@ type PnpmJsonValidCatalog = []|[{
   enforceNoConflict?: boolean
   
   fields?: unknown[]
+}]
+// ----- pnpm/yaml-enforce-settings -----
+type PnpmYamlEnforceSettings = []|[{
+  
+  autofix?: boolean
+  
+  settings?: {
+    [k: string]: unknown | undefined
+  }
+  
+  requiredFields?: string[]
+  
+  forbiddenFields?: string[]
+  [k: string]: unknown | undefined
 }]
 // ----- pnpm/yaml-no-duplicate-catalog-item -----
 type PnpmYamlNoDuplicateCatalogItem = []|[{

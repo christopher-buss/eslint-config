@@ -54,7 +54,7 @@ const configs = await combine(
 	node(),
 	packageJson(),
 	perfectionist(),
-	pnpm(),
+	pnpm({ isInEditor: false }),
 	prettier(),
 	promise(),
 	react(),
