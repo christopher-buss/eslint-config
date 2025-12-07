@@ -41,8 +41,9 @@ export async function test(
 	} = options;
 
 	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
-	const enableJest = jest || (vitest !== false && (type === "game" || roblox));
-	const enableVitest = vitest !== false || (!jest && type === "package" && !roblox);
+	const vitestEnabled = vitest === true || typeof vitest === "object";
+	const enableJest = jest || (!vitestEnabled && (type === "game" || roblox));
+	const enableVitest = vitestEnabled || (!jest && type === "package" && !roblox);
 
 	const configs: Array<TypedFlatConfigItem> = [];
 
