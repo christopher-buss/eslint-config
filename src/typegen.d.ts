@@ -2599,6 +2599,11 @@ export interface RuleOptions {
    */
   'package-json/repository-shorthand'?: Linter.RuleEntry<PackageJsonRepositoryShorthand>
   /**
+   * Ensures that proper attribution is included, requiring that either `author` or `contributors` is defined, and that if `contributors` is present, it should include at least one contributor.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-attribution.md
+   */
+  'package-json/require-attribution'?: Linter.RuleEntry<PackageJsonRequireAttribution>
+  /**
    * Requires the `author` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-author.md
    */
@@ -2634,6 +2639,11 @@ export interface RuleOptions {
    */
   'package-json/require-engines'?: Linter.RuleEntry<PackageJsonRequireEngines>
   /**
+   * Requires the `exports` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-exports.md
+   */
+  'package-json/require-exports'?: Linter.RuleEntry<PackageJsonRequireExports>
+  /**
    * Requires the `files` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-files.md
    */
@@ -2663,6 +2673,11 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-peerDependencies.md
    */
   'package-json/require-peerDependencies'?: Linter.RuleEntry<PackageJsonRequirePeerDependencies>
+  /**
+   * Requires the `sideEffects` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-sideEffects.md
+   */
+  'package-json/require-sideEffects'?: Linter.RuleEntry<PackageJsonRequireSideEffects>
   /**
    * Requires the `type` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-type.md
@@ -2699,6 +2714,11 @@ export interface RuleOptions {
    */
   'package-json/sort-collections'?: Linter.RuleEntry<PackageJsonSortCollections>
   /**
+   * Requires that all peer dependencies are also declared as dev dependencies
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/specify-peers-locally.md
+   */
+  'package-json/specify-peers-locally'?: Linter.RuleEntry<[]>
+  /**
    * Checks a dependency isn't specified more than once (i.e. in `dependencies` and `devDependencies`)
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/unique-dependencies.md
    */
@@ -2724,6 +2744,11 @@ export interface RuleOptions {
    */
   'package-json/valid-config'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that the `contributors` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-contributors.md
+   */
+  'package-json/valid-contributors'?: Linter.RuleEntry<[]>
+  /**
    * Enforce that the `cpu` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-cpu.md
    */
@@ -2748,6 +2773,11 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-directories.md
    */
   'package-json/valid-directories'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `engines` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-engines.md
+   */
+  'package-json/valid-engines'?: Linter.RuleEntry<[]>
   /**
    * Enforce that the `exports` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-exports.md
@@ -2785,6 +2815,11 @@ export interface RuleOptions {
    */
   'package-json/valid-main'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that the `man` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-man.md
+   */
+  'package-json/valid-man'?: Linter.RuleEntry<[]>
+  /**
    * Enforce that package names are valid npm package names
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-name.md
    */
@@ -2795,8 +2830,14 @@ export interface RuleOptions {
    */
   'package-json/valid-optionalDependencies'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that the `os` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-os.md
+   */
+  'package-json/valid-os'?: Linter.RuleEntry<[]>
+  /**
    * Enforce that package.json has all properties required by the npm spec
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-package-definition.md
+   * @deprecated
    */
   'package-json/valid-package-definition'?: Linter.RuleEntry<PackageJsonValidPackageDefinition>
   /**
@@ -2804,6 +2845,21 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-peerDependencies.md
    */
   'package-json/valid-peerDependencies'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `private` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-private.md
+   */
+  'package-json/valid-private'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `publishConfig` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-publishConfig.md
+   */
+  'package-json/valid-publishConfig'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `repository` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-repository.md
+   */
+  'package-json/valid-repository'?: Linter.RuleEntry<[]>
   /**
    * Enforce that if repository directory is specified, it matches the path to the package.json file
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-repository-directory.md
@@ -2815,6 +2871,11 @@ export interface RuleOptions {
    */
   'package-json/valid-scripts'?: Linter.RuleEntry<[]>
   /**
+   * Enforce that the `sideEffects` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-sideEffects.md
+   */
+  'package-json/valid-sideEffects'?: Linter.RuleEntry<[]>
+  /**
    * Enforce that the `type` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-type.md
    */
@@ -2824,6 +2885,11 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-version.md
    */
   'package-json/valid-version'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `workspaces` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-workspaces.md
+   */
+  'package-json/valid-workspaces'?: Linter.RuleEntry<[]>
   /**
    * Require or disallow padding within blocks
    * @see https://eslint.org/docs/latest/rules/padded-blocks
@@ -11524,68 +11590,99 @@ type PackageJsonRepositoryShorthand = []|[{
   
   form?: ("object" | "shorthand")
 }]
+// ----- package-json/require-attribution -----
+type PackageJsonRequireAttribution = []|[{
+  
+  preferContributorsOnly?: boolean
+}]
 // ----- package-json/require-author -----
 type PackageJsonRequireAuthor = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-bugs -----
 type PackageJsonRequireBugs = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-bundleDependencies -----
 type PackageJsonRequireBundleDependencies = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-dependencies -----
 type PackageJsonRequireDependencies = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-description -----
 type PackageJsonRequireDescription = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-devDependencies -----
 type PackageJsonRequireDevDependencies = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-engines -----
 type PackageJsonRequireEngines = []|[{
+  
+  ignorePrivate?: boolean
+}]
+// ----- package-json/require-exports -----
+type PackageJsonRequireExports = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-files -----
 type PackageJsonRequireFiles = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-keywords -----
 type PackageJsonRequireKeywords = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-license -----
 type PackageJsonRequireLicense = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-name -----
 type PackageJsonRequireName = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-optionalDependencies -----
 type PackageJsonRequireOptionalDependencies = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-peerDependencies -----
 type PackageJsonRequirePeerDependencies = []|[{
+  
+  ignorePrivate?: boolean
+}]
+// ----- package-json/require-sideEffects -----
+type PackageJsonRequireSideEffects = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-type -----
 type PackageJsonRequireType = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-types -----
 type PackageJsonRequireTypes = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/require-version -----
 type PackageJsonRequireVersion = []|[{
+  
   ignorePrivate?: boolean
 }]
 // ----- package-json/restrict-dependency-ranges -----
