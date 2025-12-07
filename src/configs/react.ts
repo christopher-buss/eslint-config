@@ -28,6 +28,7 @@ export async function react(
 		importSource,
 		overrides = {},
 		overridesTypeAware,
+		reactCompiler = true,
 		stylistic = true,
 		typeAware = true,
 	} = options;
@@ -110,24 +111,31 @@ export async function react(
 				// react-lua does not seem to fully support the patterns that
 				// this rule enforces.
 				"react-hooks-extra/no-direct-set-state-in-use-effect": "off",
+
 				// recommended rules react-hooks
-				"react-hooks/component-hook-factories": "error",
-				"react-hooks/config": "off",
-				"react-hooks/error-boundaries": "error",
-				"react-hooks/exhaustive-deps": "warn",
-				"react-hooks/gating": "off",
-				"react-hooks/globals": "error",
-				"react-hooks/immutability": "error",
-				"react-hooks/incompatible-library": "off",
-				"react-hooks/preserve-manual-memoization": "off",
-				"react-hooks/purity": "off",
-				"react-hooks/refs": "error",
+				"react-hooks/exhaustive-deps": "error",
 				"react-hooks/rules-of-hooks": "error",
-				"react-hooks/set-state-in-effect": "error",
-				"react-hooks/set-state-in-render": "error",
-				"react-hooks/static-components": "error",
-				"react-hooks/unsupported-syntax": "off",
-				"react-hooks/use-memo": "error",
+				...(reactCompiler
+					? {
+							"react-hooks/component-hook-factories": "error",
+							"react-hooks/config": "off",
+							"react-hooks/error-boundaries": "error",
+							"react-hooks/gating": "off",
+							"react-hooks/globals": "error",
+							"react-hooks/immutability": "error",
+							"react-hooks/incompatible-library": "off",
+							"react-hooks/preserve-manual-memoization": "off",
+							"react-hooks/purity": "off",
+							"react-hooks/refs": "error",
+							"react-hooks/set-state-in-effect": "error",
+							"react-hooks/set-state-in-render": "error",
+							"react-hooks/static-components": "error",
+							"react-hooks/unsupported-syntax": "off",
+							"react-hooks/use-memo": "error",
+							"react-x/compiler-optimized-helpers": "error",
+						}
+					: {}),
+
 				// recommended rules from @eslint-react
 				"react/jsx-dollar": "warn",
 				"react/jsx-no-comment-textnodes": "warn",

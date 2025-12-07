@@ -422,6 +422,16 @@ export interface PerfectionistConfig {
 
 export type ReactConfig = ESLintReactSettings &
 	OptionsOverridesTypeAware & {
+		/**
+		 * Whether to enable the React Compiler rules.
+		 *
+		 * These are currently already tuned for roblox-ts projects, but could
+		 * be considered unnecessary due to not having the compiler available.
+		 *
+		 * @default true
+		 */
+		reactCompiler?: boolean;
+	} & {
 		filenameCase?: "kebabCase" | "pascalCase";
 	};
 
