@@ -65,7 +65,7 @@ const configs = await combine(
 	stylistic(),
 	test({ jest: true, vitest: true }),
 	toml(),
-	typescript(),
+	typescript({ erasableOnly: true }),
 	unicorn(),
 	yaml(),
 );
