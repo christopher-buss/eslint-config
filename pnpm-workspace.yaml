@@ -66,7 +66,7 @@ catalogs:
     eslint-plugin-flawless: 0.1.0
     eslint-plugin-format-lua: 1.0.1-beta.2
     eslint-plugin-import-lite: 0.3.0
-    eslint-plugin-jsdoc: 61.1.12
+    eslint-plugin-jsdoc: 61.4.1
     eslint-plugin-jsonc: 2.21.0
     eslint-plugin-no-only-tests: 3.3.0
     eslint-plugin-package-json: 0.69.0
