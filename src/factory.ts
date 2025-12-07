@@ -87,6 +87,7 @@ export const defaultPluginRenaming = {
  * @param options - The options for generating the user configuration items.
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
+ * @rejects Will throw an error if configuration generation fails.
  */
 export async function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem = {},
