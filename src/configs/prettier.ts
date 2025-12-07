@@ -126,7 +126,7 @@ export async function prettier(
 					mergePrettierOptions(prettierOptions, {
 						// @see https://github.com/hosseinmd/prettier-plugin-jsdoc/issues/249
 						// parser: "oxc-ts",
-						// plugins: [require.resolve("@prettier/plugin-oxc")],
+						plugins: [require.resolve("@prettier/plugin-oxc")],
 					}),
 				],
 				"prefer-arrow-callback": "off",

@@ -14894,6 +14894,8 @@ type ReactNoUnstableDefaultProps = []|[{
 // ----- react/no-useless-fragment -----
 type ReactNoUselessFragment = []|[{
   
+  allowEmptyFragment?: boolean
+  
   allowExpressions?: boolean
 }]
 // ----- require-atomic-updates -----
