@@ -330,7 +330,7 @@ export interface OptionsTestFramework {
 	/** Enable Jest support. */
 	jest?: boolean;
 	/** Enable Vitest support. */
-	vitest?: boolean;
+	vitest?: boolean | OptionsVitest;
 }
 
 export type OptionsTypescript =
@@ -397,6 +397,16 @@ export interface OptionsTypeScriptWithTypes {
 	 * @see https://typescript-eslint.io/linting/typed-linting/
 	 */
 	typeAware?: boolean;
+}
+
+export interface OptionsVitest {
+	/**
+	 * Enable typecheck rules for Vitest.
+	 *
+	 * @default false
+	 * @see https://github.com/vitest-dev/eslint-plugin-vitest#enabling-with-type-testing
+	 */
+	typecheck?: boolean;
 }
 
 export interface PerfectionistConfig {

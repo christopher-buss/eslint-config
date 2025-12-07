@@ -7,7 +7,11 @@ export default isentinel(
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
 		pnpm: true,
 		roblox: false,
-		test: true,
+		test: {
+			vitest: {
+				typecheck: true,
+			},
+		},
 		type: "package",
 		typescript: {
 			erasableOnly: true,

@@ -11,6 +11,7 @@ import type {
 	OptionsRoblox,
 	OptionsStylistic,
 	OptionsTestFramework,
+	OptionsVitest,
 	TypedFlatConfigItem,
 } from "../types";
 import { ensurePackages, interopDefault } from "../utils";
@@ -39,8 +40,9 @@ export async function test(
 		vitest = false,
 	} = options;
 
-	const enableJest = jest || (!vitest && (type === "game" || roblox));
-	const enableVitest = vitest || (!jest && type === "package" && !roblox);
+	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
+	const enableJest = jest || (vitest !== false && (type === "game" || roblox));
+	const enableVitest = vitest !== false || (!jest && type === "package" && !roblox);
 
 	const configs: Array<TypedFlatConfigItem> = [];
 
@@ -151,6 +153,11 @@ export async function test(
 						: {}),
 
 					...overrides,
+				},
+				settings: {
+					vitest: {
+						typecheck: vitestOptions.typecheck ?? false,
+					},
 				},
 			},
 		);
