@@ -28,6 +28,7 @@ import {
 	sortRojoProject,
 	sortTsconfig,
 	stylistic,
+	test,
 	toml,
 	typescript,
 	unicorn,
@@ -36,7 +37,6 @@ import {
 import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
-import { test } from "./configs/test";
 import { GLOB_ROOT } from "./globs";
 import type {
 	Awaitable,

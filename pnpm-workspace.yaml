@@ -33,7 +33,7 @@ catalogs:
     type-fest: 5.2.0
     typescript: 5.9.3
   peer:
-    "@vitest/eslint-plugin": 1.4.2
+    "@vitest/eslint-plugin": 1.5.1
     eslint: 9.39.1
     eslint-plugin-erasable-syntax-only: 0.4.0
     eslint-plugin-eslint-plugin: 7.2.0

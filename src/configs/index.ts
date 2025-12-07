@@ -22,6 +22,7 @@ export * from "./sonarjs";
 export * from "./sort";
 export * from "./spelling";
 export * from "./stylistic";
+export * from "./test";
 export * from "./toml";
 export * from "./typescript";
 export * from "./unicorn";

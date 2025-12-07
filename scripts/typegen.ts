@@ -1,7 +1,6 @@
 import { flatConfigsToRulesDTS } from "eslint-typegen/core";
 import { builtinRules } from "eslint/use-at-your-own-risk";
 import fs from "node:fs/promises";
-import { test } from "src/configs/test";
 
 import {
 	combine,
@@ -25,9 +24,9 @@ import {
 	roblox,
 	shopify,
 	sonarjs,
-	sortTsconfig,
 	spelling,
 	stylistic,
+	test,
 	toml,
 	typescript,
 	unicorn,
@@ -62,10 +61,9 @@ const configs = await combine(
 	roblox(),
 	shopify(),
 	sonarjs({ isInEditor: false }),
-	sortTsconfig(),
 	spelling(),
 	stylistic(),
-	test(),
+	test({ jest: true, vitest: true }),
 	toml(),
 	typescript(),
 	unicorn(),

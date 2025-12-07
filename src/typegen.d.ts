@@ -5802,6 +5802,321 @@ export interface RuleOptions {
    */
   'template-tag-spacing'?: Linter.RuleEntry<TemplateTagSpacing>
   /**
+   * Enforce `test` and `it` usage conventions
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/consistent-test-it.md
+   */
+  'test/consistent-test-it'?: Linter.RuleEntry<TestConsistentTestIt>
+  /**
+   * Enforce assertion to be made in a test body
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/expect-expect.md
+   */
+  'test/expect-expect'?: Linter.RuleEntry<TestExpectExpect>
+  /**
+   * Enforces a maximum number assertion calls in a test body
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/max-expects.md
+   */
+  'test/max-expects'?: Linter.RuleEntry<TestMaxExpects>
+  /**
+   * Enforces a maximum depth to nested describe calls
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/max-nested-describe.md
+   */
+  'test/max-nested-describe'?: Linter.RuleEntry<TestMaxNestedDescribe>
+  /**
+   * Disallow alias methods
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-alias-methods.md
+   */
+  'test/no-alias-methods'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow commented out tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-commented-out-tests.md
+   */
+  'test/no-commented-out-tests'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow calling `expect` conditionally
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-conditional-expect.md
+   */
+  'test/no-conditional-expect'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow conditional logic in tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-conditional-in-test.md
+   */
+  'test/no-conditional-in-test'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow confusing usages of jest.setTimeout
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-confusing-set-timeout.md
+   */
+  'test/no-confusing-set-timeout'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow use of deprecated functions
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-deprecated-functions.md
+   */
+  'test/no-deprecated-functions'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow disabled tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-disabled-tests.md
+   */
+  'test/no-disabled-tests'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow using a callback in asynchronous tests and hooks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-done-callback.md
+   */
+  'test/no-done-callback'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow duplicate setup and teardown hooks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-duplicate-hooks.md
+   */
+  'test/no-duplicate-hooks'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow using `exports` in files containing tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-export.md
+   */
+  'test/no-export'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow focused tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-focused-tests.md
+   */
+  'test/no-focused-tests'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow setup and teardown hooks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-hooks.md
+   */
+  'test/no-hooks'?: Linter.RuleEntry<TestNoHooks>
+  /**
+   * Disallow identical titles
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-identical-title.md
+   */
+  'test/no-identical-title'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow string interpolation inside snapshots
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-interpolation-in-snapshots.md
+   */
+  'test/no-interpolation-in-snapshots'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow Jasmine globals
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-jasmine-globals.md
+   */
+  'test/no-jasmine-globals'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow large snapshots
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-large-snapshots.md
+   */
+  'test/no-large-snapshots'?: Linter.RuleEntry<TestNoLargeSnapshots>
+  /**
+   * Disallow manually importing from `__mocks__`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-mocks-import.md
+   */
+  'test/no-mocks-import'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow specific `jest.` methods
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-restricted-jest-methods.md
+   */
+  'test/no-restricted-jest-methods'?: Linter.RuleEntry<TestNoRestrictedJestMethods>
+  /**
+   * Disallow specific matchers & modifiers
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-restricted-matchers.md
+   */
+  'test/no-restricted-matchers'?: Linter.RuleEntry<TestNoRestrictedMatchers>
+  /**
+   * Disallow using `expect` outside of `it` or `test` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-standalone-expect.md
+   */
+  'test/no-standalone-expect'?: Linter.RuleEntry<TestNoStandaloneExpect>
+  /**
+   * Require using `.only` and `.skip` over `f` and `x`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-test-prefixes.md
+   */
+  'test/no-test-prefixes'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow explicitly returning from tests
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-test-return-statement.md
+   */
+  'test/no-test-return-statement'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow using `jest.mock()` factories without an explicit type parameter
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/no-untyped-mock-factory.md
+   */
+  'test/no-untyped-mock-factory'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `afterAll` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-after-all-blocks.md
+   */
+  'test/padding-around-after-all-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `afterEach` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-after-each-blocks.md
+   */
+  'test/padding-around-after-each-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around Jest functions
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-all.md
+   */
+  'test/padding-around-all'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `beforeAll` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-before-all-blocks.md
+   */
+  'test/padding-around-before-all-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `beforeEach` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-before-each-blocks.md
+   */
+  'test/padding-around-before-each-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `describe` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-describe-blocks.md
+   */
+  'test/padding-around-describe-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `expect` groups
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-expect-groups.md
+   */
+  'test/padding-around-expect-groups'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `test` and `it` blocks
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/padding-around-test-blocks.md
+   */
+  'test/padding-around-test-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `toBeCalledWith()` or `toHaveBeenCalledWith()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-called-with.md
+   */
+  'test/prefer-called-with'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using the built-in comparison matchers
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-comparison-matcher.md
+   */
+  'test/prefer-comparison-matcher'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer using `.each` rather than manual loops
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-each.md
+   */
+  'test/prefer-each'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer having the last statement in a test be an assertion
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-ending-with-an-expect.md
+   */
+  'test/prefer-ending-with-an-expect'?: Linter.RuleEntry<TestPreferEndingWithAnExpect>
+  /**
+   * Suggest using the built-in equality matchers
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-equality-matcher.md
+   */
+  'test/prefer-equality-matcher'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `expect.assertions()` OR `expect.hasAssertions()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-expect-assertions.md
+   */
+  'test/prefer-expect-assertions'?: Linter.RuleEntry<TestPreferExpectAssertions>
+  /**
+   * Prefer `await expect(...).resolves` over `expect(await ...)` syntax
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-expect-resolves.md
+   */
+  'test/prefer-expect-resolves'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer having hooks in a consistent order
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-hooks-in-order.md
+   */
+  'test/prefer-hooks-in-order'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest having hooks before any test cases
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-hooks-on-top.md
+   */
+  'test/prefer-hooks-on-top'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer importing Jest globals
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-importing-jest-globals.md
+   */
+  'test/prefer-importing-jest-globals'?: Linter.RuleEntry<TestPreferImportingJestGlobals>
+  /**
+   * Prefer `jest.mocked()` over `fn as jest.Mock`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-jest-mocked.md
+   */
+  'test/prefer-jest-mocked'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce lowercase test names
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-lowercase-title.md
+   */
+  'test/prefer-lowercase-title'?: Linter.RuleEntry<TestPreferLowercaseTitle>
+  /**
+   * Prefer mock resolved/rejected shorthands for promises
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-mock-promise-shorthand.md
+   */
+  'test/prefer-mock-promise-shorthand'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer including a hint with external snapshots
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-snapshot-hint.md
+   */
+  'test/prefer-snapshot-hint'?: Linter.RuleEntry<TestPreferSnapshotHint>
+  /**
+   * Suggest using `jest.spyOn()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-spy-on.md
+   */
+  'test/prefer-spy-on'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `toStrictEqual()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-strict-equal.md
+   */
+  'test/prefer-strict-equal'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `toBe()` for primitive literals
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-to-be.md
+   */
+  'test/prefer-to-be'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `toContain()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-to-contain.md
+   */
+  'test/prefer-to-contain'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `toHaveLength()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-to-have-length.md
+   */
+  'test/prefer-to-have-length'?: Linter.RuleEntry<[]>
+  /**
+   * Suggest using `test.todo`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/prefer-todo.md
+   */
+  'test/prefer-todo'?: Linter.RuleEntry<[]>
+  /**
+   * Require setup and teardown code to be within a hook
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/require-hook.md
+   */
+  'test/require-hook'?: Linter.RuleEntry<TestRequireHook>
+  /**
+   * Require a message for `toThrow()`
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/require-to-throw-message.md
+   */
+  'test/require-to-throw-message'?: Linter.RuleEntry<[]>
+  /**
+   * Require test cases and hooks to be inside a `describe` block
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/require-top-level-describe.md
+   */
+  'test/require-top-level-describe'?: Linter.RuleEntry<TestRequireTopLevelDescribe>
+  /**
+   * Enforce unbound methods are called with their expected scope
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/unbound-method.md
+   */
+  'test/unbound-method'?: Linter.RuleEntry<TestUnboundMethod>
+  /**
+   * Enforce valid `describe()` callback
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/valid-describe-callback.md
+   */
+  'test/valid-describe-callback'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce valid `expect()` usage
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/valid-expect.md
+   */
+  'test/valid-expect'?: Linter.RuleEntry<TestValidExpect>
+  /**
+   * Require promises that have expectations in their chain to be valid
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/valid-expect-in-promise.md
+   */
+  'test/valid-expect-in-promise'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce valid titles
+   * @see https://github.com/jest-community/eslint-plugin-jest/blob/v29.0.1/docs/rules/valid-title.md
+   */
+  'test/valid-title'?: Linter.RuleEntry<TestValidTitle>
+  /**
    * enforce linebreaks after opening and before closing array brackets
    * @see https://ota-meshi.github.io/eslint-plugin-toml/rules/array-bracket-newline.html
    */
@@ -7327,6 +7642,397 @@ export interface RuleOptions {
    * @see https://eslint.org/docs/latest/rules/vars-on-top
    */
   'vars-on-top'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `.each` or `.for` consistently
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/consistent-each-for.md
+   */
+  'vitest/consistent-each-for'?: Linter.RuleEntry<VitestConsistentEachFor>
+  /**
+   * require test file pattern
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/consistent-test-filename.md
+   */
+  'vitest/consistent-test-filename'?: Linter.RuleEntry<VitestConsistentTestFilename>
+  /**
+   * enforce using test or it but not both
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/consistent-test-it.md
+   */
+  'vitest/consistent-test-it'?: Linter.RuleEntry<VitestConsistentTestIt>
+  /**
+   * enforce using vitest or vi but not both
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/consistent-vitest-vi.md
+   */
+  'vitest/consistent-vitest-vi'?: Linter.RuleEntry<VitestConsistentVitestVi>
+  /**
+   * enforce having expectation in test body
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/expect-expect.md
+   */
+  'vitest/expect-expect'?: Linter.RuleEntry<VitestExpectExpect>
+  /**
+   * enforce hoisted APIs to be on top of the file
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/hoisted-apis-on-top.md
+   */
+  'vitest/hoisted-apis-on-top'?: Linter.RuleEntry<[]>
+  /**
+   * enforce a maximum number of expect per test
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/max-expects.md
+   */
+  'vitest/max-expects'?: Linter.RuleEntry<VitestMaxExpects>
+  /**
+   * require describe block to be less than set max value or default value
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/max-nested-describe.md
+   */
+  'vitest/max-nested-describe'?: Linter.RuleEntry<VitestMaxNestedDescribe>
+  /**
+   * disallow alias methods
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-alias-methods.md
+   */
+  'vitest/no-alias-methods'?: Linter.RuleEntry<[]>
+  /**
+   * disallow commented out tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-commented-out-tests.md
+   */
+  'vitest/no-commented-out-tests'?: Linter.RuleEntry<[]>
+  /**
+   * disallow conditional expects
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-conditional-expect.md
+   */
+  'vitest/no-conditional-expect'?: Linter.RuleEntry<[]>
+  /**
+   * disallow conditional tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-conditional-in-test.md
+   */
+  'vitest/no-conditional-in-test'?: Linter.RuleEntry<[]>
+  /**
+   * disallow conditional tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-conditional-tests.md
+   */
+  'vitest/no-conditional-tests'?: Linter.RuleEntry<[]>
+  /**
+   * disallow disabled tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-disabled-tests.md
+   */
+  'vitest/no-disabled-tests'?: Linter.RuleEntry<[]>
+  /**
+   * disallow using a callback in asynchronous tests and hooks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-done-callback.md
+   * @deprecated
+   */
+  'vitest/no-done-callback'?: Linter.RuleEntry<[]>
+  /**
+   * disallow duplicate hooks and teardown hooks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-duplicate-hooks.md
+   */
+  'vitest/no-duplicate-hooks'?: Linter.RuleEntry<[]>
+  /**
+   * disallow focused tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-focused-tests.md
+   */
+  'vitest/no-focused-tests'?: Linter.RuleEntry<VitestNoFocusedTests>
+  /**
+   * disallow setup and teardown hooks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-hooks.md
+   */
+  'vitest/no-hooks'?: Linter.RuleEntry<VitestNoHooks>
+  /**
+   * disallow identical titles
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-identical-title.md
+   */
+  'vitest/no-identical-title'?: Linter.RuleEntry<[]>
+  /**
+   * disallow importing `node:test`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-import-node-test.md
+   */
+  'vitest/no-import-node-test'?: Linter.RuleEntry<[]>
+  /**
+   * disallow importing Vitest globals
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-importing-vitest-globals.md
+   */
+  'vitest/no-importing-vitest-globals'?: Linter.RuleEntry<[]>
+  /**
+   * disallow string interpolation in snapshots
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-interpolation-in-snapshots.md
+   */
+  'vitest/no-interpolation-in-snapshots'?: Linter.RuleEntry<[]>
+  /**
+   * disallow large snapshots
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-large-snapshots.md
+   */
+  'vitest/no-large-snapshots'?: Linter.RuleEntry<VitestNoLargeSnapshots>
+  /**
+   * disallow importing from __mocks__ directory
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-mocks-import.md
+   */
+  'vitest/no-mocks-import'?: Linter.RuleEntry<[]>
+  /**
+   * disallow the use of certain matchers
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-restricted-matchers.md
+   */
+  'vitest/no-restricted-matchers'?: Linter.RuleEntry<VitestNoRestrictedMatchers>
+  /**
+   * disallow specific `vi.` methods
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-restricted-vi-methods.md
+   */
+  'vitest/no-restricted-vi-methods'?: Linter.RuleEntry<VitestNoRestrictedViMethods>
+  /**
+   * disallow using `expect` outside of `it` or `test` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-standalone-expect.md
+   */
+  'vitest/no-standalone-expect'?: Linter.RuleEntry<VitestNoStandaloneExpect>
+  /**
+   * disallow using the `f` and `x` prefixes in favour of `.only` and `.skip`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-test-prefixes.md
+   */
+  'vitest/no-test-prefixes'?: Linter.RuleEntry<[]>
+  /**
+   * disallow return statements in tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-test-return-statement.md
+   */
+  'vitest/no-test-return-statement'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `afterAll` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-after-all-blocks.md
+   */
+  'vitest/padding-around-after-all-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `afterEach` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-after-each-blocks.md
+   */
+  'vitest/padding-around-after-each-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around vitest functions
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-all.md
+   */
+  'vitest/padding-around-all'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `beforeAll` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-before-all-blocks.md
+   */
+  'vitest/padding-around-before-all-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `beforeEach` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-before-each-blocks.md
+   */
+  'vitest/padding-around-before-each-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `describe` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-describe-blocks.md
+   */
+  'vitest/padding-around-describe-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `expect` groups
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-expect-groups.md
+   */
+  'vitest/padding-around-expect-groups'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce padding around `test` blocks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-test-blocks.md
+   */
+  'vitest/padding-around-test-blocks'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer `toHaveBeenCalledExactlyOnceWith` over `toHaveBeenCalledOnce` and `toHaveBeenCalledWith`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-called-exactly-once-with.md
+   */
+  'vitest/prefer-called-exactly-once-with'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `toBeCalledOnce()` or `toHaveBeenCalledOnce()`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-called-once.md
+   */
+  'vitest/prefer-called-once'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `toBeCalledTimes(1)` or `toHaveBeenCalledTimes(1)`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-called-times.md
+   */
+  'vitest/prefer-called-times'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `toBeCalledWith()` or `toHaveBeenCalledWith()`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-called-with.md
+   */
+  'vitest/prefer-called-with'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using the built-in comparison matchers
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-comparison-matcher.md
+   */
+  'vitest/prefer-comparison-matcher'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using a function as a describe title over an equivalent string
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-describe-function-title.md
+   */
+  'vitest/prefer-describe-function-title'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `each` rather than manual loops
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-each.md
+   */
+  'vitest/prefer-each'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using the built-in equality matchers
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-equality-matcher.md
+   */
+  'vitest/prefer-equality-matcher'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using expect assertions instead of callbacks
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-expect-assertions.md
+   */
+  'vitest/prefer-expect-assertions'?: Linter.RuleEntry<VitestPreferExpectAssertions>
+  /**
+   * enforce using `expect().resolves` over `expect(await ...)` syntax
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-expect-resolves.md
+   */
+  'vitest/prefer-expect-resolves'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `expectTypeOf` instead of `expect(typeof ...)`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-expect-type-of.md
+   */
+  'vitest/prefer-expect-type-of'?: Linter.RuleEntry<[]>
+  /**
+   * enforce having hooks in consistent order
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-hooks-in-order.md
+   */
+  'vitest/prefer-hooks-in-order'?: Linter.RuleEntry<[]>
+  /**
+   * enforce having hooks before any test cases
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-hooks-on-top.md
+   */
+  'vitest/prefer-hooks-on-top'?: Linter.RuleEntry<[]>
+  /**
+   * prefer dynamic import in mock
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-import-in-mock.md
+   */
+  'vitest/prefer-import-in-mock'?: Linter.RuleEntry<[]>
+  /**
+   * enforce importing Vitest globals
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-importing-vitest-globals.md
+   */
+  'vitest/prefer-importing-vitest-globals'?: Linter.RuleEntry<[]>
+  /**
+   * enforce lowercase titles
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-lowercase-title.md
+   */
+  'vitest/prefer-lowercase-title'?: Linter.RuleEntry<VitestPreferLowercaseTitle>
+  /**
+   * enforce mock resolved/rejected shorthands for promises
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-mock-promise-shorthand.md
+   */
+  'vitest/prefer-mock-promise-shorthand'?: Linter.RuleEntry<[]>
+  /**
+   * enforce including a hint with external snapshots
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-snapshot-hint.md
+   */
+  'vitest/prefer-snapshot-hint'?: Linter.RuleEntry<VitestPreferSnapshotHint>
+  /**
+   * enforce using `vi.spyOn`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-spy-on.md
+   */
+  'vitest/prefer-spy-on'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `toBe(true)` and `toBe(false)` over matchers that coerce types to boolean
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-strict-boolean-matchers.md
+   */
+  'vitest/prefer-strict-boolean-matchers'?: Linter.RuleEntry<[]>
+  /**
+   * enforce strict equal over equal
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-strict-equal.md
+   */
+  'vitest/prefer-strict-equal'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using toBe()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-be.md
+   */
+  'vitest/prefer-to-be'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using toBeFalsy()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-be-falsy.md
+   */
+  'vitest/prefer-to-be-falsy'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using toBeObject()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-be-object.md
+   */
+  'vitest/prefer-to-be-object'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `toBeTruthy`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-be-truthy.md
+   */
+  'vitest/prefer-to-be-truthy'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using toContain()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-contain.md
+   */
+  'vitest/prefer-to-contain'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using toHaveLength()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-have-length.md
+   */
+  'vitest/prefer-to-have-length'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using `test.todo`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-todo.md
+   */
+  'vitest/prefer-todo'?: Linter.RuleEntry<[]>
+  /**
+   * require `vi.mocked()` over `fn as Mock`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-vi-mocked.md
+   */
+  'vitest/prefer-vi-mocked'?: Linter.RuleEntry<[]>
+  /**
+   * ensure that every `expect.poll` call is awaited
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-awaited-expect-poll.md
+   */
+  'vitest/require-awaited-expect-poll'?: Linter.RuleEntry<[]>
+  /**
+   * require setup and teardown to be within a hook
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-hook.md
+   */
+  'vitest/require-hook'?: Linter.RuleEntry<VitestRequireHook>
+  /**
+   * require usage of import in vi.mock()
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-import-vi-mock.md
+   */
+  'vitest/require-import-vi-mock'?: Linter.RuleEntry<[]>
+  /**
+   * require local Test Context for concurrent snapshot tests
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-local-test-context-for-concurrent-snapshots.md
+   */
+  'vitest/require-local-test-context-for-concurrent-snapshots'?: Linter.RuleEntry<[]>
+  /**
+   * enforce using type parameters with vitest mock functions
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-mock-type-parameters.md
+   */
+  'vitest/require-mock-type-parameters'?: Linter.RuleEntry<VitestRequireMockTypeParameters>
+  /**
+   * require toThrow() to be called with an error message
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-to-throw-message.md
+   */
+  'vitest/require-to-throw-message'?: Linter.RuleEntry<[]>
+  /**
+   * enforce that all tests are in a top-level describe
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-top-level-describe.md
+   */
+  'vitest/require-top-level-describe'?: Linter.RuleEntry<VitestRequireTopLevelDescribe>
+  /**
+   * enforce valid describe callback
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/valid-describe-callback.md
+   */
+  'vitest/valid-describe-callback'?: Linter.RuleEntry<[]>
+  /**
+   * enforce valid `expect()` usage
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/valid-expect.md
+   */
+  'vitest/valid-expect'?: Linter.RuleEntry<VitestValidExpect>
+  /**
+   * require promises that have expectations in their chain to be valid
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/valid-expect-in-promise.md
+   */
+  'vitest/valid-expect-in-promise'?: Linter.RuleEntry<[]>
+  /**
+   * enforce valid titles
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/valid-title.md
+   */
+  'vitest/valid-title'?: Linter.RuleEntry<VitestValidTitle>
+  /**
+   * disallow `.todo` usage
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/warn-todo.md
+   */
+  'vitest/warn-todo'?: Linter.RuleEntry<[]>
   /**
    * Require parentheses around immediate `function` invocations
    * @see https://eslint.org/docs/latest/rules/wrap-iife
@@ -15601,6 +16307,101 @@ type SwitchColonSpacing = []|[{
 type TemplateCurlySpacing = []|[("always" | "never")]
 // ----- template-tag-spacing -----
 type TemplateTagSpacing = []|[("always" | "never")]
+// ----- test/consistent-test-it -----
+type TestConsistentTestIt = []|[{
+  fn?: ("it" | "test")
+  withinDescribe?: ("it" | "test")
+}]
+// ----- test/expect-expect -----
+type TestExpectExpect = []|[{
+  assertFunctionNames?: string[]
+  additionalTestBlockFunctions?: string[]
+}]
+// ----- test/max-expects -----
+type TestMaxExpects = []|[{
+  max?: number
+}]
+// ----- test/max-nested-describe -----
+type TestMaxNestedDescribe = []|[{
+  max?: number
+}]
+// ----- test/no-hooks -----
+type TestNoHooks = []|[{
+  allow?: unknown[]
+}]
+// ----- test/no-large-snapshots -----
+type TestNoLargeSnapshots = []|[{
+  maxSize?: number
+  inlineMaxSize?: number
+  allowedSnapshots?: {
+    [k: string]: unknown[] | undefined
+  }
+}]
+// ----- test/no-restricted-jest-methods -----
+type TestNoRestrictedJestMethods = []|[{
+  [k: string]: (string | null) | undefined
+}]
+// ----- test/no-restricted-matchers -----
+type TestNoRestrictedMatchers = []|[{
+  [k: string]: (string | null) | undefined
+}]
+// ----- test/no-standalone-expect -----
+type TestNoStandaloneExpect = []|[{
+  additionalTestBlockFunctions?: string[]
+}]
+// ----- test/prefer-ending-with-an-expect -----
+type TestPreferEndingWithAnExpect = []|[{
+  assertFunctionNames?: string[]
+  additionalTestBlockFunctions?: string[]
+}]
+// ----- test/prefer-expect-assertions -----
+type TestPreferExpectAssertions = []|[{
+  onlyFunctionsWithAsyncKeyword?: boolean
+  onlyFunctionsWithExpectInLoop?: boolean
+  onlyFunctionsWithExpectInCallback?: boolean
+}]
+// ----- test/prefer-importing-jest-globals -----
+type TestPreferImportingJestGlobals = []|[{
+  types?: ("hook" | "describe" | "test" | "expect" | "jest" | "unknown")[]
+}]
+// ----- test/prefer-lowercase-title -----
+type TestPreferLowercaseTitle = []|[{
+  ignore?: ("describe" | "test" | "it")[]
+  allowedPrefixes?: string[]
+  ignoreTopLevelDescribe?: boolean
+}]
+// ----- test/prefer-snapshot-hint -----
+type TestPreferSnapshotHint = []|[("always" | "multi")]
+// ----- test/require-hook -----
+type TestRequireHook = []|[{
+  allowedFunctionCalls?: string[]
+}]
+// ----- test/require-top-level-describe -----
+type TestRequireTopLevelDescribe = []|[{
+  maxNumberOfTopLevelDescribes?: number
+}]
+// ----- test/unbound-method -----
+type TestUnboundMethod = []|[{
+  
+  ignoreStatic?: boolean
+}]
+// ----- test/valid-expect -----
+type TestValidExpect = []|[{
+  alwaysAwait?: boolean
+  asyncMatchers?: string[]
+  minArgs?: number
+  maxArgs?: number
+}]
+// ----- test/valid-title -----
+type TestValidTitle = []|[{
+  ignoreSpaces?: boolean
+  ignoreTypeOfDescribeName?: boolean
+  ignoreTypeOfTestName?: boolean
+  disallowedWords?: string[]
+  [k: string]: (string | [string]|[string, string] | {
+    [k: string]: (string | [string]|[string, string]) | undefined
+  })
+}]
 // ----- toml/array-bracket-newline -----
 type TomlArrayBracketNewline = []|[(("always" | "never" | "consistent") | {
   multiline?: boolean
@@ -17204,6 +18005,112 @@ type UseIsnan = []|[{
 type ValidTypeof = []|[{
   requireStringLiterals?: boolean
 }]
+// ----- vitest/consistent-each-for -----
+type VitestConsistentEachFor = []|[{
+  test?: ("each" | "for")
+  it?: ("each" | "for")
+  describe?: ("each" | "for")
+  suite?: ("each" | "for")
+}]
+// ----- vitest/consistent-test-filename -----
+type VitestConsistentTestFilename = []|[{
+  pattern?: string
+  allTestPattern?: string
+}]
+// ----- vitest/consistent-test-it -----
+type VitestConsistentTestIt = []|[{
+  fn?: ("test" | "it")
+  withinDescribe?: ("test" | "it")
+}]
+// ----- vitest/consistent-vitest-vi -----
+type VitestConsistentVitestVi = []|[{
+  fn?: ("vi" | "vitest")
+}]
+// ----- vitest/expect-expect -----
+type VitestExpectExpect = []|[{
+  assertFunctionNames?: string[]
+  additionalTestBlockFunctions?: string[]
+}]
+// ----- vitest/max-expects -----
+type VitestMaxExpects = []|[{
+  max?: number
+}]
+// ----- vitest/max-nested-describe -----
+type VitestMaxNestedDescribe = []|[{
+  max?: number
+}]
+// ----- vitest/no-focused-tests -----
+type VitestNoFocusedTests = []|[{
+  fixable?: boolean
+}]
+// ----- vitest/no-hooks -----
+type VitestNoHooks = []|[{
+  
+  allow?: ("beforeAll" | "beforeEach" | "afterAll" | "afterEach")[]
+}]
+// ----- vitest/no-large-snapshots -----
+type VitestNoLargeSnapshots = []|[{
+  maxSize?: number
+  inlineMaxSize?: number
+  allowedSnapshots?: {
+    [k: string]: unknown[] | undefined
+  }
+}]
+// ----- vitest/no-restricted-matchers -----
+type VitestNoRestrictedMatchers = []|[{
+  [k: string]: (string | null) | undefined
+}]
+// ----- vitest/no-restricted-vi-methods -----
+type VitestNoRestrictedViMethods = []|[{
+  [k: string]: (string | null) | undefined
+}]
+// ----- vitest/no-standalone-expect -----
+type VitestNoStandaloneExpect = []|[{
+  additionalTestBlockFunctions?: string[]
+}]
+// ----- vitest/prefer-expect-assertions -----
+type VitestPreferExpectAssertions = []|[{
+  onlyFunctionsWithAsyncKeyword?: boolean
+  onlyFunctionsWithExpectInLoop?: boolean
+  onlyFunctionsWithExpectInCallback?: boolean
+}]
+// ----- vitest/prefer-lowercase-title -----
+type VitestPreferLowercaseTitle = []|[{
+  ignore?: ("describe" | "test" | "it")[]
+  allowedPrefixes?: string[]
+  ignoreTopLevelDescribe?: boolean
+  lowercaseFirstCharacterOnly?: boolean
+}]
+// ----- vitest/prefer-snapshot-hint -----
+type VitestPreferSnapshotHint = []|[("always" | "multi")]
+// ----- vitest/require-hook -----
+type VitestRequireHook = []|[{
+  allowedFunctionCalls?: string[]
+}]
+// ----- vitest/require-mock-type-parameters -----
+type VitestRequireMockTypeParameters = []|[{
+  checkImportFunctions?: boolean
+}]
+// ----- vitest/require-top-level-describe -----
+type VitestRequireTopLevelDescribe = []|[{
+  maxNumberOfTopLevelDescribes?: number
+}]
+// ----- vitest/valid-expect -----
+type VitestValidExpect = []|[{
+  alwaysAwait?: boolean
+  asyncMatchers?: string[]
+  minArgs?: number
+  maxArgs?: number
+}]
+// ----- vitest/valid-title -----
+type VitestValidTitle = []|[{
+  ignoreTypeOfDescribeName?: boolean
+  allowArguments?: boolean
+  disallowedWords?: string[]
+  [k: string]: (string | [string]|[string, string] | {
+    [k: string]: (string | [string]|[string, string]) | undefined
+  })
+}]
 // ----- wrap-iife -----
 type WrapIife = []|[("outside" | "inside" | "any")]|[("outside" | "inside" | "any"), {
   functionPrototypeMethods?: boolean
@@ -17427,4 +18334,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/sort-tsconfig' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
