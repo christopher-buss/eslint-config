@@ -10,7 +10,7 @@ patchedDependencies:
 catalogs:
   dev:
     "@antfu/ni": 27.0.1
-    "@eslint/config-inspector": 1.3.0
+    "@eslint/config-inspector": 1.4.2
     "@isentinel/tsconfig": 1.0.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 22.16.0
