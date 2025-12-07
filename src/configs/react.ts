@@ -132,7 +132,6 @@ export async function react(
 							"react-hooks/static-components": "error",
 							"react-hooks/unsupported-syntax": "off",
 							"react-hooks/use-memo": "error",
-							"react-x/compiler-optimized-helpers": "error",
 						}
 					: {}),
 
