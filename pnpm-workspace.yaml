@@ -48,7 +48,7 @@ catalogs:
     "@isentinel/dict-rbxts": 1.0.1
     "@isentinel/dict-roblox": 1.0.3
     "@isentinel/eslint-plugin-comment-length": 2.2.0
-    "@prettier/plugin-oxc": 0.0.4
+    "@prettier/plugin-oxc": 0.1.3
     "@shopify/eslint-plugin": 50.0.0
     "@stylistic/eslint-plugin": 5.5.0
     "@typescript-eslint/eslint-plugin": 8.46.4
