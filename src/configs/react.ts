@@ -95,6 +95,7 @@ export async function react(
 				]
 			: []),
 		{
+			name: "isentinel/react/rules",
 			files,
 			languageOptions: {
 				parserOptions: {
@@ -104,7 +105,6 @@ export async function react(
 				},
 				sourceType: "module",
 			},
-			name: "isentinel/react/rules",
 			rules: {
 				"max-lines-per-function": "off",
 				// recommended rules from @eslint-react/hooks-extra
@@ -290,9 +290,9 @@ export async function react(
 		...(isTypeAware
 			? [
 					{
+						name: "isentinel/react/type-aware-rules",
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/react/type-aware-rules",
 						rules: {
 							...typeAwareRules,
 							...overridesTypeAware,

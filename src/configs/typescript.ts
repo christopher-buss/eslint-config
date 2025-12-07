@@ -89,7 +89,7 @@ export async function typescript(
 		"ts/non-nullable-type-assertion-style": "error",
 		"ts/only-throw-error": [
 			"error",
-			{ allow: [{ from: "package", name: "Error", package: "@rbxts/luau-polyfill" }] },
+			{ allow: [{ name: "Error", from: "package", package: "@rbxts/luau-polyfill" }] },
 		],
 		"ts/prefer-destructuring": ["error", { array: false, object: true }],
 		"ts/prefer-find": "error",
@@ -161,8 +161,8 @@ export async function typescript(
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),
 		{
-			files,
 			name: "isentinel/typescript/rules",
+			files,
 			rules: {
 				...renameRules(
 					pluginTs.configs["eslint-recommended"]?.overrides?.[0]?.rules ?? {},
@@ -258,9 +258,9 @@ export async function typescript(
 		...(isTypeAware
 			? [
 					{
+						name: "isentinel/typescript/rules-type-aware",
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/typescript/rules-type-aware",
 						rules: {
 							...typeAwareRules,
 							...overridesTypeAware,

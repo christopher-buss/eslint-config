@@ -32,11 +32,11 @@ export async function jsonc(
 			},
 		},
 		{
+			name: "isentinel/jsonc/rules",
 			files,
 			languageOptions: {
 				parser: parserJsonc,
 			},
-			name: "isentinel/jsonc/rules",
 			rules: {
 				"jsonc/no-bigint-literals": "error",
 				"jsonc/no-binary-expression": "error",

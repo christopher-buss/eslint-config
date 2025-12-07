@@ -86,6 +86,7 @@ export function createTsParser(options: {
 	} = options;
 
 	return {
+		name: `isentinel/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
 		files,
 		ignores: ignores ?? [],
 		languageOptions: {
@@ -118,7 +119,6 @@ export function createTsParser(options: {
 				...parserOptions,
 			},
 		},
-		name: `isentinel/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
 	};
 }
 

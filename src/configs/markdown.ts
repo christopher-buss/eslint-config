@@ -30,9 +30,9 @@ export async function markdown(
 			},
 		},
 		{
+			name: "isentinel/markdown/processor",
 			files,
 			ignores: [GLOB_MARKDOWN_IN_MARKDOWN],
-			name: "isentinel/markdown/processor",
 			// `eslint-plugin-markdown` only creates virtual files for code
 			// blocks, but not the markdown file itself.
 			// We use `eslint-merge-processors` to add a pass-through processor
@@ -40,12 +40,12 @@ export async function markdown(
 			processor: mergeProcessors([markdownPlugin.processors.markdown, processorPassThrough]),
 		},
 		{
+			name: "isentinel/markdown/parser",
 			files,
 			language: "markdown/gfm",
 			languageOptions: {
 				frontmatter: "yaml",
 			},
-			name: "isentinel/markdown/parser",
 			rules: {
 				// Recommended rules - enabled for both game and package
 				"markdown/fenced-code-language": "error",
@@ -84,6 +84,7 @@ export async function markdown(
 			},
 		},
 		{
+			name: "isentinel/markdown/disables",
 			files: [
 				GLOB_MARKDOWN_BLOCKS,
 				...componentExtensions.map((extension) => `${GLOB_MARKDOWN}/**/*.${extension}`),
@@ -95,7 +96,6 @@ export async function markdown(
 					},
 				},
 			},
-			name: "isentinel/markdown/disables",
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"antfu/top-level-function": "off",

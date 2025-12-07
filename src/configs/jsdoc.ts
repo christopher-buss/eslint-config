@@ -24,8 +24,8 @@ export async function jsdoc(
 			},
 		},
 		{
-			files: [GLOB_SRC],
 			name: "isentinel/jsdoc",
+			files: [GLOB_SRC],
 			rules: {
 				"jsdoc/check-access": "warn",
 				"jsdoc/check-param-names": ["warn", { checkDestructured: false }],

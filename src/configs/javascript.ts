@@ -26,6 +26,7 @@ export async function javascript(
 
 	return [
 		{
+			name: "isentinel/javascript/setup",
 			languageOptions: {
 				ecmaVersion: "latest",
 				globals: {
@@ -48,11 +49,10 @@ export async function javascript(
 			linterOptions: {
 				reportUnusedDisableDirectives: true,
 			},
-			name: "isentinel/javascript/setup",
 		},
 		{
-			files: [GLOB_SRC],
 			name: "isentinel/javascript/rules",
+			files: [GLOB_SRC],
 			plugins: {
 				"antfu": pluginAntfu,
 				"better-max-params": pluginMaxParameters,
@@ -152,8 +152,8 @@ export async function javascript(
 				"no-regex-spaces": "error",
 				"no-restricted-globals": [
 					"error",
-					{ message: "Use `globalThis` instead.", name: "global" },
-					{ message: "Use `globalThis` instead.", name: "self" },
+					{ name: "global", message: "Use `globalThis` instead." },
+					{ name: "self", message: "Use `globalThis` instead." },
 				],
 				"no-restricted-properties": [
 					"error",

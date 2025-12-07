@@ -28,11 +28,11 @@ export async function toml(
 			},
 		},
 		{
+			name: "isentinel/toml/rules",
 			files,
 			languageOptions: {
 				parser: parserToml,
 			},
-			name: "isentinel/toml/rules",
 			rules: {
 				"isentinel/spaced-comment": "off",
 

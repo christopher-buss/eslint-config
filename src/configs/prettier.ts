@@ -100,8 +100,8 @@ export async function prettier(
 
 	configs.push(
 		{
-			files: jsFiles,
 			name: "isentinel/prettier/javascript",
+			files: jsFiles,
 			rules: {
 				...rules,
 				"arrow-body-style": "off",
@@ -116,8 +116,8 @@ export async function prettier(
 			},
 		},
 		{
-			files: tsFiles,
 			name: "isentinel/prettier",
+			files: tsFiles,
 			rules: {
 				...rules,
 				"arrow-body-style": "off",
@@ -137,11 +137,11 @@ export async function prettier(
 	if (formattingOptions.css) {
 		configs.push(
 			{
+				name: "isentinel/prettier/css",
 				files: [GLOB_CSS, GLOB_POSTCSS],
 				languageOptions: {
 					parser: parserPlain,
 				},
-				name: "isentinel/prettier/css",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -152,11 +152,11 @@ export async function prettier(
 				},
 			},
 			{
+				name: "isentinel/prettier/scss",
 				files: [GLOB_SCSS],
 				languageOptions: {
 					parser: parserPlain,
 				},
-				name: "isentinel/prettier/scss",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -167,11 +167,11 @@ export async function prettier(
 				},
 			},
 			{
+				name: "isentinel/prettier/less",
 				files: [GLOB_LESS],
 				languageOptions: {
 					parser: parserPlain,
 				},
-				name: "isentinel/prettier/less",
 				rules: {
 					"format/prettier": [
 						"error",
@@ -186,11 +186,11 @@ export async function prettier(
 
 	if (formattingOptions.html) {
 		configs.push({
+			name: "isentinel/prettier/html",
 			files: ["**/*.html"],
 			languageOptions: {
 				parser: parserPlain,
 			},
-			name: "isentinel/prettier/html",
 			rules: {
 				"format/prettier": [
 					"error",
@@ -204,8 +204,8 @@ export async function prettier(
 
 	if (formattingOptions.markdown) {
 		configs.push({
-			files: [GLOB_MARKDOWN],
 			name: "isentinel/prettier/markdown",
+			files: [GLOB_MARKDOWN],
 			rules: {
 				"format/prettier": [
 					"error",
@@ -222,11 +222,11 @@ export async function prettier(
 
 	if (formattingOptions.graphql) {
 		configs.push({
+			name: "isentinel/prettier/graphql",
 			files: ["**/*.graphql"],
 			languageOptions: {
 				parser: parserPlain,
 			},
-			name: "isentinel/prettier/graphql",
 			rules: {
 				"format/prettier": [
 					"error",
@@ -240,8 +240,8 @@ export async function prettier(
 
 	if (formattingOptions.json) {
 		configs.push({
-			files: [GLOB_ALL_JSON],
 			name: "isentinel/prettier/json",
+			files: [GLOB_ALL_JSON],
 			rules: {
 				"format/prettier": [
 					"error",
@@ -255,8 +255,8 @@ export async function prettier(
 
 	if (formattingOptions.yaml) {
 		configs.push({
-			files: [GLOB_YAML],
 			name: "isentinel/prettier/yaml",
+			files: [GLOB_YAML],
 			rules: {
 				"format/prettier": [
 					"error",

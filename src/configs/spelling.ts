@@ -48,8 +48,8 @@ export async function spelling(
 			},
 		},
 		{
-			files,
 			name: "isentinel/spelling",
+			files,
 			rules: {
 				"@cspell/spellchecker": [
 					enabled ? "warn" : "off",

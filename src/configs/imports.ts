@@ -42,8 +42,8 @@ export async function imports(
 		...(type === "game"
 			? [
 					{
-						files: [`src/${GLOB_SRC}`],
 						name: "isentinel/imports/game",
+						files: [`src/${GLOB_SRC}`],
 						rules: {
 							"no-restricted-syntax": [
 								"error",

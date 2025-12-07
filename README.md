@@ -362,34 +362,8 @@ This plugin
 [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist)
 allows you to sort object keys, imports, etc, with auto-fix.
 
-The plugin is installed and some rules are enabled by default, but these rules
-can be disabled or overridden by your own config. For example, I personally have
-sort-objects set to:
-
-```js
-// eslint.config.ts
-import isentinel from "@isentinel/eslint-config";
-
-export default isentinel({
-	rules: {
-		"perfectionist/sort-objects": [
-			"warn",
-			{
-				customGroups: {
-					callbacks: ["\b(on[A-Z][a-zA-Z]*)\b"],
-					id: "^id$",
-					name: "^name$",
-					reactProps: ["^children$", "^ref$"],
-				},
-				groups: ["id", "name", "unknown", "reactProps"],
-				order: "asc",
-				partitionByComment: "^Part:\\*\\*(.*)$",
-				type: "natural",
-			},
-		],
-	},
-});
-```
+The plugin is installed and most rules are enabled by default, but these rules
+can be disabled or overridden by your own config.
 
 ### Optional Configs
 

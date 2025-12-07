@@ -32,9 +32,9 @@ export async function flawless(
 		...(isTypeAware
 			? [
 					{
+						name: "isentinel/flawless/ts/rules-type-aware",
 						files: tsFilesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/flawless/ts/rules-type-aware",
 						rules: {
 							"flawless/naming-convention": [
 								"error",
@@ -165,9 +165,9 @@ export async function flawless(
 		...(isTypeAware
 			? [
 					{
+						name: "isentinel/flawless/tsx/rules-type-aware",
 						files: tsxFilesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/flawless/tsx/rules-type-aware",
 						rules: {
 							"flawless/naming-convention": [
 								"error",

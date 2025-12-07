@@ -46,8 +46,8 @@ export async function comments(
 		...(stylistic !== false
 			? [
 					{
-						files: [GLOB_SRC],
 						name: "isentinel/eslint/comments/src",
+						files: [GLOB_SRC],
 						rules: {
 							"comment-length/limit-single-line-comments": [
 								"error",

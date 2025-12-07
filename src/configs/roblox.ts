@@ -88,8 +88,8 @@ export async function roblox(
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),
 		{
-			files,
 			name: "isentinel/roblox",
+			files,
 			rules: {
 				"roblox/no-any": "error",
 				"roblox/no-enum-merging": "error",
@@ -120,9 +120,9 @@ export async function roblox(
 		...(isTypeAware
 			? [
 					{
+						name: "isentinel/roblox/rules-type-aware",
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
-						name: "isentinel/roblox/rules-type-aware",
 						rules: {
 							...typeAwareRules,
 							...overridesTypeAware,
@@ -143,11 +143,11 @@ export async function roblox(
 				},
 			},
 			{
+				name: "isentinel/roblox/format-lua",
 				files: [GLOB_LUA],
 				languageOptions: {
 					parser: parserPlain,
 				},
-				name: "isentinel/roblox/format-lua",
 				rules: {
 					"format-lua/stylua": "error",
 				},

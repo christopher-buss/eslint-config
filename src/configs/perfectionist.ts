@@ -1,4 +1,4 @@
-import { GLOB_SRC } from "../globs";
+import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../globs";
 import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
@@ -48,6 +48,24 @@ export async function perfectionist(
 		});
 	}
 
+	const sortedObjectConfig = sortObjects ?? {
+		customGroups: {
+			id: "^id$",
+			name: "^name$",
+		},
+		groups: ["id", "name", "unknown"],
+	};
+
+	const sortedJsxObjectConfig = sortObjects ?? {
+		customGroups: {
+			id: "^id$",
+			name: "^name$",
+			callbacks: ["\b(on[A-Z][a-zA-Z]*)\b"],
+			react: ["^children$", "^ref$"],
+		},
+		groups: ["id", "name", "unknown", "react", "callbacks"],
+	};
+
 	function createUnsortedMethod(methodType: MethodType): {
 		groupName: MethodType;
 		modifiers: [MethodType];
@@ -81,15 +99,15 @@ export async function perfectionist(
 			},
 		},
 		{
-			files: [GLOB_SRC],
 			name: "isentinel/perfectionist",
+			files: [GLOB_SRC],
 			rules: {
-				"perfectionist/sort-array-includes": ["error", { type: "natural" }],
+				"perfectionist/sort-array-includes": ["error"],
 				"perfectionist/sort-classes": [
 					"warn",
 					{
 						customGroups,
-						fallbackSort: { order: "asc", type: "natural" },
+						fallbackSort: { order: "asc" },
 						groups: [
 							"private-static-readonly-property",
 							"private-readonly-property",
@@ -120,19 +138,16 @@ export async function perfectionist(
 							"unknown",
 						],
 						newlinesBetween: "always",
-						type: "natural",
 					},
 				],
-				"perfectionist/sort-decorators": ["error", { type: "natural" }],
+				"perfectionist/sort-decorators": ["error"],
 				"perfectionist/sort-enums": [
 					"error",
 					{
 						forceNumericSort: true,
-						partitionByComment: "^Part:\\s*(.*)$",
-						type: "natural",
 					},
 				],
-				"perfectionist/sort-exports": ["error", { type: "natural" }],
+				"perfectionist/sort-exports": ["error"],
 				"perfectionist/sort-heritage-clauses": [
 					"error",
 					{
@@ -144,7 +159,6 @@ export async function perfectionist(
 							{},
 						),
 						groups: [...customClassGroups, "unknown"],
-						type: "natural",
 					},
 				],
 				// Import and export sorting
@@ -178,38 +192,39 @@ export async function perfectionist(
 							"unknown",
 						],
 						newlinesBetween: "always",
-						order: "asc",
-						type: "natural",
 					},
 				],
-				"perfectionist/sort-interfaces": [
-					"error",
-					{
-						customGroups: { callbacks: ["\b(on[A-Z][a-zA-Z]*)\b"] },
-						groups: ["unknown", "callbacks"],
-						type: "natural",
-					},
-				],
-				"perfectionist/sort-intersection-types": ["error", { type: "natural" }],
+				"perfectionist/sort-interfaces": ["error", { ...sortedObjectConfig }],
+				"perfectionist/sort-intersection-types": ["error"],
 				"perfectionist/sort-jsx-props": "off",
-				"perfectionist/sort-maps": ["error", { type: "natural" }],
-				"perfectionist/sort-named-imports": ["error", { type: "natural" }],
-				"perfectionist/sort-object-types": ["error", { type: "natural" }],
-				"perfectionist/sort-objects": [
-					"error",
-					{ partitionByComment: "^Part:\\s*(.*)$", type: "natural", ...sortObjects },
-				],
-				"perfectionist/sort-sets": ["error", { type: "natural" }],
-				"perfectionist/sort-switch-case": ["error", { type: "natural" }],
-
-				"perfectionist/sort-union-types": ["error", { type: "natural" }],
-				"perfectionist/sort-variable-declarations": ["error", { type: "natural" }],
-
+				"perfectionist/sort-maps": ["error"],
+				"perfectionist/sort-named-imports": ["error"],
+				"perfectionist/sort-object-types": ["error"],
+				"perfectionist/sort-objects": ["error", { ...sortedObjectConfig }],
+				"perfectionist/sort-sets": ["error"],
+				"perfectionist/sort-switch-case": ["error"],
+				"perfectionist/sort-union-types": ["error"],
+				"perfectionist/sort-variable-declarations": ["error"],
 				...(type === "package"
 					? {
 							"perfectionist/sort-modules": "error",
 						}
 					: {}),
+			},
+			settings: {
+				perfectionist: {
+					order: "asc",
+					partitionByComment: "^Part:\\s*(.*)$",
+					type: "natural",
+				},
+			},
+		},
+		{
+			name: "isentinel/perfectionist/jsx",
+			files: [GLOB_JSX, GLOB_TSX],
+			rules: {
+				"perfectionist/sort-interfaces": ["error", { ...sortedJsxObjectConfig }],
+				"perfectionist/sort-objects": ["error", { ...sortedJsxObjectConfig }],
 			},
 		},
 	];

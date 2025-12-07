@@ -29,11 +29,11 @@ export async function yaml(
 			},
 		},
 		{
+			name: "isentinel/yaml/rules",
 			files,
 			languageOptions: {
 				parser: parserYaml,
 			},
-			name: "isentinel/yaml/rules",
 			rules: {
 				"style/spaced-comment": "off",
 

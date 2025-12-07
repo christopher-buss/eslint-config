@@ -61,8 +61,8 @@ export async function test(
 				},
 			},
 			{
-				files,
 				name: "isentinel/test/jest/rules",
+				files,
 				rules: {
 					"test/consistent-test-it": "error",
 					"test/expect-expect": "warn",
@@ -132,8 +132,8 @@ export async function test(
 				},
 			},
 			{
-				files,
 				name: "isentinel/test/vitest/rules",
+				files,
 				rules: {
 					"vitest/consistent-test-it": ["error", { fn: "it", withinDescribe: "it" }],
 					"vitest/no-identical-title": "error",

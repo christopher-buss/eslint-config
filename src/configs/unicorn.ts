@@ -114,8 +114,8 @@ export async function unicorn(
 			},
 		},
 		{
-			files: rootGlobs,
 			name: "isentinel/unicorn/root",
+			files: rootGlobs,
 			rules: {
 				"unicorn/prevent-abbreviations": [
 					"error",

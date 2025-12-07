@@ -41,8 +41,8 @@ export async function gitignore(
 
 	return [
 		resolved({
-			files,
 			name: "isentinel/gitignore",
+			files,
 			strict: explicit,
 		}),
 	];

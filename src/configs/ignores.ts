@@ -6,11 +6,11 @@ export async function ignores(
 ): Promise<Array<TypedFlatConfigItem>> {
 	return [
 		{
+			name: "isentinel/ignores",
 			ignores:
 				typeof userIgnores === "function"
 					? userIgnores([...GLOB_EXCLUDE])
 					: [...GLOB_EXCLUDE, ...userIgnores],
-			name: "isentinel/ignores",
 		},
 	];
 }

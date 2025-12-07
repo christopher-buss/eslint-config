@@ -18,11 +18,11 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 			},
 		},
 		{
+			name: "isentinel/pnpm/package-json",
 			files: ["package.json", "**/package.json"],
 			languageOptions: {
 				parser: jsoncParser,
 			},
-			name: "isentinel/pnpm/package-json",
 			rules: {
 				"pnpm/json-enforce-catalog": "error",
 				"pnpm/json-prefer-workspace-settings": "error",
@@ -35,11 +35,11 @@ export async function pnpm(): Promise<Array<TypedFlatConfigItem>> {
 			},
 		},
 		{
+			name: "isentinel/pnpm/pnpm-workspace-yaml",
 			files: ["pnpm-workspace.yaml"],
 			languageOptions: {
 				parser: yamlParser,
 			},
-			name: "isentinel/pnpm/pnpm-workspace-yaml",
 			plugins: {
 				pnpm: pluginPnpm,
 			},

@@ -15,8 +15,8 @@ export async function disables(options: {
 
 	return [
 		{
-			files: [`**/scripts/${GLOB_SRC}`],
 			name: "isentinel/disables/scripts",
+			files: [`**/scripts/${GLOB_SRC}`],
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
@@ -24,16 +24,16 @@ export async function disables(options: {
 			},
 		},
 		{
-			files: [`**/cli/${GLOB_SRC}`, `**/cli.${GLOB_SRC_EXT}`],
 			name: "isentinel/disables/cli",
+			files: [`**/cli/${GLOB_SRC}`, `**/cli.${GLOB_SRC_EXT}`],
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
 			},
 		},
 		{
-			files: GLOB_BUILD_TOOLS,
 			name: "isentinel/disables/build-tools",
+			files: GLOB_BUILD_TOOLS,
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
@@ -41,16 +41,16 @@ export async function disables(options: {
 			},
 		},
 		{
-			files: ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`],
 			name: "isentinel/disables/bin",
+			files: ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`],
 			rules: {
 				"antfu/no-import-dist": "off",
 				"antfu/no-import-node-modules-by-path": "off",
 			},
 		},
 		{
-			files: [GLOB_DTS],
 			name: "isentinel/disables/dts",
+			files: [GLOB_DTS],
 			rules: {
 				"eslint-comments/no-unlimited-disable": "off",
 				"import/no-default-export": "off",
@@ -63,8 +63,8 @@ export async function disables(options: {
 			},
 		},
 		{
-			files: [...GLOB_TESTS],
 			name: "isentinel/disables/test",
+			files: [...GLOB_TESTS],
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"max-lines": "off",
@@ -77,23 +77,23 @@ export async function disables(options: {
 			},
 		},
 		{
-			files: ["**/*.js", "**/*.cjs"],
 			name: "isentinel/disables/cjs",
+			files: ["**/*.js", "**/*.cjs"],
 			rules: {
 				"ts/no-require-imports": "off",
 			},
 		},
 		{
-			files: [...root, `*.md/${GLOB_SRC}`],
 			name: "isentinel/disables/root",
+			files: [...root, `*.md/${GLOB_SRC}`],
 			rules: {
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
 			},
 		},
 		{
-			files: [GLOB_YAML],
 			name: "isentinel/disables/yaml",
+			files: [GLOB_YAML],
 			rules: {
 				"no-inline-comments": "off",
 			},

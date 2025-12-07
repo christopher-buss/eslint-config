@@ -418,6 +418,15 @@ export interface PerfectionistConfig {
 	sortObjects?: Partial<
 		ExtractRuleOptions<NonNullable<RuleOptions["perfectionist/sort-objects"]>>[0]
 	>;
+	/**
+	 * Custom configuration for perfectionist/sort-objects rule in JSX. Merges
+	 * with default config.
+	 *
+	 * Defaults to the same as `sortObjects` if not provided.
+	 */
+	sortObjectsJsx?: Partial<
+		ExtractRuleOptions<NonNullable<RuleOptions["perfectionist/sort-objects"]>>[0]
+	>;
 }
 
 export type ReactConfig = ESLintReactSettings &

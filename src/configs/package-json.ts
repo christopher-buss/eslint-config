@@ -24,11 +24,11 @@ export async function packageJson(
 			},
 		},
 		{
+			name: "isentinel/package-json",
 			files: ["**/package.json"],
 			languageOptions: {
 				parser: jsoncEslintParser,
 			},
-			name: "isentinel/package-json",
 			rules: {
 				"package-json/no-empty-fields": "error",
 				"package-json/no-redundant-files": "error",

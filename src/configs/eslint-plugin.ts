@@ -19,8 +19,8 @@ export async function eslintPlugin(
 			},
 		},
 		{
-			files,
 			name: "isentinel/eslint-plugin/rules",
+			files,
 			rules: {
 				"eslint-plugin/consistent-output": "error",
 				"eslint-plugin/fixer-return": "error",

@@ -12,8 +12,8 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 	/* eslint-disable sonar/no-duplicate-string -- GitHub Actions property names repeated in different ordering contexts. */
 	return [
 		{
-			files: [`.github/workflows/${GLOB_YAML}`],
 			name: "isentinel/sort/github-actions",
+			files: [`.github/workflows/${GLOB_YAML}`],
 			rules: {
 				"yaml/sort-keys": [
 					"error",
@@ -219,8 +219,8 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 			},
 		},
 		{
-			files: [`.github/actions/${GLOB_YAML}`],
 			name: "isentinel/sort/github-composite-actions",
+			files: [`.github/actions/${GLOB_YAML}`],
 			rules: {
 				"yaml/sort-keys": [
 					"error",
@@ -277,8 +277,8 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 	return [
 		{
-			files: ["pnpm-workspace.yaml"],
 			name: "isentinel/sort/pnpm-workspace-yaml-sort",
+			files: ["pnpm-workspace.yaml"],
 			rules: {
 				"yaml/sort-keys": [
 					"error",
@@ -371,8 +371,8 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 export function sortRojoProject(): Array<TypedFlatConfigItem> {
 	return [
 		{
-			files: ["**/*.project.json", "**/project.json"],
 			name: "isentinel/sort/rojo-project",
+			files: ["**/*.project.json", "**/project.json"],
 			rules: {
 				"jsonc/sort-keys": [
 					"error",
@@ -420,9 +420,9 @@ export function sortRojoProject(): Array<TypedFlatConfigItem> {
 export function sortTsconfig(): Array<TypedFlatConfigItem> {
 	return [
 		{
+			name: "isentinel/sort-tsconfig",
 			// cspell:disable-next-line
 			files: ["**/[jt]sconfig.json", "**/[jt]sconfig.*.json"],
-			name: "isentinel/sort-tsconfig",
 			rules: {
 				"jsonc/sort-keys": [
 					"error",
