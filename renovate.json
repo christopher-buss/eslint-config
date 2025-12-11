@@ -15,6 +15,10 @@
 			"matchUpdateTypes": ["patch"],
 			"groupName": "Patches",
 			"groupSlug": "patch"
+		},
+		{
+			"matchPackageNames": ["/@types/node/"],
+			"enabled": false
 		}
 	]
 }
