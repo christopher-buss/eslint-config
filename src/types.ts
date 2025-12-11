@@ -134,7 +134,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * @experimental
 	 * @see https://github.com/antfu/pnpm-workspace-utils
 	 */
-	pnpm?: boolean;
+	pnpm?: boolean | OptionsPnpm;
 
 	/**
 	 * Enable react rules.
@@ -303,6 +303,11 @@ export interface OptionsOverrides {
 
 export interface OptionsOverridesTypeAware extends OptionsOverrides {
 	overridesTypeAware?: TypedFlatConfigItem["rules"];
+}
+
+export interface OptionsPnpm {
+	/** Requires catalogs usage. */
+	catalogs?: boolean;
 }
 
 export interface OptionsProjectType {

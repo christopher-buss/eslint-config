@@ -1,5 +1,6 @@
 import type { Linter } from "eslint";
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
+import { findUpSync } from "find-up-simple";
 
 import type { PrettierOptions } from "./configs";
 import {
@@ -108,7 +109,7 @@ export async function isentinel(
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
-		pnpm: enableCatalogs = false,
+		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
@@ -319,8 +320,13 @@ export async function isentinel(
 		}
 	}
 
-	if (enableCatalogs) {
-		configs.push(pnpm({ isInEditor }));
+	if (enableCatalogs !== false) {
+		configs.push(
+			pnpm({
+				isInEditor,
+				...resolveSubOptions(options, "pnpm"),
+			}),
+		);
 
 		if (stylisticOptions !== false) {
 			configs.push(sortPnpmWorkspace());
