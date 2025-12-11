@@ -74,6 +74,8 @@ export async function disables(options: {
 				"ts/explicit-function-return-type": "off",
 				"ts/no-empty-function": "off",
 				"ts/no-non-null-assertion": "off",
+				"ts/unbound-method": "off",
+				"unicorn/consistent-function-scoping": "off",
 			},
 		},
 		{
