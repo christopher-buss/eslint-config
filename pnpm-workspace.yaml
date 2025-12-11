@@ -57,8 +57,8 @@ catalogs:
     "@prettier/plugin-oxc": 0.1.3
     "@shopify/eslint-plugin": 50.0.0
     "@stylistic/eslint-plugin": 5.6.1
-    "@typescript-eslint/eslint-plugin": 8.48.1
-    "@typescript-eslint/parser": 8.48.1
+    "@typescript-eslint/eslint-plugin": 8.49.0
+    "@typescript-eslint/parser": 8.49.0
     ansis: 4.2.0
     eslint-config-flat-gitignore: 2.1.0
     eslint-config-prettier: 10.1.8
