@@ -65,12 +65,6 @@ export async function test(
 				name: "isentinel/test/jest/rules",
 				files,
 				rules: {
-					"test/consistent-test-filename": [
-						"error",
-						{
-							pattern: ".*\\.spec\\.[tj]sx?$",
-						},
-					],
 					"test/consistent-test-it": "error",
 					"test/expect-expect": "warn",
 					"test/max-expects": "error",
