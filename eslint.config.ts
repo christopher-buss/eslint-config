@@ -4,7 +4,9 @@ import { isentinel } from "./src";
 
 export default isentinel(
 	{
+		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
+		namedConfigs: true,
 		pnpm: true,
 		roblox: false,
 		test: {
@@ -18,6 +20,7 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {
 			"max-lines": "off",
@@ -29,6 +32,7 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/style-migrate",
 		files: ["src/configs/*.ts"],
 		plugins: {
 			"style-migrate": styleMigrate,

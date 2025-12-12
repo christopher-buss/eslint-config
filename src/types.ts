@@ -5,6 +5,7 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { Options as PrettierOptions } from "prettier";
+import type { SetRequired } from "type-fest";
 
 import type { RuleOptions } from "./typegen";
 import type { ExtractRuleOptions } from "./utils";
@@ -19,6 +20,25 @@ export interface JsdocOptions {
 	 */
 	full?: boolean;
 }
+
+/**
+ * A TypedFlatConfigItem that requires a name property. All configs should have
+ * a name for better debugging and tooling support.
+ */
+export type NamedFlatConfigItem = SetRequired<TypedFlatConfigItem, "name">;
+
+/**
+ * Options type that requires `name` on the options config and all user configs.
+ *
+ * @remarks
+ * This will become the default in a future major version.
+ * @see {@link OptionsConfig.namedConfigs}
+ */
+export type NamedOptionsConfig = OptionsConfig &
+	TypedFlatConfigItem & {
+		name: string;
+		namedConfigs: true;
+	};
 
 export interface OptionsComponentExtensions {
 	/** Additional extensions for components. */
@@ -120,6 +140,17 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * @default true
 	 */
 	markdown?: boolean | OptionsOverrides;
+
+	/**
+	 * Require all config items to have a `name` property for better debugging
+	 * and tooling support.
+	 *
+	 * @remarks
+	 * This will default to `true` in a future major version and this option
+	 * will be removed.
+	 * @default false
+	 */
+	namedConfigs?: boolean;
 
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;

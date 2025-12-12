@@ -1,4 +1,3 @@
-import type { Linter } from "eslint";
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
 
@@ -43,6 +42,8 @@ import type {
 	Awaitable,
 	ConfigNames,
 	FlatConfigComposer,
+	NamedFlatConfigItem,
+	NamedOptionsConfig,
 	OptionsConfig,
 	TypedFlatConfigItem,
 } from "./types";
@@ -85,20 +86,35 @@ export const defaultPluginRenaming = {
  * Generates an array of user configuration items based on the provided options
  * and user configs.
  *
+ * @template NamedConfigs - When `true`, requires all config items to have a
+ *   name.
  * @param options - The options for generating the user configuration items.
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
  * @rejects Will throw an error if configuration generation fails.
  */
-export async function isentinel(
-	options: OptionsConfig & TypedFlatConfigItem = {},
+export function isentinel(
+	options: Omit<OptionsConfig, "namedConfigs"> & TypedFlatConfigItem & { namedConfigs?: false },
 	...userConfigs: Array<
-		Awaitable<
-			| Array<Linter.Config>
-			| Array<TypedFlatConfigItem>
-			| FlatConfigComposer<any, any>
-			| TypedFlatConfigItem
-		>
+		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
+	>
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
+export function isentinel(
+	options: NamedOptionsConfig,
+	...userConfigs: Array<Awaitable<FlatConfigComposer<any, any>>>
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
+export function isentinel(
+	options: NamedOptionsConfig,
+	...userConfigs: Array<Awaitable<Array<NamedFlatConfigItem>>>
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
+export function isentinel(
+	options: NamedOptionsConfig,
+	...userConfigs: Array<Awaitable<NamedFlatConfigItem>>
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
+export async function isentinel(
+	options: OptionsConfig & TypedFlatConfigItem & { namedConfigs?: boolean },
+	...userConfigs: Array<
+		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
 	>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>> {
 	const {
