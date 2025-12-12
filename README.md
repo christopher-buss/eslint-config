@@ -297,6 +297,32 @@ export default isentinel({
 });
 ```
 
+### Named Configs
+
+Enable `namedConfigs` to require all config items to have a `name` property.
+This improves debugging and makes the
+[ESLint Config Inspector](https://github.com/eslint/config-inspector) much more
+useful by displaying meaningful names instead of anonymous configs.
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel(
+	{
+		name: "project/root",
+		namedConfigs: true,
+	},
+	{
+		name: "project/custom-rules",
+		files: ["**/*.ts"],
+		rules: {},
+	},
+);
+```
+
+> **Note:** This will become the default in a future major version.
+
 ### Plugins Renaming
 
 Since flat config requires us to explicitly provide the plugin names (instead of
