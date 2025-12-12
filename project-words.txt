@@ -22,3 +22,4 @@ textnodes
 tsdoc
 typecheck
 unthrown
+worktree

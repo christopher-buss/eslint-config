@@ -106,6 +106,7 @@ export const GLOB_EXCLUDE = [
 	"**/.vercel",
 	"**/.vite-inspect",
 	"**/.vitepress/cache",
+	"**/.worktree",
 	"**/.yarn",
 	"**/coverage",
 	"**/out",
