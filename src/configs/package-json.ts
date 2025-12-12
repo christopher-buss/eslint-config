@@ -89,12 +89,12 @@ export async function packageJson(
 							"package-json/require-attribution": "error",
 							"package-json/require-author": "error",
 							"package-json/require-description": "error",
-							"package-json/require-exports": "error",
+							"package-json/require-exports": ["error", { ignorePrivate: true }],
 							"package-json/require-files": ["error", { ignorePrivate: true }],
 							"package-json/require-keywords": "error",
-							"package-json/require-license": "error",
+							"package-json/require-license": ["error", { ignorePrivate: true }],
 							"package-json/require-name": "error",
-							"package-json/require-types": "error",
+							"package-json/require-types": ["error", { ignorePrivate: true }],
 							"package-json/require-version": "error",
 						}
 					: {}),
@@ -102,7 +102,7 @@ export async function packageJson(
 				...(type === "package" && !roblox
 					? {
 							"package-json/require-engines": "error",
-							"package-json/require-sideEffects": "error",
+							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
 						}
 					: {}),
 			},
