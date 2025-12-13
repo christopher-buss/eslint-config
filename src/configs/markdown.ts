@@ -113,6 +113,8 @@ export async function markdown(
 				"no-unused-vars": "off",
 				"node/prefer-global/process": "off",
 				"sonar/file-name-differ-from-class": "off",
+				"sonar/no-dead-store": "off",
+				"sonar/no-unused-collection": "off",
 				"strict": "off",
 				"style/comma-dangle": "off",
 				"style/eol-last": "off",
