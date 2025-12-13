@@ -178,7 +178,6 @@ export async function test(
 					"vitest/no-conditional-in-test": "error",
 					"vitest/no-conditional-tests": "error",
 					"vitest/no-disabled-tests": isInEditor ? "off" : "error",
-					"vitest/no-done-callback": "error",
 					"vitest/no-duplicate-hooks": "error",
 					"vitest/no-focused-tests": isInEditor ? "off" : "error",
 					"vitest/no-hooks": "error",
