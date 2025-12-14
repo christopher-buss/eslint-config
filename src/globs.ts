@@ -43,8 +43,8 @@ export const GLOB_ALL_JSON = "**/*.json?(5|c)";
 
 export const GLOB_MARKDOWN = "**/*.md";
 export const GLOB_MARKDOWN_IN_MARKDOWN = "**/*.md/*.md";
-export const GLOB_MARKDOWN_CODE = `${GLOB_MARKDOWN}/${GLOB_SRC}`;
-export const GLOB_MARKDOWN_BLOCKS = `${GLOB_MARKDOWN}/**/*.{${GLOB_SRC_EXT},json,json5,jsonc,y?(a)ml,{c,le,sc}ss,htm?(l),toml,{g,graph}ql,lua?(u)}`;
+export const GLOB_MARKDOWN_CODE: string = `${GLOB_MARKDOWN}/${GLOB_SRC}`;
+export const GLOB_MARKDOWN_BLOCKS: string = `${GLOB_MARKDOWN}/**/*.{${GLOB_SRC_EXT},json,json5,jsonc,y?(a)ml,{c,le,sc}ss,htm?(l),toml,{g,graph}ql,lua?(u)}`;
 
 export const GLOB_YAML = "**/*.y?(a)ml";
 export const GLOB_TOML = "**/*.toml";
