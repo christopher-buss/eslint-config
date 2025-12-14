@@ -69,7 +69,7 @@ export async function stylistic(
 			rules: {
 				...config.rules,
 
-				"antfu/consistent-list-newline": "error",
+				"antfu/consistent-list-newline": "off",
 				"antfu/if-newline": "off",
 				"antfu/top-level-function": "error",
 
