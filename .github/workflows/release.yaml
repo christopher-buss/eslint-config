@@ -14,8 +14,9 @@ jobs:
     with:
       publish: true
 
-  release-jsr:
-    permissions:
-      contents: read
-      id-token: write
-    uses: sxzz/workflows/.github/workflows/release-jsr.yml@v1
+# See https://github.com/jsr-io/jsr-npm/issues/132
+#   release-jsr:
+#     permissions:
+#       contents: read
+#       id-token: write
+#     uses: sxzz/workflows/.github/workflows/release-jsr.yml@v1
