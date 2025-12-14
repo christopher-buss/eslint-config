@@ -1,0 +1,13 @@
+{
+	"$schema": "https://jsr.io/schema/config-file.v1.json",
+	"name": "@isentinel/eslint-config",
+	"version": "4.7.1",
+	"license": "MIT",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"publish": {
+		"include": ["src"],
+		"exclude": ["!src/typegen.d.ts"]
+	}
+}

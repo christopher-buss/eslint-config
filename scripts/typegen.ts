@@ -3,7 +3,6 @@ import { builtinRules } from "eslint/use-at-your-own-risk";
 import fs from "node:fs/promises";
 
 import {
-	combine,
 	comments,
 	eslintPlugin,
 	flawless,
@@ -32,6 +31,7 @@ import {
 	unicorn,
 	yaml,
 } from "../src";
+import { combine } from "../src/utils";
 
 const configs = await combine(
 	{
@@ -70,7 +70,7 @@ const configs = await combine(
 	yaml(),
 );
 
-const configNames = configs.map((index) => index.name).filter(Boolean) as Array<string>;
+const configNames = configs.map((config) => config.name).filter(Boolean) as Array<string>;
 
 let dts = await flatConfigsToRulesDTS(configs, {
 	includeAugmentation: false,
@@ -78,7 +78,7 @@ let dts = await flatConfigsToRulesDTS(configs, {
 
 dts += `
 // Names of all the configs
-export type ConfigNames = ${configNames.map((index) => `'${index}'`).join(" | ")}
+export type ConfigNames = ${configNames.map((name) => `'${name}'`).join(" | ")}
 `;
 
 await fs.writeFile("src/typegen.d.ts", dts);

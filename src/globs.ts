@@ -52,7 +52,7 @@ export const GLOB_HTML = "**/*.htm?(l)";
 export const GLOB_XML = "**/*.xml";
 export const GLOB_GRAPHQL = "**/*.{g,graph}ql";
 
-export const GLOB_TESTS = [
+export const GLOB_TESTS: Array<string> = [
 	`**/__tests__/**/*.${GLOB_SRC_EXT}`,
 	`**/*.spec.${GLOB_SRC_EXT}`,
 	`**/*.test.${GLOB_SRC_EXT}`,
@@ -60,7 +60,7 @@ export const GLOB_TESTS = [
 	`**/*.benchmark.${GLOB_SRC_EXT}`,
 ];
 
-export const GLOB_BUILD_TOOLS = [
+export const GLOB_BUILD_TOOLS: Array<string> = [
 	"**/.husky/**/*",
 	`**/config/${GLOB_SRC}`,
 	`**/*config.${GLOB_SRC_EXT}`,
