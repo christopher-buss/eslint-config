@@ -61,7 +61,7 @@ export async function combine(
 export function createTsParser(options: {
 	componentExtensions?: Array<string>;
 	configName: string;
-	files: Array<string>;
+	files: Array<Array<string> | string>;
 	ignores?: Array<string>;
 	outOfProjectFiles?: Array<string>;
 	parser: Parser;
@@ -148,10 +148,28 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 export function getOverrides(
 	options: OptionsConfig,
 	key: keyof OptionsConfig,
-): { overrides: TypedFlatConfigItem["rules"]; overridesTypeAware: TypedFlatConfigItem["rules"] } {
+): {
+	files?: TypedFlatConfigItem["files"];
+	filesTypeAware?: TypedFlatConfigItem["files"];
+	ignoresTypeAware?: TypedFlatConfigItem["ignores"];
+	overrides: TypedFlatConfigItem["rules"];
+	overridesTypeAware: TypedFlatConfigItem["rules"];
+} {
 	const sub = resolveSubOptions(options, key);
 
 	return {
+		files:
+			typeof sub === "object" && "files" in sub
+				? (sub as { files: TypedFlatConfigItem["files"] }).files
+				: undefined,
+		filesTypeAware:
+			typeof sub === "object" && "filesTypeAware" in sub
+				? (sub as { filesTypeAware: TypedFlatConfigItem["files"] }).filesTypeAware
+				: undefined,
+		ignoresTypeAware:
+			typeof sub === "object" && "ignoresTypeAware" in sub
+				? (sub as { ignoresTypeAware: TypedFlatConfigItem["ignores"] }).ignoresTypeAware
+				: undefined,
 		overrides: {
 			...(typeof sub === "object" && "overrides" in sub
 				? (sub as { overrides: TypedFlatConfigItem["rules"] }).overrides

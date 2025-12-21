@@ -2,16 +2,21 @@ import globals from "globals";
 
 import { GLOB_SRC } from "../globs";
 import type {
+	OptionsFiles,
+	OptionsHasRoblox,
 	OptionsIsInEditor,
 	OptionsOverrides,
-	OptionsRoblox,
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault } from "../utils";
 
 export async function javascript(
-	options: OptionsIsInEditor & OptionsOverrides & OptionsRoblox & OptionsStylistic = {},
+	options: OptionsFiles &
+		OptionsHasRoblox &
+		OptionsIsInEditor &
+		OptionsOverrides &
+		OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { isInEditor = false, overrides = {}, roblox = true, stylistic = true } = options;
 

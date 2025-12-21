@@ -188,7 +188,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default true
 	 */
-	roblox?: boolean | OptionsOverridesTypeAware;
+	roblox?: boolean | (OptionsFilesTypeAware & OptionsOverridesTypeAware);
 
 	/**
 	 * Customize root-level glob patterns.
@@ -247,7 +247,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default auto-detect based on the dependencies
 	 */
-	typescript?: OptionsOverridesTypeAware & OptionsTypescript;
+	typescript?: OptionsTypescript;
 
 	/**
 	 * Enable YAML support.
@@ -259,7 +259,21 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 
 export interface OptionsFiles {
 	/** Override the `files` option to provide custom globs. */
-	files?: Array<string>;
+	files?: Array<Array<string> | string>;
+}
+
+export interface OptionsFilesTypeAware extends OptionsFiles {
+	/**
+	 * Override the `filesTypeAware` option to provide custom globs for type
+	 * aware files.
+	 */
+	filesTypeAware?: Array<Array<string> | string>;
+
+	/**
+	 * Override the `ignoresTypeAware` option to provide custom globs for type
+	 * aware files.
+	 */
+	ignoresTypeAware?: Array<string>;
 }
 
 export interface OptionsFormatters {
@@ -320,6 +334,10 @@ export interface OptionsFormatters {
 	yaml?: boolean;
 }
 
+export interface OptionsHasRoblox {
+	roblox?: boolean;
+}
+
 export interface OptionsHasTypeScript {
 	typescript?: boolean;
 }
@@ -328,7 +346,7 @@ export interface OptionsIsInEditor {
 	isInEditor?: boolean;
 }
 
-export interface OptionsOverrides {
+export interface OptionsOverrides extends OptionsFiles {
 	overrides?: TypedFlatConfigItem["rules"];
 }
 
@@ -351,11 +369,6 @@ export interface OptionsProjectType {
 	 * @default "game"
 	 */
 	type?: "app" | "game" | "package";
-}
-
-export interface OptionsRoblox {
-	/** Enable or disable Roblox-specific rules. */
-	roblox?: boolean;
 }
 
 export interface OptionsStylistic {
@@ -389,7 +402,7 @@ export interface OptionsTypeScriptParserOptions {
 	 *
 	 * @default ["**\/*.{ts,tsx}"]
 	 */
-	filesTypeAware?: Array<string>;
+	filesTypeAware?: Array<Array<string> | string>;
 
 	/**
 	 * Glob patterns for files that should not be type aware. Used to exclude

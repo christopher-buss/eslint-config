@@ -1,7 +1,7 @@
 import { GLOB_LUA, GLOB_MARKDOWN } from "../globs";
 import type {
 	OptionsComponentExtensions,
-	OptionsFiles,
+	OptionsFilesTypeAware,
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
@@ -12,7 +12,7 @@ import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../uti
 
 export async function roblox(
 	options: OptionsComponentExtensions &
-		OptionsFiles &
+		OptionsFilesTypeAware &
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
@@ -47,7 +47,7 @@ export async function roblox(
 
 	function makeParser(
 		usesTypeInformation: boolean,
-		parserFiles: Array<string>,
+		parserFiles: Array<Array<string> | string>,
 		ignores?: Array<string>,
 	): TypedFlatConfigItem {
 		return createTsParser({

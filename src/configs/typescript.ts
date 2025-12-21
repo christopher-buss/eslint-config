@@ -127,7 +127,7 @@ export async function typescript(
 
 	function makeParser(
 		usesTypeInformation: boolean,
-		parserFiles: Array<string>,
+		parserFiles: Array<Array<string> | string>,
 		ignores?: Array<string>,
 	): TypedFlatConfigItem {
 		return createTsParser({

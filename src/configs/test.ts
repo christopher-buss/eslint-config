@@ -5,10 +5,10 @@ import type PluginJest from "eslint-plugin-jest";
 import { GLOB_TESTS } from "../globs";
 import type {
 	OptionsFiles,
+	OptionsHasRoblox,
 	OptionsIsInEditor,
 	OptionsOverrides,
 	OptionsProjectType,
-	OptionsRoblox,
 	OptionsStylistic,
 	OptionsTestFramework,
 	OptionsVitest,
@@ -22,10 +22,10 @@ let pluginVitest: typeof PluginVitest | undefined;
 
 export async function test(
 	options: OptionsFiles &
+		OptionsHasRoblox &
 		OptionsIsInEditor &
 		OptionsOverrides &
 		OptionsProjectType &
-		OptionsRoblox &
 		OptionsStylistic &
 		OptionsTestFramework = {},
 ): Promise<Array<TypedFlatConfigItem>> {

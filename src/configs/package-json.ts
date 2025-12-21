@@ -1,13 +1,13 @@
 import type {
+	OptionsHasRoblox,
 	OptionsProjectType,
-	OptionsRoblox,
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault } from "../utils";
 
 export async function packageJson(
-	options: OptionsProjectType & OptionsRoblox & OptionsStylistic = {},
+	options: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { roblox = true, stylistic = true, type = "game" } = options;
 
