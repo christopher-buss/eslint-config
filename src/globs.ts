@@ -9,7 +9,6 @@ export const GLOB_ROOT = [
 ];
 
 export const GLOB_ROOT_SRC = [
-	"*.?([cm])[jt]s?(x)",
 	"packages/*/*.?([cm])[jt]s?(x)",
 	"apps/*/*.?([cm])[jt]s?(x)",
 	"libs/*/*.?([cm])[jt]s?(x)",
