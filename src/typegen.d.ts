@@ -7895,6 +7895,11 @@ export interface RuleOptions {
    */
   'vitest/no-test-return-statement'?: Linter.RuleEntry<[]>
   /**
+   * Disallow unnecessary async function wrapper for expected promises
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-unneeded-async-expect-function.md
+   */
+  'vitest/no-unneeded-async-expect-function'?: Linter.RuleEntry<[]>
+  /**
    * Enforce padding around `afterAll` blocks
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/padding-around-after-all-blocks.md
    */

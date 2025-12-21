@@ -20,9 +20,12 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
-		".": "./dist/index.mjs"
+		".": "./dist/index.mjs",
+		"./cli": "./dist/cli.mjs",
+		"./package.json": "./package.json"
 	},
 	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
 	"files": ["bin", "dist"],
@@ -78,7 +81,6 @@
 		"eslint-plugin-import-lite": "catalog:prod",
 		"eslint-plugin-jsdoc": "catalog:prod",
 		"eslint-plugin-jsonc": "catalog:prod",
-		"eslint-plugin-no-only-tests": "catalog:prod",
 		"eslint-plugin-package-json": "catalog:prod",
 		"eslint-plugin-perfectionist": "catalog:prod",
 		"eslint-plugin-pnpm": "catalog:prod",
@@ -96,7 +98,6 @@
 		"local-pkg": "catalog:prod",
 		"prettier": "catalog:prod",
 		"prettier-plugin-jsdoc": "catalog:prod",
-		"prompts": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
 		"yargs": "catalog:prod"
@@ -108,7 +109,6 @@
 		"@isentinel/tsconfig": "catalog:dev",
 		"@stylistic/eslint-plugin-migrate": "catalog:dev",
 		"@types/node": "catalog:dev",
-		"@types/prompts": "catalog:dev",
 		"@types/yargs": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
@@ -125,12 +125,14 @@
 		"lint-staged": "catalog:dev",
 		"parse-gitignore-ts": "catalog:dev",
 		"pnpm-workspace-yaml": "catalog:dev",
+		"publint": "catalog:dev",
 		"rimraf": "catalog:dev",
 		"simple-git-hooks": "catalog:dev",
 		"tsdown": "catalog:dev",
 		"tsx": "catalog:dev",
 		"type-fest": "catalog:dev",
-		"typescript": "catalog:dev"
+		"typescript": "catalog:dev",
+		"unplugin-unused": "catalog:dev"
 	},
 	"peerDependencies": {
 		"@vitest/eslint-plugin": "^1.0.0",
