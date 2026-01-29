@@ -67,7 +67,7 @@ export async function jsonc(
 				...(stylistic !== false
 					? {
 							"jsonc/array-bracket-spacing": ["error", "never"],
-							"jsonc/comma-dangle": ["error", "never"],
+							"jsonc/comma-dangle": "off",
 							"jsonc/comma-style": ["error", "last"],
 							"jsonc/indent": ["error", indent],
 							"jsonc/key-spacing": [
