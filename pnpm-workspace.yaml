@@ -27,14 +27,14 @@ catalogs:
     lint-staged: 16.2.7
     parse-gitignore-ts: 1.0.0
     pnpm-workspace-yaml: 1.4.3
-    publint: 0.3.16
+    publint: 0.3.17
     rimraf: 6.1.2
     simple-git-hooks: 2.13.1
     tsdown: 0.18.2
     tsx: 4.21.0
     type-fest: 5.3.1
     typescript: 5.9.3
-    unplugin-unused: 0.5.6
+    unplugin-unused: 0.5.7
   peer:
     "@vitest/eslint-plugin": 1.5.4
     eslint: 9.39.2
@@ -48,9 +48,9 @@ catalogs:
   prod:
     "@antfu/install-pkg": 1.1.0
     "@clack/prompts": 0.11.0
-    "@cspell/eslint-plugin": 9.6.2
+    "@cspell/eslint-plugin": 9.6.4
     "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
-    "@eslint/compat": 2.0.1
+    "@eslint/compat": 2.0.2
     "@eslint/markdown": 7.5.1
     "@isentinel/dict-rbxts": 1.0.1
     "@isentinel/dict-roblox": 1.0.3
