@@ -383,8 +383,8 @@ export interface OptionsTestFramework {
 }
 
 export type OptionsTypescript =
-	| (OptionsOverrides & OptionsTypeScriptErasableOnly & OptionsTypeScriptParserOptions)
-	| (OptionsOverrides & OptionsTypeScriptErasableOnly & OptionsTypeScriptWithTypes);
+	| (OptionsOverridesTypeAware & OptionsTypeScriptErasableOnly & OptionsTypeScriptParserOptions)
+	| (OptionsOverridesTypeAware & OptionsTypeScriptErasableOnly & OptionsTypeScriptWithTypes);
 
 export interface OptionsTypeScriptErasableOnly {
 	/**
