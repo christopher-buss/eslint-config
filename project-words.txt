@@ -5,12 +5,14 @@ dprint
 ependencies
 isentinel
 johnnymorganz
+kilocode
 lockb
 luatuple
 multilines
 nocheck
 nonblock
 nonconstructor
+opencode
 pico
 rbxts
 rojo

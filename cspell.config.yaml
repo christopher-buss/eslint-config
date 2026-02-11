@@ -16,8 +16,8 @@ dictionaries:
 flagWords: []
 maxNumberOfProblems: 1000
 ignorePaths:
-  - .gitignore
-  - .vscode/**
+  - "**/.git/!(COMMIT_EDITMSG)"
+  - "**/.git/!(COMMIT_EDITMSG)/**"
   - "*-lock.yaml"
   - "*.aff"
   - "*.dic"
@@ -26,12 +26,12 @@ ignorePaths:
   - "*.log"
   - "*.snap"
   - "*.trie"
-  - "**/.git/!(COMMIT_EDITMSG)"
-  - "**/.git/!(COMMIT_EDITMSG)/**"
+  - .gitignore
+  - .vscode/**
+  - /package.json
   - CHANGELOG.md
   - cspell.json
   - node_modules
-  - /package.json
   - snapshots/**
   - typegen.d.ts
 useGitignore: true
