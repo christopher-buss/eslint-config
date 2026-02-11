@@ -57,6 +57,7 @@ export async function disables(options: {
 				"import/no-duplicates": "off",
 				"max-lines": "off",
 				"no-restricted-syntax": "off",
+				"roblox/no-namespace-merging": "off",
 				"shopify/prefer-class-properties": "off",
 				"sonar/no-duplicate-string": "off",
 				"unused-imports/no-unused-vars": "off",
