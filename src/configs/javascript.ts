@@ -96,8 +96,18 @@ export async function javascript(
 				"logical-assignment-operators": "error",
 				"max-classes-per-file": "error",
 				"max-depth": "error",
-				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
-				"new-cap": ["error", { capIsNew: false, newIsCap: true, properties: true }],
+
+				"new-cap": [
+					"error",
+					{
+						capIsNew: false,
+						// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+						newIsCap: true,
+						// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+						newIsCapExceptionPattern: "^mock",
+						properties: true,
+					},
+				],
 				"no-alert": "error",
 				"no-array-constructor": "error",
 				"no-async-promise-executor": "error",
