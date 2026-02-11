@@ -104,7 +104,8 @@ export async function test(
 					"test/require-top-level-describe": "error",
 					"test/unbound-method": "error",
 					"test/valid-describe-callback": "error",
-					"test/valid-expect": "error",
+					// Doesn't allow roblox deviations
+					"test/valid-expect": roblox ? "off" : "error",
 					"test/valid-expect-in-promise": "error",
 					"test/valid-title": [
 						"error",
