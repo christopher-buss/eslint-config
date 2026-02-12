@@ -117,6 +117,7 @@ export async function test(
 					"test/valid-title": [
 						"error",
 						{
+							ignoreTypeOfDescribeName: true,
 							mustMatch: {
 								it: ["^should", 'Test title must start with "should"'],
 							},
