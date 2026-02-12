@@ -34,7 +34,7 @@ export async function test(
 		isInEditor = false,
 		jest = false,
 		overrides = {},
-		roblox = true,
+		roblox: isRoblox = true,
 		stylistic = true,
 		type = "game",
 		vitest = false,
@@ -42,8 +42,8 @@ export async function test(
 
 	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
-	const enableJest = jest || (!vitestEnabled && (type === "game" || roblox));
-	const enableVitest = vitestEnabled || (!jest && type === "package" && !roblox);
+	const enableJest = jest || (!vitestEnabled && (type === "game" || isRoblox));
+	const enableVitest = vitestEnabled || (!jest && type === "package" && !isRoblox);
 
 	const configs: Array<TypedFlatConfigItem> = [];
 
@@ -76,6 +76,7 @@ export async function test(
 					"test/no-disabled-tests": isInEditor ? "off" : "error",
 					"test/no-done-callback": "error",
 					"test/no-duplicate-hooks": "error",
+					"test/no-error-equal": isRoblox ? "off" : "error",
 					"test/no-export": "error",
 					"test/no-focused-tests": isInEditor ? "off" : "error",
 					"test/no-hooks": "error",
@@ -83,6 +84,8 @@ export async function test(
 					"test/no-standalone-expect": "error",
 					"test/no-test-prefixes": "error",
 					"test/no-test-return-statement": "error",
+					"test/no-unnecessary-assertion": "error",
+					"test/no-unneeded-async-expect-function": "error",
 					"test/no-untyped-mock-factory": "error",
 					"test/prefer-called-with": "warn",
 					"test/prefer-comparison-matcher": "warn",
@@ -93,10 +96,13 @@ export async function test(
 					"test/prefer-hooks-in-order": "warn",
 					"test/prefer-lowercase-title": "warn",
 					"test/prefer-mock-promise-shorthand": "error",
+					"test/prefer-mock-return-shorthand": "error",
 					"test/prefer-spy-on": "warn",
 					"test/prefer-strict-equal": "error",
 					"test/prefer-to-be": "error",
 					"test/prefer-to-contain": "error",
+					"test/prefer-to-have-been-called": "error",
+					"test/prefer-to-have-been-called-times": "error",
 					"test/prefer-to-have-length": "error",
 					"test/prefer-todo": "warn",
 					"test/require-hook": "error",
@@ -105,8 +111,9 @@ export async function test(
 					"test/unbound-method": "error",
 					"test/valid-describe-callback": "error",
 					// Doesn't allow roblox deviations
-					"test/valid-expect": roblox ? "off" : "error",
+					"test/valid-expect": isRoblox ? "off" : "error",
 					"test/valid-expect-in-promise": "error",
+					"test/valid-expect-with-promise": "error",
 					"test/valid-title": [
 						"error",
 						{
@@ -224,6 +231,7 @@ export async function test(
 					"vitest/valid-title": [
 						"error",
 						{
+							ignoreTypeOfDescribeName: true,
 							mustMatch: {
 								it: ["^should", 'Test title must start with "should"'],
 							},
