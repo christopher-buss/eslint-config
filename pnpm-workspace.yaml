@@ -21,6 +21,7 @@ catalogs:
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 22.16.0
     "@types/yargs": 17.0.35
+    baseline-browser-mapping: 2.9.19
     bumpp: 10.3.2
     eslint-typegen: 2.3.0
     jiti: 2.6.1

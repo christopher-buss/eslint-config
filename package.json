@@ -111,6 +111,7 @@
 		"@types/node": "catalog:dev",
 		"@types/yargs": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
+		"baseline-browser-mapping": "catalog:dev",
 		"bumpp": "catalog:dev",
 		"eslint": "catalog:peer",
 		"eslint-plugin-erasable-syntax-only": "catalog:peer",
