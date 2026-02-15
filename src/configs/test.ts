@@ -72,7 +72,12 @@ export async function test(
 					"test/no-alias-methods": "error",
 					"test/no-commented-out-tests": "warn",
 					"test/no-conditional-expect": "error",
-					"test/no-conditional-in-test": "error",
+					"test/no-conditional-in-test": [
+						"error",
+						{
+							allowOptionalChaining: false,
+						},
+					],
 					"test/no-disabled-tests": isInEditor ? "off" : "error",
 					"test/no-done-callback": "error",
 					"test/no-duplicate-hooks": "error",
