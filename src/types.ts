@@ -346,6 +346,17 @@ export interface OptionsIsInEditor {
 	isInEditor?: boolean;
 }
 
+export interface OptionsJest {
+	/**
+	 * Enable the `eslint-plugin-jest-extended` ruleset.
+	 *
+	 * Requires `jest-extended` to be installed.
+	 *
+	 * @default false
+	 */
+	extended?: boolean;
+}
+
 export interface OptionsOverrides extends OptionsFiles {
 	overrides?: TypedFlatConfigItem["rules"];
 }
@@ -377,7 +388,7 @@ export interface OptionsStylistic {
 
 export interface OptionsTestFramework {
 	/** Enable Jest support. */
-	jest?: boolean;
+	jest?: boolean | OptionsJest;
 	/** Enable Vitest support. */
 	vitest?: boolean | OptionsVitest;
 }

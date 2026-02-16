@@ -7,6 +7,7 @@ import type {
 	OptionsFiles,
 	OptionsHasRoblox,
 	OptionsIsInEditor,
+	OptionsJest,
 	OptionsOverrides,
 	OptionsProjectType,
 	OptionsStylistic,
@@ -18,6 +19,7 @@ import { ensurePackages, interopDefault } from "../utils";
 
 // Hold the references so we don't redeclare the plugins on each call
 let pluginTest: typeof PluginJest | undefined;
+let pluginJestExtended: any;
 let pluginVitest: typeof PluginVitest | undefined;
 
 export async function test(
@@ -42,16 +44,36 @@ export async function test(
 
 	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
-	const enableJest = jest || (!vitestEnabled && (type === "game" || isRoblox));
-	const enableVitest = vitestEnabled || (!jest && type === "package" && !isRoblox);
+	const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};
+	const jestEnabled = jest === true || typeof jest === "object";
+	const enableJest = jestEnabled || (!vitestEnabled && (type === "game" || isRoblox));
+	const enableVitest = vitestEnabled || (!jestEnabled && type === "package" && !isRoblox);
 
 	const configs: Array<TypedFlatConfigItem> = [];
 
 	if (enableJest) {
 		await ensurePackages(["eslint-plugin-jest"]);
 		const pluginJest = await interopDefault(import("eslint-plugin-jest"));
+
+		const useJestExtended = jestOptions.extended === true;
+
+		const jestExtendedPlugin = await (async () => {
+			if (!useJestExtended) {
+				return;
+			}
+
+			await ensurePackages(["eslint-plugin-jest-extended"]);
+			// @ts-expect-error -- No types
+			// eslint-disable-next-line ts/no-unsafe-return -- No types
+			return interopDefault(import("eslint-plugin-jest-extended"));
+		})();
+
 		pluginTest ??= {
 			...pluginJest,
+		};
+
+		pluginJestExtended ??= {
+			...jestExtendedPlugin,
 		};
 
 		configs.push(
@@ -59,6 +81,7 @@ export async function test(
 				name: "isentinel/test/jest/setup",
 				plugins: {
 					test: pluginTest,
+					...(useJestExtended ? { "jest-extended": pluginJestExtended } : {}),
 				},
 			},
 			{
@@ -128,6 +151,16 @@ export async function test(
 							},
 						},
 					],
+
+					...(useJestExtended
+						? {
+								"jest-extended/prefer-to-be-array": "error",
+								"jest-extended/prefer-to-be-false": "error",
+								"jest-extended/prefer-to-be-object": "error",
+								"jest-extended/prefer-to-be-true": "error",
+								"jest-extended/prefer-to-have-been-called-once": "error",
+							}
+						: {}),
 
 					...(stylistic !== false
 						? {
