@@ -3652,178 +3652,188 @@ export interface RuleOptions {
    */
   'react-naming-convention/component-name'?: Linter.RuleEntry<ReactNamingConventionComponentName>
   /**
-   * Enforces context name to be a valid component name with the suffix `Context`.
+   * Enforces the context name to be a valid component name with the suffix 'Context'.
    * @see https://eslint-react.xyz/docs/rules/naming-convention-context-name
    */
   'react-naming-convention/context-name'?: Linter.RuleEntry<[]>
   /**
-   * Enforces consistent file naming conventions.
+   * Enforces consistent file-naming conventions.
    * @see https://eslint-react.xyz/docs/rules/naming-convention-filename
    */
   'react-naming-convention/filename'?: Linter.RuleEntry<ReactNamingConventionFilename>
   /**
-   * Enforces consistent file naming conventions.
+   * Enforces consistent use of the JSX file extension.
    * @see https://eslint-react.xyz/docs/rules/naming-convention-filename-extension
    */
   'react-naming-convention/filename-extension'?: Linter.RuleEntry<ReactNamingConventionFilenameExtension>
   /**
-   * Enforces destructuring and symmetric naming of `useState` hook value and setter.
+   * Enforces identifier names assigned from 'useId' calls to be either 'id' or end with 'Id'.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-id-name
+   */
+  'react-naming-convention/id-name'?: Linter.RuleEntry<[]>
+  /**
+   * Enforces identifier names assigned from 'useRef' calls to be either 'ref' or end with 'Ref'.
+   * @see https://eslint-react.xyz/docs/rules/naming-convention-ref-name
+   */
+  'react-naming-convention/ref-name'?: Linter.RuleEntry<[]>
+  /**
+   * Enforces destructuring and symmetric naming of the 'useState' hook value and setter.
    * @see https://eslint-react.xyz/docs/rules/naming-convention-use-state
    */
-  'react-naming-convention/use-state'?: Linter.RuleEntry<[]>
+  'react-naming-convention/use-state'?: Linter.RuleEntry<ReactNamingConventionUseState>
   /**
-   * Prevents dollar signs from being inserted as text nodes before expressions.
+   * Prevents unintentional '$' sign before expression.
    * @see https://eslint-react.xyz/docs/rules/jsx-dollar
    */
   'react/jsx-dollar'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that the 'key' prop is placed before the spread prop in JSX elements.
+   * Enforces 'key' prop placement before spread props.
    * @see https://eslint-react.xyz/docs/rules/jsx-key-before-spread
    */
   'react/jsx-key-before-spread'?: Linter.RuleEntry<[]>
   /**
-   * Prevents comments from being inserted as text nodes.
+   * Prevents comment strings (e.g., beginning with '//' or '/*') from being accidentally inserted into a JSX element's text nodes.
    * @see https://eslint-react.xyz/docs/rules/jsx-no-comment-textnodes
    */
   'react/jsx-no-comment-textnodes'?: Linter.RuleEntry<[]>
   /**
-   * Disallow duplicate props in JSX elements.
+   * Disallows duplicate props in JSX elements.
    * @see https://eslint-react.xyz/docs/rules/jsx-no-duplicate-props
    */
   'react/jsx-no-duplicate-props'?: Linter.RuleEntry<[]>
   /**
-   * Disallows 'IIFE' in JSX elements.
+   * Disallows immediately-invoked function expressions in JSX.
    * @see https://eslint-react.xyz/docs/rules/jsx-no-iife
    */
   'react/jsx-no-iife'?: Linter.RuleEntry<[]>
   /**
-   * Disallow undefined variables in JSX.
+   * Prevents using variables in JSX that are not defined in the scope.
    * @see https://eslint-react.xyz/docs/rules/jsx-no-undef
    */
   'react/jsx-no-undef'?: Linter.RuleEntry<[]>
   /**
-   * Enforces shorthand syntax for boolean attributes.
+   * Enforces shorthand syntax for boolean props.
    * @see https://eslint-react.xyz/docs/rules/jsx-shorthand-boolean
    */
   'react/jsx-shorthand-boolean'?: Linter.RuleEntry<ReactJsxShorthandBoolean>
   /**
-   * Enforces shorthand syntax for fragments.
+   * Enforces shorthand syntax for fragment elements.
    * @see https://eslint-react.xyz/docs/rules/jsx-shorthand-fragment
    */
   'react/jsx-shorthand-fragment'?: Linter.RuleEntry<ReactJsxShorthandFragment>
   /**
-   * Marks React variables as used when JSX is used.
+   * Marks React variables as used when JSX is present.
    * @see https://eslint-react.xyz/docs/rules/jsx-uses-react
    */
   'react/jsx-uses-react'?: Linter.RuleEntry<[]>
   /**
-   * Marks variables used in JSX elements as used.
+   * Marks JSX element variables as used.
    * @see https://eslint-react.xyz/docs/rules/jsx-uses-vars
    */
   'react/jsx-uses-vars'?: Linter.RuleEntry<[]>
   /**
-   * Disallow accessing `this.state` inside `setState` calls.
+   * Disallows accessing 'this.state' inside 'setState' calls.
    * @see https://eslint-react.xyz/docs/rules/no-access-state-in-setstate
    */
   'react/no-access-state-in-setstate'?: Linter.RuleEntry<[]>
   /**
-   * Disallow an item's index in the array as its key.
+   * Disallows using an item's index in the array as its key.
    * @see https://eslint-react.xyz/docs/rules/no-array-index-key
    */
   'react/no-array-index-key'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `Children.count`.
+   * Disallows the use of 'Children.count' from the 'react' package.
    * @see https://eslint-react.xyz/docs/rules/no-children-count
    */
   'react/no-children-count'?: Linter.RuleEntry<[]>
   /**
-   * Disallow 'Children.forEach'.
+   * Disallows the use of 'Children.forEach' from the 'react' package.
    * @see https://eslint-react.xyz/docs/rules/no-children-for-each
    */
   'react/no-children-for-each'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `Children.map`.
+   * Disallows the use of 'Children.map' from the 'react' package.
    * @see https://eslint-react.xyz/docs/rules/no-children-map
    */
   'react/no-children-map'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `Children.only`.
+   * Disallows the use of 'Children.only' from the 'react' package.
    * @see https://eslint-react.xyz/docs/rules/no-children-only
    */
   'react/no-children-only'?: Linter.RuleEntry<[]>
   /**
-   * Disallow passing `children` as a prop.
+   * Disallows passing 'children' as a prop.
    * @see https://eslint-react.xyz/docs/rules/no-children-prop
    */
   'react/no-children-prop'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `Children.toArray`.
+   * Disallows the use of 'Children.toArray' from the 'react' package.
    * @see https://eslint-react.xyz/docs/rules/no-children-to-array
    */
   'react/no-children-to-array'?: Linter.RuleEntry<[]>
   /**
-   * Disallow class components except for error boundaries.
+   * Disallows class components except for error boundaries.
    * @see https://eslint-react.xyz/docs/rules/no-class-component
    */
   'react/no-class-component'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `cloneElement`.
+   * Disallows 'cloneElement'.
    * @see https://eslint-react.xyz/docs/rules/no-clone-element
    */
   'react/no-clone-element'?: Linter.RuleEntry<[]>
   /**
-   * Replace usages of `componentWillMount` with `UNSAFE_componentWillMount`.
+   * Replaces usage of 'componentWillMount' with 'UNSAFE_componentWillMount'.
    * @see https://eslint-react.xyz/docs/rules/no-component-will-mount
    */
   'react/no-component-will-mount'?: Linter.RuleEntry<[]>
   /**
-   * Replace usages of `componentWillReceiveProps` with `UNSAFE_componentWillReceiveProps`.
+   * Replaces usage of 'componentWillReceiveProps' with 'UNSAFE_componentWillReceiveProps'.
    * @see https://eslint-react.xyz/docs/rules/no-component-will-receive-props
    */
   'react/no-component-will-receive-props'?: Linter.RuleEntry<[]>
   /**
-   * Replace usages of `componentWillUpdate` with `UNSAFE_componentWillUpdate`.
+   * Replaces usage of 'componentWillUpdate' with 'UNSAFE_componentWillUpdate'.
    * @see https://eslint-react.xyz/docs/rules/no-component-will-update
    */
   'react/no-component-will-update'?: Linter.RuleEntry<[]>
   /**
-   * Replace usages of `<Context.Provider>` with `<Context>`.
+   * Replaces usage of '<Context.Provider>' with '<Context>'.
    * @see https://eslint-react.xyz/docs/rules/no-context-provider
    */
   'react/no-context-provider'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `createRef` in function components.
+   * Disallows 'createRef' in function components.
    * @see https://eslint-react.xyz/docs/rules/no-create-ref
    */
   'react/no-create-ref'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `defaultProps` property in favor of ES6 default parameters.
+   * Disallows the 'defaultProps' property in favor of ES6 default parameters.
    * @see https://eslint-react.xyz/docs/rules/no-default-props
    */
   'react/no-default-props'?: Linter.RuleEntry<[]>
   /**
-   * Disallow direct mutation of `this.state`.
+   * Disallows direct mutation of 'this.state'.
    * @see https://eslint-react.xyz/docs/rules/no-direct-mutation-state
    */
   'react/no-direct-mutation-state'?: Linter.RuleEntry<[]>
   /**
-   * Disallow duplicate `key` on elements in the same array or a list of `children`.
+   * Prevents duplicate 'key' props on sibling elements when rendering lists.
    * @see https://eslint-react.xyz/docs/rules/no-duplicate-key
    */
   'react/no-duplicate-key'?: Linter.RuleEntry<[]>
   /**
-   * Disallow certain props on components.
+   * Disallows certain props on components.
    * @see https://eslint-react.xyz/docs/rules/no-forbidden-props
    * @deprecated
    */
   'react/no-forbidden-props'?: Linter.RuleEntry<ReactNoForbiddenProps>
   /**
-   * Replaces usages of `forwardRef` with passing `ref` as a prop.
+   * Replaces usage of 'forwardRef' with passing 'ref' as a prop.
    * @see https://eslint-react.xyz/docs/rules/no-forward-ref
    */
   'react/no-forward-ref'?: Linter.RuleEntry<[]>
   /**
-   * Prevents `key` from not being explicitly specified (e.g. spreading `key` from objects).
+   * Prevents implicitly passing the 'key' prop to components.
    * @see https://eslint-react.xyz/docs/rules/no-implicit-key
    */
   'react/no-implicit-key'?: Linter.RuleEntry<[]>
@@ -3833,57 +3843,57 @@ export interface RuleOptions {
    */
   'react/no-leaked-conditional-rendering'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that all components have a `displayName` which can be used in devtools.
+   * Enforces that all components have a 'displayName' that can be used in DevTools.
    * @see https://eslint-react.xyz/docs/rules/no-missing-component-display-name
    */
   'react/no-missing-component-display-name'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that all contexts have a `displayName` which can be used in devtools.
+   * Enforces that all contexts have a 'displayName' that can be used in DevTools.
    * @see https://eslint-react.xyz/docs/rules/no-missing-context-display-name
    */
   'react/no-missing-context-display-name'?: Linter.RuleEntry<[]>
   /**
-   * Disallow missing `key` on items in list rendering.
+   * Disallows missing 'key' on items in list rendering.
    * @see https://eslint-react.xyz/docs/rules/no-missing-key
    */
   'react/no-missing-key'?: Linter.RuleEntry<[]>
   /**
-   * Prevents incorrect usage of `captureOwnerStack`.
+   * Prevents incorrect usage of 'captureOwnerStack'.
    * @see https://eslint-react.xyz/docs/rules/no-misused-capture-owner-stack
    */
   'react/no-misused-capture-owner-stack'?: Linter.RuleEntry<[]>
   /**
-   * Disallow nesting component definitions inside other components.
+   * Disallows nesting component definitions inside other components.
    * @see https://eslint-react.xyz/docs/rules/no-nested-component-definitions
    */
   'react/no-nested-component-definitions'?: Linter.RuleEntry<[]>
   /**
-   * Disallow nesting lazy component declarations inside other components.
+   * Disallows nesting lazy component declarations inside other components.
    * @see https://eslint-react.xyz/docs/rules/no-nested-lazy-component-declarations
    */
   'react/no-nested-lazy-component-declarations'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `propTypes` in favor of TypeScript or another type-checking solution.
+   * Disallows 'propTypes' in favor of TypeScript or another type-checking solution.
    * @see https://eslint-react.xyz/docs/rules/no-prop-types
    */
   'react/no-prop-types'?: Linter.RuleEntry<[]>
   /**
-   * Disallow `shouldComponentUpdate` when extending `React.PureComponent`.
+   * Disallows 'shouldComponentUpdate' when extending 'React.PureComponent'.
    * @see https://eslint-react.xyz/docs/rules/no-redundant-should-component-update
    */
   'react/no-redundant-should-component-update'?: Linter.RuleEntry<[]>
   /**
-   * Disallow calling `this.setState` in `componentDidMount` outside of functions, such as callbacks.
+   * Disallows calling 'this.setState' in 'componentDidMount' outside functions such as callbacks.
    * @see https://eslint-react.xyz/docs/rules/no-set-state-in-component-did-mount
    */
   'react/no-set-state-in-component-did-mount'?: Linter.RuleEntry<[]>
   /**
-   * Disallow calling `this.setState` in `componentDidUpdate` outside of functions, such as callbacks.
+   * Disallows calling 'this.setState' in 'componentDidUpdate' outside functions such as callbacks.
    * @see https://eslint-react.xyz/docs/rules/no-set-state-in-component-did-update
    */
   'react/no-set-state-in-component-did-update'?: Linter.RuleEntry<[]>
   /**
-   * Disallow calling `this.setState` in `componentWillUpdate` outside of functions, such as callbacks.
+   * Disallows calling 'this.setState' in 'componentWillUpdate' outside functions such as callbacks.
    * @see https://eslint-react.xyz/docs/rules/no-set-state-in-component-will-update
    */
   'react/no-set-state-in-component-will-update'?: Linter.RuleEntry<[]>
@@ -3893,42 +3903,47 @@ export interface RuleOptions {
    */
   'react/no-string-refs'?: Linter.RuleEntry<[]>
   /**
-   * Prevents the use of unnecessary `key` props on JSX elements when rendering lists.
+   * Disallows unnecessary 'key' props on nested child elements when rendering lists.
    * @see https://eslint-react.xyz/docs/rules/no-unnecessary-key
    */
   'react/no-unnecessary-key'?: Linter.RuleEntry<[]>
   /**
-   * Disallow unnecessary usage of `useCallback`.
+   * Disallows unnecessary usage of 'useCallback'.
    * @see https://eslint-react.xyz/docs/rules/no-unnecessary-use-callback
    */
   'react/no-unnecessary-use-callback'?: Linter.RuleEntry<[]>
   /**
-   * Disallow unnecessary usage of `useMemo`.
+   * Disallows unnecessary usage of 'useMemo'.
    * @see https://eslint-react.xyz/docs/rules/no-unnecessary-use-memo
    */
   'react/no-unnecessary-use-memo'?: Linter.RuleEntry<[]>
   /**
-   * Enforces that a function with the `use` prefix should use at least one Hook inside of it.
+   * Enforces that a function with the 'use' prefix uses at least one Hook inside it.
    * @see https://eslint-react.xyz/docs/rules/no-unnecessary-use-prefix
    */
   'react/no-unnecessary-use-prefix'?: Linter.RuleEntry<[]>
   /**
-   * Warns the usage of `UNSAFE_componentWillMount` in class components.
+   * Disallows unnecessary usage of 'useRef'.
+   * @see https://eslint-react.xyz/docs/rules/no-unnecessary-use-ref
+   */
+  'react/no-unnecessary-use-ref'?: Linter.RuleEntry<[]>
+  /**
+   * Warns about the use of 'UNSAFE_componentWillMount' in class components.
    * @see https://eslint-react.xyz/docs/rules/no-unsafe-component-will-mount
    */
   'react/no-unsafe-component-will-mount'?: Linter.RuleEntry<[]>
   /**
-   * Warns the usage of `UNSAFE_componentWillReceiveProps` in class components.
+   * Warns about the use of 'UNSAFE_componentWillReceiveProps' in class components.
    * @see https://eslint-react.xyz/docs/rules/no-unsafe-component-will-receive-props
    */
   'react/no-unsafe-component-will-receive-props'?: Linter.RuleEntry<[]>
   /**
-   * Warns the usage of `UNSAFE_componentWillUpdate` in class components.
+   * Warns about the use of 'UNSAFE_componentWillUpdate' in class components.
    * @see https://eslint-react.xyz/docs/rules/no-unsafe-component-will-update
    */
   'react/no-unsafe-component-will-update'?: Linter.RuleEntry<[]>
   /**
-   * Prevents non-stable values (i.e. object literals) from being used as a value for `Context.Provider`.
+   * Prevents non-stable values (i.e., object literals) from being used as a value for 'Context.Provider'.
    * @see https://eslint-react.xyz/docs/rules/no-unstable-context-value
    */
   'react/no-unstable-context-value'?: Linter.RuleEntry<[]>
@@ -3938,32 +3953,32 @@ export interface RuleOptions {
    */
   'react/no-unstable-default-props'?: Linter.RuleEntry<ReactNoUnstableDefaultProps>
   /**
-   * Warns unused class component methods and properties.
+   * Warns about unused class component methods and properties.
    * @see https://eslint-react.xyz/docs/rules/no-unused-class-component-members
    */
   'react/no-unused-class-component-members'?: Linter.RuleEntry<[]>
   /**
-   * Warns component props that are defined but never used.
+   * Warns about component props that are defined but never used.
    * @see https://eslint-react.xyz/docs/rules/no-unused-props
    */
   'react/no-unused-props'?: Linter.RuleEntry<[]>
   /**
-   * Warns unused class component state.
+   * Warns about unused class component state.
    * @see https://eslint-react.xyz/docs/rules/no-unused-state
    */
   'react/no-unused-state'?: Linter.RuleEntry<[]>
   /**
-   * Replaces usages of `useContext` with `use`.
+   * Replaces usage of 'useContext' with 'use'.
    * @see https://eslint-react.xyz/docs/rules/no-use-context
    */
   'react/no-use-context'?: Linter.RuleEntry<[]>
   /**
-   * Disallow useless `forwardRef` calls on components that don't use `ref`s.
+   * Disallows useless 'forwardRef' calls on components that don't use 'ref's.
    * @see https://eslint-react.xyz/docs/rules/no-useless-forward-ref
    */
   'react/no-useless-forward-ref'?: Linter.RuleEntry<[]>
   /**
-   * Disallow useless fragment elements.
+   * Disallows useless fragment elements.
    * @see https://eslint-react.xyz/docs/rules/no-useless-fragment
    */
   'react/no-useless-fragment'?: Linter.RuleEntry<ReactNoUselessFragment>
@@ -3973,7 +3988,7 @@ export interface RuleOptions {
    */
   'react/prefer-destructuring-assignment'?: Linter.RuleEntry<[]>
   /**
-   * Enforces React is imported via a namespace import.
+   * Enforces importing React via a namespace import.
    * @see https://eslint-react.xyz/docs/rules/prefer-namespace-import
    */
   'react/prefer-namespace-import'?: Linter.RuleEntry<[]>
@@ -3983,7 +3998,7 @@ export interface RuleOptions {
    */
   'react/prefer-read-only-props'?: Linter.RuleEntry<[]>
   /**
-   * Enforces function calls made inside `useState` to be wrapped in an `initializer function`.
+   * Enforces wrapping function calls made inside 'useState' in an 'initializer function'.
    * @see https://eslint-react.xyz/docs/rules/prefer-use-state-lazy-initialization
    */
   'react/prefer-use-state-lazy-initialization'?: Linter.RuleEntry<[]>
@@ -17132,6 +17147,11 @@ type ReactNamingConventionFilenameExtension = []|[(("always" | "as-needed") | {
   extensions?: string[]
   ignoreFilesWithoutCode?: boolean
 })]
+// ----- react-naming-convention/use-state -----
+type ReactNamingConventionUseState = []|[{
+  enforceAssignment?: boolean
+  enforceSetterName?: boolean
+}]
 // ----- react/jsx-shorthand-boolean -----
 type ReactJsxShorthandBoolean = []|[(-1 | 1)]
 // ----- react/jsx-shorthand-fragment -----

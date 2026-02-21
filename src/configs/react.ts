@@ -64,6 +64,7 @@ export async function react(
 	} satisfies ESLintReactSettings;
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"react/no-implicit-key": "error",
 		"react/no-leaked-conditional-rendering": "warn",
 		"react/no-unused-props": "error",
 		"react/prefer-read-only-props": "error",
@@ -158,25 +159,19 @@ export async function react(
 				"react/no-component-will-receive-props": "off",
 				"react/no-component-will-update": "off",
 				"react/no-create-ref": "error",
-				// Not supported in React Lua
-				"react/no-default-props": "off",
 				"react/no-direct-mutation-state": "error",
 				"react/no-duplicate-key": "error",
 				"react/no-forward-ref": "off",
-				"react/no-implicit-key": "error",
 				"react/no-missing-component-display-name": "error",
 				"react/no-missing-context-display-name": "error",
 				"react/no-missing-key": "error",
 				"react/no-misused-capture-owner-stack": "off",
 				"react/no-nested-component-definitions": "warn",
 				"react/no-nested-lazy-component-declarations": "warn",
-				// Not supported in React Lua
-				"react/no-prop-types": "off",
 				"react/no-redundant-should-component-update": "error",
 				"react/no-set-state-in-component-did-mount": "warn",
 				"react/no-set-state-in-component-did-update": "warn",
 				"react/no-set-state-in-component-will-update": "warn",
-				"react/no-string-refs": "off",
 				// Not applicable in React Lua
 				"react/no-unnecessary-key": "off",
 				"react/no-unnecessary-use-callback": "error",
@@ -249,7 +244,7 @@ export async function react(
 							// recommended rules from
 							// @eslint-react/naming-convention
 							"react-naming-convention/context-name": "error",
-							"react-naming-convention/filename-extension": "off",
+							"react-naming-convention/ref-name": "error",
 							"react-naming-convention/use-state": "error",
 							// Never use shorthand syntax for boolean attributes.
 							"react/jsx-shorthand-boolean": ["warn", -1],
