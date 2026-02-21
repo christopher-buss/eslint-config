@@ -192,7 +192,7 @@ catalogs:
       specifier: 2.21.0
       version: 2.21.0
     eslint-plugin-oxfmt:
-      specifier: ^0.0.15
+      specifier: 0.0.15
       version: 0.0.15
     eslint-plugin-package-json:
       specifier: 0.85.0
@@ -234,7 +234,7 @@ catalogs:
       specifier: 1.0.1
       version: 1.0.1
     globals:
-      specifier: ^17.3.0
+      specifier: 17.3.0
       version: 17.3.0
     jsonc-eslint-parser:
       specifier: 2.4.2
@@ -243,7 +243,7 @@ catalogs:
       specifier: 1.1.2
       version: 1.1.2
     oxfmt:
-      specifier: ^0.34.0
+      specifier: 0.34.0
       version: 0.34.0
     prettier:
       specifier: 3.7.4
