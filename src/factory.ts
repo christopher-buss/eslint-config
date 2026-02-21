@@ -179,7 +179,8 @@ export async function isentinel(
 	const formatterOptions = typeof options.formatters === "object" ? options.formatters : {};
 	const jsFormatter = formatterOptions.javascript ?? "oxfmt";
 	const tsFormatter = formatterOptions.typescript ?? "oxfmt";
-	const useOxfmt = jsFormatter === "oxfmt" || tsFormatter === "oxfmt";
+	const useOxfmt =
+		options.formatters !== false && (jsFormatter === "oxfmt" || tsFormatter === "oxfmt");
 
 	const prettierOptions = formatterOptions.prettierOptions ?? {};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
