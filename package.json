@@ -94,6 +94,7 @@
 		"eslint-plugin-unused-imports": "catalog:prod",
 		"eslint-plugin-yml": "catalog:prod",
 		"find-up-simple": "catalog:prod",
+		"globals": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"prettier": "catalog:prod",
