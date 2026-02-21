@@ -155,6 +155,260 @@ export interface RuleOptions {
    */
   'capitalized-comments'?: Linter.RuleEntry<CapitalizedComments>
   /**
+   * Ban specified Roblox Instance classes in new Instance() calls and JSX elements.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/ban-instances
+   */
+  'cease-nonsense/ban-instances'?: Linter.RuleEntry<CeaseNonsenseBanInstances>
+  /**
+   * Ban React.FC and similar component type annotations. Use explicit function declarations instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/ban-react-fc
+   */
+  'cease-nonsense/ban-react-fc'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce Ianitor.Check<T> type annotations on complex TypeScript types
+   * @see https://github.com/howmanysmall/eslint-cease-nonsense-rules/blob/main/docs/rules/enforce-ianitor-check-type.md
+   */
+  'cease-nonsense/enforce-ianitor-check-type'?: Linter.RuleEntry<CeaseNonsenseEnforceIanitorCheckType>
+  /**
+   * Enforce oxfmt code formatting
+   */
+  'cease-nonsense/fast-format'?: Linter.RuleEntry<[]>
+  /**
+   * Experimental: Flags effect dependencies that are not memoized. Unmemoized dependencies can cause unnecessary re-renders or infinite loops.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/memoized-effect-dependencies
+   */
+  'cease-nonsense/memoized-effect-dependencies'?: Linter.RuleEntry<CeaseNonsenseMemoizedEffectDependencies>
+  /**
+   * Disallow the use of LuaTuple in conditional expressions
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/misleading-lua-tuple-checks
+   */
+  'cease-nonsense/misleading-lua-tuple-checks'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce naming conventions for everything across a codebase
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/naming-convention
+   */
+  'cease-nonsense/naming-convention'?: Linter.RuleEntry<CeaseNonsenseNamingConvention>
+  /**
+   * Disallow array append assignments using array[array.size()] = value and prefer push-based appends.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-array-size-assignment
+   */
+  'cease-nonsense/no-array-size-assignment'?: Linter.RuleEntry<CeaseNonsenseNoArraySizeAssignment>
+  /**
+   * Disallow asynchronous operations inside class constructors. Constructors return immediately, so async work causes race conditions, unhandled rejections, and incomplete object states.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-async-constructor
+   */
+  'cease-nonsense/no-async-constructor'?: Linter.RuleEntry<[]>
+  /**
+   * Ban new Color3(...) except new Color3() or new Color3(0, 0, 0). Use Color3.fromRGB() instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-color3-constructor
+   */
+  'cease-nonsense/no-color3-constructor'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow commented-out code
+   */
+  'cease-nonsense/no-commented-code'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow constant conditions, but allow constant loops that include loop exits such as break, return, or configured calls.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-constant-condition-with-break
+   */
+  'cease-nonsense/no-constant-condition-with-break'?: Linter.RuleEntry<CeaseNonsenseNoConstantConditionWithBreak>
+  /**
+   * Disallow sending Events back to the same player inside an Events.connect callback; use Functions for request/response.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-events-in-events-callback
+   */
+  'cease-nonsense/no-events-in-events-callback'?: Linter.RuleEntry<CeaseNonsenseNoEventsInEventsCallback>
+  /**
+   * Enforce React component size and complexity limits inspired by the 'Refactor God Component' checklist.
+   */
+  'cease-nonsense/no-god-components'?: Linter.RuleEntry<CeaseNonsenseNoGodComponents>
+  /**
+   * Disallow pointless identity `.map()` calls that return the parameter unchanged
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-identity-map
+   */
+  'cease-nonsense/no-identity-map'?: Linter.RuleEntry<CeaseNonsenseNoIdentityMap>
+  /**
+   * Detect instance methods that do not use 'this' and suggest converting them to standalone functions for better performance in roblox-ts.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-instance-methods-without-this
+   */
+  'cease-nonsense/no-instance-methods-without-this'?: Linter.RuleEntry<CeaseNonsenseNoInstanceMethodsWithoutThis>
+  /**
+   * Disallow React.memo on components with children props, which defeats memoization since children change on every render.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-memo-children
+   */
+  'cease-nonsense/no-memo-children'?: Linter.RuleEntry<CeaseNonsenseNoMemoChildren>
+  /**
+   * Disallow configured constructor calls (default: new Instance) inside React useMemo callbacks.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-new-instance-in-use-memo
+   */
+  'cease-nonsense/no-new-instance-in-use-memo'?: Linter.RuleEntry<CeaseNonsenseNoNewInstanceInUseMemo>
+  /**
+   * Ban print() function calls. Use Log instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-print
+   */
+  'cease-nonsense/no-print'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow non-component functions that return JSX or React elements.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-render-helper-functions
+   */
+  'cease-nonsense/no-render-helper-functions'?: Linter.RuleEntry<[]>
+  /**
+   * Ban shorthand variable names. Use descriptive full names instead.
+   */
+  'cease-nonsense/no-shorthand-names'?: Linter.RuleEntry<CeaseNonsenseNoShorthandNames>
+  /**
+   * Disallow map(...) directly on table.create(...) and new Array(...) constructor patterns in roblox-ts.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-table-create-map
+   */
+  'cease-nonsense/no-table-create-map'?: Linter.RuleEntry<[]>
+  /**
+   * Ban React property names that begin with an underscore in JSX.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-underscore-react-props
+   */
+  'cease-nonsense/no-underscore-react-props'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow unused imports
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-unused-imports
+   */
+  'cease-nonsense/no-unused-imports'?: Linter.RuleEntry<CeaseNonsenseNoUnusedImports>
+  /**
+   * Disallow standalone useMemo calls that ignore the memoized value; use useEffect for side effects instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-unused-use-memo
+   */
+  'cease-nonsense/no-unused-use-memo'?: Linter.RuleEntry<CeaseNonsenseNoUnusedUseMemo>
+  /**
+   * Disallow effects that only derive state, notify parent callbacks, reset state on prop changes, or route event side effects through state.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-useless-use-effect
+   */
+  'cease-nonsense/no-useless-use-effect'?: Linter.RuleEntry<CeaseNonsenseNoUselessUseEffect>
+  /**
+   * Disallow useSpring hooks whose config and dependencies are entirely static
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-useless-use-spring
+   */
+  'cease-nonsense/no-useless-use-spring'?: Linter.RuleEntry<CeaseNonsenseNoUselessUseSpring>
+  /**
+   * Ban warn() function calls. Use Log instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-warn
+   */
+  'cease-nonsense/no-warn'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer class properties to assignment of literals in constructors.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-class-properties
+   */
+  'cease-nonsense/prefer-class-properties'?: Linter.RuleEntry<CeaseNonsensePreferClassProperties>
+  /**
+   * Prefer early returns over full-body conditional wrapping in function declarations.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-early-return
+   */
+  'cease-nonsense/prefer-early-return'?: Linter.RuleEntry<CeaseNonsensePreferEarlyReturn>
+  /**
+   * Enforce using EnumItem values instead of string or number literals.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-enum-item
+   */
+  'cease-nonsense/prefer-enum-item'?: Linter.RuleEntry<CeaseNonsensePreferEnumItem>
+  /**
+   * Enforce enum member references instead of raw enum values.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-enum-member
+   */
+  'cease-nonsense/prefer-enum-member'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer that screaming snake case variables always be defined using `const`, and always appear at module scope.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-module-scope-constants
+   */
+  'cease-nonsense/prefer-module-scope-constants'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce Pascal case when naming enums.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-pascal-case-enums
+   */
+  'cease-nonsense/prefer-pascal-case-enums'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce using configured replacements for common constructor/method patterns
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-pattern-replacements
+   */
+  'cease-nonsense/prefer-pattern-replacements'?: Linter.RuleEntry<CeaseNonsensePreferPatternReplacements>
+  /**
+   * Enforce that function component props are read-only
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-read-only-props
+   */
+  'cease-nonsense/prefer-read-only-props'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer using single or two-point overloads for Roblox Sequence methods instead of all three overloads.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-sequence-overloads
+   */
+  'cease-nonsense/prefer-sequence-overloads'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce combining multiple world.get() or world.has() calls into a single call for better Jecs performance.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-single-world-query
+   */
+  'cease-nonsense/prefer-single-world-query'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer singular TypeScript enums.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-singular-enums
+   */
+  'cease-nonsense/prefer-singular-enums'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer ternary expressions over complementary JSX && branches.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-ternary-conditional-rendering
+   */
+  'cease-nonsense/prefer-ternary-conditional-rendering'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer UDim2.fromScale() or UDim2.fromOffset() over new UDim2() when all offsets or all scales are zero.
+   */
+  'cease-nonsense/prefer-udim2-shorthand'?: Linter.RuleEntry<[]>
+  /**
+   * Prevent abbreviations.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prevent-abbreviations
+   */
+  'cease-nonsense/prevent-abbreviations'?: Linter.RuleEntry<CeaseNonsensePreventAbbreviations>
+  /**
+   * Restrict the number of returned items from React hooks.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/react-hooks-strict-return
+   */
+  'cease-nonsense/react-hooks-strict-return'?: Linter.RuleEntry<[]>
+  /**
+   * Require certain classes to be instantiated at module level rather than inside functions. Classes like Log should be instantiated once at module scope, not recreated on every function call.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-module-level-instantiation
+   */
+  'cease-nonsense/require-module-level-instantiation'?: Linter.RuleEntry<CeaseNonsenseRequireModuleLevelInstantiation>
+  /**
+   * Enforce named effect functions for better debuggability. Prevents inline arrow functions in useEffect and similar hooks.
+   */
+  'cease-nonsense/require-named-effect-functions'?: Linter.RuleEntry<CeaseNonsenseRequireNamedEffectFunctions>
+  /**
+   * Enforces balanced opener/closer function calls across all execution paths
+   * @see https://github.com/howmanysmall/eslint-idiot-lint/tree/main/docs/rules/require-paired-calls.md
+   */
+  'cease-nonsense/require-paired-calls'?: Linter.RuleEntry<CeaseNonsenseRequirePairedCalls>
+  /**
+   * Require keys on React components when used in lists or iteration.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-react-component-keys
+   */
+  'cease-nonsense/require-react-component-keys'?: Linter.RuleEntry<CeaseNonsenseRequireReactComponentKeys>
+  /**
+   * Require displayName property on exported React.memo components and React.createContext contexts for better debugging.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-react-display-names
+   */
+  'cease-nonsense/require-react-display-names'?: Linter.RuleEntry<CeaseNonsenseRequireReactDisplayNames>
+  /**
+   * Require specific serialized numeric data types (DataType.*) instead of generic `number` for ECS components and other serialization contexts.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-serialized-numeric-data-type
+   */
+  'cease-nonsense/require-serialized-numeric-data-type'?: Linter.RuleEntry<CeaseNonsenseRequireSerializedNumericDataType>
+  /**
+   * Prevent module imports between components.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/strict-component-boundaries
+   */
+  'cease-nonsense/strict-component-boundaries'?: Linter.RuleEntry<CeaseNonsenseStrictComponentBoundaries>
+  /**
+   * Enforce exhaustive and correct dependency specification in React hooks to prevent stale closures and unnecessary re-renders
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/use-exhaustive-dependencies
+   */
+  'cease-nonsense/use-exhaustive-dependencies'?: Linter.RuleEntry<CeaseNonsenseUseExhaustiveDependencies>
+  /**
+   * Enforce that React hooks are only called at the top level of components or custom hooks, never conditionally or in nested functions
+   * @see https://react.dev/reference/rules/rules-of-hooks
+   */
+  'cease-nonsense/use-hook-at-top-level'?: Linter.RuleEntry<CeaseNonsenseUseHookAtTopLevel>
+  /**
    * Enforce that class methods utilize `this`
    * @see https://eslint.org/docs/latest/rules/class-methods-use-this
    */
@@ -3863,142 +4117,6 @@ export interface RuleOptions {
    * @see git+https://github.com/christopher-buss/eslint-plugin-sentinel/tree/v0.1.2/docs/rules/prefer-math-min-max.md
    */
   'sentinel/prefer-math-min-max'?: Linter.RuleEntry<[]>
-  /**
-   * Enforce (or disallow) assignments of binary, boolean-producing expressions to be wrapped in parentheses.
-   */
-  'shopify/binary-assignment-parens'?: Linter.RuleEntry<ShopifyBinaryAssignmentParens>
-  /**
-   * Require (or disallow) semicolons for class properties.
-   */
-  'shopify/class-property-semi'?: Linter.RuleEntry<ShopifyClassPropertySemi>
-  /**
-   * Prefer importing image files from the index file of the directory instead of the direct path to the image file.
-   */
-  'shopify/images-no-direct-imports'?: Linter.RuleEntry<[]>
-  /**
-   * Disallows jest allMocks methods.
-   */
-  'shopify/jest-no-all-mocks-methods'?: Linter.RuleEntry<[]>
-  /**
-   * Disallows jest snapshots.
-   */
-  'shopify/jest-no-snapshots'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow complex expressions embedded in in JSX.
-   */
-  'shopify/jsx-no-complex-expressions'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow hardcoded content in JSX.
-   */
-  'shopify/jsx-no-hardcoded-content'?: Linter.RuleEntry<ShopifyJsxNoHardcodedContent>
-  /**
-   * Disallow useless wrapping elements in favour of fragment shorthand in JSX
-   */
-  'shopify/jsx-prefer-fragment-wrappers'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer that imports from within a directory extend to the file from where they are importing without relying on an index file.
-   */
-  'shopify/no-ancestor-directory-import'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow contextmenu event listeners
-   */
-  'shopify/no-context-menu'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow the use of `debugger`.
-   */
-  'shopify/no-debugger'?: Linter.RuleEntry<[]>
-  /**
-   * Prevent the declaration of classes consisting only of static members.
-   */
-  'shopify/no-fully-static-classes'?: Linter.RuleEntry<[]>
-  /**
-   * Prevent namespace import declarations.
-   */
-  'shopify/no-namespace-imports'?: Linter.RuleEntry<ShopifyNoNamespaceImports>
-  /**
-   * Prevent the usage of unnecessary computed properties.
-   */
-  'shopify/no-useless-computed-properties'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow the use of Polaris’s `Stack.Item` and `LegacyStack.Item` without any custom props.
-   */
-  'shopify/polaris-no-bare-stack-item'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer the use of the `sectioned` props in Polaris components instead of wrapping all contents in a `Section` component.
-   */
-  'shopify/polaris-prefer-sectioned-prop'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer class properties to assignment of literals in constructors.
-   */
-  'shopify/prefer-class-properties'?: Linter.RuleEntry<ShopifyPreferClassProperties>
-  /**
-   * Prefer early returns over full-body conditional wrapping in function declarations.
-   */
-  'shopify/prefer-early-return'?: Linter.RuleEntry<ShopifyPreferEarlyReturn>
-  /**
-   * Prefer that screaming snake case variables always be defined using `const`, and always appear at module scope.
-   */
-  'shopify/prefer-module-scope-constants'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer Twine over Bindings as the name for twine imports.
-   */
-  'shopify/prefer-twine'?: Linter.RuleEntry<[]>
-  /**
-   * Restrict the number of returned items from React hooks.
-   */
-  'shopify/react-hooks-strict-return'?: Linter.RuleEntry<[]>
-  /**
-   * Require that React component state be initialized when it has a non-empty type.
-   */
-  'shopify/react-initialize-state'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow multiple render methods in React component classes
-   */
-  'shopify/react-no-multiple-render-methods'?: Linter.RuleEntry<[]>
-  /**
-   * Disallow public members within React component classes
-   */
-  'shopify/react-prefer-private-members'?: Linter.RuleEntry<[]>
-  /**
-   * Require autocomplete attribute on certain input types.
-   */
-  'shopify/react-require-autocomplete'?: Linter.RuleEntry<ShopifyReactRequireAutocomplete>
-  /**
-   * Require that React component state be typed in TypeScript.
-   */
-  'shopify/react-type-state'?: Linter.RuleEntry<[]>
-  /**
-   * Prevent importing the entirety of a package.
-   */
-  'shopify/restrict-full-import'?: Linter.RuleEntry<ShopifyRestrictFullImport>
-  /**
-   * Restrict the use of specified sinon features.
-   */
-  'shopify/sinon-no-restricted-features'?: Linter.RuleEntry<ShopifySinonNoRestrictedFeatures>
-  /**
-   * Require the use of meaningful sinon assertions through sinon.assert or sinon-chai.
-   */
-  'shopify/sinon-prefer-meaningful-assertions'?: Linter.RuleEntry<[]>
-  /**
-   * Prevent module imports between components.
-   */
-  'shopify/strict-component-boundaries'?: Linter.RuleEntry<ShopifyStrictComponentBoundaries>
-  /**
-   * Prefer buildClientSchema for schema building
-   */
-  'shopify/typescript-prefer-build-client-schema'?: Linter.RuleEntry<[]>
-  /**
-   * Enforce Pascal case when naming enums.
-   */
-  'shopify/typescript-prefer-pascal-case-enums'?: Linter.RuleEntry<[]>
-  /**
-   * Prefer singular TypeScript enums.
-   */
-  'shopify/typescript-prefer-singular-enums'?: Linter.RuleEntry<[]>
-  /**
-   * Require that all dynamic imports contain a `webpackChunkName` comment.
-   */
-  'shopify/webpack-no-unnamed-dynamic-imports'?: Linter.RuleEntry<[]>
   /**
    * Alternatives in regular expressions should be grouped when used with anchors
    * @see https://sonarsource.github.io/rspec/#/rspec/S5850/javascript
@@ -8609,6 +8727,596 @@ type CapitalizedComments = []|[("always" | "never")]|[("always" | "never"), ({
     ignoreConsecutiveComments?: boolean
   }
 })]
+// ----- cease-nonsense/ban-instances -----
+type CeaseNonsenseBanInstances = []|[{
+  
+  bannedInstances: (string[] | {
+    [k: string]: string | undefined
+  })
+}]
+// ----- cease-nonsense/enforce-ianitor-check-type -----
+type CeaseNonsenseEnforceIanitorCheckType = []|[{
+  baseThreshold?: number
+  errorThreshold?: number
+  interfacePenalty?: number
+  performanceMode?: boolean
+  warnThreshold?: number
+}]
+// ----- cease-nonsense/memoized-effect-dependencies -----
+type CeaseNonsenseMemoizedEffectDependencies = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+  
+  hooks?: {
+    
+    dependenciesIndex?: number
+    
+    name: string
+  }[]
+  
+  mode?: ("definite" | "moderate" | "aggressive")
+}]
+// ----- cease-nonsense/naming-convention -----
+type _CeaseNonsenseNamingConventionFormatOptionsConfig = (_CeaseNonsenseNamingConventionPredefinedFormats[] | null)
+type _CeaseNonsenseNamingConventionPredefinedFormats = ("camelCase" | "PascalCase" | "StrictPascalCase" | "snake_case" | "strictCamelCase" | "UPPER_CASE")
+type _CeaseNonsenseNamingConventionUnderscoreOptions = ("allow" | "allowDouble" | "allowSingleOrDouble" | "forbid" | "require" | "requireDouble")
+type _CeaseNonsenseNamingConvention_PrefixSuffixConfig = string[]
+type _CeaseNonsenseNamingConventionTypeModifiers = ("array" | "boolean" | "function" | "number" | "string")
+type CeaseNonsenseNamingConvention = ({
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  modifiers?: ("#private" | "abstract" | "async" | "const" | "default" | "destructured" | "exported" | "global" | "namespace" | "override" | "private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "unused")[]
+  selector: ("accessor" | "default" | "memberLike" | "method" | "property" | "typeLike" | "variableLike" | "autoAccessor" | "class" | "classicAccessor" | "classMethod" | "classProperty" | "enum" | "enumMember" | "function" | "import" | "interface" | "objectLiteralMethod" | "objectLiteralProperty" | "parameter" | "parameterProperty" | "typeAlias" | "typeMethod" | "typeParameter" | "typeProperty" | "variable")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "default"
+  modifiers?: ("#private" | "abstract" | "async" | "const" | "default" | "destructured" | "exported" | "global" | "namespace" | "override" | "private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "variableLike"
+  modifiers?: ("unused" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "variable"
+  modifiers?: ("const" | "destructured" | "exported" | "global" | "unused" | "async")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "function"
+  modifiers?: ("exported" | "global" | "unused" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "parameter"
+  modifiers?: ("destructured" | "unused")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "memberLike"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "classProperty"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "objectLiteralProperty"
+  modifiers?: ("public" | "requiresQuotes")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "typeProperty"
+  modifiers?: ("public" | "readonly" | "requiresQuotes")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "parameterProperty"
+  modifiers?: ("private" | "protected" | "public" | "readonly")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "property"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "classMethod"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "objectLiteralMethod"
+  modifiers?: ("public" | "requiresQuotes" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "typeMethod"
+  modifiers?: ("public" | "requiresQuotes")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "method"
+  modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "classicAccessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "autoAccessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "accessor"
+  modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
+  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "enumMember"
+  modifiers?: ("requiresQuotes")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "typeLike"
+  modifiers?: ("abstract" | "exported" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "class"
+  modifiers?: ("abstract" | "exported" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "interface"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "typeAlias"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "enum"
+  modifiers?: ("exported" | "unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "typeParameter"
+  modifiers?: ("unused")[]
+} | {
+  custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
+  failureMessage?: string
+  format: _CeaseNonsenseNamingConventionFormatOptionsConfig
+  leadingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  prefix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  suffix?: _CeaseNonsenseNamingConvention_PrefixSuffixConfig
+  trailingUnderscore?: _CeaseNonsenseNamingConventionUnderscoreOptions
+  filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
+  selector: "import"
+  modifiers?: ("default" | "namespace")[]
+})[]
+interface _CeaseNonsenseNamingConvention_MatchRegexConfig {
+  match: boolean
+  regex: string
+}
+// ----- cease-nonsense/no-array-size-assignment -----
+type CeaseNonsenseNoArraySizeAssignment = []|[{
+  
+  allowAutofix?: boolean
+}]
+// ----- cease-nonsense/no-constant-condition-with-break -----
+type CeaseNonsenseNoConstantConditionWithBreak = []|[{
+  loopExitCalls?: string[]
+}]
+// ----- cease-nonsense/no-events-in-events-callback -----
+type CeaseNonsenseNoEventsInEventsCallback = []|[{
+  eventsImportPaths: string[]
+}]
+// ----- cease-nonsense/no-god-components -----
+type CeaseNonsenseNoGodComponents = []|[{
+  
+  enforceTargetLines?: boolean
+  
+  ignoreComponents?: string[]
+  
+  maxDestructuredProps?: number
+  
+  maxLines?: number
+  
+  maxStateHooks?: number
+  
+  maxTsxNesting?: number
+  
+  stateHooks?: string[]
+  
+  targetLines?: number
+}]
+// ----- cease-nonsense/no-identity-map -----
+type CeaseNonsenseNoIdentityMap = []|[{
+  
+  bindingPatterns?: string[]
+}]
+// ----- cease-nonsense/no-instance-methods-without-this -----
+type CeaseNonsenseNoInstanceMethodsWithoutThis = []|[{
+  
+  checkPrivate?: boolean
+  
+  checkProtected?: boolean
+  
+  checkPublic?: boolean
+}]
+// ----- cease-nonsense/no-memo-children -----
+type CeaseNonsenseNoMemoChildren = []|[{
+  
+  allowedComponents?: string[]
+  
+  environment?: ("roblox-ts" | "standard")
+}]
+// ----- cease-nonsense/no-new-instance-in-use-memo -----
+type CeaseNonsenseNoNewInstanceInUseMemo = []|[{
+  
+  constructors?: string[]
+  
+  environment?: ("roblox-ts" | "standard")
+  
+  maxHelperTraceDepth?: number
+}]
+// ----- cease-nonsense/no-shorthand-names -----
+type CeaseNonsenseNoShorthandNames = []|[{
+  
+  allowPropertyAccess?: string[]
+  
+  ignoreShorthands?: string[]
+  
+  shorthands?: {
+    [k: string]: string | undefined
+  }
+}]
+// ----- cease-nonsense/no-unused-imports -----
+type CeaseNonsenseNoUnusedImports = []|[{
+  
+  checkJSDoc?: boolean
+}]
+// ----- cease-nonsense/no-unused-use-memo -----
+type CeaseNonsenseNoUnusedUseMemo = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+}]
+// ----- cease-nonsense/no-useless-use-effect -----
+type CeaseNonsenseNoUselessUseEffect = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+  hooks?: string[]
+  propertyCallbackPrefixes?: string[]
+  
+  refHooks?: string[]
+  reportAdjustState?: boolean
+  reportDerivedState?: boolean
+  reportDuplicateDeps?: boolean
+  reportEffectChain?: boolean
+  reportEmptyEffect?: boolean
+  reportEventFlag?: boolean
+  reportEventSpecificLogic?: boolean
+  reportExternalStore?: boolean
+  reportInitializeState?: boolean
+  reportLogOnly?: boolean
+  reportMixedDerivedState?: boolean
+  reportNotifyParent?: boolean
+  reportPassRefToParent?: boolean
+  reportResetState?: boolean
+  
+  stateHooks?: string[]
+}]
+// ----- cease-nonsense/no-useless-use-spring -----
+type CeaseNonsenseNoUselessUseSpring = []|[{
+  
+  springHooks?: string[]
+  
+  staticGlobalFactories?: string[]
+  
+  treatEmptyDepsAsViolation?: boolean
+}]
+// ----- cease-nonsense/prefer-class-properties -----
+type CeaseNonsensePreferClassProperties = []|[("always" | "never")]
+// ----- cease-nonsense/prefer-early-return -----
+type CeaseNonsensePreferEarlyReturn = []|[{
+  maximumStatements?: number
+}]
+// ----- cease-nonsense/prefer-enum-item -----
+type CeaseNonsensePreferEnumItem = []|[{
+  
+  fixNumericToValue?: boolean
+  
+  performanceMode?: boolean
+}]
+// ----- cease-nonsense/prefer-pattern-replacements -----
+type CeaseNonsensePreferPatternReplacements = []|[{
+  patterns?: {
+    [k: string]: unknown | undefined
+  }[]
+}]
+// ----- cease-nonsense/prevent-abbreviations -----
+type CeaseNonsensePreventAbbreviations = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- cease-nonsense/require-module-level-instantiation -----
+type CeaseNonsenseRequireModuleLevelInstantiation = []|[{
+  
+  classes: {
+    [k: string]: string | undefined
+  }
+}]
+// ----- cease-nonsense/require-named-effect-functions -----
+type CeaseNonsenseRequireNamedEffectFunctions = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+  
+  hooks?: {
+    
+    allowAsync: boolean
+    
+    name: string
+  }[]
+}]
+// ----- cease-nonsense/require-paired-calls -----
+type CeaseNonsenseRequirePairedCalls = []|[{
+  allowConditionalClosers?: boolean
+  allowMultipleOpeners?: boolean
+  maxNestingDepth?: number
+  
+  pairs: [{
+    alternatives?: string[]
+    closer: (string | [string, ...(string)[]])
+    opener: string
+    openerAlternatives?: string[]
+    platform?: "roblox"
+    requireSync?: boolean
+    yieldingFunctions?: string[]
+  }, ...({
+    alternatives?: string[]
+    closer: (string | [string, ...(string)[]])
+    opener: string
+    openerAlternatives?: string[]
+    platform?: "roblox"
+    requireSync?: boolean
+    yieldingFunctions?: string[]
+  })[]]
+}]
+// ----- cease-nonsense/require-react-component-keys -----
+type CeaseNonsenseRequireReactComponentKeys = []|[{
+  
+  allowRootKeys?: boolean
+  
+  ignoreCallExpressions?: string[]
+  
+  iterationMethods?: string[]
+  
+  memoizationHooks?: string[]
+}]
+// ----- cease-nonsense/require-react-display-names -----
+type CeaseNonsenseRequireReactDisplayNames = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+}]
+// ----- cease-nonsense/require-serialized-numeric-data-type -----
+type CeaseNonsenseRequireSerializedNumericDataType = []|[{
+  
+  functionNames?: string[]
+  
+  mode?: ("type-arguments" | "all")
+  
+  strict?: boolean
+}]
+// ----- cease-nonsense/strict-component-boundaries -----
+type CeaseNonsenseStrictComponentBoundaries = []|[{
+  allow?: string[]
+  maxDepth?: number
+}]
+// ----- cease-nonsense/use-exhaustive-dependencies -----
+type CeaseNonsenseUseExhaustiveDependencies = []|[{
+  
+  hooks?: {
+    
+    closureIndex?: number
+    
+    dependenciesIndex?: number
+    
+    name: string
+    
+    stableResult?: (boolean | number | number[] | string[])
+  }[]
+  
+  reportMissingDependenciesArray?: boolean
+  
+  reportUnnecessaryDependencies?: boolean
+}]
+// ----- cease-nonsense/use-hook-at-top-level -----
+type CeaseNonsenseUseHookAtTopLevel = []|[{
+  
+  ignoreHooks?: string[]
+  
+  importSources?: {
+    [k: string]: boolean | undefined
+  }
+  
+  onlyHooks?: string[]
+}]
 // ----- class-methods-use-this -----
 type ClassMethodsUseThis = []|[{
   exceptMethods?: string[]
@@ -16218,63 +16926,6 @@ type SemiStyle = []|[("last" | "first")]
 type SentinelExplicitSizeCheck = []|[{
   "non-zero"?: ("greater-than" | "not-equal")
 }]
-// ----- shopify/binary-assignment-parens -----
-type ShopifyBinaryAssignmentParens = []|[("always" | "never")]
-// ----- shopify/class-property-semi -----
-type ShopifyClassPropertySemi = []|[("always" | "never")]
-// ----- shopify/jsx-no-hardcoded-content -----
-type ShopifyJsxNoHardcodedContent = []|[{
-  allowStrings?: boolean
-  allowNumbers?: boolean
-  checkProps?: string[]
-  dom?: {
-    [k: string]: {
-      allowNumbers?: boolean
-      allowStrings?: boolean
-      checkProps?: string[]
-      [k: string]: unknown | undefined
-    } | undefined
-  }
-  modules?: {
-    [k: string]: {
-      [k: string]: {
-        allowNumbers?: boolean
-        allowStrings?: boolean
-        checkProps?: string[]
-        [k: string]: unknown | undefined
-      } | undefined
-    } | undefined
-  }
-}]
-// ----- shopify/no-namespace-imports -----
-type ShopifyNoNamespaceImports = []|[{
-  allow?: string[]
-}]
-// ----- shopify/prefer-class-properties -----
-type ShopifyPreferClassProperties = []|[("always" | "never")]
-// ----- shopify/prefer-early-return -----
-type ShopifyPreferEarlyReturn = []|[{
-  maximumStatements?: number
-}]
-// ----- shopify/react-require-autocomplete -----
-interface ShopifyReactRequireAutocomplete {
-  [k: string]: unknown | undefined
-}
-// ----- shopify/restrict-full-import -----
-type ShopifyRestrictFullImport = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- shopify/sinon-no-restricted-features -----
-type ShopifySinonNoRestrictedFeatures = []|[{
-  restricted?: string[]
-  aliases?: string[]
-  injected?: boolean
-}]
-// ----- shopify/strict-component-boundaries -----
-type ShopifyStrictComponentBoundaries = []|[{
-  allow?: string[]
-  maxDepth?: number
-}]
 // ----- sonar/arrow-function-convention -----
 type SonarArrowFunctionConvention = []|[{
   requireParameterParentheses?: boolean
@@ -19767,4 +20418,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/shopify' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/cease-nonsense' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/javascript' | 'isentinel/prettier' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'

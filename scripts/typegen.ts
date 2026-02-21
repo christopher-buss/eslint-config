@@ -3,6 +3,7 @@ import { builtinRules } from "eslint/use-at-your-own-risk";
 import fs from "node:fs/promises";
 
 import {
+	ceaseNonsense,
 	comments,
 	eslintPlugin,
 	flawless,
@@ -21,7 +22,6 @@ import {
 	promise,
 	react,
 	roblox,
-	shopify,
 	sonarjs,
 	spelling,
 	stylistic,
@@ -41,6 +41,7 @@ const configs = await combine(
 			},
 		},
 	},
+	ceaseNonsense(),
 	comments(),
 	eslintPlugin(),
 	flawless(),
@@ -59,7 +60,6 @@ const configs = await combine(
 	promise(),
 	react(),
 	roblox(),
-	shopify(),
 	sonarjs({ isInEditor: false }),
 	spelling(),
 	stylistic(),

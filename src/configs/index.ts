@@ -1,3 +1,4 @@
+export * from "./cease-nonsense";
 export * from "./comments";
 export * from "./disables";
 export * from "./eslint-plugin";
@@ -17,7 +18,6 @@ export * from "./prettier";
 export * from "./promise";
 export * from "./react";
 export * from "./roblox";
-export * from "./shopify";
 export * from "./sonarjs";
 export * from "./sort";
 export * from "./spelling";

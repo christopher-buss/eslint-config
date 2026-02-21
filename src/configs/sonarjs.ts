@@ -27,7 +27,7 @@ export async function sonarjs(
 				"sonar/no-all-duplicated-branches": "error",
 				"sonar/no-async-constructor": "error",
 				"sonar/no-collapsible-if": "error",
-				"sonar/no-commented-code": isInEditor ? "off" : "error",
+				"sonar/no-commented-code": "off",
 				"sonar/no-dead-store": "error",
 				"sonar/no-duplicate-string": [
 					"error",

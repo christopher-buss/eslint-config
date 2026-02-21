@@ -28,10 +28,11 @@ export async function roblox(
 		typeAware = true,
 	} = options;
 
-	const [parserTs, pluginRobloxTs, pluginSentinel] = await Promise.all([
+	const [parserTs, pluginRobloxTs, pluginSentinel, pluginCeaseNonsense] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
 		interopDefault(import("eslint-plugin-roblox-ts")),
 		interopDefault(import("eslint-plugin-sentinel")),
+		interopDefault(import("@pobammer-ts/eslint-cease-nonsense-rules")),
 	] as const);
 
 	const files = options.files ?? [
@@ -78,8 +79,9 @@ export async function roblox(
 		{
 			name: "isentinel/roblox/setup",
 			plugins: {
-				roblox: pluginRobloxTs,
-				sentinel: pluginSentinel,
+				"cease-nonsense": pluginCeaseNonsense,
+				"roblox": pluginRobloxTs,
+				"sentinel": pluginSentinel,
 			},
 		},
 		// assign type-aware parser for type-aware files and type-unaware
@@ -91,6 +93,8 @@ export async function roblox(
 			name: "isentinel/roblox",
 			files,
 			rules: {
+				"cease-nonsense/no-array-size-assignment": "error",
+
 				"roblox/no-any": "error",
 				"roblox/no-enum-merging": "error",
 				"roblox/no-export-assignment-let": "error",

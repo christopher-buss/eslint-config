@@ -3,6 +3,7 @@ import { findUpSync } from "find-up-simple";
 
 import type { PrettierOptions } from "./configs";
 import {
+	ceaseNonsense,
 	comments,
 	disables,
 	eslintPlugin,
@@ -21,7 +22,6 @@ import {
 	promise,
 	react,
 	roblox,
-	shopify,
 	sonarjs,
 	sortGithubAction,
 	sortPnpmWorkspace,
@@ -211,6 +211,7 @@ export async function isentinel(
 
 	// Base configs
 	configs.push(
+		ceaseNonsense({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
@@ -222,7 +223,6 @@ export async function isentinel(
 			stylistic: stylisticOptions,
 		}),
 		promise(),
-		shopify({ stylistic: stylisticOptions }),
 		sonarjs({ isInEditor }),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
