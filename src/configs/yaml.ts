@@ -31,6 +31,7 @@ export async function yaml(
 		{
 			name: "isentinel/yaml/rules",
 			files,
+			language: "yaml/yaml",
 			languageOptions: {
 				parser: parserYaml,
 			},
