@@ -33,7 +33,32 @@ export async function oxfmt(
 		tsFormatter = "oxfmt",
 	} = options ?? {};
 
+	const defaultSortImports = {
+		customGroups: [
+			{ elementNamePattern: ["react"], groupName: "react" },
+			{ elementNamePattern: ["@*/**"], groupName: "scoped" },
+		],
+		groups: [
+			"react",
+			"scoped",
+			["type-builtin", "type-external", "builtin", "external"],
+			[
+				"type-internal",
+				"internal",
+				"type-parent",
+				"type-sibling",
+				"type-index",
+				"parent",
+				"sibling",
+				"index",
+			],
+			"unknown",
+		],
+		newlinesBetween: true,
+	};
+
 	const oxfmtOptions = {
+		experimentalSortImports: defaultSortImports,
 		...migratePrettierOptions(prettierOptions),
 		...oxfmtConfigOptions,
 		...userOxfmtOptions,
