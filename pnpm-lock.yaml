@@ -23,7 +23,7 @@ catalogs:
       version: 4.4.1
     '@types/node':
       specifier: 22.16.0
-      version: 24.9.2
+      version: 22.16.0
     '@types/yargs':
       specifier: 17.0.35
       version: 17.0.35
@@ -186,8 +186,8 @@ catalogs:
       specifier: 0.0.15
       version: 0.0.15
     eslint-plugin-package-json:
-      specifier: 0.85.0
-      version: 0.85.0
+      specifier: 0.88.3
+      version: 0.88.3
     eslint-plugin-perfectionist:
       specifier: 5.6.0
       version: 5.6.0
@@ -350,7 +350,7 @@ importers:
         version: 0.0.15(eslint@9.39.2(jiti@2.6.1))(oxfmt@0.34.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
-        version: 0.85.0(@types/estree@1.0.8)(eslint@9.39.2(jiti@2.6.1))(jsonc-eslint-parser@3.1.0)
+        version: 0.88.3(@types/estree@1.0.8)(eslint@9.39.2(jiti@2.6.1))(jsonc-eslint-parser@3.1.0)
       eslint-plugin-perfectionist:
         specifier: catalog:prod
         version: 5.6.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -435,7 +435,7 @@ importers:
         version: 4.4.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       '@types/node':
         specifier: catalog:dev
-        version: 24.9.2
+        version: 22.16.0
       '@types/yargs':
         specifier: catalog:dev
         version: 17.0.35
@@ -1858,8 +1858,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.9.2':
-    resolution: {integrity: sha512-uWN8YqxXxqFMX2RqGOrumsKeti4LlmIMIyV0lgut4jx7KQBcBiW6vkDtIBvHnHIquwNfJhk8v2OtmO8zXWHfPA==}
+  '@types/node@22.16.0':
+    resolution: {integrity: sha512-B2egV9wALML1JCpv3VQoQ+yesQKAmNMBIAY7OteVrikcOcAkWm+dGL6qpeCktPjAv6N1JLnhbNiqS35UpFyBsQ==}
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
@@ -2734,8 +2734,8 @@ packages:
       eslint: ^9.5.0
       oxfmt: 0.x
 
-  eslint-plugin-package-json@0.85.0:
-    resolution: {integrity: sha512-MrOxFvhbqLuk4FIPG9v3u9Amn0n137J8LKILHvgfxK3rRyAHEVzuZM0CtpXFTx7cx4LzmAzONtlpjbM0UFNuTA==}
+  eslint-plugin-package-json@0.88.3:
+    resolution: {integrity: sha512-tvWYMeWofMRMc5kQ/rg+ueB2/0EEUP1OI1J17LH5Fd46oYrVSde9kE1fPKGCTxCwYmCUrHOUj9i8ET9H/KEPBA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       eslint: '>=8.0.0'
@@ -3494,9 +3494,9 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
-  package-json-validator@0.59.0:
-    resolution: {integrity: sha512-WBTDKtO9pBa9GmA1sPbQHqlWxRdnHNfLFIIA49PPgV7px/rG27gHX57DWy77qyu374fla4veaIHy+gA+qRRuug==}
-    engines: {node: ^20.19.0 || >=22.12.0}
+  package-json-validator@0.60.0:
+    resolution: {integrity: sha512-3BBkeFHm3O1VsazTSIN8+AGAl/eJQvTvWquECchRszIW6SC3aJ/fZHwZkpsmJlt7FMjTMNEgz+EhamVn94wgFw==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
     hasBin: true
 
   package-manager-detector@1.3.0:
@@ -3929,8 +3929,8 @@ packages:
   uncrypto@0.1.3:
     resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
 
-  undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   unist-util-is@6.0.1:
     resolution: {integrity: sha512-LsiILbtBETkDz8I9p1dQ0uyRUWuaQzd/cuEeS1hoRSyW5E5XGmTzlwY1OrNzzakGowI9Dr/I8HVaw4hTtnxy8g==}
@@ -5152,9 +5152,9 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.9.2':
+  '@types/node@22.16.0':
     dependencies:
-      undici-types: 7.16.0
+      undici-types: 6.21.0
 
   '@types/unist@3.0.3': {}
 
@@ -6171,7 +6171,7 @@ snapshots:
       picomatch: 4.0.3
       synckit: 0.11.12
 
-  eslint-plugin-package-json@0.85.0(@types/estree@1.0.8)(eslint@9.39.2(jiti@2.6.1))(jsonc-eslint-parser@3.1.0):
+  eslint-plugin-package-json@0.88.3(@types/estree@1.0.8)(eslint@9.39.2(jiti@2.6.1))(jsonc-eslint-parser@3.1.0):
     dependencies:
       '@altano/repository-tools': 2.0.1
       change-case: 5.4.4
@@ -6180,7 +6180,7 @@ snapshots:
       eslint: 9.39.2(jiti@2.6.1)
       eslint-fix-utils: 0.4.0(@types/estree@1.0.8)(eslint@9.39.2(jiti@2.6.1))
       jsonc-eslint-parser: 3.1.0
-      package-json-validator: 0.59.0
+      package-json-validator: 0.60.0
       semver: 7.7.3
       sort-object-keys: 2.0.1
       sort-package-json: 3.4.0
@@ -7232,7 +7232,7 @@ snapshots:
 
   package-json-from-dist@1.0.1: {}
 
-  package-json-validator@0.59.0:
+  package-json-validator@0.60.0:
     dependencies:
       semver: 7.7.3
       validate-npm-package-license: 3.0.4
@@ -7657,7 +7657,7 @@ snapshots:
 
   uncrypto@0.1.3: {}
 
-  undici-types@7.16.0: {}
+  undici-types@6.21.0: {}
 
   unist-util-is@6.0.1:
     dependencies:
