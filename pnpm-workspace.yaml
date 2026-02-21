@@ -3,7 +3,6 @@ cleanupUnusedCatalogs: true
 saveExact: true
 shellEmulator: true
 strictPeerDependencies: false
-trustPolicy: no-downgrade
 
 packages:
   - fixtures/*
