@@ -1,4 +1,4 @@
-import type { Options as PrettierOptions } from "prettier";
+import type { FormatOptions as OxfmtOptions } from "oxfmt";
 
 import { defaultPluginRenaming } from "../factory";
 import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
@@ -7,16 +7,17 @@ import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsOverrides,
-	OxfmtOptions,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault, renameRules } from "../utils";
+import type { PrettierOptions } from "./prettier";
 
 export async function oxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles &
 		OptionsOverrides & {
 			jsFormatter?: FormatterEngine;
+			oxfmtConfigOptions?: OxfmtOptions;
 			oxfmtOptions?: OxfmtOptions;
 			prettierOptions?: PrettierOptions;
 			tsFormatter?: FormatterEngine;
@@ -26,6 +27,7 @@ export async function oxfmt(
 		componentExts: componentExtensions = [],
 		files: oxfmtFiles,
 		jsFormatter = "oxfmt",
+		oxfmtConfigOptions = {},
 		oxfmtOptions: userOxfmtOptions,
 		prettierOptions = {},
 		tsFormatter = "oxfmt",
@@ -33,6 +35,7 @@ export async function oxfmt(
 
 	const oxfmtOptions = {
 		...migratePrettierOptions(prettierOptions),
+		...oxfmtConfigOptions,
 		...userOxfmtOptions,
 	};
 
@@ -129,3 +132,5 @@ function migratePrettierOptions(prettierOptions: PrettierOptions): Record<string
 
 	return oxfmtOptions;
 }
+
+export type { FormatOptions as OxfmtOptions } from "oxfmt";

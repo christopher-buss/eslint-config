@@ -4,10 +4,10 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
-import type { FormatOptions } from "oxfmt";
-import type { Options as PrettierOptions } from "prettier";
 import type { SetRequired } from "type-fest";
 
+import type { OxfmtOptions } from "./configs";
+import type { PrettierOptions } from "./configs/prettier";
 import type { RuleOptions } from "./typegen";
 import type { ExtractRuleOptions } from "./utils";
 
@@ -78,8 +78,6 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 }
 
 export type FormatterEngine = "oxfmt" | "prettier";
-
-export type OxfmtOptions = FormatOptions;
 
 export interface OptionsFormatters {
 	/**

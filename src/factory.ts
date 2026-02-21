@@ -53,6 +53,7 @@ import {
 	isInEditorEnvironment,
 	mergeGlobs,
 	require,
+	resolveOxfmtConfigOptions,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
 	resolveWithDefaults,
@@ -182,6 +183,7 @@ export async function isentinel(
 
 	const prettierOptions = formatterOptions.prettierOptions ?? {};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
+	const oxfmtConfigOptions = useOxfmt ? await resolveOxfmtConfigOptions() : {};
 
 	const prettierSettings: PrettierOptions = Object.assign(
 		{
@@ -404,6 +406,7 @@ export async function isentinel(
 				oxfmt({
 					componentExts: componentExtensions,
 					jsFormatter,
+					oxfmtConfigOptions,
 					oxfmtOptions: formatterOptions.oxfmtOptions,
 					prettierOptions: prettierSettings,
 					tsFormatter,
