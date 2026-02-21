@@ -1,0 +1,15 @@
+{
+	"version": 1,
+	"skills": {
+		"pnpm": {
+			"source": "christopher-buss/skills",
+			"sourceType": "github",
+			"computedHash": "fed1c28e603802de542fa92d1d390f4a7793b0630afcbf6124e59e17f89ce1c6"
+		},
+		"tsdown": {
+			"source": "antfu/skills",
+			"sourceType": "github",
+			"computedHash": "0230aa0d3df7c839d7cd3efa34cf18cf203da79a06c02fc8ebfdb6cd4142b593"
+		}
+	}
+}

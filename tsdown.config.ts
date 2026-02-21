@@ -2,10 +2,12 @@ import type { UserConfig } from "tsdown";
 import { defineConfig } from "tsdown";
 
 const sharedOptions = {
+	checks: { importIsUndefined: false },
 	clean: true,
+	inlineOnly: false,
 	format: ["esm"],
 	outputOptions: {
-		inlineDynamicImports: true,
+		codeSplitting: false,
 	},
 	publint: true,
 	shims: true,
@@ -18,8 +20,8 @@ export default defineConfig([
 		// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
 		noExternal: ["eslint-config-flat-gitignore"],
 		unused: {
-			// Required for shopify, and cli
-			ignore: ["eslint-import-resolver-node", "ansis", "yargs"],
+			// Required for cli
+			ignore: ["ansis", "yargs"],
 			level: "warning",
 		},
 	},

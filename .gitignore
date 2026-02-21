@@ -85,6 +85,3 @@ src/typegen.d.ts
 
 # cspell
 .cspellcache
-
-# claude
-.claude
