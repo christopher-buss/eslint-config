@@ -75,7 +75,7 @@ catalogs:
     eslint-plugin-format-lua: 1.0.1-beta.2
     eslint-plugin-import-lite: 0.3.0
     eslint-plugin-jsdoc: 62.7.0
-    eslint-plugin-jsonc: 2.21.0
+    eslint-plugin-jsonc: 2.21.1
     eslint-plugin-oxfmt: 0.0.15
     eslint-plugin-package-json: 0.89.0
     eslint-plugin-perfectionist: 5.6.0
@@ -84,7 +84,7 @@ catalogs:
     eslint-plugin-promise: 7.2.1
     eslint-plugin-roblox-ts: 1.4.0
     eslint-plugin-sentinel: 0.1.2
-    eslint-plugin-sonarjs: 3.0.6
+    eslint-plugin-sonarjs: 3.0.7
     eslint-plugin-toml: 0.12.0
     eslint-plugin-unicorn: 62.0.0
     eslint-plugin-unused-imports: 4.3.0
