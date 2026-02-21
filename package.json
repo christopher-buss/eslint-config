@@ -4,6 +4,9 @@
 	"description": "iSentinel's ESLint config",
 	"keywords": ["eslint-config", "roblox", "roblox-ts", "rbxts"],
 	"homepage": "https://github.com/christopher-buss/eslint-config",
+	"bugs": {
+		"url": "https://github.com/christopher-buss/eslint-config/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/christopher-buss/eslint-config.git"

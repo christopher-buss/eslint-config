@@ -33,7 +33,6 @@ export async function packageJson(
 				"package-json/no-empty-fields": "error",
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
-				"package-json/order-properties": "error",
 				"package-json/repository-shorthand": "error",
 				"package-json/require-type": "error",
 				"package-json/restrict-private-properties": "error",
@@ -59,6 +58,7 @@ export async function packageJson(
 				"package-json/valid-license": "error",
 				"package-json/valid-main": "error",
 				"package-json/valid-man": "error",
+				"package-json/valid-module": "error",
 				"package-json/valid-name": "error",
 				"package-json/valid-optionalDependencies": "error",
 				"package-json/valid-os": "error",
@@ -80,20 +80,22 @@ export async function packageJson(
 								"error",
 								{ prefer: "explicit" },
 							],
-							"package-json/unique-dependencies": "error",
+							"package-json/order-properties": "error",
 						}
 					: {}),
 
 				...(type === "package"
 					? {
-							"package-json/require-attribution": "error",
-							"package-json/require-author": "error",
+							"package-json/require-attribution": ["error", { ignorePrivate: true }],
+							"package-json/require-bugs": ["error", { ignorePrivate: true }],
 							"package-json/require-description": "error",
 							"package-json/require-exports": ["error", { ignorePrivate: true }],
 							"package-json/require-files": ["error", { ignorePrivate: true }],
+							"package-json/require-homepage": ["error", { ignorePrivate: true }],
 							"package-json/require-keywords": "error",
 							"package-json/require-license": ["error", { ignorePrivate: true }],
 							"package-json/require-name": "error",
+							"package-json/require-repository": ["error", { ignorePrivate: true }],
 							"package-json/require-types": ["error", { ignorePrivate: true }],
 							"package-json/require-version": "error",
 						}

@@ -2863,7 +2863,7 @@ export interface RuleOptions {
    */
   'package-json/no-redundant-publishConfig'?: Linter.RuleEntry<[]>
   /**
-   * Package properties must be declared in standard order
+   * Package properties should be declared in standard order
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/order-properties.md
    */
   'package-json/order-properties'?: Linter.RuleEntry<PackageJsonOrderProperties>
@@ -2923,6 +2923,11 @@ export interface RuleOptions {
    */
   'package-json/require-files'?: Linter.RuleEntry<PackageJsonRequireFiles>
   /**
+   * Requires the `homepage` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-homepage.md
+   */
+  'package-json/require-homepage'?: Linter.RuleEntry<PackageJsonRequireHomepage>
+  /**
    * Requires the `keywords` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-keywords.md
    */
@@ -2947,6 +2952,16 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-peerDependencies.md
    */
   'package-json/require-peerDependencies'?: Linter.RuleEntry<PackageJsonRequirePeerDependencies>
+  /**
+   * Requires the `repository` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-repository.md
+   */
+  'package-json/require-repository'?: Linter.RuleEntry<PackageJsonRequireRepository>
+  /**
+   * Requires the `scripts` property to be present.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-scripts.md
+   */
+  'package-json/require-scripts'?: Linter.RuleEntry<PackageJsonRequireScripts>
   /**
    * Requires the `sideEffects` property to be present.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/require-sideEffects.md
@@ -3078,12 +3093,6 @@ export interface RuleOptions {
    */
   'package-json/valid-license'?: Linter.RuleEntry<[]>
   /**
-   * Checks existence of local dependencies in the package.json
-   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-local-dependency.md
-   * @deprecated
-   */
-  'package-json/valid-local-dependency'?: Linter.RuleEntry<[]>
-  /**
    * Enforce that the `main` property is valid.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-main.md
    */
@@ -3093,6 +3102,11 @@ export interface RuleOptions {
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-man.md
    */
   'package-json/valid-man'?: Linter.RuleEntry<[]>
+  /**
+   * Enforce that the `module` property is valid.
+   * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-module.md
+   */
+  'package-json/valid-module'?: Linter.RuleEntry<[]>
   /**
    * Enforce that package names are valid npm package names
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/valid-name.md
@@ -8622,6 +8636,7 @@ type AntfuConsistentListNewline = []|[{
   ExportNamedDeclaration?: boolean
   FunctionDeclaration?: boolean
   FunctionExpression?: boolean
+  IfStatement?: boolean
   ImportDeclaration?: boolean
   JSONArrayExpression?: boolean
   JSONObjectExpression?: boolean
@@ -12622,6 +12637,8 @@ type PackageJsonRepositoryShorthand = []|[{
 // ----- package-json/require-attribution -----
 type PackageJsonRequireAttribution = []|[{
   
+  ignorePrivate?: boolean
+  
   preferContributorsOnly?: boolean
 }]
 // ----- package-json/require-author -----
@@ -12669,6 +12686,11 @@ type PackageJsonRequireFiles = []|[{
   
   ignorePrivate?: boolean
 }]
+// ----- package-json/require-homepage -----
+type PackageJsonRequireHomepage = []|[{
+  
+  ignorePrivate?: boolean
+}]
 // ----- package-json/require-keywords -----
 type PackageJsonRequireKeywords = []|[{
   
@@ -12691,6 +12713,16 @@ type PackageJsonRequireOptionalDependencies = []|[{
 }]
 // ----- package-json/require-peerDependencies -----
 type PackageJsonRequirePeerDependencies = []|[{
+  
+  ignorePrivate?: boolean
+}]
+// ----- package-json/require-repository -----
+type PackageJsonRequireRepository = []|[{
+  
+  ignorePrivate?: boolean
+}]
+// ----- package-json/require-scripts -----
+type PackageJsonRequireScripts = []|[{
   
   ignorePrivate?: boolean
 }]
