@@ -13,6 +13,8 @@ nocheck
 nonblock
 nonconstructor
 opencode
+oxfmt
+oxfmtrc
 pico
 pobammer
 rbxts

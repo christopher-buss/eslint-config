@@ -23,7 +23,8 @@
 		{ "rule": "*-dangle", "severity": "off", "fixable": true },
 		{ "rule": "*-newline", "severity": "off", "fixable": true },
 		{ "rule": "*quotes", "severity": "off", "fixable": true },
-		{ "rule": "*semi", "severity": "off", "fixable": true }
+		{ "rule": "*semi", "severity": "off", "fixable": true },
+		{ "rule": "*oxfmt/*", "severity": "off", "fixable": true }
 	],
 
 	// Enable eslint for all supported languages

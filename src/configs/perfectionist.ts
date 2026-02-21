@@ -163,39 +163,6 @@ export async function perfectionist(
 						groups: [...customClassGroups, "unknown"],
 					},
 				],
-				// Import and export sorting
-				"perfectionist/sort-imports": [
-					"error",
-					{
-						customGroups: [
-							{
-								elementNamePattern: "^react$",
-								groupName: "react",
-							},
-							{
-								elementNamePattern: "^@",
-								groupName: "scoped",
-							},
-						],
-						groups: [
-							"react",
-							"scoped",
-							["type-builtin", "type-external", "value-builtin", "value-external"],
-							[
-								"type-internal",
-								"value-internal",
-								"type-parent",
-								"type-sibling",
-								"type-index",
-								"value-parent",
-								"value-sibling",
-								"value-index",
-							],
-							"unknown",
-						],
-						newlinesBetween: 1,
-					},
-				],
 				"perfectionist/sort-interfaces": ["error", { ...sortedObjectConfig }],
 				"perfectionist/sort-intersection-types": ["error"],
 				"perfectionist/sort-jsx-props": "off",

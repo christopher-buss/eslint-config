@@ -15,6 +15,7 @@ import {
 	GLOB_YAML,
 } from "../globs";
 import type {
+	FormatterEngine,
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsFormatters,
@@ -42,15 +43,19 @@ export async function prettier(
 		OptionsOverrides &
 		OptionsTypeScriptParserOptions & {
 			formatters?: OptionsFormatters | true;
+			jsFormatter?: FormatterEngine;
 			prettierOptions?: PrettierOptions;
 			stylistic?: StylisticConfig;
+			tsFormatter?: FormatterEngine;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
 		files: prettierFiles,
 		formatters = {},
+		jsFormatter = "oxfmt",
 		prettierOptions = {},
+		tsFormatter = "oxfmt",
 	} = options ?? {};
 
 	const formattingOptions = {
@@ -83,23 +88,15 @@ export async function prettier(
 		},
 	];
 
-	const jsFiles = prettierFiles ?? [
-		GLOB_JS,
-		GLOB_JSX,
-		`${GLOB_MARKDOWN}/${GLOB_JS}`,
-		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
-	];
+	if (jsFormatter === "prettier") {
+		const jsFiles = prettierFiles ?? [
+			GLOB_JS,
+			GLOB_JSX,
+			`${GLOB_MARKDOWN}/${GLOB_JS}`,
+			`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+		];
 
-	const tsFiles = prettierFiles ?? [
-		GLOB_TS,
-		GLOB_TSX,
-		`${GLOB_MARKDOWN}/${GLOB_TS}`,
-		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
-		...componentExtensions.map((extension) => `**/*.${extension}`),
-	];
-
-	configs.push(
-		{
+		configs.push({
 			name: "isentinel/prettier/javascript",
 			files: jsFiles,
 			rules: {
@@ -114,9 +111,20 @@ export async function prettier(
 				],
 				"prefer-arrow-callback": "off",
 			},
-		},
-		{
-			name: "isentinel/prettier",
+		});
+	}
+
+	if (tsFormatter === "prettier") {
+		const tsFiles = prettierFiles ?? [
+			GLOB_TS,
+			GLOB_TSX,
+			`${GLOB_MARKDOWN}/${GLOB_TS}`,
+			`${GLOB_MARKDOWN}/${GLOB_TSX}`,
+			...componentExtensions.map((extension) => `**/*.${extension}`),
+		];
+
+		configs.push({
+			name: "isentinel/prettier/typescript",
 			files: tsFiles,
 			rules: {
 				...rules,
@@ -131,8 +139,8 @@ export async function prettier(
 				],
 				"prefer-arrow-callback": "off",
 			},
-		},
-	);
+		});
+	}
 
 	if (formattingOptions.css) {
 		configs.push(

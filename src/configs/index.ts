@@ -11,6 +11,7 @@ export * from "./jsdoc";
 export * from "./jsonc";
 export * from "./markdown";
 export * from "./node";
+export * from "./oxfmt";
 export * from "./package-json";
 export * from "./perfectionist";
 export * from "./pnpm";

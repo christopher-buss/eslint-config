@@ -9,7 +9,7 @@ import path from "node:path";
 import process from "node:process";
 import prettier from "prettier";
 
-import type { PrettierOptions, PrettierRuleOptions } from "./configs";
+import type { OxfmtOptions, PrettierOptions, PrettierRuleOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -428,6 +428,27 @@ export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 	} catch {
 		return {};
 	}
+}
+
+const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+
+/**
+ * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`.
+ *
+ * @returns The oxfmt configuration options, or an empty object if none found.
+ */
+export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+	for (const filename of OXFMT_CONFIG_FILES) {
+		const configPath = path.resolve(process.cwd(), filename);
+		try {
+			const content = fs.readFileSync(configPath, "utf-8");
+			return JSON.parse(content) as OxfmtOptions;
+		} catch {
+			continue;
+		}
+	}
+
+	return {};
 }
 
 /**
