@@ -2823,6 +2823,11 @@ export interface RuleOptions {
    */
   'operator-linebreak'?: Linter.RuleEntry<OperatorLinebreak>
   /**
+   * Format code via oxfmt
+   * @see https://github.com/ntnyq/eslint-plugin-oxfmt
+   */
+  'oxfmt/oxfmt'?: Linter.RuleEntry<OxfmtOxfmt>
+  /**
    * Enforce that names for bin properties are in kebab case.
    * @see https://github.com/JoshuaKGoldberg/eslint-plugin-package-json/blob/HEAD/docs/rules/bin-name-casing.md
    */
@@ -12391,6 +12396,195 @@ type OperatorLinebreak = []|[("after" | "before" | "none" | null)]|[("after" | "
     [k: string]: ("after" | "before" | "none" | "ignore") | undefined
   }
 }]
+// ----- oxfmt/oxfmt -----
+type OxfmtOxfmt = []|[{
+  
+  arrowParens?: ("always" | "avoid")
+  
+  bracketSameLine?: boolean
+  
+  bracketSpacing?: boolean
+  
+  embeddedLanguageFormatting?: ("auto" | "off")
+  
+  endOfLine?: ("lf" | "crlf" | "cr")
+  
+  experimentalSortImports?: {
+    
+    customGroups?: {
+      
+      elementNamePattern?: string[]
+      
+      groupName?: string
+    }[]
+    
+    groups?: (string | string[])[]
+    
+    ignoreCase?: boolean
+    
+    internalPattern?: string[]
+    
+    newlinesBetween?: boolean
+    
+    order?: ("asc" | "desc")
+    
+    partitionByComment?: boolean
+    
+    partitionByNewline?: boolean
+    
+    sortSideEffects?: boolean
+  }
+  
+  experimentalSortPackageJson?: (boolean | {
+    
+    sortScripts?: boolean
+  })
+  
+  experimentalTailwindcss?: {
+    
+    attributes?: string[]
+    
+    config?: string
+    
+    functions?: string[]
+    
+    preserveDuplicates?: boolean
+    
+    preserveWhitespace?: boolean
+    
+    stylesheet?: string
+  }
+  
+  htmlWhitespaceSensitivity?: ("css" | "ignore" | "strict")
+  
+  ignorePatterns?: string[]
+  
+  insertFinalNewline?: boolean
+  
+  jsxSingleQuote?: boolean
+  
+  objectWrap?: ("preserve" | "collapse" | "always")
+  
+  printWidth?: number
+  
+  proseWrap?: ("always" | "never" | "preserve")
+  
+  quoteProps?: ("as-needed" | "consistent" | "preserve")
+  
+  semi?: boolean
+  
+  singleAttributePerLine?: boolean
+  
+  singleQuote?: boolean
+  
+  tabWidth?: number
+  
+  trailingComma?: ("all" | "es5" | "none")
+  
+  useTabs?: boolean
+  
+  vueIndentScriptAndStyle?: boolean
+  
+  configPath?: string
+  
+  useConfig?: boolean
+  
+  overrides?: {
+    
+    excludeFiles?: string[]
+    
+    files: string[]
+    
+    options?: {
+      
+      arrowParens?: ("always" | "avoid")
+      
+      bracketSameLine?: boolean
+      
+      bracketSpacing?: boolean
+      
+      embeddedLanguageFormatting?: ("auto" | "off")
+      
+      endOfLine?: ("lf" | "crlf" | "cr")
+      
+      experimentalSortImports?: {
+        
+        customGroups?: {
+          
+          elementNamePattern?: string[]
+          
+          groupName?: string
+        }[]
+        
+        groups?: (string | string[])[]
+        
+        ignoreCase?: boolean
+        
+        internalPattern?: string[]
+        
+        newlinesBetween?: boolean
+        
+        order?: ("asc" | "desc")
+        
+        partitionByComment?: boolean
+        
+        partitionByNewline?: boolean
+        
+        sortSideEffects?: boolean
+      }
+      
+      experimentalSortPackageJson?: (boolean | {
+        
+        sortScripts?: boolean
+      })
+      
+      experimentalTailwindcss?: {
+        
+        attributes?: string[]
+        
+        config?: string
+        
+        functions?: string[]
+        
+        preserveDuplicates?: boolean
+        
+        preserveWhitespace?: boolean
+        
+        stylesheet?: string
+      }
+      
+      htmlWhitespaceSensitivity?: ("css" | "ignore" | "strict")
+      
+      ignorePatterns?: string[]
+      
+      insertFinalNewline?: boolean
+      
+      jsxSingleQuote?: boolean
+      
+      objectWrap?: ("preserve" | "collapse" | "always")
+      
+      printWidth?: number
+      
+      proseWrap?: ("always" | "never" | "preserve")
+      
+      quoteProps?: ("as-needed" | "consistent" | "preserve")
+      
+      semi?: boolean
+      
+      singleAttributePerLine?: boolean
+      
+      singleQuote?: boolean
+      
+      tabWidth?: number
+      
+      trailingComma?: ("all" | "es5" | "none")
+      
+      useTabs?: boolean
+      
+      vueIndentScriptAndStyle?: boolean
+    }
+  }[]
+}]
 // ----- package-json/exports-subpaths-style -----
 type PackageJsonExportsSubpathsStyle = []|[{
   
@@ -20418,4 +20612,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/cease-nonsense' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/cease-nonsense' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/oxfmt/setup' | 'isentinel/oxfmt/javascript' | 'isentinel/oxfmt/typescript' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/prettier/setup' | 'isentinel/prettier/css' | 'isentinel/prettier/scss' | 'isentinel/prettier/less' | 'isentinel/prettier/html' | 'isentinel/prettier/markdown' | 'isentinel/prettier/graphql' | 'isentinel/prettier/json' | 'isentinel/prettier/yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
