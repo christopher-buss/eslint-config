@@ -30,7 +30,7 @@ catalogs:
     jiti: 2.6.1
     lint-staged: 16.2.7
     parse-gitignore-ts: 1.0.0
-    pnpm-workspace-yaml: 1.4.3
+    pnpm-workspace-yaml: 1.5.0
     publint: 0.3.16
     rimraf: 6.1.2
     simple-git-hooks: 2.13.1
