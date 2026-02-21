@@ -45,7 +45,7 @@
 		"watch": "tsdown --watch --dts"
 	},
 	"simple-git-hooks": {
-		"pre-commit": "pnpm lint-staged"
+		"pre-commit": "pnpm install --frozen-lockfile && pnpm lint-staged"
 	},
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
