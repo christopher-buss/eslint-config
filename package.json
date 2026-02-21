@@ -2,7 +2,12 @@
 	"name": "@isentinel/eslint-config",
 	"version": "4.9.0",
 	"description": "iSentinel's ESLint config",
-	"keywords": ["eslint-config", "roblox", "roblox-ts", "rbxts"],
+	"keywords": [
+		"eslint-config",
+		"roblox",
+		"roblox-ts",
+		"rbxts"
+	],
 	"homepage": "https://github.com/christopher-buss/eslint-config",
 	"repository": {
 		"type": "git",
@@ -28,7 +33,10 @@
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
-	"files": ["bin", "dist"],
+	"files": [
+		"bin",
+		"dist"
+	],
 	"scripts": {
 		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
@@ -49,7 +57,9 @@
 	},
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
-		"*.ts": ["sh -c 'tsc --noEmit'"]
+		"*.ts": [
+			"sh -c 'tsc --noEmit'"
+		]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
@@ -171,7 +181,7 @@
 			"optional": true
 		}
 	},
-	"packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264",
+	"packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937",
 	"engines": {
 		"node": ">=22.16.0"
 	},
