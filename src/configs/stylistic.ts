@@ -2,7 +2,7 @@ import type { Linter } from "eslint";
 
 import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../globs";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types";
-import { interopDefault, mergePrettierOptions, require } from "../utils";
+import { interopDefault, mergePrettierOptions } from "../utils";
 import type { PrettierOptions } from "./prettier";
 
 export const StylisticConfigDefaults: StylisticConfig = {
@@ -35,7 +35,7 @@ export async function stylistic(
 		semi,
 	});
 
-	function createArrowStyleRule(parser: string, maxLength?: number): Linter.RulesRecord {
+	function createArrowStyleRule(_: string, maxLength?: number): Linter.RulesRecord {
 		return {
 			"arrow-style/arrow-return-style": [
 				"error",
@@ -46,8 +46,8 @@ export async function stylistic(
 					namedExportsAlwaysUseExplicitReturn: true,
 					objectReturnStyle: "complex-explicit" as const,
 					usePrettier: mergePrettierOptions(prettierOptions, {
-						parser,
-						plugins: [require.resolve("@prettier/plugin-oxc")],
+						// parser,
+						// plugins: [require.resolve("@prettier/plugin-oxc")],
 					}),
 				},
 			],

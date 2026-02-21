@@ -29,7 +29,6 @@ import {
 	mergePrettierOptions,
 	parserPlain,
 	renameRules,
-	require,
 	resolveWithDefaults,
 } from "../utils";
 
@@ -105,8 +104,8 @@ export async function prettier(
 				"format/prettier": [
 					"error",
 					mergePrettierOptions(prettierOptions, {
-						parser: "oxc",
-						plugins: [require.resolve("@prettier/plugin-oxc")],
+						// parser: "oxc",
+						// plugins: [require.resolve("@prettier/plugin-oxc")],
 					}),
 				],
 				"prefer-arrow-callback": "off",
@@ -134,7 +133,7 @@ export async function prettier(
 					mergePrettierOptions(prettierOptions, {
 						// @see https://github.com/hosseinmd/prettier-plugin-jsdoc/issues/249
 						// parser: "oxc-ts",
-						plugins: [require.resolve("@prettier/plugin-oxc")],
+						// plugins: [require.resolve("@prettier/plugin-oxc")],
 					}),
 				],
 				"prefer-arrow-callback": "off",

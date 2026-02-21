@@ -62,7 +62,6 @@
 		"@isentinel/dict-roblox": "catalog:prod",
 		"@isentinel/eslint-plugin-comment-length": "catalog:prod",
 		"@pobammer-ts/eslint-cease-nonsense-rules": "catalog:prod",
-		"@prettier/plugin-oxc": "catalog:prod",
 		"@stylistic/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/parser": "catalog:prod",
