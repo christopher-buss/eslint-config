@@ -52,7 +52,7 @@ catalogs:
     eslint-plugin-react-x: 2.3.13
   prod:
     "@antfu/install-pkg": 1.1.0
-    "@clack/prompts": 0.11.0
+    "@clack/prompts": 1.0.1
     "@cspell/eslint-plugin": 9.6.2
     "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
     "@eslint/compat": 2.0.1
