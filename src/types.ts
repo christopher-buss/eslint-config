@@ -340,6 +340,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	autoRenamePlugins?: boolean;
 
 	/**
+	 * Override the severity level of all rules. Rules that are `"off"` will not
+	 * be affected.
+	 *
+	 * This applies to all configs, including user-defined ones.
+	 */
+	defaultSeverity?: "error" | "warn";
+
+	/**
 	 * Enable ESLint plugin development rules.
 	 *
 	 * @default false

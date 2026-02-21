@@ -1,4 +1,4 @@
 {
 	"extends": "@isentinel/tsconfig/typescript",
-	"exclude": ["**/node_modules", "./**/.*/", "./fixtures/**/*.*"]
+	"exclude": ["**/node_modules", "./**/.*/", "./fixtures/**/*.*", "./references/**/*.*"]
 }

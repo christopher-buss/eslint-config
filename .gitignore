@@ -85,3 +85,5 @@ src/typegen.d.ts
 
 # cspell
 .cspellcache
+
+references/

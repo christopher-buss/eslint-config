@@ -250,6 +250,16 @@ export function isInGitHooksOrLintStaged(): boolean {
 	].some(Boolean);
 }
 
+export function isInAgentSession(): boolean {
+	return [
+		process.env["CLAUDECODE"],
+		process.env["CODEX_THREAD_ID"],
+		process.env["CURSOR_AGENT"],
+		process.env["GEMINI_CLI"],
+		process.env["OPENCODE"],
+	].some(Boolean);
+}
+
 export function isInEditorEnvironment(): boolean {
 	// Allow explicit override via environment variable
 	const explicitValue = process.env["ESLINT_IN_EDITOR"];
@@ -462,6 +472,42 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
  * @param defaultValue - Default value when key is not specified.
  * @returns Whether the feature should be enabled.
  */
+/**
+ * Override the severity of all rules in a rules object, preserving rule
+ * options. Rules set to `"off"` are not affected.
+ *
+ * @param rules - The rules object to override.
+ * @param severity - The target severity level.
+ * @returns A new rules object with overridden severities.
+ */
+export function overrideRuleSeverity(
+	rules: Record<string, any>,
+	severity: "error" | "warn",
+): Record<string, any> {
+	return Object.fromEntries(
+		Object.entries(rules).map(([key, value]) => {
+			if (value === "off" || value === 0) {
+				return [key, value];
+			}
+
+			if (Array.isArray(value)) {
+				const [currentSeverity, ...options] = value;
+				if (currentSeverity === "off" || currentSeverity === 0) {
+					return [key, value];
+				}
+
+				return [key, [severity, ...options]];
+			}
+
+			if (value === "error" || value === "warn" || value === 1 || value === 2) {
+				return [key, severity];
+			}
+
+			return [key, value];
+		}),
+	);
+}
+
 export function shouldEnableFeature<T extends Record<string, any>>(
 	options: boolean | T | undefined,
 	key: keyof T,

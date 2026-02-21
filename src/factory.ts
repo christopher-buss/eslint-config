@@ -50,8 +50,10 @@ import type {
 } from "./types";
 import {
 	getOverrides,
+	isInAgentSession,
 	isInEditorEnvironment,
 	mergeGlobs,
+	overrideRuleSeverity,
 	require,
 	resolveOxfmtConfigOptions,
 	resolvePrettierConfigOptions,
@@ -137,7 +139,11 @@ export async function isentinel(
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
-	let { isInEditor } = options;
+	let { defaultSeverity, isInEditor } = options;
+	if (defaultSeverity === undefined && isInAgentSession()) {
+		defaultSeverity = "error";
+	}
+
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
@@ -458,6 +464,16 @@ export async function isentinel(
 				const rules = await import("eslint/use-at-your-own-risk");
 				return rules.builtinRules;
 			},
+		});
+	}
+
+	if (defaultSeverity) {
+		composer = composer.onResolved((item) => {
+			for (const config of item) {
+				if (config.rules) {
+					config.rules = overrideRuleSeverity(config.rules, defaultSeverity);
+				}
+			}
 		});
 	}
 
