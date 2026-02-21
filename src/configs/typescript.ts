@@ -86,6 +86,7 @@ export async function typescript(
 		"ts/no-unsafe-member-access": "error",
 		"ts/no-unsafe-return": "error",
 		"ts/no-unsafe-unary-minus": "error",
+		"ts/no-useless-default-assignment": "error",
 		"ts/non-nullable-type-assertion-style": "error",
 		"ts/only-throw-error": [
 			"error",
@@ -105,6 +106,7 @@ export async function typescript(
 		"ts/restrict-template-expressions": "off",
 		"ts/return-await": "error",
 		"ts/strict-boolean-expressions": "error",
+		"ts/strict-void-return": "error",
 		"ts/switch-exhaustiveness-check": "error",
 		"ts/unbound-method": "error",
 		"ts/use-unknown-in-catch-callback-variable": "error",

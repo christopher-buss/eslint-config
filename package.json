@@ -104,6 +104,7 @@
 	},
 	"devDependencies": {
 		"@antfu/ni": "catalog:dev",
+		"@eslint-react/shared": "catalog:dev",
 		"@eslint/config-inspector": "catalog:dev",
 		"@isentinel/eslint-config": "workspace:*",
 		"@isentinel/tsconfig": "catalog:dev",
