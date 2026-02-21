@@ -99,7 +99,7 @@ export async function oxfmt(
 				...rules,
 				"arrow-body-style": "off",
 				"format/prettier": "off",
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
+				"oxfmt/oxfmt": ["error", oxfmtOptions as Record<string, unknown>],
 				"prefer-arrow-callback": "off",
 			},
 		});
@@ -121,7 +121,7 @@ export async function oxfmt(
 				...rules,
 				"arrow-body-style": "off",
 				"format/prettier": "off",
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
+				"oxfmt/oxfmt": ["error", oxfmtOptions as Record<string, unknown>],
 				"prefer-arrow-callback": "off",
 			},
 		});
