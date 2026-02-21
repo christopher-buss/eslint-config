@@ -52,7 +52,7 @@ catalogs:
     "@antfu/install-pkg": 1.1.0
     "@clack/prompts": 1.0.1
     "@cspell/eslint-plugin": 9.6.4
-    "@eslint-community/eslint-plugin-eslint-comments": 4.5.0
+    "@eslint-community/eslint-plugin-eslint-comments": 4.6.0
     "@eslint/compat": 2.0.2
     "@eslint/markdown": 7.5.1
     "@isentinel/dict-rbxts": 1.0.1
