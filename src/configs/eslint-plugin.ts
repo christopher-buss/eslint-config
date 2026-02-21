@@ -28,6 +28,7 @@ export async function eslintPlugin(
 				"eslint-plugin/no-deprecated-context-methods": "error",
 				"eslint-plugin/no-deprecated-report-api": "error",
 				"eslint-plugin/no-identical-tests": "error",
+				"eslint-plugin/no-matching-violation-suggest-message-ids": "error",
 				"eslint-plugin/no-meta-replaced-by": "error",
 				"eslint-plugin/no-meta-schema-default": "error",
 				"eslint-plugin/no-missing-message-ids": "error",

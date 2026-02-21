@@ -620,6 +620,11 @@ export interface RuleOptions {
    */
   'eslint-plugin/no-identical-tests'?: Linter.RuleEntry<[]>
   /**
+   * require suggestions to have different `messageId` than their parent report
+   * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/no-matching-violation-suggest-message-ids.md
+   */
+  'eslint-plugin/no-matching-violation-suggest-message-ids'?: Linter.RuleEntry<[]>
+  /**
    * disallow using the `meta.replacedBy` rule property
    * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/no-meta-replaced-by.md
    */
@@ -876,6 +881,11 @@ export interface RuleOptions {
    */
   'import/consistent-type-specifier-style'?: Linter.RuleEntry<ImportConsistentTypeSpecifierStyle>
   /**
+   * Ensure all exports appear after other statements.
+   * @see https://github.com/9romise/eslint-plugin-import-lite/blob/main/src/rules/exports-last/README.md
+   */
+  'import/exports-last'?: Linter.RuleEntry<[]>
+  /**
    * Ensure all imports appear before other statements.
    * @see https://github.com/9romise/eslint-plugin-import-lite/blob/main/src/rules/first/README.md
    */
@@ -905,6 +915,11 @@ export interface RuleOptions {
    * @see https://github.com/9romise/eslint-plugin-import-lite/blob/main/src/rules/no-named-default/README.md
    */
   'import/no-named-default'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer a default export if module exports a single name or multiple names.
+   * @see https://github.com/9romise/eslint-plugin-import-lite/blob/main/src/rules/prefer-default-export/README.md
+   */
+  'import/prefer-default-export'?: Linter.RuleEntry<ImportPreferDefaultExport>
   /**
    * Enforce consistent indentation
    * @see https://eslint.org/docs/latest/rules/indent
@@ -9965,6 +9980,10 @@ type ImportNewlineAfterImport = []|[{
 // ----- import/no-duplicates -----
 type ImportNoDuplicates = []|[{
   "prefer-inline"?: boolean
+}]
+// ----- import/prefer-default-export -----
+type ImportPreferDefaultExport = []|[{
+  target?: ("single" | "any")
 }]
 // ----- indent -----
 type Indent = []|[("tab" | number)]|[("tab" | number), {

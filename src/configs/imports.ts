@@ -8,6 +8,7 @@ export async function imports(
 	const { stylistic = true, type = "game" } = options;
 
 	const [pluginImport, pluginAntfu] = await Promise.all([
+		// @ts-expect-error - Types bug
 		interopDefault(import("eslint-plugin-import-lite")),
 		interopDefault(import("eslint-plugin-antfu")),
 	]);
