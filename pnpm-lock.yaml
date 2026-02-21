@@ -243,8 +243,8 @@ catalogs:
       specifier: 1.8.0
       version: 1.8.0
     toml-eslint-parser:
-      specifier: 0.10.1
-      version: 0.10.1
+      specifier: 1.0.3
+      version: 1.0.3
     yaml-eslint-parser:
       specifier: 1.3.2
       version: 1.3.2
@@ -404,7 +404,7 @@ importers:
         version: 1.8.0(prettier@3.7.4)
       toml-eslint-parser:
         specifier: catalog:prod
-        version: 0.10.1
+        version: 1.0.3
       yaml-eslint-parser:
         specifier: catalog:prod
         version: 1.3.2
@@ -3792,6 +3792,10 @@ packages:
   toml-eslint-parser@0.10.1:
     resolution: {integrity: sha512-9mjy3frhioGIVGcwamlVlUyJ9x+WHw/TXiz9R4YOlmsIuBN43r9Dp8HZ35SF9EKjHrn3BUZj04CF+YqZ2oJ+7w==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  toml-eslint-parser@1.0.3:
+    resolution: {integrity: sha512-A5F0cM6+mDleacLIEUkmfpkBbnHJFV1d2rprHU2MXNk7mlxHq2zGojA+SRvQD1RoMo9gqjZPWEaKG4v1BQ48lw==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
@@ -7488,6 +7492,10 @@ snapshots:
   toml-eslint-parser@0.10.1:
     dependencies:
       eslint-visitor-keys: 3.4.3
+
+  toml-eslint-parser@1.0.3:
+    dependencies:
+      eslint-visitor-keys: 5.0.1
 
   tree-kill@1.2.2: {}
 
