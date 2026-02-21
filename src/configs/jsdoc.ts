@@ -36,6 +36,7 @@ export async function jsdoc(
 				"jsdoc/informative-docs": "warn",
 				"jsdoc/no-defaults": "warn",
 				"jsdoc/no-types": "warn",
+				"jsdoc/no-undefined-types": "error",
 				"jsdoc/require-description": [
 					"warn",
 					{
