@@ -65,7 +65,6 @@ export async function sonarjs(
 				"sonar/prefer-single-boolean-return": "error",
 				"sonar/prefer-while": "error",
 				"sonar/public-static-readonly": "error",
-				"sonar/super-invocation": "error",
 				"sonar/todo-tag": isInEditor ? "warn" : "off",
 				"sonar/use-type-alias": "error",
 			},

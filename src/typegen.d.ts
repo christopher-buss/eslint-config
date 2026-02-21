@@ -4339,11 +4339,6 @@ export interface RuleOptions {
    */
   'sonar/class-prototype'?: Linter.RuleEntry<[]>
   /**
-   * Dynamically executing code is security-sensitive
-   * @see https://sonarsource.github.io/rspec/#/rspec/S1523/javascript
-   */
-  'sonar/code-eval'?: Linter.RuleEntry<[]>
-  /**
    * Cognitive Complexity of functions should not be too high
    * @see https://sonarsource.github.io/rspec/#/rspec/S3776/javascript
    */
@@ -4487,12 +4482,6 @@ export interface RuleOptions {
    * @see https://sonarsource.github.io/rspec/#/rspec/S5542/javascript
    */
   'sonar/encryption-secure-mode'?: Linter.RuleEntry<[]>
-  /**
-   * Trailing commas should be used
-   * @see https://sonarsource.github.io/rspec/#/rspec/S3723/javascript
-   * @deprecated
-   */
-  'sonar/enforce-trailing-comma'?: Linter.RuleEntry<SonarEnforceTrailingComma>
   /**
    * Replacement strings should reference existing regular expression groups
    * @see https://sonarsource.github.io/rspec/#/rspec/S6328/javascript
@@ -4844,12 +4833,12 @@ export interface RuleOptions {
    */
   'sonar/no-hardcoded-ip'?: Linter.RuleEntry<[]>
   /**
-   * Hard-coded passwords are security-sensitive
+   * Credentials should not be hard-coded
    * @see https://sonarsource.github.io/rspec/#/rspec/S2068/javascript
    */
   'sonar/no-hardcoded-passwords'?: Linter.RuleEntry<SonarNoHardcodedPasswords>
   /**
-   * Hard-coded secrets are security-sensitive
+   * Secrets should not be hard-coded
    * @see https://sonarsource.github.io/rspec/#/rspec/S6418/javascript
    */
   'sonar/no-hardcoded-secrets'?: Linter.RuleEntry<SonarNoHardcodedSecrets>
@@ -5084,6 +5073,11 @@ export interface RuleOptions {
    * @see https://sonarsource.github.io/rspec/#/rspec/S2301/javascript
    */
   'sonar/no-selector-parameter'?: Linter.RuleEntry<[]>
+  /**
+   * Static Assets should not serve session cookies
+   * @see https://sonarsource.github.io/rspec/#/rspec/S8441/javascript
+   */
+  'sonar/no-session-cookies-on-static-assets'?: Linter.RuleEntry<[]>
   /**
    * Tests should not be skipped without providing a reason
    * @see https://sonarsource.github.io/rspec/#/rspec/S1607/javascript
@@ -5405,11 +5399,6 @@ export interface RuleOptions {
    * @see https://sonarsource.github.io/rspec/#/rspec/S3003/javascript
    */
   'sonar/strings-comparison'?: Linter.RuleEntry<[]>
-  /**
-   * "super()" should be invoked appropriately
-   * @see https://sonarsource.github.io/rspec/#/rspec/S3854/javascript
-   */
-  'sonar/super-invocation'?: Linter.RuleEntry<[]>
   /**
    * Tables should have headers
    * @see https://sonarsource.github.io/rspec/#/rspec/S5256/javascript
@@ -17240,16 +17229,6 @@ type SonarContentLength = []|[{
 type SonarCyclomaticComplexity = []|[{
   threshold?: number
 }]
-// ----- sonar/enforce-trailing-comma -----
-type SonarEnforceTrailingComma = []|[(_SonarEnforceTrailingCommaValue | {
-  arrays?: _SonarEnforceTrailingCommaValueWithIgnore
-  objects?: _SonarEnforceTrailingCommaValueWithIgnore
-  imports?: _SonarEnforceTrailingCommaValueWithIgnore
-  exports?: _SonarEnforceTrailingCommaValueWithIgnore
-  functions?: _SonarEnforceTrailingCommaValueWithIgnore
-})]
-type _SonarEnforceTrailingCommaValue = ("always-multiline" | "always" | "never" | "only-multiline")
-type _SonarEnforceTrailingCommaValueWithIgnore = ("always-multiline" | "always" | "ignore" | "never" | "only-multiline")
 // ----- sonar/expression-complexity -----
 type SonarExpressionComplexity = []|[{
   max?: number
