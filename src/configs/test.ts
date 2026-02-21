@@ -250,6 +250,7 @@ export async function test(
 					"vitest/prefer-importing-vitest-globals": "error",
 					"vitest/prefer-lowercase-title": "error",
 					"vitest/prefer-mock-promise-shorthand": "error",
+					"vitest/prefer-mock-return-shorthand": "error",
 					"vitest/prefer-snapshot-hint": "warn",
 					"vitest/prefer-spy-on": "warn",
 					"vitest/prefer-strict-boolean-matchers": "error",

@@ -38,7 +38,7 @@ catalogs:
     typescript: 5.9.3
     unplugin-unused: 0.5.7
   peer:
-    "@vitest/eslint-plugin": 1.5.4
+    "@vitest/eslint-plugin": 1.6.9
     eslint: 9.39.2
     eslint-plugin-erasable-syntax-only: 0.4.0
     eslint-plugin-eslint-plugin: 7.2.0
