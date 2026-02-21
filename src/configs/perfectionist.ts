@@ -2,6 +2,12 @@ import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../globs";
 import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } from "../types";
 import { interopDefault } from "../utils";
 
+type PatternType =
+	| Array<string>
+	| Array<{ flags?: string; pattern: string }>
+	| string
+	| { flags?: string; pattern: string };
+
 interface CustomGroupDefinition {
 	decoratorNamePattern?: PatternType;
 	elementNamePattern?: PatternType;
@@ -9,19 +15,13 @@ interface CustomGroupDefinition {
 	fallbackSort?: { order?: "asc" | "desc"; type: string };
 	groupName: string;
 	modifiers?: Array<string>;
-	newlinesInside?: "always" | "ignore" | "never";
+	newlinesInside?: "ignore" | number;
 	order?: "asc" | "desc";
 	selector?: string;
 	type?: "alphabetical" | "line-length" | "natural" | "unsorted";
 }
 
 type MethodType = "private" | "protected" | "public";
-
-type PatternType =
-	| Array<string>
-	| Array<{ flags?: string; pattern: string }>
-	| string
-	| { flags?: string; pattern: string };
 
 const constructorGroup = {
 	elementNamePattern: "constructor",
@@ -49,37 +49,37 @@ export async function perfectionist(
 	}
 
 	const sortedObjectConfig = sortObjects ?? {
-		customGroups: {
-			id: "^id$",
-			key: "^key$",
-			name: "^name$",
-		},
+		customGroups: [
+			{ elementNamePattern: "^id$", groupName: "id" },
+			{ elementNamePattern: "^key$", groupName: "key" },
+			{ elementNamePattern: "^name$", groupName: "name" },
+		],
 		groups: ["id", "key", "name", "unknown"],
 	};
 
 	const sortedObjectJsxConfig = sortObjects ?? {
-		customGroups: {
-			id: "^id$",
-			key: "^key$",
-			name: "^name$",
-			callbacks: ["\b(on[A-Z][a-zA-Z]*)\b"],
-			react: ["^children$", "^ref$"],
-		},
+		customGroups: [
+			{ elementNamePattern: "^id$", groupName: "id" },
+			{ elementNamePattern: "^key$", groupName: "key" },
+			{ elementNamePattern: "^name$", groupName: "name" },
+			{ elementNamePattern: ["\b(on[A-Z][a-zA-Z]*)\b"], groupName: "callbacks" },
+			{ elementNamePattern: ["^children$", "^ref$"], groupName: "react" },
+		],
 		groups: ["id", "key", "name", "unknown", "react", "callbacks"],
 	};
 
 	function createUnsortedMethod(methodType: MethodType): {
 		groupName: MethodType;
 		modifiers: [MethodType];
-		newlinesInside: "always";
-		selector: string;
+		newlinesInside: number;
+		selector: "method";
 		type: "natural" | "unsorted";
 	} {
 		return {
 			groupName: methodType,
 			modifiers: [methodType] as const,
-			newlinesInside: "always",
-			selector: "method",
+			newlinesInside: 1,
+			selector: "method" as const,
 			type: type === "game" ? "unsorted" : "natural",
 		} satisfies CustomGroupDefinition;
 	}
@@ -109,7 +109,7 @@ export async function perfectionist(
 					"warn",
 					{
 						customGroups,
-						fallbackSort: { order: "asc" },
+						fallbackSort: { order: "asc", type: "natural" },
 						groups: [
 							"private-static-readonly-property",
 							"private-readonly-property",
@@ -139,27 +139,27 @@ export async function perfectionist(
 
 							"unknown",
 						],
-						newlinesBetween: "always",
+						newlinesBetween: 1,
+						useExperimentalDependencyDetection: true,
 					},
 				],
 				"perfectionist/sort-decorators": ["error"],
 				"perfectionist/sort-enums": [
 					"error",
 					{
-						forceNumericSort: true,
+						sortByValue: "always",
 					},
 				],
 				"perfectionist/sort-exports": ["error"],
 				"perfectionist/sort-heritage-clauses": [
 					"error",
 					{
-						customGroups: customClassGroups.reduce<Record<string, string>>(
-							(accumulator, item) => {
-								accumulator[item] = `^${capitalizeFirstLetter(item)}$`;
-								return accumulator;
-							},
-							{},
-						),
+						customGroups: customClassGroups.map((item) => {
+							return {
+								elementNamePattern: `^${capitalizeFirstLetter(item)}$`,
+								groupName: item,
+							};
+						}),
 						groups: [...customClassGroups, "unknown"],
 					},
 				],
@@ -193,7 +193,7 @@ export async function perfectionist(
 							],
 							"unknown",
 						],
-						newlinesBetween: "always",
+						newlinesBetween: 1,
 					},
 				],
 				"perfectionist/sort-interfaces": ["error", { ...sortedObjectConfig }],
@@ -209,7 +209,7 @@ export async function perfectionist(
 				"perfectionist/sort-variable-declarations": ["error"],
 				...(type === "package"
 					? {
-							"perfectionist/sort-modules": "error",
+							"perfectionist/sort-modules": ["error", { type: "usage" }],
 						}
 					: {}),
 			},

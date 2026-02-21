@@ -145,6 +145,39 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 	}
 }
 
+/**
+ * Resolve options with default values. Handles the pattern where `true` means
+ * "use defaults", `false` disables the feature, and objects are used as-is.
+ *
+ * @template T - The type of the defaults object.
+ * @param value - The option value (true | false | undefined | object).
+ * @param defaults - Default values to use when value is true or undefined.
+ * @returns The resolved options.
+ */
+export function resolveWithDefaults<T>(value: boolean | T | undefined, defaults: T): false | T {
+	if (value === false) {
+		return false;
+	}
+
+	if (value === true || value === undefined) {
+		return defaults;
+	}
+
+	return value;
+}
+
+export function resolveSubOptions<K extends keyof OptionsConfig>(
+	options: OptionsConfig,
+	key: K,
+): ResolvedOptions<OptionsConfig[K]> {
+	const optionValue = options[key];
+	const defaults = resolveWithDefaults(
+		optionValue as boolean | OptionsConfig[K] | undefined,
+		{} as OptionsConfig[K],
+	);
+	return (defaults === false ? {} : defaults) as ResolvedOptions<OptionsConfig[K]>;
+}
+
 export function getOverrides(
 	options: OptionsConfig,
 	key: keyof OptionsConfig,
@@ -209,6 +242,14 @@ export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise
 	return resolved;
 }
 
+export function isInGitHooksOrLintStaged(): boolean {
+	return [
+		process.env["GIT_PARAMS"] ??
+			process.env["VSCODE_GIT_COMMAND"] ??
+			process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
+	].some(Boolean);
+}
+
 export function isInEditorEnvironment(): boolean {
 	// Allow explicit override via environment variable
 	const explicitValue = process.env["ESLINT_IN_EDITOR"];
@@ -230,14 +271,6 @@ export function isInEditorEnvironment(): boolean {
 		process.env["JETBRAINS_IDE"],
 		process.env["VIM"],
 		process.env["NVIM"],
-	].some(Boolean);
-}
-
-export function isInGitHooksOrLintStaged(): boolean {
-	return [
-		process.env["GIT_PARAMS"] ??
-			process.env["VSCODE_GIT_COMMAND"] ??
-			process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
 	].some(Boolean);
 }
 
@@ -292,6 +325,47 @@ export function mergePrettierOptions(
 }
 
 /**
+ * Rename plugin prefixes in a rule object. Accepts a map of prefixes to rename.
+ *
+ * @example
+ *
+ * ```ts
+ * import { renameRules } from "@antfu/eslint-config";
+ *
+ * export default [
+ * 	{
+ * 		rules: renameRules(
+ * 			{
+ * 				"@typescript-eslint/indent": "error",
+ * 			},
+ * 			{ "@typescript-eslint": "ts" },
+ * 		),
+ * 	},
+ * ];
+ * ```
+ *
+ * @param rules - The rules object to rename.
+ * @param map - A map of prefixes to rename.
+ * @returns The renamed rules object.
+ */
+export function renameRules(
+	rules: Record<string, any>,
+	map: Record<string, string>,
+): Record<string, any> {
+	return Object.fromEntries(
+		Object.entries(rules).map(([key, value]) => {
+			for (const [from, to] of Object.entries(map)) {
+				if (key.startsWith(`${from}/`)) {
+					return [to + key.slice(from.length), value];
+				}
+			}
+
+			return [key, value];
+		}),
+	);
+}
+
+/**
  * Rename plugin names a flat configs array.
  *
  * @example
@@ -337,47 +411,6 @@ export function renamePluginInConfigs(
 }
 
 /**
- * Rename plugin prefixes in a rule object. Accepts a map of prefixes to rename.
- *
- * @example
- *
- * ```ts
- * import { renameRules } from "@antfu/eslint-config";
- *
- * export default [
- * 	{
- * 		rules: renameRules(
- * 			{
- * 				"@typescript-eslint/indent": "error",
- * 			},
- * 			{ "@typescript-eslint": "ts" },
- * 		),
- * 	},
- * ];
- * ```
- *
- * @param rules - The rules object to rename.
- * @param map - A map of prefixes to rename.
- * @returns The renamed rules object.
- */
-export function renameRules(
-	rules: Record<string, any>,
-	map: Record<string, string>,
-): Record<string, any> {
-	return Object.fromEntries(
-		Object.entries(rules).map(([key, value]) => {
-			for (const [from, to] of Object.entries(map)) {
-				if (key.startsWith(`${from}/`)) {
-					return [to + key.slice(from.length), value];
-				}
-			}
-
-			return [key, value];
-		}),
-	);
-}
-
-/**
  * Resolve Prettier configuration options for the project.
  *
  * @returns The Prettier configuration options, or an empty object if none
@@ -395,39 +428,6 @@ export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 	} catch {
 		return {};
 	}
-}
-
-export function resolveSubOptions<K extends keyof OptionsConfig>(
-	options: OptionsConfig,
-	key: K,
-): ResolvedOptions<OptionsConfig[K]> {
-	const optionValue = options[key];
-	const defaults = resolveWithDefaults(
-		optionValue as boolean | OptionsConfig[K] | undefined,
-		{} as OptionsConfig[K],
-	);
-	return (defaults === false ? {} : defaults) as ResolvedOptions<OptionsConfig[K]>;
-}
-
-/**
- * Resolve options with default values. Handles the pattern where `true` means
- * "use defaults", `false` disables the feature, and objects are used as-is.
- *
- * @template T - The type of the defaults object.
- * @param value - The option value (true | false | undefined | object).
- * @param defaults - Default values to use when value is true or undefined.
- * @returns The resolved options.
- */
-export function resolveWithDefaults<T>(value: boolean | T | undefined, defaults: T): false | T {
-	if (value === false) {
-		return false;
-	}
-
-	if (value === true || value === undefined) {
-		return defaults;
-	}
-
-	return value;
 }
 
 /**
