@@ -73,7 +73,7 @@ catalogs:
     eslint-plugin-de-morgan: 2.0.0
     eslint-plugin-flawless: 0.1.0
     eslint-plugin-format-lua: 1.0.1-beta.2
-    eslint-plugin-import-lite: 0.3.0
+    eslint-plugin-import-lite: 0.5.1
     eslint-plugin-jsdoc: 62.7.0
     eslint-plugin-jsonc: 3.0.0
     eslint-plugin-oxfmt: 0.0.15
