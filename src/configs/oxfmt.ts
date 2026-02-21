@@ -7,6 +7,7 @@ import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsOverrides,
+	OxfmtOptions,
 	TypedFlatConfigItem,
 } from "../types";
 import { interopDefault, renameRules } from "../utils";
@@ -16,6 +17,7 @@ export async function oxfmt(
 		OptionsFiles &
 		OptionsOverrides & {
 			jsFormatter?: FormatterEngine;
+			oxfmtOptions?: OxfmtOptions;
 			prettierOptions?: PrettierOptions;
 			tsFormatter?: FormatterEngine;
 		},
@@ -24,11 +26,15 @@ export async function oxfmt(
 		componentExts: componentExtensions = [],
 		files: oxfmtFiles,
 		jsFormatter = "oxfmt",
+		oxfmtOptions: userOxfmtOptions,
 		prettierOptions = {},
 		tsFormatter = "oxfmt",
 	} = options ?? {};
 
-	const oxfmtOptions = migratePrettierOptions(prettierOptions);
+	const oxfmtOptions = {
+		...migratePrettierOptions(prettierOptions),
+		...userOxfmtOptions,
+	};
 
 	const [configPrettier, pluginOxfmt] = await Promise.all([
 		interopDefault(import("eslint-config-prettier/flat")),

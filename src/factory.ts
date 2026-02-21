@@ -404,6 +404,7 @@ export async function isentinel(
 				oxfmt({
 					componentExts: componentExtensions,
 					jsFormatter,
+					oxfmtOptions: formatterOptions.oxfmtOptions,
 					prettierOptions: prettierSettings,
 					tsFormatter,
 				}),

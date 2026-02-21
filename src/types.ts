@@ -4,6 +4,7 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
+import type { FormatOptions } from "oxfmt";
 import type { Options as PrettierOptions } from "prettier";
 import type { SetRequired } from "type-fest";
 
@@ -78,6 +79,8 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 
 export type FormatterEngine = "oxfmt" | "prettier";
 
+export type OxfmtOptions = FormatOptions;
+
 export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for CSS, Less, Sass, and SCSS.
@@ -127,6 +130,12 @@ export interface OptionsFormatters {
 	 * @default true
 	 */
 	markdown?: boolean;
+
+	/**
+	 * Custom options for oxfmt. Takes precedence over options migrated from
+	 * prettier.
+	 */
+	oxfmtOptions?: OxfmtOptions;
 
 	/**
 	 * Custom options for Prettier.
