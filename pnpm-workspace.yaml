@@ -59,7 +59,7 @@ catalogs:
     "@isentinel/dict-roblox": 1.0.3
     "@isentinel/eslint-plugin-comment-length": 2.2.0
     "@pobammer-ts/eslint-cease-nonsense-rules": 1.30.0
-    "@stylistic/eslint-plugin": 5.6.1
+    "@stylistic/eslint-plugin": 5.8.0
     "@typescript-eslint/eslint-plugin": 8.56.0
     "@typescript-eslint/parser": 8.56.0
     ansis: 4.2.0
