@@ -34,7 +34,7 @@ catalogs:
     publint: 0.3.16
     rimraf: 6.1.2
     simple-git-hooks: 2.13.1
-    tsdown: 0.18.2
+    tsdown: 0.20.3
     tsx: 4.21.0
     type-fest: 5.3.1
     typescript: 5.9.3
