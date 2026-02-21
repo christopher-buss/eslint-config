@@ -16,6 +16,7 @@ import {
 	jsonc,
 	markdown,
 	node,
+	oxfmt,
 	perfectionist,
 	pnpm,
 	prettier,
@@ -174,9 +175,12 @@ export async function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
-	const prettierOptions =
-		(typeof options.formatters === "object" ? options.formatters.prettierOptions : undefined) ??
-		{};
+	const formatterOptions = typeof options.formatters === "object" ? options.formatters : {};
+	const jsFormatter = formatterOptions.javascript ?? "oxfmt";
+	const tsFormatter = formatterOptions.typescript ?? "oxfmt";
+	const useOxfmt = jsFormatter === "oxfmt" || tsFormatter === "oxfmt";
+
+	const prettierOptions = formatterOptions.prettierOptions ?? {};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
 
 	const prettierSettings: PrettierOptions = Object.assign(
@@ -388,10 +392,23 @@ export async function isentinel(
 				...getOverrides(options, "typescript"),
 				componentExts: componentExtensions,
 				formatters: formatters !== false ? formatters : undefined,
+				jsFormatter,
 				prettierOptions: prettierSettings,
 				stylistic: stylisticOptions,
+				tsFormatter,
 			}),
 		);
+
+		if (useOxfmt) {
+			configs.push(
+				oxfmt({
+					componentExts: componentExtensions,
+					jsFormatter,
+					prettierOptions: prettierSettings,
+					tsFormatter,
+				}),
+			);
+		}
 	}
 
 	if ("files" in options) {

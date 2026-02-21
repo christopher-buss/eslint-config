@@ -76,6 +76,8 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 	ignoresTypeAware?: Array<string>;
 }
 
+export type FormatterEngine = "oxfmt" | "prettier";
+
 export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for CSS, Less, Sass, and SCSS.
@@ -97,6 +99,13 @@ export interface OptionsFormatters {
 	 * @default true
 	 */
 	html?: boolean;
+
+	/**
+	 * Formatter engine for JavaScript files.
+	 *
+	 * @default "oxfmt"
+	 */
+	javascript?: FormatterEngine;
 
 	/**
 	 * Enable formatting support for JSON(C|5).
@@ -125,6 +134,13 @@ export interface OptionsFormatters {
 	 * By default it's controlled by our own config.
 	 */
 	prettierOptions?: PrettierOptions;
+
+	/**
+	 * Formatter engine for TypeScript files.
+	 *
+	 * @default "oxfmt"
+	 */
+	typescript?: FormatterEngine;
 
 	/**
 	 * Enable formatting support for YAML.
