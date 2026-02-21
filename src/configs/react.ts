@@ -267,15 +267,6 @@ export async function react(
 							],
 							"style/jsx-newline": "error",
 							"style/jsx-self-closing-comp": "error",
-							"style/jsx-sort-props": [
-								"error",
-								{
-									callbacksLast: true,
-									ignoreCase: true,
-									reservedFirst: true,
-									shorthandFirst: true,
-								},
-							],
 						}
 					: {}),
 

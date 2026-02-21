@@ -165,7 +165,6 @@ export async function perfectionist(
 				],
 				"perfectionist/sort-interfaces": ["error", { ...sortedObjectConfig }],
 				"perfectionist/sort-intersection-types": ["error"],
-				"perfectionist/sort-jsx-props": "off",
 				"perfectionist/sort-maps": ["error"],
 				"perfectionist/sort-named-imports": ["error"],
 				"perfectionist/sort-object-types": ["error"],
@@ -193,6 +192,22 @@ export async function perfectionist(
 			files: [GLOB_JSX, GLOB_TSX],
 			rules: {
 				"perfectionist/sort-interfaces": ["error", { ...sortedObjectJsxConfig }],
+				"perfectionist/sort-jsx-props": [
+					"error",
+					{
+						customGroups: [
+							{
+								elementNamePattern: "^(?:key|ref)$",
+								groupName: "reserved",
+							},
+							{
+								elementNamePattern: "^on.+",
+								groupName: "callback",
+							},
+						],
+						groups: ["reserved", "shorthand-prop", "unknown", "callback"],
+					},
+				],
 				"perfectionist/sort-objects": ["error", { ...sortedObjectJsxConfig }],
 			},
 		},

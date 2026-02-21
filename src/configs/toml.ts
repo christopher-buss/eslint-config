@@ -14,6 +14,7 @@ export async function toml(
 
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = 2 } = defaults === false ? {} : defaults;
+	const indentValue = typeof indent === "number" ? indent : 2;
 
 	const [pluginToml, parserToml] = await Promise.all([
 		interopDefault(import("eslint-plugin-toml")),
@@ -49,7 +50,7 @@ export async function toml(
 							"toml/array-bracket-newline": "error",
 							"toml/array-bracket-spacing": "error",
 							"toml/array-element-newline": "error",
-							"toml/indent": ["error", indent === "tab" ? 2 : indent],
+							"toml/indent": ["error", indentValue],
 							"toml/inline-table-curly-spacing": "error",
 							"toml/key-spacing": "error",
 							"toml/padding-line-between-pairs": "error",

@@ -5635,6 +5635,11 @@ export interface RuleOptions {
    */
   'style/eol-last'?: Linter.RuleEntry<StyleEolLast>
   /**
+   * Enforce consistent line break styles for JSX props
+   * @see https://eslint.style/rules/jsx-props-style
+   */
+  'style/exp-jsx-props-style'?: Linter.RuleEntry<StyleExpJsxPropsStyle>
+  /**
    * Enforce consistent spacing and line break styles inside brackets.
    * @see https://eslint.style/rules/list-style
    */
@@ -5769,6 +5774,7 @@ export interface RuleOptions {
   /**
    * Enforce props alphabetical sorting
    * @see https://eslint.style/rules/jsx-sort-props
+   * @deprecated
    */
   'style/jsx-sort-props'?: Linter.RuleEntry<StyleJsxSortProps>
   /**
@@ -8019,7 +8025,7 @@ export interface RuleOptions {
    * disallow conditional expects
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-conditional-expect.md
    */
-  'vitest/no-conditional-expect'?: Linter.RuleEntry<[]>
+  'vitest/no-conditional-expect'?: Linter.RuleEntry<VitestNoConditionalExpect>
   /**
    * disallow conditional tests
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/no-conditional-in-test.md
@@ -8225,7 +8231,7 @@ export interface RuleOptions {
    * prefer dynamic import in mock
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-import-in-mock.md
    */
-  'vitest/prefer-import-in-mock'?: Linter.RuleEntry<[]>
+  'vitest/prefer-import-in-mock'?: Linter.RuleEntry<VitestPreferImportInMock>
   /**
    * enforce importing Vitest globals
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-importing-vitest-globals.md
@@ -8241,6 +8247,11 @@ export interface RuleOptions {
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-mock-promise-shorthand.md
    */
   'vitest/prefer-mock-promise-shorthand'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer mock return shorthands
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-mock-return-shorthand.md
+   */
+  'vitest/prefer-mock-return-shorthand'?: Linter.RuleEntry<[]>
   /**
    * enforce including a hint with external snapshots
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-snapshot-hint.md
@@ -8287,6 +8298,11 @@ export interface RuleOptions {
    */
   'vitest/prefer-to-contain'?: Linter.RuleEntry<[]>
   /**
+   * Suggest using `toHaveBeenCalledTimes()`
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-have-been-called-times.md
+   */
+  'vitest/prefer-to-have-been-called-times'?: Linter.RuleEntry<[]>
+  /**
    * enforce using toHaveLength()
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/prefer-to-have-length.md
    */
@@ -8312,11 +8328,6 @@ export interface RuleOptions {
    */
   'vitest/require-hook'?: Linter.RuleEntry<VitestRequireHook>
   /**
-   * require usage of import in vi.mock()
-   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-import-vi-mock.md
-   */
-  'vitest/require-import-vi-mock'?: Linter.RuleEntry<[]>
-  /**
    * require local Test Context for concurrent snapshot tests
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-local-test-context-for-concurrent-snapshots.md
    */
@@ -8326,6 +8337,11 @@ export interface RuleOptions {
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-mock-type-parameters.md
    */
   'vitest/require-mock-type-parameters'?: Linter.RuleEntry<VitestRequireMockTypeParameters>
+  /**
+   * require tests to declare a timeout
+   * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-test-timeout.md
+   */
+  'vitest/require-test-timeout'?: Linter.RuleEntry<[]>
   /**
    * require toThrow() to be called with an error message
    * @see https://github.com/vitest-dev/eslint-plugin-vitest/blob/main/docs/rules/require-to-throw-message.md
@@ -17519,15 +17535,25 @@ type StyleCurlyNewline = []|[(("always" | "never") | {
 type StyleDotLocation = []|[("object" | "property")]
 // ----- style/eol-last -----
 type StyleEolLast = []|[("always" | "never" | "unix" | "windows")]
+// ----- style/exp-jsx-props-style -----
+type StyleExpJsxPropsStyle = []|[{
+  singleLine?: {
+    maxItems?: number
+  }
+  multiLine?: {
+    minItems?: number
+    maxItemsPerLine?: number
+  }
+}]
 // ----- style/exp-list-style -----
 type StyleExpListStyle = []|[{
   singleLine?: _StyleExpListStyle_SingleLineConfig
   multiLine?: _StyleExpListStyle_MultiLineConfig
   overrides?: {
+    "()"?: _StyleExpListStyle_BaseConfig
     "[]"?: _StyleExpListStyle_BaseConfig
     "{}"?: _StyleExpListStyle_BaseConfig
     "<>"?: _StyleExpListStyle_BaseConfig
-    "()"?: _StyleExpListStyle_BaseConfig
     ArrayExpression?: _StyleExpListStyle_BaseConfig
     ArrayPattern?: _StyleExpListStyle_BaseConfig
     ArrowFunctionExpression?: _StyleExpListStyle_BaseConfig
@@ -17535,21 +17561,22 @@ type StyleExpListStyle = []|[{
     ExportNamedDeclaration?: _StyleExpListStyle_BaseConfig
     FunctionDeclaration?: _StyleExpListStyle_BaseConfig
     FunctionExpression?: _StyleExpListStyle_BaseConfig
-    ImportDeclaration?: _StyleExpListStyle_BaseConfig
+    IfStatement?: _StyleExpListStyle_BaseConfig
     ImportAttributes?: _StyleExpListStyle_BaseConfig
+    ImportDeclaration?: _StyleExpListStyle_BaseConfig
+    JSONArrayExpression?: _StyleExpListStyle_BaseConfig
+    JSONObjectExpression?: _StyleExpListStyle_BaseConfig
     NewExpression?: _StyleExpListStyle_BaseConfig
     ObjectExpression?: _StyleExpListStyle_BaseConfig
     ObjectPattern?: _StyleExpListStyle_BaseConfig
     TSDeclareFunction?: _StyleExpListStyle_BaseConfig
+    TSEnumBody?: _StyleExpListStyle_BaseConfig
     TSFunctionType?: _StyleExpListStyle_BaseConfig
     TSInterfaceBody?: _StyleExpListStyle_BaseConfig
-    TSEnumBody?: _StyleExpListStyle_BaseConfig
     TSTupleType?: _StyleExpListStyle_BaseConfig
     TSTypeLiteral?: _StyleExpListStyle_BaseConfig
     TSTypeParameterDeclaration?: _StyleExpListStyle_BaseConfig
     TSTypeParameterInstantiation?: _StyleExpListStyle_BaseConfig
-    JSONArrayExpression?: _StyleExpListStyle_BaseConfig
-    JSONObjectExpression?: _StyleExpListStyle_BaseConfig
   }
 }]
 interface _StyleExpListStyle_SingleLineConfig {
@@ -18467,13 +18494,17 @@ type StylePaddedBlocks = []|[(("always" | "never" | "start" | "end") | {
 }]
 // ----- style/padding-line-between-statements -----
 type _StylePaddingLineBetweenStatementsPaddingType = ("any" | "never" | "always")
-type _StylePaddingLineBetweenStatementsStatementOption = (_StylePaddingLineBetweenStatementsStatementType | [_StylePaddingLineBetweenStatementsStatementType, ...(_StylePaddingLineBetweenStatementsStatementType)[]])
+type _StylePaddingLineBetweenStatementsStatementOption = (_StylePaddingLineBetweenStatementsStatementMatcher | [_StylePaddingLineBetweenStatementsStatementMatcher, ...(_StylePaddingLineBetweenStatementsStatementMatcher)[]])
+type _StylePaddingLineBetweenStatementsStatementMatcher = (_StylePaddingLineBetweenStatementsStatementType | _StylePaddingLineBetweenStatements_SelectorOption)
 type _StylePaddingLineBetweenStatementsStatementType = ("*" | "exports" | "require" | "directive" | "iife" | "block" | "empty" | "function" | "ts-method" | "break" | "case" | "class" | "continue" | "debugger" | "default" | "do" | "for" | "if" | "import" | "switch" | "throw" | "try" | "while" | "with" | "cjs-export" | "cjs-import" | "enum" | "interface" | "function-overload" | "block-like" | "singleline-block-like" | "multiline-block-like" | "expression" | "singleline-expression" | "multiline-expression" | "return" | "singleline-return" | "multiline-return" | "export" | "singleline-export" | "multiline-export" | "var" | "singleline-var" | "multiline-var" | "let" | "singleline-let" | "multiline-let" | "const" | "singleline-const" | "multiline-const" | "using" | "singleline-using" | "multiline-using" | "type" | "singleline-type" | "multiline-type")
 type StylePaddingLineBetweenStatements = {
   blankLine: _StylePaddingLineBetweenStatementsPaddingType
   prev: _StylePaddingLineBetweenStatementsStatementOption
   next: _StylePaddingLineBetweenStatementsStatementOption
 }[]
+interface _StylePaddingLineBetweenStatements_SelectorOption {
+  selector: string
+}
 // ----- style/quote-props -----
 type StyleQuoteProps = ([]|[("always" | "as-needed" | "consistent" | "consistent-as-needed")] | []|[("always" | "as-needed" | "consistent" | "consistent-as-needed")]|[("always" | "as-needed" | "consistent" | "consistent-as-needed"), {
   keywords?: boolean
@@ -18562,7 +18593,7 @@ type StyleTypeAnnotationSpacing = []|[{
   after?: boolean
   overrides?: {
     colon?: _StyleTypeAnnotationSpacing_SpacingConfig
-    arrow?: _StyleTypeAnnotationSpacing_SpacingConfig
+    arrow?: ("ignore" | _StyleTypeAnnotationSpacing_SpacingConfig)
     variable?: _StyleTypeAnnotationSpacing_SpacingConfig
     parameter?: _StyleTypeAnnotationSpacing_SpacingConfig
     property?: _StyleTypeAnnotationSpacing_SpacingConfig
@@ -20360,6 +20391,11 @@ type VitestMaxExpects = []|[{
 type VitestMaxNestedDescribe = []|[{
   max?: number
 }]
+// ----- vitest/no-conditional-expect -----
+type VitestNoConditionalExpect = []|[{
+  
+  expectAssertions?: boolean
+}]
 // ----- vitest/no-focused-tests -----
 type VitestNoFocusedTests = []|[{
   fixable?: boolean
@@ -20394,6 +20430,10 @@ type VitestPreferExpectAssertions = []|[{
   onlyFunctionsWithAsyncKeyword?: boolean
   onlyFunctionsWithExpectInLoop?: boolean
   onlyFunctionsWithExpectInCallback?: boolean
+}]
+// ----- vitest/prefer-import-in-mock -----
+type VitestPreferImportInMock = []|[{
+  fixable?: boolean
 }]
 // ----- vitest/prefer-lowercase-title -----
 type VitestPreferLowercaseTitle = []|[{

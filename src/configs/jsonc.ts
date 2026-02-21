@@ -18,6 +18,7 @@ export async function jsonc(
 
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = "tab" } = defaults === false ? {} : defaults;
+	const indentValue = typeof indent === "number" || indent === "tab" ? indent : "tab";
 
 	const [pluginJsonc, parserJsonc] = await Promise.all([
 		interopDefault(import("eslint-plugin-jsonc")),
@@ -69,7 +70,7 @@ export async function jsonc(
 							"jsonc/array-bracket-spacing": ["error", "never"],
 							"jsonc/comma-dangle": "off",
 							"jsonc/comma-style": ["error", "last"],
-							"jsonc/indent": ["error", indent],
+							"jsonc/indent": ["error", indentValue],
 							"jsonc/key-spacing": [
 								"error",
 								{ afterColon: true, beforeColon: false },
