@@ -9,7 +9,6 @@ export async function comments(
 
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
 		interopDefault(import("@isentinel/eslint-plugin-comment-length")),
-		// @ts-expect-error -- No types
 		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 	]);
