@@ -227,7 +227,6 @@ export async function isentinel(
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
-		sonarjs({ isInEditor }),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
@@ -237,9 +236,9 @@ export async function isentinel(
 		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
 	);
 
-	// Configs that oxlint handles natively — skip when running alongside oxlint
+	// Configs that oxlint handles — skip when running alongside oxlint
 	if (!enableOxlint) {
-		configs.push(promise());
+		configs.push(promise(), sonarjs({ isInEditor }));
 	}
 
 	if (options.flawless === true) {

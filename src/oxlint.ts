@@ -1,15 +1,18 @@
 import type { Linter } from "eslint";
-import type { DummyRuleMap, OxlintConfig } from "oxlint";
+import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
 import { defineConfig } from "oxlint";
 
 import { oxlintPromise } from "./configs/promise";
+import { oxlintSonarjs } from "./configs/sonarjs";
 
 export interface OxlintOptions {
+	isInEditor?: boolean;
 	roblox?: boolean;
 	type?: "app" | "game" | "package";
 }
 
 export interface OxlintConfigFragment {
+	jsPlugins?: Array<ExternalPluginEntry>;
 	plugins?: Array<OxlintPlugin>;
 	rules: DummyRuleMap;
 }
@@ -33,16 +36,27 @@ type OxlintPlugin =
 
 type RuleEntry = Linter.RuleEntry<any>;
 
-export function isentinel(_options: OxlintOptions = {}): OxlintConfig {
-	const configs: Array<OxlintConfigFragment> = [oxlintPromise()];
+export function isentinel(
+	options: OxlintOptions = {},
+	...userConfigs: Array<OxlintOverride>
+): OxlintConfig {
+	const { isInEditor = false } = options;
+
+	const configs: Array<OxlintConfigFragment> = [oxlintPromise(), oxlintSonarjs({ isInEditor })];
 
 	// Merge all config fragments
 	const plugins = new Set<OxlintPlugin>();
+	const jsPlugins = new Map<string, ExternalPluginEntry>();
 	let rules: DummyRuleMap = {};
 
 	for (const config of configs) {
 		for (const plugin of config.plugins ?? []) {
 			plugins.add(plugin);
+		}
+
+		for (const jsPlugin of config.jsPlugins ?? []) {
+			const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.specifier;
+			jsPlugins.set(key, jsPlugin);
 		}
 
 		rules = { ...rules, ...filterRules(config.rules) };
@@ -58,6 +72,8 @@ export function isentinel(_options: OxlintOptions = {}): OxlintConfig {
 			style: "off",
 			suspicious: "off",
 		},
+		jsPlugins: [...jsPlugins.values()],
+		overrides: userConfigs,
 		plugins: [...plugins],
 		rules,
 	});

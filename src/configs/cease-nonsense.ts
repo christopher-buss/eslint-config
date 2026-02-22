@@ -17,6 +17,7 @@ export async function ceaseNonsense(
 				"cease-nonsense": pluginCeaseNonsense,
 			},
 			rules: {
+				"cease-nonsense/no-async-constructor": "error",
 				"cease-nonsense/no-commented-code": isInEditor ? "off" : "error",
 				"cease-nonsense/prefer-class-properties": "error",
 				"cease-nonsense/prefer-early-return": ["error", { maximumStatements: 1 }],

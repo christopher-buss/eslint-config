@@ -44,16 +44,17 @@
 		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
+		"eslint": "eslint --cache",
 		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts && tsx scripts/validate-oxlint.ts",
 		"postgen": "echo 'Generation complete!'",
-		"lint": "eslint --cache",
-		"lint:ci": "eslint --cache --cache-strategy content",
+		"lint": "oxlint && eslint --cache",
+		"lint:ci": "oxlint && eslint --cache --cache-strategy content",
 		"oxlint": "oxlint",
 		"prepack": "nr build",
 		"prepare": "simple-git-hooks",
 		"release": "bumpp",
 		"stub": "tsdown",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "tsgo --noEmit",
 		"watch": "tsdown --watch --dts"
 	},
 	"simple-git-hooks": {
@@ -61,9 +62,7 @@
 	},
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
-		"*.ts": [
-			"sh -c 'tsc --noEmit'"
-		]
+		"*.ts": ["sh -c 'pnpm tsgo --noEmit'"]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
@@ -124,6 +123,7 @@
 		"@stylistic/eslint-plugin-migrate": "catalog:dev",
 		"@types/node": "catalog:dev",
 		"@types/yargs": "catalog:dev",
+		"@typescript/native-preview": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
 		"eslint": "catalog:peer",
