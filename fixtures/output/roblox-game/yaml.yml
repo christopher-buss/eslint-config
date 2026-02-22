@@ -1,0 +1,38 @@
+z-last: should be sorted last
+a-first: should be sorted first
+m-middle: 42
+
+nested:
+  a-nested: false
+  m-nested:
+    a-deep: 2
+
+    z-deep: 1
+  z-nested: true
+list-values:
+  - zebra
+  - apple
+  - mango
+
+boolean-section:
+  a-bool: false
+
+  z-bool: true
+number-section:
+  a-num: 1
+
+  z-num: 100
+empty-object: {}
+
+id: should-be-first
+name: should-be-second
+
+multiline-string: this is a quoted string that should use plain scalar
+
+# Comment with issues
+tagged: !!str tagged value
+
+mixed:
+  a-item: plain value
+  m-item: 3.14
+  z-item: quoted unnecessarily

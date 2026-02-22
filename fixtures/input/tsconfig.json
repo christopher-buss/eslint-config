@@ -1,0 +1,41 @@
+{
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules", "dist"],
+    "compilerOptions": {
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "rootDir": "./src",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "jsx": "react-jsx",
+        "lib": ["ESNext"],
+        "types": ["node"],
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowJs": true,
+        "checkJs": false,
+        "incremental": true,
+        "composite": false,
+        "verbatimModuleSyntax": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "references": [
+        { "path": "./tsconfig.node.json" }
+    ]
+}

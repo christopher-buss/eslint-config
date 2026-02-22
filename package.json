@@ -44,6 +44,8 @@
 		"prepare": "simple-git-hooks",
 		"release": "bumpp",
 		"stub": "tsdown",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit",
 		"watch": "tsdown --watch --dts"
 	},
@@ -138,7 +140,8 @@
 		"tsx": "catalog:dev",
 		"type-fest": "catalog:dev",
 		"typescript": "catalog:dev",
-		"unplugin-unused": "catalog:dev"
+		"unplugin-unused": "catalog:dev",
+		"vitest": "catalog:dev"
 	},
 	"peerDependencies": {
 		"@vitest/eslint-plugin": "^1.6.4",

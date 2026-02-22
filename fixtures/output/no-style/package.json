@@ -1,0 +1,37 @@
+{
+    "version": "1.0.0",
+    "name": "@test/fixture-package",
+    "description": "A fixture package for testing",
+    "license": "MIT",
+    "scripts": {
+    "Build": "tsup",
+    "clean": "rimraf dist",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typeCheck": "tsc --noEmit"
+  },
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "keywords": ["test", "fixture"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/test/fixture"
+    },
+    "homepage": "https://github.com/test/fixture#readme",
+    "bugs": {
+        "url": "https://github.com/test/fixture/issues"
+    },
+    "files": ["dist"],
+    "engines": {
+        "node": ">=18"
+    }
+}

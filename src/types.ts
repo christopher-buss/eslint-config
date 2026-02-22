@@ -435,17 +435,6 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	markdown?: boolean | OptionsOverrides;
 
-	/**
-	 * Require all config items to have a `name` property for better debugging
-	 * and tooling support.
-	 *
-	 * @remarks
-	 * This will default to `true` in a future major version and this option
-	 * will be removed.
-	 * @default false
-	 */
-	namedConfigs?: boolean;
-
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;
 
@@ -550,19 +539,6 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	yaml?: boolean | OptionsOverrides;
 }
-
-/**
- * Options type that requires `name` on the options config and all user configs.
- *
- * @remarks
- * This will become the default in a future major version.
- * @see {@link OptionsConfig.namedConfigs}
- */
-export type NamedOptionsConfig = OptionsConfig &
-	TypedFlatConfigItem & {
-		name: string;
-		namedConfigs: true;
-	};
 
 export interface OptionsHasRoblox {
 	roblox?: boolean;
