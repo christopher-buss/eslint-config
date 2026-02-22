@@ -30,10 +30,10 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
+		"./eslint": "./dist/eslint.mjs",
+		"./oxlint": "./dist/oxlint.mjs",
 		"./package.json": "./package.json"
 	},
-	"main": "./dist/index.mjs",
-	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
 	"files": [
@@ -44,10 +44,11 @@
 		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
-		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts",
+		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts && tsx scripts/validate-oxlint.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "eslint --cache",
 		"lint:ci": "eslint --cache --cache-strategy content",
+		"oxlint": "oxlint",
 		"prepack": "nr build",
 		"prepare": "simple-git-hooks",
 		"release": "bumpp",
@@ -137,6 +138,8 @@
 		"eslint-typegen": "catalog:dev",
 		"jiti": "catalog:dev",
 		"lint-staged": "catalog:dev",
+		"oxlint": "catalog:dev",
+		"oxlint-tsgolint": "catalog:dev",
 		"parse-gitignore-ts": "catalog:dev",
 		"pnpm-workspace-yaml": "catalog:dev",
 		"publint": "catalog:dev",
@@ -157,7 +160,8 @@
 		"eslint-plugin-n": "^17.0.0",
 		"eslint-plugin-react-hooks": "^7.0.0",
 		"eslint-plugin-react-naming-convention": "^2.12.0",
-		"eslint-plugin-react-x": "^2.12.0"
+		"eslint-plugin-react-x": "^2.12.0",
+		"oxlint": "^1.49.0"
 	},
 	"peerDependenciesMeta": {
 		"@vitest/eslint-plugin": {
@@ -179,6 +183,9 @@
 			"optional": true
 		},
 		"eslint-plugin-react-x": {
+			"optional": true
+		},
+		"oxlint": {
 			"optional": true
 		}
 	},

@@ -15,6 +15,7 @@ nonconstructor
 opencode
 oxfmt
 oxfmtrc
+oxlint
 pico
 pobammer
 rbxts

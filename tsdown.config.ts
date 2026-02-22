@@ -4,9 +4,6 @@ import { defineConfig } from "tsdown";
 const sharedOptions = {
 	clean: true,
 	format: ["esm"],
-	outputOptions: {
-		codeSplitting: false,
-	},
 	publint: true,
 	shims: true,
 } satisfies UserConfig;
@@ -14,7 +11,7 @@ const sharedOptions = {
 export default defineConfig([
 	{
 		...sharedOptions,
-		entry: ["src/index.ts"],
+		entry: { eslint: "src/index.ts", index: "src/index.ts" },
 		external: [
 			/^@typescript-eslint\//,
 			/^@eslint-react\//,
@@ -37,5 +34,10 @@ export default defineConfig([
 	{
 		...sharedOptions,
 		entry: ["src/cli.ts"],
+	},
+	{
+		...sharedOptions,
+		entry: ["src/oxlint.ts"],
+		external: ["oxlint"],
 	},
 ]);

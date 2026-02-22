@@ -87,3 +87,5 @@ src/typegen.d.ts
 .cspellcache
 
 references/
+
+.claude/worktrees
