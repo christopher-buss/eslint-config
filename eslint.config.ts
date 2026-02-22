@@ -6,7 +6,6 @@ export default isentinel(
 	{
 		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
-		namedConfigs: true,
 		pnpm: true,
 		roblox: false,
 		test: {
@@ -29,6 +28,16 @@ export default isentinel(
 			"ts/no-inferrable-types": "off",
 
 			// Lots of configs are still untyped so we can't rely on this
+			"ts/no-unsafe-assignment": "off",
+		},
+	},
+	{
+		name: "local/test-overrides",
+		files: ["test/**/*.ts"],
+		rules: {
+			"jsdoc/require-param-description": "off",
+			"jsdoc/require-returns": "off",
+			"max-lines-per-function": "off",
 			"ts/no-unsafe-assignment": "off",
 		},
 	},

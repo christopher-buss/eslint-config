@@ -1,0 +1,39 @@
+[package]
+name = "fixture-test"
+version = "1.0.0"
+description = "A test package for TOML linting"
+
+[dependencies]
+z-package = "1.0.0"
+a-package = "2.0.0"
+m-package = "3.0.0"
+
+[dev-dependencies]
+z-dev = "0.1.0"
+a-dev = "0.2.0"
+
+[build]
+target = "x86_64"
+optimize = true
+
+[metadata]
+z-meta = "last"
+a-meta = "first"
+m-meta = "middle"
+
+[features]
+z-feature = []
+a-feature = [
+  "dep1",
+  "dep2" 
+]
+m-feature = [ "dep3" ]
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
+
+[profile.dev]
+opt-level = 0
+debug = true
