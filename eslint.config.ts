@@ -6,6 +6,7 @@ export default isentinel(
 		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
 		namedConfigs: true,
+		oxlint: true,
 		pnpm: true,
 		roblox: false,
 		test: {
