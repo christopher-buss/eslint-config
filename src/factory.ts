@@ -127,6 +127,7 @@ export async function isentinel(
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
+		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		root: customRootGlobs,
@@ -226,7 +227,6 @@ export async function isentinel(
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
-		promise(),
 		sonarjs({ isInEditor }),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
@@ -236,6 +236,11 @@ export async function isentinel(
 		}),
 		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
 	);
+
+	// Configs that oxlint handles natively — skip when running alongside oxlint
+	if (!enableOxlint) {
+		configs.push(promise());
+	}
 
 	if (options.flawless === true) {
 		configs.push(

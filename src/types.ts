@@ -431,6 +431,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	namedConfigs?: boolean;
 
+	/**
+	 * Disable ESLint rules that are handled by oxlint. Enable this when running
+	 * oxlint alongside ESLint to avoid duplicate linting.
+	 *
+	 * @default false
+	 */
+	oxlint?: boolean;
+
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;
 
