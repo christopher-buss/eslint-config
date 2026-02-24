@@ -1,6 +1,6 @@
-import type { OxlintConfigFragment } from "../oxlint";
-import type { OptionsIsInEditor, Rules, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { GLOB_SRC } from "../globs.ts";
+import type { OptionsIsInEditor, Rules, TypedFlatConfigItem, TypedOxlintConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export function sonarjsRules(options: Required<OptionsIsInEditor>): Rules {
 	const { isInEditor } = options;
@@ -60,16 +60,20 @@ export function sonarjsRules(options: Required<OptionsIsInEditor>): Rules {
 	};
 }
 
-export function oxlintSonarjs(options: Required<OptionsIsInEditor>): OxlintConfigFragment {
-	return {
-		jsPlugins: [
-			{
-				name: "sonar",
-				specifier: "eslint-plugin-sonarjs",
-			},
-		],
-		rules: sonarjsRules(options) as OxlintConfigFragment["rules"],
-	};
+export function oxlintSonarjs(options: Required<OptionsIsInEditor>): Array<TypedOxlintConfigItem> {
+	return [
+		{
+			name: "isentinel/sonarjs",
+			files: [GLOB_SRC],
+			jsPlugins: [
+				{
+					name: "sonar",
+					specifier: "eslint-plugin-sonarjs",
+				},
+			],
+			rules: sonarjsRules(options),
+		},
+	];
 }
 
 export async function sonarjs(
@@ -80,6 +84,7 @@ export async function sonarjs(
 	return [
 		{
 			name: "isentinel/sonarjs",
+			files: [GLOB_SRC],
 			plugins: {
 				sonar: pluginSonar,
 			},

@@ -1,6 +1,60 @@
-import { GLOB_SRC } from "../globs";
-import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { GLOB_SRC } from "../globs.ts";
+import type {
+	OptionsProjectType,
+	OptionsStylistic,
+	Rules,
+	TypedFlatConfigItem,
+	TypedOxlintConfigItem,
+} from "../types.ts";
+import { interopDefault } from "../utils.ts";
+
+export function importRules(options: OptionsProjectType & OptionsStylistic = {}): Rules {
+	const { stylistic } = options;
+
+	return {
+		"antfu/import-dedupe": "error",
+		"antfu/no-import-dist": "error",
+		"antfu/no-import-node-modules-by-path": "error",
+
+		"import/first": "error",
+		"import/no-duplicates": "error",
+		"import/no-mutable-exports": "error",
+		"import/no-named-default": "error",
+
+		...(stylistic !== false
+			? {
+					"import/newline-after-import": ["error", { considerComments: true, count: 1 }],
+				}
+			: {}),
+	};
+}
+
+export function oxlintImports(
+	options: OptionsProjectType & OptionsStylistic = {},
+): Array<TypedOxlintConfigItem> {
+	const allRules = importRules(options);
+
+	// TODO(oxlint): not yet implemented (oxc-project/oxc#493)
+	// import/newline-after-import
+	const omitRules = new Set(["import/newline-after-import"]);
+
+	const filteredRules: Rules = {};
+	for (const [key, value] of Object.entries(allRules)) {
+		if (!omitRules.has(key)) {
+			filteredRules[key] = value;
+		}
+	}
+
+	return [
+		{
+			name: "isentinel/imports/rules",
+			files: [GLOB_SRC],
+			jsPlugins: [{ name: "antfu", specifier: "eslint-plugin-antfu" }],
+			plugins: ["import"],
+			rules: filteredRules,
+		},
+	];
+}
 
 export async function imports(
 	options: OptionsProjectType & OptionsStylistic = {},
@@ -19,25 +73,7 @@ export async function imports(
 				antfu: pluginAntfu,
 				import: pluginImport,
 			},
-			rules: {
-				"antfu/import-dedupe": "error",
-				"antfu/no-import-dist": "error",
-				"antfu/no-import-node-modules-by-path": "error",
-
-				"import/first": "error",
-				"import/no-duplicates": "error",
-				"import/no-mutable-exports": "error",
-				"import/no-named-default": "error",
-
-				...(stylistic !== false
-					? {
-							"import/newline-after-import": [
-								"error",
-								{ considerComments: true, count: 1 },
-							],
-						}
-					: {}),
-			},
+			rules: importRules({ stylistic }),
 		},
 		...(type === "game"
 			? [

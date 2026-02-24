@@ -1,4 +1,7 @@
 {
 	"extends": "@isentinel/tsconfig/typescript",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true
+	},
 	"exclude": ["**/node_modules", "./**/.*/", "./fixtures/**/*.*", "./references/**/*.*"]
 }

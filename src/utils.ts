@@ -9,8 +9,8 @@ import path from "node:path";
 import process from "node:process";
 import prettier from "prettier";
 
-import type { OxfmtOptions, PrettierOptions } from "./configs";
-import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
+import type { OxfmtOptions, PrettierOptions, PrettierRuleOptions } from "./configs";
+import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
@@ -253,7 +253,6 @@ export function isInGitHooksOrLintStaged(): boolean {
 export function isInAgentSession(): boolean {
 	return [
 		process.env["CLAUDECODE"],
-		process.env["CLAUDE_CODE_ENTRYPOINT"],
 		process.env["CODEX_THREAD_ID"],
 		process.env["CURSOR_AGENT"],
 		process.env["GEMINI_CLI"],
@@ -322,6 +321,17 @@ export function mergeGlobs(
 	}
 
 	return result;
+}
+
+export function mergePrettierOptions(
+	options: PrettierOptions,
+	overrides: PrettierRuleOptions = {},
+): Record<string, any> {
+	return {
+		...options,
+		...overrides,
+		plugins: [...(overrides.plugins ?? []), ...(options.plugins ?? [])],
+	};
 }
 
 /**
@@ -441,9 +451,8 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 	for (const filename of OXFMT_CONFIG_FILES) {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
-			const content = await fs.promises.readFile(configPath, "utf-8");
-			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
-			return config as OxfmtOptions;
+			const content = fs.readFileSync(configPath, "utf-8");
+			return JSON.parse(content) as OxfmtOptions;
 		} catch {
 			continue;
 		}
@@ -458,17 +467,15 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
  *
  * @param rules - The rules object to override.
  * @param severity - The target severity level.
- * @param excludeRules - Rules to exclude from the severity override.
  * @returns A new rules object with overridden severities.
  */
 export function overrideRuleSeverity(
 	rules: Record<string, any>,
 	severity: "error" | "warn",
-	excludeRules: ReadonlySet<string> = new Set(),
 ): Record<string, any> {
 	return Object.fromEntries(
 		Object.entries(rules).map(([key, value]) => {
-			if (value === "off" || value === 0 || excludeRules.has(key)) {
+			if (value === "off" || value === 0) {
 				return [key, value];
 			}
 
@@ -490,6 +497,17 @@ export function overrideRuleSeverity(
 	);
 }
 
+/**
+ * Check if a feature should be enabled based on options. Handles the pattern
+ * where features can be disabled globally or individually.
+ *
+ * @template T - The type of the options object.
+ * @template K - The key type within the options object.
+ * @param options - The options object (true | false | undefined | object).
+ * @param key - The key to check within the options object.
+ * @param defaultValue - Default value when key is not specified.
+ * @returns Whether the feature should be enabled.
+ */
 export function shouldEnableFeature<T extends Record<string, any>>(
 	options: boolean | T | undefined,
 	key: keyof T,

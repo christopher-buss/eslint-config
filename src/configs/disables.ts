@@ -5,12 +5,10 @@ import {
 	GLOB_SRC_EXT,
 	GLOB_TESTS,
 	GLOB_YAML,
-} from "../globs";
-import type { TypedFlatConfigItem } from "../types";
+} from "../globs.ts";
+import type { Rules, TypedFlatConfigItem, TypedOxlintConfigItem } from "../types.ts";
 
-export async function disables(options: {
-	root: Array<string>;
-}): Promise<Array<TypedFlatConfigItem>> {
+export function disables(options: { root: Array<string> }): Array<TypedFlatConfigItem> {
 	const { root } = options;
 
 	return [
@@ -103,4 +101,33 @@ export async function disables(options: {
 			},
 		},
 	];
+}
+
+export function oxlintDisables(options: { root: Array<string> }): Array<TypedOxlintConfigItem> {
+	const unsupportedPlugins = new Set([
+		"cease-nonsense",
+		"eslint-comments",
+		"roblox",
+		"unused-imports",
+	]);
+
+	return disables(options).map((config) => {
+		const renamedRules: Rules = {};
+		for (const [key, value] of Object.entries(config.rules ?? {})) {
+			const plugin = key.includes("/") ? key.slice(0, key.indexOf("/")) : undefined;
+			if (plugin !== undefined && unsupportedPlugins.has(plugin)) {
+				continue;
+			}
+
+			if (key.startsWith("ts/")) {
+				renamedRules[`typescript/${key.slice(3)}`] = value;
+			} else if (plugin === undefined) {
+				renamedRules[`eslint/${key}`] = value;
+			} else {
+				renamedRules[key] = value;
+			}
+		}
+
+		return { ...config, rules: renamedRules } as TypedOxlintConfigItem;
+	});
 }

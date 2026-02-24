@@ -1,4 +1,4 @@
-import { isentinel } from "@isentinel/eslint-config/eslint";
+import { isentinel } from "@isentinel/eslint-config";
 import styleMigrate from "@stylistic/eslint-plugin-migrate";
 
 export default isentinel(

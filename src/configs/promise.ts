@@ -1,6 +1,6 @@
-import type { OxlintConfigFragment } from "../oxlint";
-import type { Rules, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { GLOB_SRC } from "../globs.ts";
+import type { Rules, TypedFlatConfigItem, TypedOxlintConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export function promiseRules(): Rules {
 	return {
@@ -33,11 +33,15 @@ export function promiseRules(): Rules {
 	};
 }
 
-export function oxlintPromise(): OxlintConfigFragment {
-	return {
-		plugins: ["promise"],
-		rules: promiseRules() as OxlintConfigFragment["rules"],
-	};
+export function oxlintPromise(): Array<TypedOxlintConfigItem> {
+	return [
+		{
+			name: "isentinel/promise",
+			files: [GLOB_SRC],
+			plugins: ["promise"],
+			rules: promiseRules(),
+		},
+	];
 }
 
 export async function promise(): Promise<Array<TypedFlatConfigItem>> {
@@ -47,6 +51,7 @@ export async function promise(): Promise<Array<TypedFlatConfigItem>> {
 	return [
 		{
 			name: "isentinel/promise",
+			files: [GLOB_SRC],
 			plugins: {
 				promise: pluginPromise,
 			},

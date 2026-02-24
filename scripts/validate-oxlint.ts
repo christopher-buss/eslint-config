@@ -15,8 +15,26 @@ for (const line of output.split("\n")) {
 	}
 }
 
-const config = isentinel();
-const configRules = Object.keys(config.rules ?? {});
+const config = isentinel({
+	name: "test/oxlint-validation",
+});
+
+// Collect rules from top-level and all overrides, skipping "off" rules
+// since those are harmless references to unimplemented oxlint rules
+const configRules = new Set<string>();
+for (const [key, value] of Object.entries(config.rules ?? {})) {
+	if (value !== "off" && !(Array.isArray(value) && value[0] === "off")) {
+		configRules.add(key);
+	}
+}
+
+for (const override of config.overrides ?? []) {
+	for (const [key, value] of Object.entries(override.rules ?? {})) {
+		if (value !== "off" && !(Array.isArray(value) && value[0] === "off")) {
+			configRules.add(key);
+		}
+	}
+}
 
 // jsPlugin prefixes — rules from these plugins can't be validated against
 // oxlint's native rule list since they're loaded at runtime
@@ -36,7 +54,9 @@ for (const rule of configRules) {
 	}
 
 	nativeCount++;
-	if (!validRules.has(rule)) {
+	// Core eslint rules have no prefix in config but are listed as eslint/rule in --rules
+	const lookup = rule.includes("/") ? rule : `eslint/${rule}`;
+	if (!validRules.has(lookup)) {
 		console.error(`Unknown oxlint rule: ${rule}`);
 		invalid++;
 	}

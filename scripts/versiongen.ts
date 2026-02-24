@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { URL } from "node:url";
 import { parsePnpmWorkspaceYaml } from "pnpm-workspace-yaml";
 
 import { dependenciesMap } from "../src/cli/constants";

@@ -36,12 +36,12 @@ export async function roblox(
 	] as const);
 
 	const files = options.files ?? [
-		"**/*/*.?([cm])ts",
-		"**/*/*.?([cm])tsx",
+		"**/*/*.{c,m,}ts",
+		"**/*/*.{c,m,}tsx",
 		...componentExtensions.map((extension) => `**/*/*.${extension}`),
 	];
 
-	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.?([cm])ts", "**/*/*.?([cm])tsx"];
+	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.{c,m,}ts", "**/*/*.{c,m,}tsx"];
 	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;

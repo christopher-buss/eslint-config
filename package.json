@@ -54,7 +54,7 @@
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"eslint": "eslint --cache",
-		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts && tsx scripts/validate-oxlint.ts",
+		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts && tsx scripts/oxlint-defaults.ts && tsx scripts/validate-oxlint.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "oxlint && eslint --cache",
 		"lint:ci": "oxlint && eslint --cache --cache-strategy content",

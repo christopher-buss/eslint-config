@@ -4,6 +4,7 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
+import type { OxlintOverride } from "oxlint";
 import type { SetRequired } from "type-fest";
 
 import type { OxfmtOptions } from "./configs";
@@ -38,6 +39,18 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	 * @see [Using plugins in your configuration](https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration)
 	 */
 	plugins?: Record<string, any>;
+
+	/**
+	 * An object containing the configured rules. When `files` or `ignores` are
+	 * specified, these rule configurations are only available to the matching
+	 * files.
+	 */
+	rules?: Rules;
+};
+
+export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
+	/** A name for this config item, for better debugging and tooling support. */
+	name: string;
 
 	/**
 	 * An object containing the configured rules. When `files` or `ignores` are

@@ -1,4 +1,4 @@
-import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
+import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -7,48 +7,92 @@ import type {
 	OptionsTypeScriptErasableOnly,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
+	Rules,
 	TypedFlatConfigItem,
-} from "../types";
-import { createTsParser, ensurePackages, getTsConfig, interopDefault, renameRules } from "../utils";
+	TypedOxlintConfigItem,
+} from "../types.ts";
+import {
+	createTsParser,
+	ensurePackages,
+	getTsConfig,
+	interopDefault,
+	renameRules,
+} from "../utils.ts";
 
-export async function typescript(
-	options: OptionsComponentExtensions &
-		OptionsFiles &
-		OptionsOverridesTypeAware &
-		OptionsStylistic &
-		OptionsTypeScriptErasableOnly &
-		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		componentExts: componentExtensions = [],
-		erasableOnly = false,
-		outOfProjectFiles,
-		overrides = {},
-		overridesTypeAware = {},
-		parserOptions = {},
-		parserOptionsNonTypeAware = {},
-		parserOptionsTypeAware = {},
-		stylistic = true,
-		typeAware = true,
-	} = options;
+export function typescriptRules(options: { stylistic: boolean | object }): Rules {
+	const { stylistic } = options;
 
-	const files = options.files ?? [
-		GLOB_TS,
-		GLOB_TSX,
-		...componentExtensions.map((extension) => `**/*.${extension}`),
-	];
+	return {
+		"ts/adjacent-overload-signatures": "off",
+		"ts/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description" }],
+		"ts/default-param-last": "error",
+		"ts/explicit-function-return-type": [
+			"error",
+			{
+				allowExpressions: true,
+			},
+		],
+		"ts/explicit-member-accessibility": [
+			"error",
+			{
+				overrides: {
+					constructors: "no-public",
+				},
+			},
+		],
+		"ts/method-signature-style": "off",
+		"ts/no-array-constructor": "off",
+		"ts/no-confusing-non-null-assertion": "error",
+		"ts/no-dupe-class-members": "off",
+		"ts/no-dynamic-delete": "off",
+		"ts/no-empty-function": "error",
+		"ts/no-empty-object-type": ["error", { allowInterfaces: "always" }],
+		"ts/no-explicit-any": "off",
+		"ts/no-extraneous-class": "error",
+		"ts/no-for-in-array": "off",
+		"ts/no-import-type-side-effects": "error",
+		"ts/no-inferrable-types": "error",
+		"ts/no-invalid-void-type": "off",
+		"ts/no-namespace": "off",
+		"ts/no-non-null-assertion": "error",
+		"ts/no-redeclare": "off",
+		"ts/no-require-imports": "error",
+		"ts/no-shadow": "error",
+		"ts/no-unused-expressions": "error",
+		"ts/no-unused-private-class-members": "error",
+		"ts/no-unused-vars": "off",
+		"ts/no-use-before-define": "off",
+		"ts/no-useless-constructor": "error",
+		"ts/no-wrapper-object-types": "error",
+		"ts/prefer-for-of": "error",
+		"ts/prefer-function-type": "error",
+		"ts/prefer-literal-enum-member": ["error", { allowBitwiseExpressions: true }],
+		"ts/triple-slash-reference": "off",
+		"ts/unified-signatures": "off",
 
-	const filesTypeAware = options.filesTypeAware ?? [GLOB_TS, GLOB_TSX];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
-	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
-	const isTypeAware = tsconfigPath !== undefined;
+		...(stylistic !== false
+			? {
+					"ts/array-type": [
+						"error",
+						{
+							default: "generic",
+							readonly: "generic",
+						},
+					],
+					"ts/consistent-generic-constructors": ["error", "constructor"],
+					"ts/consistent-indexed-object-style": ["error", "record"],
+					"ts/consistent-type-definitions": ["error", "interface"],
+					"ts/consistent-type-imports": [
+						"error",
+						{ disallowTypeAnnotations: false, prefer: "type-imports" },
+					],
+				}
+			: {}),
+	};
+}
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = {
-		"dot-notation": "off",
-		"no-implied-eval": "off",
-		"no-unsafe-optional-chaining": "error",
-		"prefer-promise-reject-errors": "off",
+export function typescriptTypeAwareRules(): Rules {
+	return {
 		"ts/await-thenable": "error",
 		"ts/consistent-type-assertions": [
 			"error",
@@ -110,6 +154,106 @@ export async function typescript(
 		"ts/switch-exhaustiveness-check": "error",
 		"ts/unbound-method": "error",
 		"ts/use-unknown-in-catch-callback-variable": "error",
+	};
+}
+
+export function oxlintTypescript(options: {
+	stylistic: boolean | object;
+}): Array<TypedOxlintConfigItem> {
+	const allRules = {
+		...typescriptRules(options),
+		...typescriptTypeAwareRules(),
+	};
+
+	// Extension rules that exist as eslint/ in oxlint, not typescript/
+	// These are base JS rules that typescript-eslint extends
+	const eslintExtensionRules = new Set([
+		"ts/default-param-last",
+		"ts/no-array-constructor",
+		"ts/no-dupe-class-members",
+		"ts/no-empty-function",
+		"ts/no-redeclare",
+		"ts/no-shadow",
+		"ts/no-unused-expressions",
+		"ts/no-unused-private-class-members",
+		"ts/no-unused-vars",
+		"ts/no-use-before-define",
+		"ts/no-useless-constructor",
+		"ts/prefer-destructuring",
+	]);
+
+	// TODO(oxlint): not yet implemented (oxc-project/oxc#2180)
+	// explicit-member-accessibility, method-signature-style
+	const notYetImplemented = new Set([
+		"ts/explicit-member-accessibility",
+		"ts/method-signature-style",
+	]);
+
+	const renamedRules: Rules = {};
+	for (const [key, value] of Object.entries(allRules)) {
+		if (notYetImplemented.has(key)) {
+			continue;
+		}
+
+		if (eslintExtensionRules.has(key)) {
+			// These exist under eslint/ source in oxlint
+			renamedRules[`eslint/${key.slice(3)}`] = value;
+		} else if (key.startsWith("ts/")) {
+			renamedRules[`typescript/${key.slice(3)}`] = value;
+		} else {
+			renamedRules[key] = value;
+		}
+	}
+
+	return [
+		{
+			name: "isentinel/typescript",
+			files: [GLOB_TS, GLOB_TSX],
+			plugins: ["eslint", "typescript"],
+			rules: renamedRules,
+		},
+	];
+}
+
+export async function typescript(
+	options: OptionsComponentExtensions &
+		OptionsFiles &
+		OptionsOverridesTypeAware &
+		OptionsStylistic &
+		OptionsTypeScriptErasableOnly &
+		OptionsTypeScriptParserOptions &
+		OptionsTypeScriptWithTypes = {},
+): Promise<Array<TypedFlatConfigItem>> {
+	const {
+		componentExts: componentExtensions = [],
+		erasableOnly = false,
+		outOfProjectFiles,
+		overrides = {},
+		overridesTypeAware = {},
+		parserOptions = {},
+		parserOptionsNonTypeAware = {},
+		parserOptionsTypeAware = {},
+		stylistic = true,
+		typeAware = true,
+	} = options;
+
+	const files = options.files ?? [
+		GLOB_TS,
+		GLOB_TSX,
+		...componentExtensions.map((extension) => `**/*.${extension}`),
+	];
+
+	const filesTypeAware = options.filesTypeAware ?? [GLOB_TS, GLOB_TSX];
+	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
+	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
+	const isTypeAware = tsconfigPath !== undefined;
+
+	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"dot-notation": "off",
+		"no-implied-eval": "off",
+		"no-unsafe-optional-chaining": "error",
+		"prefer-promise-reject-errors": "off",
+		...typescriptTypeAwareRules(),
 	};
 
 	const [parserTs, pluginTs, pluginAntfu] = await Promise.all([
@@ -189,72 +333,7 @@ export async function typescript(
 				"no-useless-constructor": "off",
 				"prefer-destructuring": "off",
 
-				"ts/adjacent-overload-signatures": "off",
-				"ts/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description" }],
-				"ts/default-param-last": "error",
-				"ts/explicit-function-return-type": [
-					"error",
-					{
-						allowExpressions: true,
-					},
-				],
-				"ts/explicit-member-accessibility": [
-					"error",
-					{
-						overrides: {
-							constructors: "no-public",
-						},
-					},
-				],
-				"ts/method-signature-style": "off",
-				"ts/no-array-constructor": "off",
-				"ts/no-confusing-non-null-assertion": "error",
-				"ts/no-dupe-class-members": "off",
-				"ts/no-dynamic-delete": "off",
-				"ts/no-empty-function": "error",
-				"ts/no-empty-object-type": ["error", { allowInterfaces: "always" }],
-				"ts/no-explicit-any": "off",
-				"ts/no-extraneous-class": "error",
-				"ts/no-for-in-array": "off",
-				"ts/no-import-type-side-effects": "error",
-				"ts/no-inferrable-types": "error",
-				"ts/no-invalid-void-type": "off",
-				"ts/no-namespace": "off",
-				"ts/no-non-null-assertion": "error",
-				"ts/no-redeclare": "off",
-				"ts/no-require-imports": "error",
-				"ts/no-shadow": "error",
-				"ts/no-unused-expressions": "error",
-				"ts/no-unused-private-class-members": "error",
-				"ts/no-unused-vars": "off",
-				"ts/no-use-before-define": "off",
-				"ts/no-useless-constructor": "error",
-				"ts/no-wrapper-object-types": "error",
-				"ts/prefer-for-of": "error",
-				"ts/prefer-function-type": "error",
-				"ts/prefer-literal-enum-member": ["error", { allowBitwiseExpressions: true }],
-				"ts/triple-slash-reference": "off",
-
-				"ts/unified-signatures": "off",
-
-				...(stylistic !== false
-					? {
-							"ts/array-type": [
-								"error",
-								{
-									default: "generic",
-									readonly: "generic",
-								},
-							],
-							"ts/consistent-generic-constructors": ["error", "constructor"],
-							"ts/consistent-indexed-object-style": ["error", "record"],
-							"ts/consistent-type-definitions": ["error", "interface"],
-							"ts/consistent-type-imports": [
-								"error",
-								{ disallowTypeAnnotations: false, prefer: "type-imports" },
-							],
-						}
-					: {}),
+				...typescriptRules({ stylistic }),
 				...overrides,
 			},
 		},
