@@ -7,7 +7,7 @@ import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { SetRequired } from "type-fest";
 
 import type { OxfmtOptions } from "./configs";
-import type { PrettierOptions } from "./configs/prettier";
+import type { PrettierOptions } from "./configs/oxfmt";
 import type { RuleOptions } from "./typegen";
 import type { ExtractRuleOptions } from "./utils";
 
@@ -77,8 +77,6 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 	ignoresTypeAware?: Array<string>;
 }
 
-export type FormatterEngine = "oxfmt" | "prettier";
-
 export interface OptionsFormatters {
 	/**
 	 * Enable formatting support for CSS, Less, Sass, and SCSS.
@@ -100,13 +98,6 @@ export interface OptionsFormatters {
 	 * @default true
 	 */
 	html?: boolean;
-
-	/**
-	 * Formatter engine for JavaScript files.
-	 *
-	 * @default "oxfmt"
-	 */
-	javascript?: FormatterEngine;
 
 	/**
 	 * Enable formatting support for JSON(C|5).
@@ -138,16 +129,10 @@ export interface OptionsFormatters {
 	/**
 	 * Custom options for Prettier.
 	 *
-	 * By default it's controlled by our own config.
+	 * Used for arrow-return-style-x and as a migration source for oxfmt
+	 * options.
 	 */
 	prettierOptions?: PrettierOptions;
-
-	/**
-	 * Formatter engine for TypeScript files.
-	 *
-	 * @default "oxfmt"
-	 */
-	typescript?: FormatterEngine;
 
 	/**
 	 * Enable formatting support for YAML.

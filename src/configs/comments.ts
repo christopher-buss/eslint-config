@@ -51,8 +51,9 @@ export async function comments(
 							"comment-length/limit-single-line-comments": [
 								"error",
 								{
-									maxLength: Number(prettierOptions["jsdocPrintWidth"]) + 2,
-									tabSize: prettierOptions.tabWidth,
+									maxLength:
+										(Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
+									tabSize: prettierOptions.tabWidth ?? 4,
 								},
 							],
 						},
