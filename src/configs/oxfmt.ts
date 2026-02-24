@@ -58,11 +58,11 @@ export async function oxfmt(
 	};
 
 	const oxfmtOptions = {
-		experimentalSortImports: defaultSortImports,
+		sortImports: defaultSortImports,
 		...migratePrettierOptions(prettierOptions),
 		...oxfmtConfigOptions,
 		...userOxfmtOptions,
-	};
+	} satisfies OxfmtOptions;
 
 	const [configPrettier, pluginOxfmt] = await Promise.all([
 		interopDefault(import("eslint-config-prettier/flat")),
