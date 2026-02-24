@@ -94,7 +94,7 @@ export const GLOB_EXCLUDE = [
 	"**/.cache",
 	"**/.changeset",
 	"**/.agents",
-	"**/.claude",
+	"**/.claude/**/*",
 	"**/.gemini",
 	"**/.kilocode",
 	"**/.opencode",
