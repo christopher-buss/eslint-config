@@ -15,7 +15,6 @@ export * from "./oxfmt";
 export * from "./package-json";
 export * from "./perfectionist";
 export * from "./pnpm";
-export * from "./prettier";
 export * from "./promise";
 export * from "./react";
 export * from "./roblox";

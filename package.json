@@ -2,7 +2,12 @@
 	"name": "@isentinel/eslint-config",
 	"version": "5.0.0-beta.1",
 	"description": "iSentinel's ESLint config",
-	"keywords": ["eslint-config", "roblox", "roblox-ts", "rbxts"],
+	"keywords": [
+		"eslint-config",
+		"roblox",
+		"roblox-ts",
+		"rbxts"
+	],
 	"homepage": "https://github.com/christopher-buss/eslint-config",
 	"bugs": {
 		"url": "https://github.com/christopher-buss/eslint-config/issues"
@@ -31,7 +36,10 @@
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
-	"files": ["bin", "dist"],
+	"files": [
+		"bin",
+		"dist"
+	],
 	"scripts": {
 		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
@@ -52,7 +60,9 @@
 	},
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
-		"*.ts": ["sh -c 'tsc --noEmit'"]
+		"*.ts": [
+			"sh -c 'tsc --noEmit'"
+		]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
@@ -86,7 +96,6 @@
 		"eslint-plugin-package-json": "catalog:prod",
 		"eslint-plugin-perfectionist": "catalog:prod",
 		"eslint-plugin-pnpm": "catalog:prod",
-		"eslint-plugin-prettier": "catalog:prod",
 		"eslint-plugin-promise": "catalog:prod",
 		"eslint-plugin-roblox-ts": "catalog:prod",
 		"eslint-plugin-sentinel": "catalog:prod",
@@ -101,7 +110,6 @@
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
 		"prettier": "catalog:prod",
-		"prettier-plugin-jsdoc": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
 		"yargs": "catalog:prod"

@@ -1,37 +1,57 @@
 import type { FormatOptions as OxfmtOptions } from "oxfmt";
+import type { Options as PrettierOptions } from "prettier";
 
 import { defaultPluginRenaming } from "../factory";
-import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
+import {
+	GLOB_ALL_JSON,
+	GLOB_CSS,
+	GLOB_JS,
+	GLOB_JSX,
+	GLOB_LESS,
+	GLOB_MARKDOWN,
+	GLOB_POSTCSS,
+	GLOB_SCSS,
+	GLOB_TS,
+	GLOB_TSX,
+	GLOB_YAML,
+} from "../globs";
 import type {
-	FormatterEngine,
 	OptionsComponentExtensions,
 	OptionsFiles,
+	OptionsFormatters,
 	OptionsOverrides,
 	TypedFlatConfigItem,
 } from "../types";
-import { interopDefault, renameRules } from "../utils";
-import type { PrettierOptions } from "./prettier";
+import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils";
 
 export async function oxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles &
 		OptionsOverrides & {
-			jsFormatter?: FormatterEngine;
+			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
 			oxfmtOptions?: OxfmtOptions;
 			prettierOptions?: PrettierOptions;
-			tsFormatter?: FormatterEngine;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
 		files: oxfmtFiles,
-		jsFormatter = "oxfmt",
+		formatters = {},
 		oxfmtConfigOptions = {},
 		oxfmtOptions: userOxfmtOptions,
 		prettierOptions = {},
-		tsFormatter = "oxfmt",
 	} = options ?? {};
+
+	const formattingOptions = {
+		css: true,
+		graphql: true,
+		html: true,
+		json: true,
+		markdown: true,
+		yaml: true,
+		...resolveWithDefaults(formatters, {}),
+	} satisfies OptionsFormatters;
 
 	const defaultSortImports = {
 		customGroups: [
@@ -59,6 +79,7 @@ export async function oxfmt(
 
 	const oxfmtOptions = {
 		sortImports: defaultSortImports,
+		sortPackageJson: false,
 		...migratePrettierOptions(prettierOptions),
 		...oxfmtConfigOptions,
 		...userOxfmtOptions,
@@ -84,45 +105,144 @@ export async function oxfmt(
 		},
 	];
 
-	if (jsFormatter === "oxfmt") {
-		const jsFiles = oxfmtFiles ?? [
-			GLOB_JS,
-			GLOB_JSX,
-			`${GLOB_MARKDOWN}/${GLOB_JS}`,
-			`${GLOB_MARKDOWN}/${GLOB_JSX}`,
-		];
+	const jsFiles = oxfmtFiles ?? [
+		GLOB_JS,
+		GLOB_JSX,
+		`${GLOB_MARKDOWN}/${GLOB_JS}`,
+		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+	];
 
+	configs.push({
+		name: "isentinel/oxfmt/javascript",
+		files: jsFiles,
+		rules: {
+			...rules,
+			"arrow-body-style": "off",
+			"oxfmt/oxfmt": ["error", oxfmtOptions],
+			"prefer-arrow-callback": "off",
+		},
+	});
+
+	const tsFiles = oxfmtFiles ?? [
+		GLOB_TS,
+		GLOB_TSX,
+		`${GLOB_MARKDOWN}/${GLOB_TS}`,
+		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
+		...componentExtensions.map((extension) => `**/*.${extension}`),
+	];
+
+	configs.push({
+		name: "isentinel/oxfmt/typescript",
+		files: tsFiles,
+		rules: {
+			...rules,
+			"arrow-body-style": "off",
+			"oxfmt/oxfmt": ["error", oxfmtOptions],
+			"prefer-arrow-callback": "off",
+		},
+	});
+
+	if (formattingOptions.css) {
+		configs.push(
+			{
+				name: "isentinel/oxfmt/css",
+				files: [GLOB_CSS, GLOB_POSTCSS],
+				languageOptions: {
+					parser: parserPlain,
+				},
+				rules: {
+					"oxfmt/oxfmt": ["error", oxfmtOptions],
+				},
+			},
+			{
+				name: "isentinel/oxfmt/scss",
+				files: [GLOB_SCSS],
+				languageOptions: {
+					parser: parserPlain,
+				},
+				rules: {
+					"oxfmt/oxfmt": ["error", oxfmtOptions],
+				},
+			},
+			{
+				name: "isentinel/oxfmt/less",
+				files: [GLOB_LESS],
+				languageOptions: {
+					parser: parserPlain,
+				},
+				rules: {
+					"oxfmt/oxfmt": ["error", oxfmtOptions],
+				},
+			},
+		);
+	}
+
+	if (formattingOptions.html) {
 		configs.push({
-			name: "isentinel/oxfmt/javascript",
-			files: jsFiles,
+			name: "isentinel/oxfmt/html",
+			files: ["**/*.html"],
+			languageOptions: {
+				parser: parserPlain,
+			},
 			rules: {
-				...rules,
-				"arrow-body-style": "off",
-				"format/prettier": "off",
-				"oxfmt/oxfmt": ["error", oxfmtOptions as Record<string, unknown>],
-				"prefer-arrow-callback": "off",
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
 			},
 		});
 	}
 
-	if (tsFormatter === "oxfmt") {
-		const tsFiles = oxfmtFiles ?? [
-			GLOB_TS,
-			GLOB_TSX,
-			`${GLOB_MARKDOWN}/${GLOB_TS}`,
-			`${GLOB_MARKDOWN}/${GLOB_TSX}`,
-			...componentExtensions.map((extension) => `**/*.${extension}`),
-		];
-
+	if (formattingOptions.markdown) {
 		configs.push({
-			name: "isentinel/oxfmt/typescript",
-			files: tsFiles,
+			name: "isentinel/oxfmt/markdown",
+			files: [GLOB_MARKDOWN],
 			rules: {
-				...rules,
-				"arrow-body-style": "off",
-				"format/prettier": "off",
-				"oxfmt/oxfmt": ["error", oxfmtOptions as Record<string, unknown>],
-				"prefer-arrow-callback": "off",
+				"oxfmt/oxfmt": [
+					"error",
+					{
+						...oxfmtOptions,
+						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
+						proseWrap: "always",
+					} as Record<string, unknown>,
+				],
+			},
+		});
+	}
+
+	if (formattingOptions.graphql) {
+		configs.push({
+			name: "isentinel/oxfmt/graphql",
+			files: ["**/*.graphql"],
+			languageOptions: {
+				parser: parserPlain,
+			},
+			rules: {
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
+			},
+		});
+	}
+
+	if (formattingOptions.json) {
+		configs.push({
+			name: "isentinel/oxfmt/json",
+			files: [GLOB_ALL_JSON],
+			rules: {
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
+			},
+		});
+	}
+
+	if (formattingOptions.yaml) {
+		configs.push({
+			name: "isentinel/oxfmt/yaml",
+			files: [GLOB_YAML],
+			rules: {
+				"oxfmt/oxfmt": [
+					"error",
+					{
+						...oxfmtOptions,
+						tabWidth: 2,
+						useTabs: false,
+					},
+				],
 			},
 		});
 	}
@@ -159,3 +279,4 @@ function migratePrettierOptions(prettierOptions: PrettierOptions): Record<string
 }
 
 export type { FormatOptions as OxfmtOptions } from "oxfmt";
+export type { Options as PrettierOptions } from "prettier";

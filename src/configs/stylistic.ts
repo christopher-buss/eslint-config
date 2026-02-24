@@ -2,8 +2,8 @@ import type { Linter } from "eslint";
 
 import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../globs";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types";
-import { interopDefault, mergePrettierOptions } from "../utils";
-import type { PrettierOptions } from "./prettier";
+import { interopDefault } from "../utils";
+import type { PrettierOptions } from "./oxfmt";
 
 export const StylisticConfigDefaults: StylisticConfig = {
 	indent: "tab",
@@ -45,10 +45,7 @@ export async function stylistic(
 					maxObjectProperties: 2,
 					namedExportsAlwaysUseExplicitReturn: true,
 					objectReturnStyle: "complex-explicit" as const,
-					usePrettier: mergePrettierOptions(prettierOptions, {
-						// parser,
-						// plugins: [require.resolve("@prettier/plugin-oxc")],
-					}),
+					usePrettier: prettierOptions,
 				},
 			],
 		};
