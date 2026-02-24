@@ -72,6 +72,7 @@ export async function disables(options: {
 				"max-lines-per-function": "off",
 				"no-empty-function": "off",
 				"no-unused-expressions": "off",
+				"sonar/no-duplicate-string": "off",
 				"ts/explicit-function-return-type": "off",
 				"ts/no-empty-function": "off",
 				"ts/no-non-null-assertion": "off",
