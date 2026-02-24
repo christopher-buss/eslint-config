@@ -451,17 +451,6 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 }
 
 /**
- * Check if a feature should be enabled based on options. Handles the pattern
- * where features can be disabled globally or individually.
- *
- * @template T - The type of the options object.
- * @template K - The key type within the options object.
- * @param options - The options object (true | false | undefined | object).
- * @param key - The key to check within the options object.
- * @param defaultValue - Default value when key is not specified.
- * @returns Whether the feature should be enabled.
- */
-/**
  * Override the severity of all rules in a rules object, preserving rule
  * options. Rules set to `"off"` are not affected.
  *
