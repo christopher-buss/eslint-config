@@ -387,7 +387,17 @@ export async function isentinel(
 		configs.push(
 			oxfmt({
 				componentExts: componentExtensions,
-				formatters: formatters !== false ? formatters : undefined,
+				formatters:
+					formatters !== false
+						? formatters
+						: {
+								css: false,
+								graphql: false,
+								html: false,
+								json: false,
+								markdown: false,
+								yaml: false,
+							},
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
 				prettierOptions: prettierSettings,

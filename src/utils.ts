@@ -440,7 +440,7 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 	for (const filename of OXFMT_CONFIG_FILES) {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
-			const content = fs.readFileSync(configPath, "utf-8");
+			const content = await fs.promises.readFile(configPath, "utf-8");
 			return JSON.parse(content) as OxfmtOptions;
 		} catch {
 			continue;

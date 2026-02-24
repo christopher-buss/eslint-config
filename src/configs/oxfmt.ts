@@ -225,12 +225,7 @@ export async function oxfmt(
 			name: "isentinel/oxfmt/json",
 			files: [GLOB_ALL_JSON],
 			rules: {
-				"oxfmt/oxfmt": [
-					"error",
-					{
-						...oxfmtOptions,
-					},
-				],
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
 			},
 		});
 	}
