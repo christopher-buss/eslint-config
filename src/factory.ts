@@ -38,6 +38,7 @@ import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
 import { GLOB_ROOT } from "./globs";
+import type { RuleOptions } from "./typegen";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -135,8 +136,9 @@ export async function isentinel(
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
+	const inAgentSession = isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
-	if (defaultSeverity === undefined && isInAgentSession()) {
+	if (defaultSeverity === undefined && inAgentSession) {
 		defaultSeverity = "error";
 	}
 
@@ -433,7 +435,7 @@ export async function isentinel(
 	}
 
 	if (isInEditor) {
-		const disableAutofixRules = [
+		const disableAutofixRules: Array<keyof RuleOptions> = [
 			"no-useless-return",
 			"prefer-const",
 			"unused-imports/no-unused-imports",
@@ -441,6 +443,17 @@ export async function isentinel(
 		if (enableRoblox) {
 			disableAutofixRules.push("unicorn/no-array-for-each");
 		}
+
+		composer = composer.disableRulesFix(disableAutofixRules, {
+			builtinRules: async () => {
+				const rules = await import("eslint/use-at-your-own-risk");
+				return rules.builtinRules;
+			},
+		});
+	}
+
+	if (inAgentSession) {
+		const disableAutofixRules: Array<keyof RuleOptions> = ["ts/consistent-type-imports"];
 
 		composer = composer.disableRulesFix(disableAutofixRules, {
 			builtinRules: async () => {
