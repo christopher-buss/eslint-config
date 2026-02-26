@@ -434,26 +434,24 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
-	if (isInEditor) {
-		const disableAutofixRules: Array<keyof RuleOptions> = [
-			"no-useless-return",
-			"prefer-const",
-			"unused-imports/no-unused-imports",
-		];
-		if (enableRoblox) {
-			disableAutofixRules.push("unicorn/no-array-for-each");
+	if (isInEditor || inAgentSession) {
+		const disableAutofixRules: Array<keyof RuleOptions> = [];
+
+		if (isInEditor) {
+			disableAutofixRules.push(
+				"no-useless-return",
+				"prefer-const",
+				"unused-imports/no-unused-imports",
+			);
+
+			if (enableRoblox) {
+				disableAutofixRules.push("unicorn/no-array-for-each");
+			}
 		}
 
-		composer = composer.disableRulesFix(disableAutofixRules, {
-			builtinRules: async () => {
-				const rules = await import("eslint/use-at-your-own-risk");
-				return rules.builtinRules;
-			},
-		});
-	}
-
-	if (inAgentSession) {
-		const disableAutofixRules: Array<keyof RuleOptions> = ["ts/consistent-type-imports"];
+		if (inAgentSession) {
+			disableAutofixRules.push("ts/consistent-type-imports");
+		}
 
 		composer = composer.disableRulesFix(disableAutofixRules, {
 			builtinRules: async () => {
