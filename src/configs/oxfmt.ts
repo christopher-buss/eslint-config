@@ -201,7 +201,7 @@ export async function oxfmt(
 						...oxfmtOptions,
 						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
 						proseWrap: "always",
-					} as Record<string, unknown>,
+					},
 				],
 			},
 		});
