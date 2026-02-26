@@ -253,6 +253,7 @@ export function isInGitHooksOrLintStaged(): boolean {
 export function isInAgentSession(): boolean {
 	return [
 		process.env["CLAUDECODE"],
+		process.env["CLAUDE_CODE_ENTRYPOINT"],
 		process.env["CODEX_THREAD_ID"],
 		process.env["CURSOR_AGENT"],
 		process.env["GEMINI_CLI"],
