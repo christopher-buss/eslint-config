@@ -442,7 +442,8 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
 			const content = await fs.promises.readFile(configPath, "utf-8");
-			return JSON.parse(content) as OxfmtOptions;
+			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
+			return config as OxfmtOptions;
 		} catch {
 			continue;
 		}
