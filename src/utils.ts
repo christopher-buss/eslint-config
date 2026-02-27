@@ -458,15 +458,17 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
  *
  * @param rules - The rules object to override.
  * @param severity - The target severity level.
+ * @param excludeRules - Rules to exclude from the severity override.
  * @returns A new rules object with overridden severities.
  */
 export function overrideRuleSeverity(
 	rules: Record<string, any>,
 	severity: "error" | "warn",
+	excludeRules: ReadonlySet<string> = new Set(),
 ): Record<string, any> {
 	return Object.fromEntries(
 		Object.entries(rules).map(([key, value]) => {
-			if (value === "off" || value === 0) {
+			if (value === "off" || value === 0 || excludeRules.has(key)) {
 				return [key, value];
 			}
 

@@ -462,10 +462,16 @@ export async function isentinel(
 	}
 
 	if (defaultSeverity) {
+		const severityExcludeRules = new Set(["sonar/todo-tag"]);
+
 		composer = composer.onResolved((item) => {
 			for (const config of item) {
 				if (config.rules) {
-					config.rules = overrideRuleSeverity(config.rules, defaultSeverity);
+					config.rules = overrideRuleSeverity(
+						config.rules,
+						defaultSeverity,
+						severityExcludeRules,
+					);
 				}
 			}
 		});
