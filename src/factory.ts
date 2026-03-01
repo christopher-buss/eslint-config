@@ -19,7 +19,6 @@ import {
 	oxfmt,
 	perfectionist,
 	pnpm,
-	prettier,
 	promise,
 	react,
 	roblox,
@@ -39,6 +38,7 @@ import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
 import { GLOB_ROOT } from "./globs";
+import type { RuleOptions } from "./typegen";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -54,11 +54,9 @@ import {
 	isInEditorEnvironment,
 	mergeGlobs,
 	overrideRuleSeverity,
-	require,
 	resolveOxfmtConfigOptions,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
-	resolveWithDefaults,
 	shouldEnableFeature,
 } from "./utils";
 
@@ -134,14 +132,14 @@ export async function isentinel(
 		react: enableReact = false,
 		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
-		typescript: typescriptOptions,
 	} = options;
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
+	const inAgentSession = isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
-	if (defaultSeverity === undefined && isInAgentSession()) {
+	if (defaultSeverity === undefined && inAgentSession) {
 		defaultSeverity = "error";
 	}
 
@@ -184,28 +182,21 @@ export async function isentinel(
 	}
 
 	const formatterOptions = typeof options.formatters === "object" ? options.formatters : {};
-	const jsFormatter = formatterOptions.javascript ?? "oxfmt";
-	const tsFormatter = formatterOptions.typescript ?? "oxfmt";
-	const useOxfmt =
-		options.formatters !== false && (jsFormatter === "oxfmt" || tsFormatter === "oxfmt");
 
 	const prettierOptions = formatterOptions.prettierOptions ?? {};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
-	const oxfmtConfigOptions = useOxfmt ? await resolveOxfmtConfigOptions() : {};
+	const oxfmtConfigOptions =
+		options.formatters !== false ? await resolveOxfmtConfigOptions() : {};
 
 	const prettierSettings: PrettierOptions = Object.assign(
 		{
 			arrowParens: "always",
-			jsdocPreferCodeFences: true,
-			jsdocPrintWidth: 80,
-			plugins: [require.resolve("prettier-plugin-jsdoc")],
 			printWidth: 100,
 			quoteProps: "consistent",
 			semi: true,
 			singleQuote: false,
 			tabWidth: 4,
 			trailingComma: "all",
-			tsdoc: true,
 			useTabs: true,
 		} satisfies PrettierOptions,
 		editorConfigOptions,
@@ -398,32 +389,26 @@ export async function isentinel(
 	configs.push(disables({ root: rootGlobs }));
 
 	if (stylisticOptions !== false) {
-		// We require prettier to be the last config
+		// Oxfmt must be the last config
 		configs.push(
-			prettier({
-				...resolveWithDefaults(typescriptOptions, {}),
-				...getOverrides(options, "typescript"),
+			oxfmt({
 				componentExts: componentExtensions,
-				formatters: formatters !== false ? formatters : undefined,
-				jsFormatter,
+				formatters:
+					formatters !== false
+						? formatters
+						: {
+								css: false,
+								graphql: false,
+								html: false,
+								json: false,
+								markdown: false,
+								yaml: false,
+							},
+				oxfmtConfigOptions,
+				oxfmtOptions: formatterOptions.oxfmtOptions,
 				prettierOptions: prettierSettings,
-				stylistic: stylisticOptions,
-				tsFormatter,
 			}),
 		);
-
-		if (useOxfmt) {
-			configs.push(
-				oxfmt({
-					componentExts: componentExtensions,
-					jsFormatter,
-					oxfmtConfigOptions,
-					oxfmtOptions: formatterOptions.oxfmtOptions,
-					prettierOptions: prettierSettings,
-					tsFormatter,
-				}),
-			);
-		}
 	}
 
 	if ("files" in options) {
@@ -453,14 +438,23 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
-	if (isInEditor) {
-		const disableAutofixRules = [
-			"no-useless-return",
-			"prefer-const",
-			"unused-imports/no-unused-imports",
-		];
-		if (enableRoblox) {
-			disableAutofixRules.push("unicorn/no-array-for-each");
+	if (isInEditor || inAgentSession) {
+		const disableAutofixRules: Array<keyof RuleOptions> = [];
+
+		if (isInEditor) {
+			disableAutofixRules.push(
+				"no-useless-return",
+				"prefer-const",
+				"unused-imports/no-unused-imports",
+			);
+
+			if (enableRoblox) {
+				disableAutofixRules.push("unicorn/no-array-for-each");
+			}
+		}
+
+		if (inAgentSession) {
+			disableAutofixRules.push("ts/consistent-type-imports");
 		}
 
 		composer = composer.disableRulesFix(disableAutofixRules, {
@@ -472,10 +466,16 @@ export async function isentinel(
 	}
 
 	if (defaultSeverity) {
+		const severityExcludeRules = new Set(["sonar/todo-tag"]);
+
 		composer = composer.onResolved((item) => {
 			for (const config of item) {
 				if (config.rules) {
-					config.rules = overrideRuleSeverity(config.rules, defaultSeverity);
+					config.rules = overrideRuleSeverity(
+						config.rules,
+						defaultSeverity,
+						severityExcludeRules,
+					);
 				}
 			}
 		});
