@@ -32,6 +32,7 @@ try {
 		stdio: ["pipe", "pipe", "pipe"],
 	});
 } finally {
+	// oxlint-disable-next-line no-empty-function -- intentional noop
 	await fs.unlink(tempFile).catch(() => {});
 }
 

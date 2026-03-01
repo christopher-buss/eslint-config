@@ -23,14 +23,14 @@ const config = isentinel({
 // since those are harmless references to unimplemented oxlint rules
 const configRules = new Set<string>();
 for (const [key, value] of Object.entries(config.rules ?? {})) {
-	if (value !== "off" && !(Array.isArray(value) && value[0] === "off")) {
+	if (value !== "off" && (!Array.isArray(value) || value[0] !== "off")) {
 		configRules.add(key);
 	}
 }
 
 for (const override of config.overrides ?? []) {
 	for (const [key, value] of Object.entries(override.rules ?? {})) {
-		if (value !== "off" && !(Array.isArray(value) && value[0] === "off")) {
+		if (value !== "off" && (!Array.isArray(value) || value[0] !== "off")) {
 			configRules.add(key);
 		}
 	}
