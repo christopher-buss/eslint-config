@@ -1,5 +1,10 @@
 import { GLOB_SRC } from "../globs.ts";
-import type { OptionsIsInEditor, Rules, TypedFlatConfigItem, TypedOxlintConfigItem } from "../types.ts";
+import type {
+	OptionsIsInEditor,
+	Rules,
+	TypedFlatConfigItem,
+	TypedOxlintConfigItem,
+} from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
 export function sonarjsRules(options: Required<OptionsIsInEditor>): Rules {

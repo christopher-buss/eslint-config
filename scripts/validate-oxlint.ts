@@ -54,7 +54,8 @@ for (const rule of configRules) {
 	}
 
 	nativeCount++;
-	// Core eslint rules have no prefix in config but are listed as eslint/rule in --rules
+	// Core eslint rules have no prefix in config but are listed as eslint/rule
+	// in --rules
 	const lookup = rule.includes("/") ? rule : `eslint/${rule}`;
 	if (!validRules.has(lookup)) {
 		console.error(`Unknown oxlint rule: ${rule}`);

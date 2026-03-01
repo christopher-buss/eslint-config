@@ -77,7 +77,7 @@ export function isentinel(
 
 	// Name is added for debugging purposes (such as for the eslint config
 	// inspector), but is not currently a supported oxlint config property
-	options["name"] = undefined as never;
+	options.name = undefined as never;
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = robloxOptions !== false;
@@ -88,9 +88,7 @@ export function isentinel(
 		defaultSeverity = "error";
 	}
 
-	if (isInEditor === undefined) {
-		isInEditor = isInEditorEnvironment();
-	}
+	isInEditor ??= isInEditorEnvironment();
 
 	const projectType = (() => {
 		if (options.type === "app") {
@@ -181,11 +179,11 @@ export function isentinel(
 
 	for (const configArray of configs) {
 		for (const config of configArray) {
-			for (const plugin of config["plugins"] ?? []) {
+			for (const plugin of config.plugins ?? []) {
 				plugins.add(plugin);
 			}
 
-			for (const jsPlugin of config["jsPlugins"] ?? []) {
+			for (const jsPlugin of config.jsPlugins ?? []) {
 				const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.specifier;
 				jsPlugins.set(key, jsPlugin);
 			}

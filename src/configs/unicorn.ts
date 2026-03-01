@@ -160,11 +160,15 @@ export async function unicorn(
 
 	return [
 		{
-			name: "isentinel/unicorn",
-			files: [GLOB_SRC],
+			name: "isentinel/unicorn/setup",
 			plugins: {
 				unicorn: pluginUnicorn,
 			},
+		},
+		{
+			name: "isentinel/unicorn",
+			files: [GLOB_SRC],
+
 			rules: unicornRules({ stylistic }),
 		},
 		{

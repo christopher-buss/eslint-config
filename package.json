@@ -71,7 +71,9 @@
 	},
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
-		"*.ts": ["sh -c 'pnpm tsgo --noEmit'"]
+		"*.ts": [
+			"sh -c 'pnpm tsgo --noEmit'"
+		]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",

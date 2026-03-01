@@ -23,9 +23,13 @@ export default isentinel(
 		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {
+			// Temporary while migrating to oxlint
+			"cease-nonsense/no-commented-code": "off",
+
 			"max-lines": "off",
 			"max-lines-per-function": "off",
 			"sonar/cognitive-complexity": "off",
+
 			"ts/no-inferrable-types": "off",
 
 			// Lots of configs are still untyped so we can't rely on this
