@@ -463,6 +463,9 @@ importers:
       eslint-plugin-n:
         specifier: catalog:peer
         version: 17.24.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-oxlint-comments:
+        specifier: link:D:/projects/forks/eslint-plugin-oxlint-comments
+        version: link:../../../projects/forks/eslint-plugin-oxlint-comments
       eslint-plugin-react-hooks:
         specifier: catalog:peer
         version: 7.0.1(eslint@9.39.2(jiti@2.6.1))

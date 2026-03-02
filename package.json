@@ -143,6 +143,7 @@
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-jest-extended": "catalog:peer",
 		"eslint-plugin-n": "catalog:peer",
+		"eslint-plugin-oxlint-comments": "link:D:/projects/forks/eslint-plugin-oxlint-comments",
 		"eslint-plugin-react-hooks": "catalog:peer",
 		"eslint-plugin-react-naming-convention": "catalog:peer",
 		"eslint-plugin-react-x": "catalog:peer",

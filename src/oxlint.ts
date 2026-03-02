@@ -7,6 +7,7 @@ import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
 import { oxlintNode } from "./configs/node.ts";
+import { oxlintComments } from "./configs/oxlint-comments.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
 import { oxlintTest } from "./configs/test.ts";
@@ -170,7 +171,7 @@ export function isentinel(
 		);
 	}
 
-	configs.push(oxlintDisables({ root: rootGlobs }));
+	configs.push(oxlintComments(), oxlintDisables({ root: rootGlobs }));
 
 	// Merge fragments: no `files` → top-level rules, with `files` → override
 	const plugins = new Set<OxlintPlugin>();
