@@ -180,8 +180,8 @@ catalogs:
       specifier: 62.7.1
       version: 62.7.1
     eslint-plugin-jsonc:
-      specifier: 3.0.0
-      version: 3.0.0
+      specifier: 3.1.1
+      version: 3.1.1
     eslint-plugin-oxfmt:
       specifier: 0.1.0
       version: 0.1.0
@@ -338,7 +338,7 @@ importers:
         version: 62.7.1(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-jsonc:
         specifier: catalog:prod
-        version: 3.0.0(@eslint/markdown@7.5.1)(eslint@9.39.2(jiti@2.6.1))
+        version: 3.1.1(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
         version: 0.1.0(eslint@9.39.2(jiti@2.6.1))(oxfmt@0.35.0)
@@ -1207,6 +1207,10 @@ packages:
     peerDependencies:
       '@eslint/markdown': ^7.4.0
       eslint: '>=9.0.0'
+
+  '@ota-meshi/ast-token-store@0.3.0':
+    resolution: {integrity: sha512-XRO0zi2NIUKq2lUk3T1ecFSld1fMWRKE6naRFGkgkdeosx7IslyUKNv5Dcb5PJTja9tHJoFu0v/7yEpAkrkrTg==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@oxc-parser/binding-android-arm-eabi@0.112.0':
     resolution: {integrity: sha512-retxBzJ39Da7Lh/eZTn9+HJgTeDUxZIpuI0urOsmcFsBKXAth3lc1jIvwseQ9qbAI/VrsoFOXiGIzgclARbAHg==}
@@ -2685,8 +2689,8 @@ packages:
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-jsonc@3.0.0:
-    resolution: {integrity: sha512-v2brGbpGAePVWdMP+TCar5TuHTX+QM0NahF4sEgL1LIZnRvQQ9iBdNN9wUzsVZxpVjsLnuaCVATwzLxsJApd0Q==}
+  eslint-plugin-jsonc@3.1.1:
+    resolution: {integrity: sha512-7TSQO8ZyvOuXWb0sYke3KUSh0DJA4/QviKfuzD3/Cy3XDjtrIrTWQbjb7j/Yy2l/DgwuM+lCS2c/jqJifv5jhg==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -4722,6 +4726,8 @@ snapshots:
       '@eslint/markdown': 7.5.1
       eslint: 9.39.2(jiti@2.6.1)
 
+  '@ota-meshi/ast-token-store@0.3.0': {}
+
   '@oxc-parser/binding-android-arm-eabi@0.112.0':
     optional: true
 
@@ -6056,12 +6062,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsonc@3.0.0(@eslint/markdown@7.5.1)(eslint@9.39.2(jiti@2.6.1)):
+  eslint-plugin-jsonc@3.1.1(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.2(jiti@2.6.1))
       '@eslint/core': 1.1.0
       '@eslint/plugin-kit': 0.6.0
-      '@ota-meshi/ast-token-store': 0.2.1(@eslint/markdown@7.5.1)(eslint@9.39.2(jiti@2.6.1))
+      '@ota-meshi/ast-token-store': 0.3.0
       diff-sequences: 29.6.3
       eslint: 9.39.2(jiti@2.6.1)
       eslint-json-compat-utils: 0.2.1(eslint@9.39.2(jiti@2.6.1))(jsonc-eslint-parser@3.1.0)
@@ -6070,7 +6076,6 @@ snapshots:
       synckit: 0.11.12
     transitivePeerDependencies:
       - '@eslint/json'
-      - '@eslint/markdown'
 
   eslint-plugin-n@17.24.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
