@@ -43,8 +43,8 @@ catalogs:
       specifier: 1.0.0
       version: 1.0.0
     pnpm-workspace-yaml:
-      specifier: 1.5.0
-      version: 1.5.0
+      specifier: 1.6.0
+      version: 1.6.0
     publint:
       specifier: 0.3.17
       version: 0.3.17
@@ -474,7 +474,7 @@ importers:
         version: 1.0.0
       pnpm-workspace-yaml:
         specifier: catalog:dev
-        version: 1.5.0
+        version: 1.6.0
       publint:
         specifier: catalog:dev
         version: 0.3.17
@@ -3519,6 +3519,9 @@ packages:
 
   pnpm-workspace-yaml@1.5.0:
     resolution: {integrity: sha512-PxdyJuFvq5B0qm3s9PaH/xOtSxrcvpBRr+BblhucpWjs8c79d4b7/cXhyY4AyHOHCnqklCYZTjfl0bT/mFVTRw==}
+
+  pnpm-workspace-yaml@1.6.0:
+    resolution: {integrity: sha512-uUy4dK3E11sp7nK+hnT7uAWfkBMe00KaUw8OG3NuNlYQoTk4sc9pcdIy1+XIP85v9Tvr02mK3JPaNNrP0QyRaw==}
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -7214,6 +7217,10 @@ snapshots:
   pluralize@8.0.0: {}
 
   pnpm-workspace-yaml@1.5.0:
+    dependencies:
+      yaml: 2.8.2
+
+  pnpm-workspace-yaml@1.6.0:
     dependencies:
       yaml: 2.8.2
 
