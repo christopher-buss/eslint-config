@@ -1,11 +1,11 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import type {
+	JsPluginRules,
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsStylistic,
 	OptionsTypeScriptErasableOnly,
 	OxlintRules,
-	Rules,
 	TypedOxlintConfigItem,
 } from "../types.ts";
 
@@ -164,7 +164,7 @@ export function oxlintTypescript(
 		"ts/method-signature-style": "off",
 		"ts/no-empty-function": "error",
 		"ts/no-unused-private-class-members": "error",
-	} satisfies Rules;
+	} satisfies JsPluginRules;
 
 	return [
 		{

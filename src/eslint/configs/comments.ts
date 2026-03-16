@@ -54,6 +54,7 @@ export async function comments(
 								"error",
 								{
 									maxLength: printWidth + 2,
+									semanticComments: ["oxlint-disable", "oxlint-enable"],
 									tabSize,
 								},
 							],
