@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../../types.ts";
 import { interopDefault } from "../../utils.ts";
+import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../types";
 
 export async function imports(
 	options: OptionsProjectType & OptionsStylistic = {},

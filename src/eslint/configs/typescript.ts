@@ -1,4 +1,11 @@
 import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
+import {
+	createTsParser,
+	ensurePackages,
+	getTsConfig,
+	interopDefault,
+	renameRules,
+} from "../../utils.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -8,14 +15,7 @@ import type {
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
-} from "../../types.ts";
-import {
-	createTsParser,
-	ensurePackages,
-	getTsConfig,
-	interopDefault,
-	renameRules,
-} from "../../utils.ts";
+} from "../types";
 
 export async function typescript(
 	options: OptionsComponentExtensions &

@@ -6,7 +6,7 @@ import {
 	GLOB_TESTS,
 	GLOB_YAML,
 } from "../../globs.ts";
-import type { TypedFlatConfigItem } from "../../types.ts";
+import type { TypedFlatConfigItem } from "../types";
 
 export function disables(options: { root: Array<string> }): Array<TypedFlatConfigItem> {
 	const { root } = options;

@@ -1,5 +1,5 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { OptionsStylistic, Rules, TypedOxlintConfigItem } from "../../types.ts";
+import type { OptionsStylistic, Rules, TypedOxlintConfigItem } from "../types.ts";
 
 export function oxlintUnicorn(
 	options: OptionsStylistic & { root?: Array<string> } = {},

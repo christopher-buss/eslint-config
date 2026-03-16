@@ -1,5 +1,5 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { Rules, TypedOxlintConfigItem } from "../../types.ts";
+import type { Rules, TypedOxlintConfigItem } from "../types.ts";
 
 export function oxlintNode(): Array<TypedOxlintConfigItem> {
 	// Inlined from nodeRules(), with unsupported rules omitted.

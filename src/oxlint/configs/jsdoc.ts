@@ -5,7 +5,7 @@ import type {
 	OptionsStylistic,
 	Rules,
 	TypedOxlintConfigItem,
-} from "../../types.ts";
+} from "../types.ts";
 
 type JsdocConfigOptions = JsdocOptions & OptionsProjectType & OptionsStylistic;
 

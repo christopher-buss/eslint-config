@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs";
-import type { OptionsFiles, OptionsOverrides, TypedFlatConfigItem } from "../../types";
 import { ensurePackages, interopDefault } from "../../utils";
+import type { OptionsFiles, OptionsOverrides, TypedFlatConfigItem } from "../types";
 
 export async function eslintPlugin(
 	options: OptionsFiles & OptionsOverrides = {},

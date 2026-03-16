@@ -1,5 +1,5 @@
 import { GLOB_YAML } from "../../globs";
-import type { TypedFlatConfigItem } from "../../types";
+import type { TypedFlatConfigItem } from "../types";
 
 /**
  * Sort GitHub Actions workflow files.

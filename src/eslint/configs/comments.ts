@@ -1,11 +1,13 @@
 import { GLOB_SRC } from "../../globs";
-import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../../types";
 import { interopDefault } from "../../utils";
+import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types";
 
 export async function comments(
 	options: OptionsFormatters & OptionsStylistic = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { prettierOptions = {}, stylistic = true } = options;
+	const printWidth = prettierOptions.printWidth ?? 80;
+	const tabSize = prettierOptions.tabWidth ?? 4;
 
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
 		interopDefault(import("eslint-plugin-comment-length")),
@@ -51,9 +53,8 @@ export async function comments(
 							"comment-length/limit-single-line-comments": [
 								"error",
 								{
-									maxLength:
-										(Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
-									tabSize: prettierOptions.tabWidth ?? 4,
+									maxLength: printWidth + 2,
+									tabSize,
 								},
 							],
 						},

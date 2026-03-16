@@ -3,6 +3,7 @@ import type PluginVitest from "@vitest/eslint-plugin";
 import type PluginJest from "eslint-plugin-jest";
 
 import { GLOB_TESTS } from "../../globs.ts";
+import { ensurePackages, interopDefault } from "../../utils.ts";
 import type {
 	OptionsFiles,
 	OptionsHasRoblox,
@@ -14,8 +15,7 @@ import type {
 	OptionsTestFramework,
 	OptionsVitest,
 	TypedFlatConfigItem,
-} from "../../types.ts";
-import { ensurePackages, interopDefault } from "../../utils.ts";
+} from "../types";
 
 // Hold the references so we don't redeclare the plugins on each call
 let pluginTest: typeof PluginJest | undefined;

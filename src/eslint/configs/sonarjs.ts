@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { OptionsIsInEditor, TypedFlatConfigItem } from "../../types.ts";
 import { interopDefault } from "../../utils.ts";
+import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types";
 
 export async function sonarjs(
 	options: Required<OptionsIsInEditor>,

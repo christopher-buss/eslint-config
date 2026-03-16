@@ -2,8 +2,9 @@ import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } 
 import { defineConfig } from "oxlint";
 import type { Except } from "type-fest";
 
+import type { OptionsConfig } from "../eslint/types.ts";
 import { GLOB_ROOT } from "../globs.ts";
-import type { OptionsConfig, TypedOxlintConfigItem } from "../types.ts";
+import type { TypedOxlintConfigItem } from "../types.ts";
 import { isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
@@ -17,48 +18,9 @@ import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import { oxlintDefaultRules } from "./defaults.generated.ts";
+import type { OxlintPlugin } from "./types.ts";
 
-export interface OxlintOptions {
-	isInEditor?: boolean;
-	jsdoc?: boolean;
-	roblox?: boolean;
-	root?: Array<string>;
-	rules?: DummyRuleMap;
-	stylistic?: boolean;
-	type?: "app" | "game" | "package";
-	vitest?: boolean;
-}
-
-/**
- * A fragment of an oxlint config. When `files` is provided, the fragment
- * becomes an override scoped to those globs. Without `files`, rules merge
- * into the top-level config.
- */
-// export interface OxlintConfigFragment {
-// 	files?: Array<string>;
-// 	jsPlugins?: Array<ExternalPluginEntry>;
-// 	plugins?: Array<OxlintPlugin>;
-// 	rules: DummyRuleMap;
-// }
-
-export type { OxlintOverride } from "oxlint";
-
-type OxlintPlugin =
-	| "eslint"
-	| "import"
-	| "jest"
-	| "jsdoc"
-	| "jsx-a11y"
-	| "nextjs"
-	| "node"
-	| "oxc"
-	| "promise"
-	| "react"
-	| "react-perf"
-	| "typescript"
-	| "unicorn"
-	| "vitest"
-	| "vue";
+export type { OxlintOptions, OxlintOverride } from "./types.ts";
 
 export function isentinel(
 	options: Omit<TypedOxlintConfigItem, "files"> & OptionsConfig,
@@ -171,7 +133,10 @@ export function isentinel(
 		);
 	}
 
-	configs.push(oxlintComments(), oxlintDisables({ root: rootGlobs }));
+	configs.push(
+		oxlintComments({ stylistic: stylisticOptions }),
+		oxlintDisables({ root: rootGlobs }),
+	);
 
 	// Merge fragments: no `files` → top-level rules, with `files` → override
 	const plugins = new Set<OxlintPlugin>();

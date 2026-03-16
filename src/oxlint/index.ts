@@ -1,1 +1,2 @@
-export { isentinel, type OxlintOptions, type OxlintOverride } from "./factory.ts";
+export { isentinel } from "./factory.ts";
+export type { OxlintOptions, OxlintOverride } from "./types.ts";

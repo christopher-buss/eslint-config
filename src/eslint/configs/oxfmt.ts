@@ -14,15 +14,15 @@ import {
 	GLOB_TSX,
 	GLOB_YAML,
 } from "../../globs";
+import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils";
+import { defaultPluginRenaming } from "../factory";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsFormatters,
 	OptionsOverrides,
 	TypedFlatConfigItem,
-} from "../../types";
-import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils";
-import { defaultPluginRenaming } from "../factory";
+} from "../types";
 
 export async function oxfmt(
 	options?: OptionsComponentExtensions &

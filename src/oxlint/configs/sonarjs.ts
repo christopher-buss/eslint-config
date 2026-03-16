@@ -1,5 +1,5 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { OptionsIsInEditor, Rules, TypedOxlintConfigItem } from "../../types.ts";
+import type { OptionsIsInEditor, Rules, TypedOxlintConfigItem } from "../types.ts";
 
 export function oxlintSonarjs(options: Required<OptionsIsInEditor>): Array<TypedOxlintConfigItem> {
 	const { isInEditor } = options;

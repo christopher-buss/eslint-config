@@ -1,6 +1,7 @@
 import globals from "globals";
 
 import { GLOB_SRC } from "../../globs.ts";
+import { interopDefault } from "../../utils.ts";
 import type {
 	OptionsFiles,
 	OptionsHasRoblox,
@@ -8,8 +9,7 @@ import type {
 	OptionsOverrides,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../../types.ts";
-import { interopDefault } from "../../utils.ts";
+} from "../types";
 
 export async function javascript(
 	options: OptionsFiles &

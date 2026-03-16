@@ -1,5 +1,5 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import type { Rules, TypedOxlintConfigItem } from "../../types.ts";
+import type { Rules, TypedOxlintConfigItem } from "../types.ts";
 
 export function oxlintTypescript(options: {
 	stylistic: boolean | object;

@@ -4,7 +4,7 @@ import type {
 	OptionsStylistic,
 	Rules,
 	TypedOxlintConfigItem,
-} from "../../types.ts";
+} from "../types.ts";
 
 export function oxlintImports(
 	_options: OptionsProjectType & OptionsStylistic = {},

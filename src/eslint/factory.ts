@@ -3,15 +3,6 @@ import { findUpSync } from "find-up-simple";
 
 import { GLOB_ROOT } from "../globs";
 import type { RuleOptions } from "../typegen";
-import type {
-	Awaitable,
-	ConfigNames,
-	FlatConfigComposer,
-	NamedFlatConfigItem,
-	NamedOptionsConfig,
-	OptionsConfig,
-	TypedFlatConfigItem,
-} from "../types";
 import {
 	getOverrides,
 	isInAgentSession,
@@ -59,6 +50,15 @@ import {
 import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
+import type {
+	Awaitable,
+	ConfigNames,
+	FlatConfigComposer,
+	NamedFlatConfigItem,
+	NamedOptionsConfig,
+	OptionsConfig,
+	TypedFlatConfigItem,
+} from "./types";
 
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",

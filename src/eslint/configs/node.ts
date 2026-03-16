@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { TypedFlatConfigItem } from "../../types.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
+import type { TypedFlatConfigItem } from "../types";
 
 export async function node(): Promise<Array<TypedFlatConfigItem>> {
 	await ensurePackages(["eslint-plugin-n"]);

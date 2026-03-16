@@ -9,7 +9,7 @@ import type {
 	OptionsTestFramework,
 	Rules,
 	TypedOxlintConfigItem,
-} from "../../types.ts";
+} from "../types.ts";
 
 export function oxlintTest(
 	options: OptionsFiles &

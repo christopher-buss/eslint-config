@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { TypedFlatConfigItem } from "../../types.ts";
 import { interopDefault } from "../../utils.ts";
+import type { TypedFlatConfigItem } from "../types";
 
 export async function promise(): Promise<Array<TypedFlatConfigItem>> {
 	// @ts-expect-error -- No types

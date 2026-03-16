@@ -2,14 +2,14 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 import { GLOB_SRC } from "../../globs";
+import { interopDefault } from "../../utils";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsIsInEditor,
 	SpellCheckConfig,
 	TypedFlatConfigItem,
-} from "../../types";
-import { interopDefault } from "../../utils";
+} from "../types";
 
 const require = createRequire(import.meta.url);
 

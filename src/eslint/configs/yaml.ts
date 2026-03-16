@@ -1,11 +1,11 @@
 import { GLOB_YAML } from "../../globs";
+import { interopDefault } from "../../utils";
 import type {
 	OptionsFiles,
 	OptionsOverrides,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../../types";
-import { interopDefault } from "../../utils";
+} from "../types";
 
 export async function yaml(
 	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},

@@ -6,7 +6,7 @@ import {
 	GLOB_TESTS,
 	GLOB_YAML,
 } from "../../globs.ts";
-import type { TypedOxlintConfigItem } from "../../types.ts";
+import type { TypedOxlintConfigItem } from "../types.ts";
 
 export function oxlintDisables(options: { root: Array<string> }): Array<TypedOxlintConfigItem> {
 	const { root } = options;

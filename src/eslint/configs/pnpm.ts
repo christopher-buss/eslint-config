@@ -1,8 +1,8 @@
 import { findUp } from "find-up-simple";
 import fs from "node:fs/promises";
 
-import type { OptionsIsInEditor, OptionsPnpm, TypedFlatConfigItem } from "../../types";
 import { ensurePackages, interopDefault } from "../../utils";
+import type { OptionsIsInEditor, OptionsPnpm, TypedFlatConfigItem } from "../types";
 
 export async function pnpm(
 	options: OptionsPnpm & Required<OptionsIsInEditor>,

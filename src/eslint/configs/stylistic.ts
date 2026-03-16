@@ -1,8 +1,8 @@
 import type { Linter } from "eslint";
 
 import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../../globs";
-import type { StylisticConfig, TypedFlatConfigItem } from "../../types";
 import { interopDefault } from "../../utils";
+import type { StylisticConfig, TypedFlatConfigItem } from "../types";
 import type { PrettierOptions } from "./oxfmt";
 
 export const StylisticConfigDefaults: StylisticConfig = {

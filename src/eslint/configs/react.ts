@@ -1,6 +1,7 @@
 import type { ESLintReactSettings } from "@eslint-react/shared";
 
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../../globs";
+import { ensurePackages, getTsConfig, interopDefault } from "../../utils";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -9,8 +10,7 @@ import type {
 	OptionsTypeScriptWithTypes,
 	ReactConfig,
 	TypedFlatConfigItem,
-} from "../../types";
-import { ensurePackages, getTsConfig, interopDefault } from "../../utils";
+} from "../types";
 
 export async function react(
 	options: OptionsComponentExtensions &

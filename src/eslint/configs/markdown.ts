@@ -1,14 +1,14 @@
 import { mergeProcessors, processorPassThrough } from "eslint-merge-processors";
 
 import { GLOB_MARKDOWN, GLOB_MARKDOWN_BLOCKS, GLOB_MARKDOWN_IN_MARKDOWN } from "../../globs";
+import { interopDefault } from "../../utils";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsOverrides,
 	OptionsProjectType,
 	TypedFlatConfigItem,
-} from "../../types";
-import { interopDefault } from "../../utils";
+} from "../types";
 
 export async function markdown(
 	options: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {},

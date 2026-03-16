@@ -1,11 +1,11 @@
 import { GLOB_TOML } from "../../globs";
+import { interopDefault, resolveWithDefaults } from "../../utils";
 import type {
 	OptionsFiles,
 	OptionsOverrides,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../../types";
-import { interopDefault, resolveWithDefaults } from "../../utils";
+} from "../types";
 
 export async function toml(
 	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},

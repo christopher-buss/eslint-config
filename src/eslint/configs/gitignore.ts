@@ -2,8 +2,8 @@ import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import { findUpSync } from "find-up-simple";
 import process from "node:process";
 
-import type { TypedFlatConfigItem } from "../../types";
 import { interopDefault } from "../../utils";
+import type { TypedFlatConfigItem } from "../types";
 
 export interface GitignoreOptions {
 	config?: boolean | FlatGitignoreOptions;

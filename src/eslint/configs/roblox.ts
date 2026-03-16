@@ -1,4 +1,5 @@
 import { GLOB_LUA, GLOB_MARKDOWN } from "../../globs";
+import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../../utils";
 import type {
 	OptionsComponentExtensions,
 	OptionsFilesTypeAware,
@@ -7,8 +8,7 @@ import type {
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
-} from "../../types";
-import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../../utils";
+} from "../types";
 
 export async function roblox(
 	options: OptionsComponentExtensions &
