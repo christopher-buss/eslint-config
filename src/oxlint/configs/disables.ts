@@ -11,12 +11,6 @@ import type { TypedOxlintConfigItem } from "../types.ts";
 export function oxlintDisables(options: { root: Array<string> }): Array<TypedOxlintConfigItem> {
 	const { root } = options;
 
-	// Inlined from disables(), with:
-	// - ts/* → typescript/*
-	// - unprefixed core rules → eslint/
-	// - unsupported plugin rules removed (cease-nonsense, eslint-comments,
-	//   roblox, unused-imports)
-
 	return [
 		{
 			name: "isentinel/disables/scripts",
@@ -56,10 +50,14 @@ export function oxlintDisables(options: { root: Array<string> }): Array<TypedOxl
 			name: "isentinel/disables/dts",
 			files: [GLOB_DTS],
 			rules: {
+				"cease-nonsense/prefer-class-properties": "off",
 				"eslint/max-lines": "off",
 				"eslint/no-restricted-syntax": "off",
+				"import/no-default-export": "off",
 				"import/no-duplicates": "off",
+				"oxlint-comments/no-unlimited-disable": "off",
 				"sonar/no-duplicate-string": "off",
+				"unused-imports/no-unused-vars": "off",
 			},
 		},
 		{
