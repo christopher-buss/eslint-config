@@ -1,5 +1,4 @@
 catalogMode: prefer
-cleanupUnusedCatalogs: true
 saveExact: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -17,7 +16,6 @@ patchedDependencies:
 catalogs:
   dev:
     "@antfu/ni": 28.2.0
-    "@eslint-react/shared": 2.13.0
     "@eslint/config-inspector": 1.4.2
     "@isentinel/tsconfig": 1.2.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
@@ -28,19 +26,23 @@ catalogs:
     eslint-typegen: 2.3.1
     jiti: 2.6.1
     lint-staged: 16.2.7
-    oxlint: 1.50.0
-    oxlint-tsgolint: 0.15.0
+    oxlint: 1.55.0
+    oxlint-tsgolint: 0.17.0
     parse-gitignore-ts: 1.0.0
     pnpm-workspace-yaml: 1.5.0
-    publint: 0.3.17
+    publint: 0.3.18
     rimraf: 6.1.3
     simple-git-hooks: 2.13.1
-    tsdown: 0.20.3
+    tsdown: 0.21.3
     tsx: 4.21.0
     type-fest: 5.4.4
     typescript: 5.9.3
     unplugin-unused: 0.5.7
+  inline:
+    find-up-simple: 1.0.1
   peer:
+    "@typescript-eslint/types": 8.57.0
+    "@typescript-eslint/utils": 8.57.0
     "@vitest/eslint-plugin": 1.6.9
     eslint: 9.39.2
     eslint-plugin-erasable-syntax-only: 0.4.0
@@ -56,15 +58,15 @@ catalogs:
     "@clack/prompts": 1.0.1
     "@cspell/eslint-plugin": 9.7.0
     "@eslint-community/eslint-plugin-eslint-comments": 4.6.0
+    "@eslint-react/shared": 2.13.0
     "@eslint/compat": 2.0.2
     "@eslint/markdown": 7.5.1
     "@isentinel/dict-rbxts": 1.0.1
     "@isentinel/dict-roblox": 1.0.3
-    "@isentinel/eslint-plugin-comment-length": 2.2.0
     "@pobammer-ts/eslint-cease-nonsense-rules": 1.30.0
     "@stylistic/eslint-plugin": 5.9.0
-    "@typescript-eslint/eslint-plugin": 8.56.1
-    "@typescript-eslint/parser": 8.56.1
+    "@typescript-eslint/eslint-plugin": 8.57.0
+    "@typescript-eslint/parser": 8.57.0
     ansis: 4.2.0
     eslint-config-flat-gitignore: 2.2.1
     eslint-config-prettier: 10.1.8
@@ -73,13 +75,14 @@ catalogs:
     eslint-plugin-antfu: 3.2.2
     eslint-plugin-arrow-return-style-x: 1.2.6
     eslint-plugin-better-max-params: 1.0.0
+    eslint-plugin-comment-length: 2.3.0
     eslint-plugin-de-morgan: 2.0.0
     eslint-plugin-flawless: 0.1.0
     eslint-plugin-format-lua: 1.0.1-beta.2
     eslint-plugin-import-lite: 0.5.2
     eslint-plugin-jsdoc: 62.7.1
     eslint-plugin-jsonc: 3.0.0
-    eslint-plugin-oxfmt: 0.1.1
+    eslint-plugin-oxfmt: 0.1.2
     eslint-plugin-package-json: 0.89.1
     eslint-plugin-perfectionist: 5.6.0
     eslint-plugin-pnpm: 1.5.0
@@ -91,11 +94,11 @@ catalogs:
     eslint-plugin-unicorn: 63.0.0
     eslint-plugin-unused-imports: 4.4.1
     eslint-plugin-yml: 3.2.1
-    find-up-simple: 1.0.1
     globals: 17.3.0
     jsonc-eslint-parser: 3.1.0
     local-pkg: 1.1.2
-    oxfmt: 0.35.0
+    oxfmt: 0.40.0
+    oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.8.1
     toml-eslint-parser: 1.0.3
     yaml-eslint-parser: 2.0.0

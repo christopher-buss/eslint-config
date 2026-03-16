@@ -28,19 +28,10 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
-		".": {
-			"types": "./dist/index.d.mts",
-			"default": "./dist/index.mjs"
-		},
+		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
-		"./eslint": {
-			"types": "./dist/index.d.mts",
-			"default": "./dist/eslint.mjs"
-		},
-		"./oxlint": {
-			"types": "./dist/oxlint.d.mts",
-			"default": "./dist/oxlint.mjs"
-		},
+		"./eslint": "./dist/eslint.mjs",
+		"./oxlint": "./dist/oxlint.mjs",
 		"./package.json": "./package.json"
 	},
 	"types": "./dist/index.d.mts",
@@ -75,16 +66,21 @@
 			"sh -c 'pnpm tsgo --noEmit'"
 		]
 	},
+	"resolutions": {
+		"@typescript-eslint/types": "catalog:peer",
+		"@typescript-eslint/utils": "catalog:peer",
+		"eslint": "catalog:peer"
+	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
 		"@clack/prompts": "catalog:prod",
 		"@cspell/eslint-plugin": "catalog:prod",
 		"@eslint-community/eslint-plugin-eslint-comments": "catalog:prod",
+		"@eslint-react/shared": "catalog:prod",
 		"@eslint/compat": "catalog:prod",
 		"@eslint/markdown": "catalog:prod",
 		"@isentinel/dict-rbxts": "catalog:prod",
 		"@isentinel/dict-roblox": "catalog:prod",
-		"@isentinel/eslint-plugin-comment-length": "catalog:prod",
 		"@pobammer-ts/eslint-cease-nonsense-rules": "catalog:prod",
 		"@stylistic/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/eslint-plugin": "catalog:prod",
@@ -97,6 +93,7 @@
 		"eslint-plugin-antfu": "catalog:prod",
 		"eslint-plugin-arrow-return-style-x": "catalog:prod",
 		"eslint-plugin-better-max-params": "catalog:prod",
+		"eslint-plugin-comment-length": "catalog:prod",
 		"eslint-plugin-de-morgan": "catalog:prod",
 		"eslint-plugin-flawless": "catalog:prod",
 		"eslint-plugin-format-lua": "catalog:prod",
@@ -115,11 +112,11 @@
 		"eslint-plugin-unicorn": "catalog:prod",
 		"eslint-plugin-unused-imports": "catalog:prod",
 		"eslint-plugin-yml": "catalog:prod",
-		"find-up-simple": "catalog:prod",
 		"globals": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
+		"oxlint-plugin-oxlint-comments": "catalog:prod",
 		"prettier": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
@@ -127,7 +124,6 @@
 	},
 	"devDependencies": {
 		"@antfu/ni": "catalog:dev",
-		"@eslint-react/shared": "catalog:dev",
 		"@eslint/config-inspector": "catalog:dev",
 		"@isentinel/eslint-config": "workspace:*",
 		"@isentinel/tsconfig": "catalog:dev",
@@ -143,11 +139,11 @@
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-jest-extended": "catalog:peer",
 		"eslint-plugin-n": "catalog:peer",
-		"eslint-plugin-oxlint-comments": "link:D:/projects/forks/eslint-plugin-oxlint-comments",
 		"eslint-plugin-react-hooks": "catalog:peer",
 		"eslint-plugin-react-naming-convention": "catalog:peer",
 		"eslint-plugin-react-x": "catalog:peer",
 		"eslint-typegen": "catalog:dev",
+		"find-up-simple": "catalog:inline",
 		"jiti": "catalog:dev",
 		"lint-staged": "catalog:dev",
 		"oxlint": "catalog:dev",
@@ -207,5 +203,21 @@
 	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"inlinedDependencies": {
+		"@eslint-community/eslint-utils": "4.9.1",
+		"@typescript-eslint/scope-manager": "8.57.0",
+		"@typescript-eslint/types": "8.57.0",
+		"@typescript-eslint/utils": "8.57.0",
+		"@typescript-eslint/visitor-keys": "8.57.0",
+		"cached-factory": "0.1.0",
+		"eslint-config-flat-gitignore": "2.2.1",
+		"eslint-plugin-erasable-syntax-only": "0.4.0",
+		"eslint-visitor-keys": [
+			"3.4.3",
+			"5.0.1"
+		],
+		"find-up-simple": "1.0.1",
+		"type-fest": "5.4.4"
 	}
 }

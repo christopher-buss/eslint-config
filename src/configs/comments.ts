@@ -8,7 +8,7 @@ export async function comments(
 	const { prettierOptions = {}, stylistic = true } = options;
 
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
-		interopDefault(import("@isentinel/eslint-plugin-comment-length")),
+		interopDefault(import("eslint-plugin-comment-length")),
 		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 	]);
