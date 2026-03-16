@@ -55,6 +55,6 @@ ${defaults.map((rule) => `\t"${rule}",`).join("\n")}
 ]);
 `;
 
-await fs.writeFile(new URL("../src/oxlint-defaults.generated.ts", import.meta.url), content);
+await fs.writeFile(new URL("../src/oxlint/defaults.generated.ts", import.meta.url), content);
 
 console.log(`Generated ${defaults.length} default oxlint rules.`);

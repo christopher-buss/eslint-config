@@ -1,4 +1,4 @@
-import { isentinel } from "./src/oxlint.ts";
+import { isentinel } from "./src/oxlint/index.ts";
 
 export default isentinel(
 	{

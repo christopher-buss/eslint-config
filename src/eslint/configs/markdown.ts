@@ -1,0 +1,138 @@
+import { mergeProcessors, processorPassThrough } from "eslint-merge-processors";
+
+import { GLOB_MARKDOWN, GLOB_MARKDOWN_BLOCKS, GLOB_MARKDOWN_IN_MARKDOWN } from "../../globs";
+import type {
+	OptionsComponentExtensions,
+	OptionsFiles,
+	OptionsOverrides,
+	OptionsProjectType,
+	TypedFlatConfigItem,
+} from "../../types";
+import { interopDefault } from "../../utils";
+
+export async function markdown(
+	options: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {},
+): Promise<Array<TypedFlatConfigItem>> {
+	const {
+		componentExts: componentExtensions = [],
+		files = [GLOB_MARKDOWN],
+		overrides = {},
+		type = "game",
+	} = options;
+
+	const markdownPlugin = await interopDefault(import("@eslint/markdown"));
+
+	return [
+		{
+			name: "isentinel/markdown/setup",
+			plugins: {
+				markdown: markdownPlugin,
+			},
+		},
+		{
+			name: "isentinel/markdown/processor",
+			files,
+			ignores: [GLOB_MARKDOWN_IN_MARKDOWN],
+			// `eslint-plugin-markdown` only creates virtual files for code
+			// blocks, but not the markdown file itself.
+			// We use `eslint-merge-processors` to add a pass-through processor
+			// for the markdown file itself.
+			processor: mergeProcessors([markdownPlugin.processors.markdown, processorPassThrough]),
+		},
+		{
+			name: "isentinel/markdown/parser",
+			files,
+			language: "markdown/gfm",
+			languageOptions: {
+				frontmatter: "yaml",
+			},
+			rules: {
+				// Recommended rules - enabled for both game and package
+				"markdown/fenced-code-language": "error",
+				"markdown/no-duplicate-definitions": "error",
+				"markdown/no-empty-definitions": "error",
+				"markdown/no-empty-images": "error",
+				"markdown/no-empty-links": "error",
+
+				// Would be nice if it worked only in cases that there is a
+				// markdown equivalent.
+				"markdown/no-html": "off",
+
+				"markdown/no-invalid-label-refs": "error",
+				"markdown/no-missing-atx-heading-space": "error",
+
+				// https://github.com/eslint/markdown/issues/294
+				"markdown/no-missing-label-refs": "off",
+
+				"markdown/no-missing-link-fragments": "error",
+				"markdown/no-multiple-h1": "error",
+				"markdown/no-reversed-media-syntax": "error",
+				"markdown/no-unused-definitions": "warn",
+				"markdown/require-alt-text": "error",
+				"markdown/table-column-count": "error",
+
+				"style/indent": "off",
+
+				// Package-specific stricter rules
+				...(type === "package"
+					? {
+							"markdown/heading-increment": "error",
+							"markdown/no-bare-urls": "error",
+							"markdown/no-duplicate-headings": "error",
+						}
+					: {}),
+			},
+		},
+		{
+			name: "isentinel/markdown/disables",
+			files: [
+				GLOB_MARKDOWN_BLOCKS,
+				...componentExtensions.map((extension) => `${GLOB_MARKDOWN}/**/*.${extension}`),
+			],
+			languageOptions: {
+				parserOptions: {
+					ecmaFeatures: {
+						impliedStrict: true,
+					},
+				},
+			},
+			rules: {
+				"antfu/no-top-level-await": "off",
+				"antfu/top-level-function": "off",
+				"import/newline-after-import": "off",
+				"jsdoc/convert-to-jsdoc-comments": "off",
+				"no-alert": "off",
+				"no-console": "off",
+				"no-inline-comments": "off",
+				"no-labels": "off",
+				"no-lone-blocks": "off",
+				"no-restricted-syntax": "off",
+				"no-undef": "off",
+				"no-unused-expressions": "off",
+				"no-unused-labels": "off",
+				"no-unused-vars": "off",
+				"node/prefer-global/process": "off",
+				"sonar/file-name-differ-from-class": "off",
+				"sonar/no-dead-store": "off",
+				"sonar/no-unused-collection": "off",
+				"strict": "off",
+				"style/comma-dangle": "off",
+				"style/eol-last": "off",
+				"style/indent": "off",
+				"style/padded-blocks": "off",
+				"ts/consistent-type-imports": "off",
+				"ts/no-namespace": "off",
+				"ts/no-redeclare": "off",
+				"ts/no-require-imports": "off",
+				"ts/no-unused-vars": "off",
+				"ts/no-use-before-define": "off",
+				"ts/no-var-requires": "off",
+				"unicode-bom": "off",
+				"unused-imports/no-unused-imports": "off",
+				"unused-imports/no-unused-vars": "off",
+
+				...overrides,
+			},
+		},
+	];
+}

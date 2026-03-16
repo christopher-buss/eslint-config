@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import process from "node:process";
 
-import { isentinel } from "../src/oxlint";
+import { isentinel } from "../src/oxlint/index";
 
 const output = execSync("pnpm oxlint --rules", { encoding: "utf-8" });
 

@@ -9,7 +9,7 @@ import path from "node:path";
 import process from "node:process";
 import prettier from "prettier";
 
-import type { OxfmtOptions, PrettierOptions } from "./configs";
+import type { OxfmtOptions, PrettierOptions } from "./eslint/configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;

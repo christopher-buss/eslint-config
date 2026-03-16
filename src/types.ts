@@ -7,8 +7,8 @@ import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { OxlintOverride } from "oxlint";
 import type { SetRequired } from "type-fest";
 
-import type { OxfmtOptions } from "./configs";
-import type { PrettierOptions } from "./configs/oxfmt";
+import type { OxfmtOptions } from "./eslint/configs";
+import type { PrettierOptions } from "./eslint/configs/oxfmt";
 import type { RuleOptions } from "./typegen";
 import type { ExtractRuleOptions } from "./utils";
 

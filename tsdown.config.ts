@@ -9,7 +9,7 @@ export default defineConfig({
 		cli: "src/cli.ts",
 		eslint: "src/index.ts",
 		index: "src/index.ts",
-		oxlint: "src/oxlint.ts",
+		oxlint: "src/oxlint/index.ts",
 	},
 	exports: true,
 	format: ["esm"],
