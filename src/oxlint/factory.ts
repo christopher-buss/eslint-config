@@ -6,6 +6,7 @@ import type { OptionsConfig } from "../eslint/types.ts";
 import { GLOB_ROOT } from "../globs.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
+import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
 import { oxlintImports } from "./configs/imports.ts";
@@ -134,6 +135,7 @@ export function isentinel(
 	}
 
 	configs.push(
+		oxlintCeaseNonsense({ isInEditor, stylistic: stylisticOptions }),
 		oxlintComments({ stylistic: stylisticOptions }),
 		oxlintDisables({ root: rootGlobs }),
 	);
