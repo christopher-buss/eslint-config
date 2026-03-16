@@ -1,7 +1,7 @@
 import { GLOB_ALL_SRC, GLOB_SRC } from "../../globs.ts";
 import type { OptionsFiles, TypedOxlintConfigItem } from "../types.ts";
 
-export function oxlintEslintPlugin(options: OptionsFiles = {}): Array<TypedOxlintConfigItem> {
+export function eslintPlugin(options: OptionsFiles = {}): Array<TypedOxlintConfigItem> {
 	const { files = [GLOB_SRC] } = options;
 
 	return [
