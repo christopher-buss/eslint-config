@@ -9,6 +9,7 @@ import { isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
+import { oxlintEslintPlugin } from "./configs/eslint-plugin.ts";
 import { gitignore } from "./configs/gitignore.ts";
 import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
@@ -29,6 +30,7 @@ export function isentinel(
 	...userConfigs: Array<TypedOxlintConfigItem>
 ): OxlintConfig {
 	const {
+		eslintPlugin: enableEslintPlugin = false,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc,
 		jsx: enableJsx = true,
@@ -125,6 +127,10 @@ export function isentinel(
 				...testOptions,
 			}),
 		);
+	}
+
+	if (enableEslintPlugin !== false) {
+		configs.push(oxlintEslintPlugin());
 	}
 
 	configs.push(
