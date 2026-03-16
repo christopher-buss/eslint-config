@@ -1,43 +1,35 @@
 import globals from "globals";
 
 import { GLOB_SRC } from "../../globs.ts";
-import type { Rules, TypedOxlintConfigItem } from "../types.ts";
+import type {
+	JsPluginRules,
+	OptionsFiles,
+	OptionsHasRoblox,
+	OptionsIsInEditor,
+	OptionsOverrides,
+	OptionsStylistic,
+	OxlintRules,
+	TypedOxlintConfigItem,
+} from "../types.ts";
 
-export function oxlintJavascript(options: {
-	isInEditor: boolean;
-	roblox: boolean;
-	stylistic: boolean | object;
-}): Array<TypedOxlintConfigItem> {
-	const { isInEditor, roblox, stylistic } = options;
+export function oxlintJavascript(
+	options: OptionsFiles &
+		OptionsHasRoblox &
+		OptionsIsInEditor &
+		OptionsOverrides &
+		OptionsStylistic,
+): Array<TypedOxlintConfigItem> {
+	const {
+		files: customFiles,
+		isInEditor = false,
+		overrides = {},
+		roblox = true,
+		stylistic = true,
+	} = options;
 
-	// Inlined from javascriptRules(), with prefixes transformed for oxlint:
-	// - unprefixed core rules → eslint/
-	// - plugin-prefixed rules kept as-is (jsPlugin rules)
-	//
-	// Won't implement (covered elsewhere or unsupported):
-	// dot-notation, no-dupe-args, no-octal, no-octal-escape,
-	// no-restricted-properties, no-restricted-syntax, no-undef-init
-	//
-	// TODO(oxlint): not yet implemented (oxc-project/oxc#479)
-	// logical-assignment-operators, no-implied-eval, no-unreachable-loop,
-	// object-shorthand, one-var, prefer-arrow-callback
-	//
-	// TODO: implemented but different behavior (oxc-project/oxc#19617)
-	// id-length — lints on generics
+	const files = customFiles?.flat() ?? [GLOB_SRC];
 
-	const rules: Rules = {
-		"antfu/no-top-level-await": "error",
-
-		"better-max-params/better-max-params": [
-			"error",
-			{
-				func: 4,
-			},
-		],
-
-		"de-morgan/no-negated-conjunction": "error",
-
-		"de-morgan/no-negated-disjunction": "error",
+	const nativeRules = {
 		"eslint/accessor-pairs": ["error", { enforceForClassMembers: true, setWithoutGet: true }],
 
 		"eslint/array-callback-return": [
@@ -60,9 +52,9 @@ export function oxlintJavascript(options: {
 			"error",
 			{
 				capIsNew: false,
-				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+				// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External API
 				newIsCap: true,
-				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+				// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External API
 				newIsCapExceptionPattern: "^mock",
 				properties: true,
 			},
@@ -171,10 +163,6 @@ export function oxlintJavascript(options: {
 		],
 		"eslint/prefer-exponentiation-operator": "error",
 		"eslint/prefer-promise-reject-errors": "error",
-		// regex-literals not supported in roblox-ts
-		"eslint/prefer-regex-literals": roblox
-			? "off"
-			: ["error", { disallowRedundantWrapping: true }],
 		"eslint/prefer-rest-params": "error",
 		"eslint/prefer-spread": "error",
 		"eslint/prefer-template": "error",
@@ -183,21 +171,6 @@ export function oxlintJavascript(options: {
 		"eslint/use-isnan": ["error", { enforceForIndexOf: true, enforceForSwitchCase: true }],
 		"eslint/valid-typeof": ["error", { requireStringLiterals: true }],
 		"eslint/vars-on-top": "error",
-		"unused-imports/no-unused-imports": isInEditor ? "warn" : "error",
-		"unused-imports/no-unused-vars": [
-			"error",
-			{
-				args: "all",
-				argsIgnorePattern: "^_+",
-				caughtErrors: "all",
-				caughtErrorsIgnorePattern: "^_+",
-				destructuredArrayIgnorePattern: "^_+",
-				ignoreRestSiblings: true,
-				reportUsedIgnorePattern: true,
-				vars: "all",
-				varsIgnorePattern: "^_+",
-			},
-		],
 
 		...(stylistic !== false
 			? {
@@ -220,12 +193,40 @@ export function oxlintJavascript(options: {
 						: {}),
 				}
 			: {}),
-	};
+	} satisfies OxlintRules;
+
+	// Rules not yet native to oxlint.
+	const jsPluginRules = {
+		"antfu/no-top-level-await": "error",
+		"better-max-params/better-max-params": [
+			"error",
+			{
+				func: 4,
+			},
+		],
+		"de-morgan/no-negated-conjunction": "error",
+		"de-morgan/no-negated-disjunction": "error",
+		"unused-imports/no-unused-imports": isInEditor ? "warn" : "error",
+		"unused-imports/no-unused-vars": [
+			"error",
+			{
+				args: "all",
+				argsIgnorePattern: "^_+",
+				caughtErrors: "all",
+				caughtErrorsIgnorePattern: "^_+",
+				destructuredArrayIgnorePattern: "^_+",
+				ignoreRestSiblings: true,
+				reportUsedIgnorePattern: true,
+				vars: "all",
+				varsIgnorePattern: "^_+",
+			},
+		],
+	} satisfies JsPluginRules;
 
 	return [
 		{
 			name: "isentinel/javascript",
-			files: [GLOB_SRC],
+			files,
 			globals: {
 				...toGlobals(globals.browser),
 				...toGlobals(globals.es2021),
@@ -234,14 +235,95 @@ export function oxlintJavascript(options: {
 				navigator: "readonly",
 				window: "readonly",
 			},
+			plugins: ["eslint"],
+			rules: {
+				...nativeRules,
+				...overrides,
+			},
+		},
+		{
+			name: "isentinel/javascript/js-plugin",
+			files,
 			jsPlugins: [
 				{ name: "antfu", specifier: "eslint-plugin-antfu" },
 				{ name: "de-morgan", specifier: "eslint-plugin-de-morgan" },
 				{ name: "better-max-params", specifier: "eslint-plugin-better-max-params" },
 				{ name: "unused-imports", specifier: "eslint-plugin-unused-imports" },
 			],
-			plugins: ["eslint"],
-			rules,
+			rules: jsPluginRules,
+		},
+		{
+			name: "isentinel/javascript/eslint-js",
+			files,
+			jsPlugins: [{ name: "eslint-js", specifier: "oxlint-plugin-eslint" }],
+			rules: {
+				"eslint-js/logical-assignment-operators": "error",
+				"eslint-js/no-implied-eval": "error",
+				"eslint-js/no-restricted-properties": [
+					"error",
+					{
+						message: "Use `Object.getPrototypeOf` or `Object.setPrototypeOf` instead.",
+						property: "__proto__",
+					},
+					{
+						message: "Use `Object.defineProperty` instead.",
+						property: "__defineGetter__",
+					},
+					{
+						message: "Use `Object.defineProperty` instead.",
+						property: "__defineSetter__",
+					},
+					{
+						message: "Use `Object.getOwnPropertyDescriptor` instead.",
+						property: "__lookupGetter__",
+					},
+					{
+						message: "Use `Object.getOwnPropertyDescriptor` instead.",
+						property: "__lookupSetter__",
+					},
+				],
+				"eslint-js/no-restricted-syntax": [
+					"error",
+					"TSEnumDeclaration[const=true]",
+					"TSExportAssignment",
+				],
+				"eslint-js/no-unreachable-loop": "error",
+				"eslint-js/prefer-arrow-callback": [
+					"error",
+					{
+						allowNamedFunctions: false,
+						allowUnboundThis: true,
+					},
+				],
+				// regex-literals not supported in roblox-ts
+				"eslint-js/prefer-regex-literals": roblox
+					? "off"
+					: ["error", { disallowRedundantWrapping: true }],
+
+				...(stylistic !== false
+					? {
+							// id-length via jsPlugin due to oxc-project/oxc#19617
+							"eslint-js/id-length": [
+								"error",
+								{
+									exceptions: ["_", "x", "y", "z", "a", "b", "e", "T"],
+									max: 30,
+									min: 2,
+									properties: "never",
+								},
+							],
+							"eslint-js/object-shorthand": [
+								"error",
+								"always",
+								{
+									avoidQuotes: true,
+									ignoreConstructors: false,
+								},
+							],
+							"eslint-js/one-var": ["error", { initialized: "never" }],
+						}
+					: {}),
+			},
 		},
 	];
 }

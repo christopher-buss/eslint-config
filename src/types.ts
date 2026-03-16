@@ -12,6 +12,14 @@ export type { RuleOptions } from "./typegen";
 
 export type OxlintRules = Partial<Record<OxlintNativeRuleName, Linter.RuleEntry>>;
 
+/**
+ * Rules for JS plugins in oxlint. Errors if a native oxlint rule name is used,
+ * so that rules are moved to `OxlintRules` when oxlint adds native support.
+ */
+export type JsPluginRules = Omit<RuleOptions, OxlintNativeRuleName> &
+	Partial<Record<OxlintNativeRuleName, never>> &
+	Record<string, Linter.RuleEntry<any> | undefined>;
+
 export type Awaitable<T> = Promise<T> | T;
 
 export interface JsdocOptions {

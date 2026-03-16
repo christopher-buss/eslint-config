@@ -5,7 +5,7 @@ import type { Except } from "type-fest";
 import type { OptionsConfig } from "../eslint/types.ts";
 import { GLOB_ROOT } from "../globs.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
-import { isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
+import { getOverrides, isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
@@ -93,7 +93,7 @@ export function isentinel(
 	configs.push(
 		oxlintImports({ stylistic: stylisticOptions, type: projectType }),
 		oxlintJavascript({
-			// ...getOverrides(options, "javascript"),
+			...getOverrides(options, "javascript"),
 			isInEditor,
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,

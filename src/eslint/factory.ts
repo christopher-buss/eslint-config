@@ -233,12 +233,15 @@ export async function isentinel(
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
-		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
 	);
 
 	// Configs that oxlint handles — skip when running alongside oxlint
 	if (!enableOxlint) {
-		configs.push(promise(), sonarjs({ isInEditor }));
+		configs.push(
+			promise(),
+			sonarjs({ isInEditor }),
+			unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
+		);
 	}
 
 	if (options.flawless === true) {

@@ -101,9 +101,9 @@ export async function javascript(
 					"error",
 					{
 						capIsNew: false,
-						// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+						// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External API
 						newIsCap: true,
-						// eslint-disable-next-line unicorn/no-keyword-prefix -- External
+						// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External API
 						newIsCapExceptionPattern: "^mock",
 						properties: true,
 					},
