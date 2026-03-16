@@ -9,6 +9,7 @@ import { isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
+import { gitignore } from "./configs/gitignore.ts";
 import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
@@ -84,15 +85,7 @@ export function isentinel(
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [];
 
-	if (enableGitignore !== false) {
-		// TODO: Implement
-		// configs.push(
-		// 	gitignore({
-		// 		config: enableGitignore,
-		// 		explicit: "gitignore" in options,
-		// 	}),
-		// );
-	}
+	const ignorePatterns = enableGitignore !== false ? gitignore() : [];
 
 	configs.push(
 		oxlintImports({ stylistic: stylisticOptions, type: projectType }),
@@ -200,6 +193,7 @@ export function isentinel(
 			style: "off",
 			suspicious: "off",
 		},
+		ignorePatterns,
 		jsPlugins: [...jsPlugins.values()],
 		overrides: [
 			...overrides,

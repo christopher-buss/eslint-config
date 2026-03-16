@@ -5,7 +5,7 @@ import process from "node:process";
 import { interopDefault } from "../../utils";
 import type { TypedFlatConfigItem } from "../types";
 
-export interface GitignoreOptions {
+interface GitignoreOptions {
 	config?: boolean | FlatGitignoreOptions;
 	explicit?: boolean;
 }

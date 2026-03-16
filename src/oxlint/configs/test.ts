@@ -31,11 +31,14 @@ export function oxlintTest(
 		vitest = false,
 	} = options;
 
+	// oxlint-disable-next-line cease-nonsense/no-commented-code -- TODO
 	// const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest :
 	// {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
+	// oxlint-disable-next-line cease-nonsense/no-commented-code -- TODO
 	// const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};
 	const jestEnabled = jest === true || typeof jest === "object";
+	// oxlint-disable-next-line cease-nonsense/no-commented-code -- TODO
 	// const enableJest = jestEnabled || (!vitestEnabled && (type === "game" ||
 	// isRoblox));
 	const enableVitest = vitestEnabled || (!jestEnabled && type === "package" && !isRoblox);
