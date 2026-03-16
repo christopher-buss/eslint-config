@@ -6,11 +6,13 @@ import type { SetRequired } from "type-fest";
 
 import type {
 	JsdocOptions,
+	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsFormatters,
 	OptionsOverrides,
 	OptionsProjectType,
 	OptionsTestFramework,
+	OptionsTypeScriptErasableOnly,
 	RuleOptions,
 	StylisticConfig,
 	TypedFlatConfigItem,
@@ -40,11 +42,6 @@ export * from "../types";
  */
 export type NamedFlatConfigItem = SetRequired<TypedFlatConfigItem, "name">;
 
-export interface OptionsComponentExtensions {
-	/** Additional extensions for components. */
-	componentExts?: Array<string>;
-}
-
 export interface OptionsOverridesTypeAware extends OptionsOverrides {
 	overridesTypeAware?: TypedFlatConfigItem["rules"];
 }
@@ -52,16 +49,6 @@ export interface OptionsOverridesTypeAware extends OptionsOverrides {
 export interface OptionsPnpm {
 	/** Requires catalogs usage. */
 	catalogs?: boolean;
-}
-
-export interface OptionsTypeScriptErasableOnly {
-	/**
-	 * Enable erasable syntax only rules.
-	 *
-	 * @default false
-	 * @see https://github.com/JoshuaKGoldberg/eslint-plugin-erasable-syntax-only
-	 */
-	erasableOnly?: boolean;
 }
 
 export interface OptionsTypeScriptParserOptions {

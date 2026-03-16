@@ -240,6 +240,9 @@ catalogs:
     oxfmt:
       specifier: 0.40.0
       version: 0.40.0
+    oxlint-plugin-eslint:
+      specifier: 1.56.0
+      version: 1.56.0
     oxlint-plugin-oxlint-comments:
       specifier: 0.1.0
       version: 0.1.0
@@ -402,6 +405,9 @@ importers:
       oxfmt:
         specifier: catalog:prod
         version: 0.40.0
+      oxlint-plugin-eslint:
+        specifier: catalog:prod
+        version: 1.56.0
       oxlint-plugin-oxlint-comments:
         specifier: catalog:prod
         version: 0.1.0(oxlint-tsgolint@0.17.0)
@@ -3475,6 +3481,10 @@ packages:
     resolution: {integrity: sha512-g0C3I7xUj4b4DcagevM9kgH6+pUHytikxUcn3/VUkvzTNaaXBeyZqb7IBsHwojeXm4mTBEC/aBjBTMVUkZwWUQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  oxlint-plugin-eslint@1.56.0:
+    resolution: {integrity: sha512-Bkab8tMItvYdQ5rBOzDg7Igb1qc+oae18/O7doGPblCSKUB18maVfmm1Cmh3X8Spo2uSfMGDGP5ILfNaF67CiQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   oxlint-plugin-oxlint-comments@0.1.0:
     resolution: {integrity: sha512-wItStRflZ6IuX1r86blBNZcGOh+F7G4hcaLCvUztw/3BrKdIuMP/+vnPrLA6F8WmRBFlBY6YREtf4EuOIuM4aw==}
@@ -7074,6 +7084,8 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.40.0
       '@oxfmt/binding-win32-ia32-msvc': 0.40.0
       '@oxfmt/binding-win32-x64-msvc': 0.40.0
+
+  oxlint-plugin-eslint@1.56.0: {}
 
   oxlint-plugin-oxlint-comments@0.1.0(oxlint-tsgolint@0.17.0):
     dependencies:

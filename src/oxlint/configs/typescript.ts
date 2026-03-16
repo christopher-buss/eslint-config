@@ -1,38 +1,50 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import type { Rules, TypedOxlintConfigItem } from "../types.ts";
+import type {
+	OptionsComponentExtensions,
+	OptionsFiles,
+	OptionsStylistic,
+	OptionsTypeScriptErasableOnly,
+	OxlintRules,
+	Rules,
+	TypedOxlintConfigItem,
+} from "../types.ts";
 
-export function oxlintTypescript(options: {
-	stylistic: boolean | object;
-}): Array<TypedOxlintConfigItem> {
-	const { stylistic } = options;
+export function oxlintTypescript(
+	options: OptionsComponentExtensions &
+		OptionsFiles &
+		OptionsStylistic &
+		OptionsTypeScriptErasableOnly = {},
+): Array<TypedOxlintConfigItem> {
+	const { componentExts: componentExtensions = [], erasableOnly = false, stylistic } = options;
 
-	// Inlined from typescriptRules() + typescriptTypeAwareRules(), with
-	// prefixes transformed for oxlint:
-	// - ts/* extension rules → eslint/*
-	// - ts/* typescript rules → typescript/*
-	// - Not-yet-implemented rules omitted
+	const files = options.files?.flat() ?? [
+		GLOB_TS,
+		GLOB_TSX,
+		...componentExtensions.map((extension) => `**/*.${extension}`),
+	];
 
-	// TODO(oxlint): not yet implemented (oxc-project/oxc#2180)
-	// explicit-member-accessibility, method-signature-style
-
-	const rules: Rules = {
-		// --- typescriptRules (extension rules) → eslint/ ---
+	// --- Native oxlint rules (eslint/* and typescript/* plugins) ---
+	const nativeRules = {
+		// eslint/* extension rules (oxlint handles TS-awareness natively)
 		"eslint/default-param-last": "error",
 		"eslint/no-array-constructor": "off",
 		"eslint/no-dupe-class-members": "off",
-		"eslint/no-empty-function": "error",
+		"eslint/no-empty-function": "off",
+		"eslint/no-loss-of-precision": "off",
 		"eslint/no-redeclare": "off",
 		"eslint/no-shadow": "error",
+		"eslint/no-throw-literal": "off",
+		"eslint/no-unsafe-optional-chaining": "error",
 		"eslint/no-unused-expressions": "error",
-		"eslint/no-unused-private-class-members": "error",
+		"eslint/no-unused-private-class-members": "off",
 		"eslint/no-unused-vars": "off",
 		"eslint/no-use-before-define": "off",
 		"eslint/no-useless-constructor": "error",
-		// --- typescriptTypeAwareRules (extension rules) → eslint/ ---
 		"eslint/prefer-destructuring": ["error", { array: false, object: true }],
-		// --- typescriptRules (non-extension) → typescript/ ---
+		"eslint/prefer-promise-reject-errors": "off",
+
+		// typescript/* native rules
 		"typescript/adjacent-overload-signatures": "off",
-		// --- typescriptTypeAwareRules → typescript/ ---
 		"typescript/await-thenable": "error",
 		"typescript/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description" }],
 		"typescript/consistent-type-assertions": [
@@ -40,14 +52,17 @@ export function oxlintTypescript(options: {
 			{ assertionStyle: "as", objectLiteralTypeAssertions: "allow" },
 		],
 		"typescript/dot-notation": ["error", { allowKeywords: true }],
+		"typescript/explicit-function-return-type": [
+			"error",
+			{
+				allowExpressions: true,
+			},
+		],
 		"typescript/no-confusing-non-null-assertion": "error",
 		"typescript/no-confusing-void-expression": "error",
-
 		"typescript/no-duplicate-type-constituents": "error",
 		"typescript/no-dynamic-delete": "off",
-		// Overridden by type-aware variant
-		"typescript/no-empty-object-type": "error",
-		// no-empty-object-type: overridden by type-aware variant below
+		"typescript/no-empty-object-type": ["error", { allowInterfaces: "always" }],
 		"typescript/no-explicit-any": "off",
 		"typescript/no-extraneous-class": "error",
 		"typescript/no-floating-promises": [
@@ -58,11 +73,9 @@ export function oxlintTypescript(options: {
 		],
 		"typescript/no-for-in-array": "error",
 		"typescript/no-implied-eval": "error",
-		// no-for-in-array: overridden by type-aware variant below
 		"typescript/no-import-type-side-effects": "error",
 		"typescript/no-inferrable-types": "error",
 		"typescript/no-invalid-void-type": "off",
-
 		"typescript/no-meaningless-void-operator": "error",
 		"typescript/no-misused-promises": "error",
 		"typescript/no-mixed-enums": "error",
@@ -86,7 +99,6 @@ export function oxlintTypescript(options: {
 		"typescript/no-unsafe-member-access": "error",
 		"typescript/no-unsafe-return": "error",
 		"typescript/no-unsafe-unary-minus": "error",
-		"typescript/no-unused-vars": "off",
 		"typescript/no-useless-default-assignment": "error",
 		"typescript/no-wrapper-object-types": "error",
 		"typescript/non-nullable-type-assertion-style": "error",
@@ -115,10 +127,9 @@ export function oxlintTypescript(options: {
 		"typescript/triple-slash-reference": "off",
 		"typescript/unbound-method": "error",
 		"typescript/unified-signatures": "off",
-
 		"typescript/use-unknown-in-catch-callback-variable": "error",
 
-		// --- stylistic (conditional) → typescript/ ---
+		// Stylistic (conditional)
 		...(stylistic !== false
 			? {
 					"typescript/array-type": [
@@ -137,14 +148,74 @@ export function oxlintTypescript(options: {
 					],
 				}
 			: {}),
-	};
+	} satisfies OxlintRules;
+
+	// --- TS extension rules via @typescript-eslint jsPlugin ---
+	// Rules not yet native to oxlint.
+	const tsPluginRules = {
+		"ts/explicit-member-accessibility": [
+			"error",
+			{
+				overrides: {
+					constructors: "no-public",
+				},
+			},
+		],
+		"ts/method-signature-style": "off",
+		"ts/no-empty-function": "error",
+		"ts/no-unused-private-class-members": "error",
+	} satisfies Rules;
 
 	return [
 		{
-			name: "isentinel/typescript",
-			files: [GLOB_TS, GLOB_TSX],
+			name: "isentinel/oxlint/typescript",
+			files,
 			plugins: ["eslint", "typescript"],
-			rules,
+			rules: nativeRules,
 		},
+		{
+			name: "isentinel/oxlint/typescript/ts-plugin",
+			files,
+			jsPlugins: [
+				{
+					name: "ts",
+					specifier: "@typescript-eslint/eslint-plugin",
+				},
+			],
+			rules: tsPluginRules,
+		},
+		{
+			name: "isentinel/oxlint/typescript/eslint-js",
+			files,
+			jsPlugins: [
+				{
+					name: "eslint-js",
+					specifier: "oxlint-plugin-eslint",
+				},
+			],
+			rules: {
+				"eslint-js/no-restricted-syntax": ["error", "[declare=true]"],
+			},
+		},
+		...(erasableOnly
+			? [
+					{
+						name: "isentinel/oxlint/typescript/erasable-syntax-only",
+						files,
+						jsPlugins: [
+							{
+								name: "erasable-syntax-only",
+								specifier: "eslint-plugin-erasable-syntax-only",
+							},
+						],
+						rules: {
+							"erasable-syntax-only/enums": "error",
+							"erasable-syntax-only/import-aliases": "error",
+							"erasable-syntax-only/namespaces": "error",
+							"erasable-syntax-only/parameter-properties": "error",
+						},
+					} as TypedOxlintConfigItem,
+				]
+			: []),
 	];
 }

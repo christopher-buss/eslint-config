@@ -20,7 +20,7 @@ import { oxlintSonarjs } from "./configs/sonarjs.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
-import { oxlintDefaultRules } from "./defaults.generated.ts";
+import { oxlintDefaultRules } from "./oxlint.generated.ts";
 import type { OxlintPlugin } from "./types.ts";
 
 export type { OxlintOptions, OxlintOverride } from "./types.ts";
@@ -30,6 +30,7 @@ export function isentinel(
 	...userConfigs: Array<TypedOxlintConfigItem>
 ): OxlintConfig {
 	const {
+		componentExts: componentExtensions = [],
 		eslintPlugin: enableEslintPlugin = false,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc,
@@ -102,7 +103,7 @@ export function isentinel(
 		oxlintTypescript({
 			// ...resolveSubOptions(options, "typescript"),
 			// ...getOverrides(options, "typescript"),
-			// componentExts: componentExtensions,
+			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
 		oxlintUnicorn({ root: rootGlobs, stylistic: stylisticOptions }),

@@ -116,6 +116,7 @@
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
+		"oxlint-plugin-eslint": "catalog:prod",
 		"oxlint-plugin-oxlint-comments": "catalog:prod",
 		"prettier": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",

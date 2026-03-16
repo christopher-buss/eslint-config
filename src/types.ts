@@ -5,9 +5,12 @@ import type { FormatOptions as OxfmtOptions } from "oxfmt";
 import type { OxlintOverride } from "oxlint";
 import type { Options as PrettierOptions } from "prettier";
 
+import type { OxlintNativeRuleName } from "./oxlint/oxlint.generated";
 import type { RuleOptions } from "./typegen";
 
 export type { RuleOptions } from "./typegen";
+
+export type OxlintRules = Partial<Record<OxlintNativeRuleName, Linter.RuleEntry>>;
 
 export type Awaitable<T> = Promise<T> | T;
 
@@ -54,8 +57,13 @@ export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
 	 * specified, these rule configurations are only available to the matching
 	 * files.
 	 */
-	rules?: Rules;
+	rules?: OxlintRules | Rules;
 };
+
+export interface OptionsComponentExtensions {
+	/** Additional extensions for components. */
+	componentExts?: Array<string>;
+}
 
 export interface OptionsFiles {
 	/** Override the `files` option to provide custom globs. */
@@ -116,6 +124,16 @@ export interface OptionsHasTypeScript {
 
 export interface OptionsIsInEditor {
 	isInEditor?: boolean;
+}
+
+export interface OptionsTypeScriptErasableOnly {
+	/**
+	 * Enable erasable syntax only rules.
+	 *
+	 * @default false
+	 * @see https://github.com/JoshuaKGoldberg/eslint-plugin-erasable-syntax-only
+	 */
+	erasableOnly?: boolean;
 }
 
 export type StylisticConfig = Pick<

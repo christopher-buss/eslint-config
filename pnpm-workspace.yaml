@@ -1,7 +1,5 @@
 catalogMode: prefer
-saveExact: true
 shellEmulator: true
-strictPeerDependencies: false
 
 packages:
   - fixtures/*
@@ -98,6 +96,7 @@ catalogs:
     jsonc-eslint-parser: 3.1.0
     local-pkg: 1.1.2
     oxfmt: 0.40.0
+    oxlint-plugin-eslint: 1.56.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.8.1
     toml-eslint-parser: 1.0.3
@@ -108,3 +107,6 @@ onlyBuiltDependencies:
   - esbuild
   - simple-git-hooks
   - unrs-resolver
+
+saveExact: true
+strictPeerDependencies: false
