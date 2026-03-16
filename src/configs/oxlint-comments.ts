@@ -6,7 +6,7 @@ export function oxlintComments(): Array<TypedOxlintConfigItem> {
 		{
 			name: "isentinel/oxlint/comments",
 			files: [GLOB_SRC],
-			jsPlugins: [{ name: "oxlint-comments", specifier: "eslint-plugin-oxlint-comments" }],
+			jsPlugins: [{ name: "oxlint-comments", specifier: "oxlint-plugin-oxlint-comments" }],
 			rules: {
 				"oxlint-comments/disable-enable-pair": ["error", { allowWholeFile: true }],
 				"oxlint-comments/no-aggregating-enable": "error",

@@ -60,7 +60,6 @@ export async function pnpm(
 					{
 						settings: {
 							catalogMode: "prefer",
-							cleanupUnusedCatalogs: true,
 							shellEmulator: true,
 							// TODO: Currently our own config is breaking for
 							// this making it a pain to use

@@ -275,14 +275,6 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 }
 
 export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
-	console.log("working-directory");
-	console.log("working-directory");
-	console.log("working-directory");
-	console.log("working-directory");
-	console.log("working-directory");
-	console.log("working-directory");
-	console.log("working-directory");
-
 	return [
 		{
 			name: "isentinel/sort/pnpm-workspace-yaml-sort",
