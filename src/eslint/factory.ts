@@ -50,6 +50,7 @@ import {
 import { jsx } from "./configs/jsx";
 import { packageJson } from "./configs/package-json";
 import { spelling } from "./configs/spelling";
+import { defaultPluginRenaming } from "./plugin-renaming";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -72,17 +73,7 @@ const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"settings",
 ];
 
-export const defaultPluginRenaming = {
-	"@eslint-react": "react",
-	"@eslint-react/hooks-extra": "react-hooks-extra",
-	"@eslint-react/naming-convention": "react-naming-convention",
-	"@isentinel/eslint-plugin-comment-length": "comment-length",
-	"@stylistic": "style",
-	"@typescript-eslint": "ts",
-	"arrow-return-style-x": "arrow-style",
-	"n": "node",
-	"yml": "yaml",
-};
+export { defaultPluginRenaming } from "./plugin-renaming";
 
 /**
  * Generates an array of user configuration items based on the provided options

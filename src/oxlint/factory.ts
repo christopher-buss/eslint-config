@@ -16,6 +16,7 @@ import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
 import { oxlintNode } from "./configs/node.ts";
 import { oxlintPromise } from "./configs/promise.ts";
+import { oxlintReact } from "./configs/react.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
@@ -35,6 +36,7 @@ export function isentinel(
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc,
 		jsx: enableJsx = true,
+		react: enableReact = false,
 		roblox: robloxOptions,
 		root: customRootGlobs,
 		rules = {},
@@ -126,6 +128,17 @@ export function isentinel(
 				roblox: enableRoblox,
 				type: projectType,
 				...testOptions,
+			}),
+		);
+	}
+
+	if (enableReact !== false) {
+		const reactOptions = typeof enableReact === "object" ? enableReact : {};
+		configs.push(
+			oxlintReact({
+				// ...getOverrides(options, "react"),
+				stylistic: stylisticOptions,
+				...reactOptions,
 			}),
 		);
 	}

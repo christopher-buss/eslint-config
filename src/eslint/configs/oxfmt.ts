@@ -15,7 +15,7 @@ import {
 	GLOB_YAML,
 } from "../../globs";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils";
-import { defaultPluginRenaming } from "../factory";
+import { defaultPluginRenaming } from "../plugin-renaming";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,

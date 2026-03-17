@@ -6,6 +6,16 @@ export const oxlintDefaultRules: ReadonlySet<string> = new Set([
 	"for-direction",
 	"import/default",
 	"import/namespace",
+	"jest/expect-expect",
+	"jest/no-conditional-expect",
+	"jest/no-disabled-tests",
+	"jest/no-export",
+	"jest/no-focused-tests",
+	"jest/no-standalone-expect",
+	"jest/require-to-throw-message",
+	"jest/valid-describe-callback",
+	"jest/valid-expect",
+	"jest/valid-title",
 	"jsdoc/check-property-names",
 	"jsdoc/check-tag-names",
 	"jsdoc/implements-on-classes",
@@ -123,6 +133,11 @@ export const oxlintDefaultRules: ReadonlySet<string> = new Set([
 	"unicorn/prefer-string-starts-ends-with",
 	"use-isnan",
 	"valid-typeof",
+	"vitest/consistent-each-for",
+	"vitest/hoisted-apis-on-top",
+	"vitest/no-conditional-tests",
+	"vitest/require-local-test-context-for-concurrent-snapshots",
+	"vitest/warn-todo",
 ]);
 
 export type OxlintNativeRuleName =
