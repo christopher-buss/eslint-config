@@ -15,6 +15,7 @@ catalogs:
   dev:
     "@antfu/ni": 28.2.0
     "@eslint/config-inspector": 1.4.2
+    "@isentinel/hooks": ^1.2.4
     "@isentinel/tsconfig": 1.2.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 22.16.0

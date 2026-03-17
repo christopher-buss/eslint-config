@@ -127,6 +127,7 @@
 		"@antfu/ni": "catalog:dev",
 		"@eslint/config-inspector": "catalog:dev",
 		"@isentinel/eslint-config": "workspace:*",
+		"@isentinel/hooks": "catalog:dev",
 		"@isentinel/tsconfig": "catalog:dev",
 		"@stylistic/eslint-plugin-migrate": "catalog:dev",
 		"@types/node": "catalog:dev",
