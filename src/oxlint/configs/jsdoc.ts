@@ -1,33 +1,20 @@
 import { GLOB_SRC } from "../../globs.ts";
 import type {
 	JsdocOptions,
+	JsPluginRules,
 	OptionsProjectType,
 	OptionsStylistic,
-	Rules,
+	OxlintRules,
 	TypedOxlintConfigItem,
 } from "../types.ts";
 
-type JsdocConfigOptions = JsdocOptions & OptionsProjectType & OptionsStylistic;
-
-export function oxlintJsdoc(options: JsdocConfigOptions = {}): Array<TypedOxlintConfigItem> {
-	const { full = false, stylistic: _stylistic = true, type = "game" } = options;
+export function oxlintJsdoc(
+	options: JsdocOptions & OptionsProjectType & OptionsStylistic = {},
+): Array<TypedOxlintConfigItem> {
+	const { full = false, stylistic = true, type = "game" } = options;
 	const isPackage = full || type === "package";
 
-	// Inlined from jsdocRules(), with unsupported rules omitted.
-	//
-	// Won't implement — experimental rule (oxc-project/oxc#1141)
-	// jsdoc/convert-to-jsdoc-comments
-	//
-	// TODO(oxlint): not yet implemented (oxc-project/oxc#1141)
-	// check-param-names, check-types, informative-docs, no-types,
-	// no-undefined-types, require-description,
-	// require-description-complete-sentence, require-rejects,
-	// require-returns-check, require-yields-check, check-alignment,
-	// multiline-blocks, no-blank-block-descriptions, no-blank-blocks,
-	// no-multi-asterisks, require-asterisk-prefix,
-	// require-hyphen-before-param-description
-
-	const rules: Rules = {
+	const nativeRules = {
 		"jsdoc/check-access": "warn",
 		"jsdoc/check-property-names": "warn",
 		"jsdoc/empty-tags": "warn",
@@ -39,7 +26,6 @@ export function oxlintJsdoc(options: JsdocConfigOptions = {}): Array<TypedOxlint
 		"jsdoc/require-property-description": "warn",
 		"jsdoc/require-property-name": "warn",
 		"jsdoc/require-returns-description": "warn",
-		"jsdoc/sort-tags": "off",
 
 		...(isPackage
 			? {
@@ -48,17 +34,73 @@ export function oxlintJsdoc(options: JsdocConfigOptions = {}): Array<TypedOxlint
 						{ checkDestructured: false, exemptedBy: ["ignore"] },
 					],
 					"jsdoc/require-returns": ["warn", { exemptedBy: ["hidden"] }],
-					"jsdoc/require-template": "warn",
 				}
 			: {}),
-	};
+	} satisfies OxlintRules;
+
+	const jsPluginRules = {
+		"jsdoc-js/check-param-names": ["warn", { checkDestructured: false }],
+		"jsdoc-js/check-types": "warn",
+		"jsdoc-js/convert-to-jsdoc-comments": "warn",
+		"jsdoc-js/informative-docs": "warn",
+		"jsdoc-js/no-types": "warn",
+		"jsdoc-js/no-undefined-types": "error",
+		"jsdoc-js/require-description": [
+			"warn",
+			{
+				exemptedBy: [
+					"hidden",
+					"ignore",
+					"inheritdoc",
+					"client",
+					"server",
+					"see",
+					"metadata",
+				],
+			},
+		],
+		"jsdoc-js/require-description-complete-sentence": "warn",
+		"jsdoc-js/require-rejects": "error",
+		"jsdoc-js/require-returns-check": "warn",
+		"jsdoc-js/require-yields-check": "warn",
+		"jsdoc-js/sort-tags": "off",
+
+		...(isPackage
+			? {
+					"jsdoc-js/require-template": "warn",
+				}
+			: {}),
+
+		...(stylistic !== false
+			? {
+					"jsdoc-js/check-alignment": "warn",
+					"jsdoc-js/multiline-blocks": "warn",
+					"jsdoc-js/no-blank-block-descriptions": "warn",
+					"jsdoc-js/no-blank-blocks": "warn",
+					"jsdoc-js/no-multi-asterisks": "warn",
+					"jsdoc-js/require-asterisk-prefix": "warn",
+					"jsdoc-js/require-hyphen-before-param-description": "warn",
+				}
+			: {}),
+	} satisfies JsPluginRules;
 
 	return [
 		{
-			name: "isentinel/jsdoc",
+			name: "isentinel/oxlint/jsdoc",
 			files: [GLOB_SRC],
 			plugins: ["jsdoc"],
-			rules,
+			rules: nativeRules,
+		},
+		{
+			name: "isentinel/oxlint/jsdoc/js-plugin",
+			files: [GLOB_SRC],
+			jsPlugins: [
+				{
+					name: "jsdoc-js",
+					specifier: "eslint-plugin-jsdoc",
+				},
+			],
+			rules: jsPluginRules,
 		},
 	];
 }
