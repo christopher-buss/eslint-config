@@ -85,6 +85,7 @@ export function oxlintUnicorn(
 		"unicorn/prefer-math-min-max": "off",
 		"unicorn/prefer-optional-catch-binding": "error",
 		"unicorn/prefer-set-has": "error",
+		"unicorn/prefer-ternary": ["error", "only-single-line"],
 		"unicorn/throw-new-error": "off",
 
 		...(stylistic !== false
@@ -103,7 +104,6 @@ export function oxlintUnicorn(
 		"unicorn-js/prefer-export-from": "error",
 		"unicorn-js/prefer-single-call": "error",
 		"unicorn-js/prefer-switch": "error",
-		"unicorn-js/prefer-ternary": ["error", "only-single-line"],
 		"unicorn-js/prevent-abbreviations": [
 			"error",
 			{

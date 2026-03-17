@@ -453,6 +453,7 @@ export type OxlintNativeRuleName =
 	| "nextjs/no-typos"
 	| "nextjs/no-unwanted-polyfillio"
 	| "node/global-require"
+	| "node/handle-callback-err"
 	| "node/no-exports-assign"
 	| "node/no-new-require"
 	| "node/no-path-concat"

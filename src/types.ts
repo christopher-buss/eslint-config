@@ -13,11 +13,12 @@ export type { RuleOptions } from "./typegen";
 export type OxlintRules = Partial<Record<OxlintNativeRuleName, Linter.RuleEntry>>;
 
 /**
- * Rules for JS plugins in oxlint. Errors if a native oxlint rule name is used,
- * so that rules are moved to `OxlintRules` when oxlint adds native support.
+ * Rules for JS plugins in oxlint. Errors if a native oxlint rule name is used
+ * (or its `-js` alias), so that rules are moved to `OxlintRules` when oxlint
+ * adds native support.
  */
-export type JsPluginRules = Omit<RuleOptions, OxlintNativeRuleName> &
-	Partial<Record<OxlintNativeRuleName, never>> &
+export type JsPluginRules = Omit<RuleOptions, ForbiddenRuleName> &
+	Partial<Record<ForbiddenRuleName, never>> &
 	Record<string, Linter.RuleEntry<any> | undefined>;
 
 export type Awaitable<T> = Promise<T> | T;
@@ -217,6 +218,42 @@ export interface OptionsFormatters {
 	 */
 	yaml?: boolean;
 }
+
+/**
+ * Native oxlint plugin prefixes that require `-js` aliases when used as
+ * jsPlugins (e.g., `eslint-plugin-unicorn` → `unicorn-js`).
+ */
+type NativePluginPrefix =
+	| "eslint"
+	| "import"
+	| "jest"
+	| "jsdoc"
+	| "jsx-a11y"
+	| "nextjs"
+	| "node"
+	| "oxc"
+	| "promise"
+	| "react"
+	| "react-perf"
+	| "typescript"
+	| "unicorn"
+	| "vitest"
+	| "vue";
+
+/**
+ * Converts native rules like `"node/handle-callback-err"` →
+ * `"node-js/handle-callback-err"` so aliased jsPlugin rule names are also
+ * rejected by {@link JsPluginRules}.
+ */
+type AliasedNativeRuleName = {
+	[K in OxlintNativeRuleName]: K extends `${infer P}/${infer Rule}`
+		? P extends NativePluginPrefix
+			? `${P}-js/${Rule}`
+			: never
+		: never;
+}[OxlintNativeRuleName];
+
+type ForbiddenRuleName = AliasedNativeRuleName | OxlintNativeRuleName;
 
 export { type ConfigNames } from "./typegen";
 export { type FlatConfigComposer } from "eslint-flat-config-utils";

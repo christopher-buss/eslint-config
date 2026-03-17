@@ -1,10 +1,31 @@
 import { GLOB_ALL_SRC } from "../../globs.ts";
-import type { OptionsIsInEditor, OptionsStylistic, TypedOxlintConfigItem } from "../types.ts";
+import type {
+	JsPluginRules,
+	OptionsIsInEditor,
+	OptionsStylistic,
+	TypedOxlintConfigItem,
+} from "../types.ts";
 
 export function oxlintCeaseNonsense(
 	options: OptionsIsInEditor & OptionsStylistic = {},
 ): Array<TypedOxlintConfigItem> {
 	const { isInEditor = false, stylistic = true } = options;
+
+	const jsPluginRules = {
+		"cease-nonsense/no-async-constructor": "error",
+		"cease-nonsense/no-commented-code": isInEditor ? "off" : "error",
+		"cease-nonsense/prefer-class-properties": "error",
+		"cease-nonsense/prefer-early-return": ["error", { maximumStatements: 1 }],
+		"cease-nonsense/react-hooks-strict-return": "error",
+		"cease-nonsense/strict-component-boundaries": "error",
+
+		...(stylistic !== false
+			? {
+					"cease-nonsense/prefer-module-scope-constants": "error",
+					"cease-nonsense/prefer-singular-enums": "error",
+				}
+			: {}),
+	} satisfies JsPluginRules;
 
 	return [
 		{
@@ -16,21 +37,7 @@ export function oxlintCeaseNonsense(
 					specifier: "@pobammer-ts/eslint-cease-nonsense-rules",
 				},
 			],
-			rules: {
-				"cease-nonsense/no-async-constructor": "error",
-				"cease-nonsense/no-commented-code": isInEditor ? "off" : "error",
-				"cease-nonsense/prefer-class-properties": "error",
-				"cease-nonsense/prefer-early-return": ["error", { maximumStatements: 1 }],
-				"cease-nonsense/react-hooks-strict-return": "error",
-				"cease-nonsense/strict-component-boundaries": "error",
-
-				...(stylistic !== false
-					? {
-							"cease-nonsense/prefer-module-scope-constants": "error",
-							"cease-nonsense/prefer-singular-enums": "error",
-						}
-					: {}),
-			},
+			rules: jsPluginRules,
 		},
 	];
 }
