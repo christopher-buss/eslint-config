@@ -4,7 +4,7 @@ import type { Except } from "type-fest";
 
 import type { OptionsConfig } from "../eslint/types.ts";
 import { GLOB_ROOT } from "../globs.ts";
-import type { TypedOxlintConfigItem } from "../types.ts";
+import type { OxlintSettings, TypedOxlintConfigItem } from "../types.ts";
 import { getOverrides, isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
@@ -144,6 +144,7 @@ export function isentinel(
 	const plugins = new Set<OxlintPlugin>();
 	const jsPlugins = new Map<string, ExternalPluginEntry>();
 	const overrides: Array<Except<TypedOxlintConfigItem, "name">> = [];
+	const mergedSettings: OxlintSettings = {};
 
 	for (const configArray of configs) {
 		for (const config of configArray) {
@@ -154,6 +155,12 @@ export function isentinel(
 			for (const jsPlugin of config.jsPlugins ?? []) {
 				const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.specifier;
 				jsPlugins.set(key, jsPlugin);
+			}
+
+			// Strip settings from overrides and merge to top-level
+			if (config.settings) {
+				Object.assign(mergedSettings, config.settings);
+				config.settings = undefined as never;
 			}
 
 			config.name = undefined as never;
@@ -173,6 +180,11 @@ export function isentinel(
 	for (const userConfig of userConfigs) {
 		for (const key of Object.keys(userConfig.rules ?? {})) {
 			configuredRules.add(key);
+		}
+
+		if (userConfig.settings) {
+			Object.assign(mergedSettings, userConfig.settings);
+			userConfig.settings = undefined as never;
 		}
 	}
 
@@ -208,5 +220,6 @@ export function isentinel(
 		] as Array<OxlintOverride>,
 		plugins: [...plugins],
 		rules: { ...suppressedDefaults, ...rules } as DummyRuleMap,
+		settings: mergedSettings,
 	});
 }

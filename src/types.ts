@@ -2,7 +2,7 @@ import type { StylisticCustomizeOptions } from "@stylistic/eslint-plugin";
 
 import type { Linter } from "eslint";
 import type { FormatOptions as OxfmtOptions } from "oxfmt";
-import type { OxlintOverride } from "oxlint";
+import type { OxlintConfig, OxlintOverride } from "oxlint";
 import type { Options as PrettierOptions } from "prettier";
 
 import type { OxlintNativeRuleName } from "./oxlint/oxlint.generated";
@@ -57,6 +57,8 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	rules?: Rules;
 };
 
+export type OxlintSettings = NonNullable<OxlintConfig["settings"]>;
+
 export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
 	/** A name for this config item, for better debugging and tooling support. */
 	name: string;
@@ -67,6 +69,13 @@ export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
 	 * files.
 	 */
 	rules?: OxlintRules | Rules;
+
+	/**
+	 * Plugin-specific settings. These are stripped from overrides by the factory
+	 * and merged into the top-level `settings` object, since oxlint only
+	 * supports settings at the top level.
+	 */
+	settings?: OxlintSettings;
 };
 
 export interface OptionsComponentExtensions {

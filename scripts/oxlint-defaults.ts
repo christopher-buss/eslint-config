@@ -12,7 +12,18 @@ import path from "node:path";
 import { URL } from "node:url";
 
 // Same plugins used in src/oxlint.ts
-const plugins = ["eslint", "unicorn", "typescript", "import", "jsdoc", "promise", "node", "oxc"];
+const plugins = [
+	"eslint",
+	"unicorn",
+	"typescript",
+	"import",
+	"jsdoc",
+	"jest",
+	"vitest",
+	"promise",
+	"node",
+	"oxc",
+];
 
 const temporaryConfig = {
 	$schema: "./node_modules/oxlint/configuration_schema.json",
