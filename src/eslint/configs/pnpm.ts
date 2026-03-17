@@ -1,7 +1,4 @@
-import { findUp } from "find-up-simple";
-import fs from "node:fs/promises";
-
-import { ensurePackages, interopDefault } from "../../utils";
+import { detectCatalogUsage, ensurePackages, interopDefault } from "../../utils";
 import type { OptionsIsInEditor, OptionsPnpm, TypedFlatConfigItem } from "../types";
 
 export async function pnpm(
@@ -15,7 +12,7 @@ export async function pnpm(
 		interopDefault(import("jsonc-eslint-parser")),
 	]);
 
-	const { catalogs = await detectCatalogUsage(), isInEditor } = options;
+	const { catalogs = detectCatalogUsage(), isInEditor } = options;
 
 	return [
 		{
@@ -72,14 +69,4 @@ export async function pnpm(
 			},
 		},
 	];
-}
-
-async function detectCatalogUsage(): Promise<boolean> {
-	const workspaceFile = await findUp("pnpm-workspace.yaml");
-	if (workspaceFile === undefined) {
-		return false;
-	}
-
-	const yaml = await fs.readFile(workspaceFile, "utf-8");
-	return yaml.includes("catalog:") || yaml.includes("catalogs:");
 }

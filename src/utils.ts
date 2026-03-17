@@ -2,6 +2,7 @@ import type { FlatConfig } from "@eslint/compat";
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
+import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -505,4 +506,14 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+export function detectCatalogUsage(): boolean {
+	const workspaceFile = findUpSync("pnpm-workspace.yaml");
+	if (workspaceFile === undefined) {
+		return false;
+	}
+
+	const yaml = fs.readFileSync(workspaceFile, "utf-8");
+	return yaml.includes("catalog:") || yaml.includes("catalogs:");
 }
