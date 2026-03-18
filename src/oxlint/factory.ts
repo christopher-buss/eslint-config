@@ -23,8 +23,9 @@ import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
 import { oxlintNode } from "./configs/node.ts";
 import { oxfmt } from "./configs/oxfmt.ts";
+import { perfectionist } from "./configs/perfectionist.ts";
 import { oxlintPnpm } from "./configs/pnpm.ts";
-import { oxlintPromise } from "./configs/promise.ts";
+import { promise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
 import { roblox } from "./configs/roblox.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
@@ -115,7 +116,7 @@ export function isentinel(
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
-		oxlintPromise(),
+		promise(),
 		oxlintSonarjs({ isInEditor }),
 		oxlintTypescript({
 			// ...resolveSubOptions(options, "typescript"),
@@ -178,6 +179,10 @@ export function isentinel(
 	}
 
 	if (stylisticOptions !== false) {
+		configs.push(
+			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
+		);
+
 		const stylisticFormatterOptions = typeof formatters === "object" ? formatters : {};
 		configs.push(oxlintStylistic(stylisticOptions, stylisticFormatterOptions));
 	}

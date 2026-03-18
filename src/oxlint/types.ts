@@ -54,7 +54,6 @@ export type OxlintOptionsConfig = Omit<
 	| "markdown"
 	| "namedConfigs"
 	| "oxlint"
-	| "perfectionist"
 	| "toml"
 	| "yaml"
 >;
