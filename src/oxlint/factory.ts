@@ -26,6 +26,7 @@ import { oxfmt } from "./configs/oxfmt.ts";
 import { oxlintPnpm } from "./configs/pnpm.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
+import { roblox } from "./configs/roblox.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
 import { oxlintSpelling } from "./configs/spelling.ts";
 import { oxlintStylistic } from "./configs/stylistic.ts";
@@ -127,6 +128,15 @@ export function isentinel(
 
 	if (enableJsdoc !== false) {
 		configs.push(oxlintJsdoc({ stylistic: stylisticOptions, type: projectType }));
+	}
+
+	if (enableRoblox) {
+		configs.push(
+			roblox({
+				...getOverrides(options, "roblox"),
+				stylistic: stylisticOptions,
+			}),
+		);
 	}
 
 	if (projectType === "package" && !enableRoblox) {
