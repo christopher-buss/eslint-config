@@ -37,7 +37,7 @@ await fs.writeFile(temporaryFile, JSON.stringify(temporaryConfig));
 
 let output: string;
 try {
-	output = execSync(`pnpm oxlint --print-config -c ${temporaryFile}`, {
+	output = execSync(`pnpm dlx oxlint --print-config -c ${temporaryFile}`, {
 		cwd: new URL("..", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"),
 		encoding: "utf-8",
 		stdio: ["pipe", "pipe", "pipe"],
@@ -60,7 +60,7 @@ const defaults = Object.entries(parsed.rules)
 	.sort();
 
 // Also parse ALL native oxlint rule names from --rules
-const rulesOutput = execSync("pnpm oxlint --rules", {
+const rulesOutput = execSync("pnpm dlx oxlint --rules", {
 	cwd: new URL("..", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"),
 	encoding: "utf-8",
 	stdio: ["pipe", "pipe", "pipe"],
