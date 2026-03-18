@@ -10,6 +10,7 @@ import {
 	GLOB_MARKDOWN,
 	GLOB_POSTCSS,
 	GLOB_SCSS,
+	GLOB_TOML,
 	GLOB_TS,
 	GLOB_TSX,
 	GLOB_YAML,
@@ -31,6 +32,7 @@ export async function oxfmt(
 			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
 			oxfmtOptions?: OxfmtOptions;
+			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
@@ -40,6 +42,7 @@ export async function oxfmt(
 		formatters = {},
 		oxfmtConfigOptions = {},
 		oxfmtOptions: userOxfmtOptions,
+		oxlint: enableOxlint = false,
 		prettierOptions = {},
 	} = options ?? {};
 
@@ -49,6 +52,7 @@ export async function oxfmt(
 		html: true,
 		json: true,
 		markdown: true,
+		toml: true,
 		yaml: true,
 		...resolveWithDefaults(formatters, {}),
 	} satisfies OptionsFormatters;
@@ -105,42 +109,45 @@ export async function oxfmt(
 		},
 	];
 
-	const jsFiles = oxfmtFiles ?? [
-		GLOB_JS,
-		GLOB_JSX,
-		`${GLOB_MARKDOWN}/${GLOB_JS}`,
-		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
-	];
+	// JS/TS formatting is handled by oxlint when enabled
+	if (!enableOxlint) {
+		const jsFiles = oxfmtFiles ?? [
+			GLOB_JS,
+			GLOB_JSX,
+			`${GLOB_MARKDOWN}/${GLOB_JS}`,
+			`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+		];
 
-	configs.push({
-		name: "isentinel/oxfmt/javascript",
-		files: jsFiles,
-		rules: {
-			...rules,
-			"arrow-body-style": "off",
-			"oxfmt/oxfmt": ["error", oxfmtOptions],
-			"prefer-arrow-callback": "off",
-		},
-	});
+		configs.push({
+			name: "isentinel/oxfmt/javascript",
+			files: jsFiles,
+			rules: {
+				...rules,
+				"arrow-body-style": "off",
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
+				"prefer-arrow-callback": "off",
+			},
+		});
 
-	const tsFiles = oxfmtFiles ?? [
-		GLOB_TS,
-		GLOB_TSX,
-		`${GLOB_MARKDOWN}/${GLOB_TS}`,
-		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
-		...componentExtensions.map((extension) => `**/*.${extension}`),
-	];
+		const tsFiles = oxfmtFiles ?? [
+			GLOB_TS,
+			GLOB_TSX,
+			`${GLOB_MARKDOWN}/${GLOB_TS}`,
+			`${GLOB_MARKDOWN}/${GLOB_TSX}`,
+			...componentExtensions.map((extension) => `**/*.${extension}`),
+		];
 
-	configs.push({
-		name: "isentinel/oxfmt/typescript",
-		files: tsFiles,
-		rules: {
-			...rules,
-			"arrow-body-style": "off",
-			"oxfmt/oxfmt": ["error", oxfmtOptions],
-			"prefer-arrow-callback": "off",
-		},
-	});
+		configs.push({
+			name: "isentinel/oxfmt/typescript",
+			files: tsFiles,
+			rules: {
+				...rules,
+				"arrow-body-style": "off",
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
+				"prefer-arrow-callback": "off",
+			},
+		});
+	}
 
 	if (formattingOptions.css) {
 		configs.push(
@@ -243,6 +250,19 @@ export async function oxfmt(
 						useTabs: false,
 					},
 				],
+			},
+		});
+	}
+
+	if (formattingOptions.toml) {
+		configs.push({
+			name: "isentinel/oxfmt/toml",
+			files: [GLOB_TOML],
+			languageOptions: {
+				parser: parserPlain,
+			},
+			rules: {
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
 			},
 		});
 	}

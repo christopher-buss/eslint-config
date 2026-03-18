@@ -281,9 +281,12 @@ export async function isentinel(
 
 	if (stylisticOptions !== false) {
 		configs.push(
-			stylistic(stylisticOptions, prettierSettings),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
 		);
+
+		if (!enableOxlint) {
+			configs.push(stylistic(stylisticOptions, prettierSettings));
+		}
 	}
 
 	if (options.test !== undefined && options.test !== false) {
@@ -400,6 +403,7 @@ export async function isentinel(
 							},
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
+				oxlint: enableOxlint,
 				prettierOptions: prettierSettings,
 			}),
 		);

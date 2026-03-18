@@ -159,6 +159,11 @@ export type StylisticConfig = Pick<
 	"indent" | "jsx" | "quotes" | "semi"
 > & { arrowLength?: number };
 
+export interface OptionsPnpm {
+	/** Requires catalogs usage. */
+	catalogs?: boolean;
+}
+
 export interface OptionsStylistic {
 	stylistic?: boolean | StylisticConfig;
 }
@@ -219,6 +224,13 @@ export interface OptionsFormatters {
 	 * options.
 	 */
 	prettierOptions?: PrettierOptions;
+
+	/**
+	 * Enable formatting support for TOML.
+	 *
+	 * @default true
+	 */
+	toml?: boolean;
 
 	/**
 	 * Enable formatting support for YAML.

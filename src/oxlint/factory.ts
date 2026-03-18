@@ -1,11 +1,18 @@
+import { findUpSync } from "find-up-simple";
 import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
 import { defineConfig } from "oxlint";
 import type { Except } from "type-fest";
 
-import type { OptionsConfig } from "../eslint/types.ts";
 import { GLOB_ROOT } from "../globs.ts";
 import type { OxlintSettings, TypedOxlintConfigItem } from "../types.ts";
-import { getOverrides, isInAgentSession, isInEditorEnvironment, mergeGlobs } from "../utils.ts";
+import {
+	getOverrides,
+	isInAgentSession,
+	isInEditorEnvironment,
+	mergeGlobs,
+	resolveOxfmtConfigOptionsSync,
+	resolveSubOptions,
+} from "../utils.ts";
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
@@ -15,31 +22,38 @@ import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
 import { oxlintNode } from "./configs/node.ts";
+import { oxfmt } from "./configs/oxfmt.ts";
+import { oxlintPnpm } from "./configs/pnpm.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
+import { oxlintSpelling } from "./configs/spelling.ts";
+import { oxlintStylistic } from "./configs/stylistic.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import { oxlintDefaultRules } from "./oxlint.generated.ts";
-import type { OxlintPlugin } from "./types.ts";
+import type { OxlintOptionsConfig, OxlintPlugin } from "./types.ts";
 
 export type { OxlintOptions, OxlintOverride } from "./types.ts";
 
 export function isentinel(
-	options: Omit<TypedOxlintConfigItem, "files"> & OptionsConfig,
+	options: Omit<TypedOxlintConfigItem, "files"> & OxlintOptionsConfig,
 	...userConfigs: Array<TypedOxlintConfigItem>
 ): OxlintConfig {
 	const {
 		componentExts: componentExtensions = [],
 		eslintPlugin: enableEslintPlugin = false,
+		formatters,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc,
 		jsx: enableJsx = true,
+		pnpm: enablePnpm = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		roblox: robloxOptions,
 		root: customRootGlobs,
 		rules = {},
+		spellCheck: enableSpellCheck,
 		stylistic,
 		test: enableTest = false,
 		// typescript: typescriptOptions,
@@ -119,6 +133,16 @@ export function isentinel(
 		configs.push(oxlintNode());
 	}
 
+	if (enablePnpm !== false) {
+		const pnpmOptions = typeof enablePnpm === "object" ? enablePnpm : {};
+		configs.push(
+			oxlintPnpm({
+				isInEditor,
+				...pnpmOptions,
+			}),
+		);
+	}
+
 	if (enableTest !== false) {
 		const testOptions = typeof enableTest === "object" ? enableTest : {};
 		configs.push(
@@ -143,6 +167,20 @@ export function isentinel(
 		);
 	}
 
+	if (stylisticOptions !== false) {
+		configs.push(oxlintStylistic(stylisticOptions));
+	}
+
+	if (enableSpellCheck !== false) {
+		configs.push(
+			oxlintSpelling({
+				...resolveSubOptions(options, "spellCheck"),
+				componentExts: componentExtensions,
+				isInEditor,
+			}),
+		);
+	}
+
 	if (enableEslintPlugin !== false) {
 		configs.push(eslintPlugin());
 	}
@@ -152,6 +190,43 @@ export function isentinel(
 		oxlintComments({ stylistic: stylisticOptions }),
 		oxlintDisables({ root: rootGlobs }),
 	);
+
+	if (stylisticOptions !== false) {
+		const formatterOptions = typeof formatters === "object" ? formatters : {};
+		const oxfmtConfigOptions = formatters !== false ? resolveOxfmtConfigOptionsSync() : {};
+		const prettierOptions = formatterOptions.prettierOptions ?? {};
+		const prettierSettings: Record<string, unknown> = {
+			arrowParens: "always",
+			printWidth: 100,
+			quoteProps: "consistent",
+			semi: true,
+			singleQuote: false,
+			tabWidth: 4,
+			trailingComma: "all",
+			useTabs: true,
+			...prettierOptions,
+		};
+
+		configs.push(
+			oxfmt({
+				componentExts: componentExtensions,
+				formatters:
+					formatters !== false
+						? formatters
+						: {
+								css: false,
+								graphql: false,
+								html: false,
+								json: false,
+								markdown: false,
+								yaml: false,
+							},
+				oxfmtConfigOptions,
+				oxfmtOptions: formatterOptions.oxfmtOptions,
+				prettierOptions: prettierSettings,
+			}),
+		);
+	}
 
 	// Merge fragments: no `files` → top-level rules, with `files` → override
 	const plugins = new Set<OxlintPlugin>();

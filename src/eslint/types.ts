@@ -10,6 +10,7 @@ import type {
 	OptionsFiles,
 	OptionsFormatters,
 	OptionsOverrides,
+	OptionsPnpm,
 	OptionsProjectType,
 	OptionsTestFramework,
 	OptionsTypeScriptErasableOnly,
@@ -44,11 +45,6 @@ export type NamedFlatConfigItem = SetRequired<TypedFlatConfigItem, "name">;
 
 export interface OptionsOverridesTypeAware extends OptionsOverrides {
 	overridesTypeAware?: TypedFlatConfigItem["rules"];
-}
-
-export interface OptionsPnpm {
-	/** Requires catalogs usage. */
-	catalogs?: boolean;
 }
 
 export interface OptionsTypeScriptParserOptions {

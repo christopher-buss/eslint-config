@@ -1,5 +1,7 @@
 import type { DummyRuleMap } from "oxlint";
 
+import type { OptionsConfig } from "../eslint/index.ts";
+
 export interface OxlintOptions {
 	isInEditor?: boolean;
 	jsdoc?: boolean;
@@ -29,5 +31,32 @@ export type OxlintPlugin =
 	| "vue";
 
 export type * from "../types.ts";
+
+/**
+ * Oxlint only supports JS/TS files for jsPlugin rules. File types like
+ * CSS, HTML, GraphQL, JSON, YAML, and TOML are handled by ESLint instead.
+ */
+export interface OxlintOptionsFormatters {
+	/** Enable formatting support for Markdown. */
+	markdown?: boolean;
+}
+
+/**
+ * Oxlint can't process JSONC, YAML, TOML, or Markdown files — those are
+ * handled by ESLint. This type omits the unsupported file-type options.
+ */
+export type OxlintOptionsConfig = Omit<
+	OptionsConfig,
+	| "autoRenamePlugins"
+	| "flawless"
+	| "ignores"
+	| "jsonc"
+	| "markdown"
+	| "namedConfigs"
+	| "oxlint"
+	| "perfectionist"
+	| "toml"
+	| "yaml"
+>;
 
 export type { OxlintOverride } from "oxlint";

@@ -439,11 +439,11 @@ const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
  *
  * @returns The oxfmt configuration options, or an empty object if none found.
  */
-export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
 	for (const filename of OXFMT_CONFIG_FILES) {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
-			const content = await fs.promises.readFile(configPath, "utf-8");
+			const content = fs.readFileSync(configPath, "utf-8");
 			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
 			return config as OxfmtOptions;
 		} catch {
@@ -452,6 +452,10 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 	}
 
 	return {};
+}
+
+export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+	return resolveOxfmtConfigOptionsSync();
 }
 
 /**
