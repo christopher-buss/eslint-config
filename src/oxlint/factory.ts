@@ -168,7 +168,8 @@ export function isentinel(
 	}
 
 	if (stylisticOptions !== false) {
-		configs.push(oxlintStylistic(stylisticOptions));
+		const stylisticFormatterOptions = typeof formatters === "object" ? formatters : {};
+		configs.push(oxlintStylistic(stylisticOptions, stylisticFormatterOptions));
 	}
 
 	if (enableSpellCheck !== false) {
