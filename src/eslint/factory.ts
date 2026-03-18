@@ -137,7 +137,7 @@ export async function isentinel(
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
-			// eslint-disable-next-line no-console -- Info for plugin
+			 
 			console.log(
 				"[@isentinel/eslint-config] Detected running in editor, some rules are disabled.",
 			);
@@ -205,19 +205,10 @@ export async function isentinel(
 		);
 	}
 
-	// Base configs
+	// Base configs (always needed regardless of oxlint)
 	configs.push(
-		ceaseNonsense({ isInEditor, stylistic: stylisticOptions }),
-		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		ignores(options.ignores),
-		imports({ stylistic: stylisticOptions, type: projectType }),
 		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
-		javascript({
-			...getOverrides(options, "javascript"),
-			isInEditor,
-			roblox: enableRoblox,
-			stylistic: stylisticOptions,
-		}),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
@@ -229,6 +220,15 @@ export async function isentinel(
 	// Configs that oxlint handles — skip when running alongside oxlint
 	if (!enableOxlint) {
 		configs.push(
+			ceaseNonsense({ isInEditor, stylistic: stylisticOptions }),
+			comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+			imports({ stylistic: stylisticOptions, type: projectType }),
+			javascript({
+				...getOverrides(options, "javascript"),
+				isInEditor,
+				roblox: enableRoblox,
+				stylistic: stylisticOptions,
+			}),
 			promise(),
 			sonarjs({ isInEditor }),
 			unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
@@ -248,7 +248,7 @@ export async function isentinel(
 	}
 
 	// Enable Node.js rules for non-Roblox packages
-	if (projectType === "package" && !enableRoblox) {
+	if (projectType === "package" && !enableRoblox && !enableOxlint) {
 		configs.push(node());
 	}
 
@@ -256,7 +256,7 @@ export async function isentinel(
 		configs.push(jsx());
 	}
 
-	if (enableEslintPlugin !== false) {
+	if (enableEslintPlugin !== false && !enableOxlint) {
 		configs.push(
 			eslintPlugin({
 				...getOverrides(options, "eslintPlugin"),
@@ -279,14 +279,11 @@ export async function isentinel(
 		);
 	}
 
-	if (stylisticOptions !== false) {
+	if (stylisticOptions !== false && !enableOxlint) {
 		configs.push(
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
+			stylistic(stylisticOptions, prettierSettings),
 		);
-
-		if (!enableOxlint) {
-			configs.push(stylistic(stylisticOptions, prettierSettings));
-		}
 	}
 
 	if (options.test !== undefined && options.test !== false) {
@@ -341,7 +338,7 @@ export async function isentinel(
 		}
 	}
 
-	if (enableCatalogs !== false) {
+	if (enableCatalogs !== false && !enableOxlint) {
 		configs.push(
 			pnpm({
 				isInEditor,
@@ -373,7 +370,7 @@ export async function isentinel(
 		);
 	}
 
-	if (enableSpellCheck !== false) {
+	if (enableSpellCheck !== false && !enableOxlint) {
 		configs.push(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
@@ -383,7 +380,9 @@ export async function isentinel(
 		);
 	}
 
-	configs.push(disables({ root: rootGlobs }));
+	if (!enableOxlint) {
+		configs.push(disables({ root: rootGlobs }));
+	}
 
 	if (stylisticOptions !== false) {
 		// Oxfmt must be the last config
