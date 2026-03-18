@@ -1,9 +1,8 @@
 import { GLOB_SRC } from "../../globs.ts";
-import type { Rules, TypedOxlintConfigItem } from "../types.ts";
+import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
 
-export function oxlintPromise(): Array<TypedOxlintConfigItem> {
-	// Inlined from promiseRules()
-	const rules: Rules = {
+export function promise(): Array<TypedOxlintConfigItem> {
+	const nativeRules = {
 		"promise/always-return": [
 			"error",
 			{
@@ -20,7 +19,6 @@ export function oxlintPromise(): Array<TypedOxlintConfigItem> {
 		],
 		"promise/no-callback-in-promise": "off",
 		"promise/no-multiple-resolved": "error",
-		"promise/no-native": "off",
 		"promise/no-nesting": "warn",
 		"promise/no-new-statics": "off",
 		"promise/no-promise-in-callback": "warn",
@@ -30,14 +28,14 @@ export function oxlintPromise(): Array<TypedOxlintConfigItem> {
 		"promise/prefer-await-to-callbacks": "off",
 		"promise/prefer-await-to-then": "off",
 		"promise/prefer-catch": "error",
-	};
+	} as const satisfies OxlintRules;
 
 	return [
 		{
-			name: "isentinel/promise",
+			name: "isentinel/oxlint/promise",
 			files: [GLOB_SRC],
 			plugins: ["promise"],
-			rules,
+			rules: nativeRules,
 		},
 	];
 }
