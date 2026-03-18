@@ -3,6 +3,7 @@ antfu
 changelogithub
 dprint
 ependencies
+flowtype
 isentinel
 johnnymorganz
 kilocode
