@@ -33,7 +33,7 @@ import { oxlintSpelling } from "./configs/spelling.ts";
 import { oxlintStylistic } from "./configs/stylistic.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
-import { oxlintUnicorn } from "./configs/unicorn.ts";
+import { unicorn } from "./configs/unicorn.ts";
 import { oxlintDefaultRules } from "./oxlint.generated.ts";
 import type { OxlintOptionsConfig, OxlintPlugin } from "./types.ts";
 
@@ -48,6 +48,7 @@ export function isentinel(
 		eslintPlugin: enableEslintPlugin = false,
 		formatters,
 		gitignore: enableGitignore = true,
+		ignores,
 		jsdoc: enableJsdoc,
 		jsx: enableJsx = true,
 		pnpm: enablePnpm = findUpSync("pnpm-workspace.yaml") !== undefined,
@@ -106,7 +107,11 @@ export function isentinel(
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [];
 
-	const ignorePatterns = enableGitignore !== false ? gitignore() : [];
+	const gitignorePatterns = enableGitignore !== false ? gitignore() : [];
+	const ignorePatterns =
+		typeof ignores === "function"
+			? ignores([...gitignorePatterns])
+			: [...gitignorePatterns, ...(ignores ?? [])];
 
 	configs.push(
 		oxlintImports({ stylistic: stylisticOptions, type: projectType }),
@@ -124,7 +129,7 @@ export function isentinel(
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
-		oxlintUnicorn({ root: rootGlobs, stylistic: stylisticOptions }),
+		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
 	);
 
 	if (enableJsdoc !== false) {

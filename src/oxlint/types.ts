@@ -49,7 +49,6 @@ export type OxlintOptionsConfig = Omit<
 	OptionsConfig,
 	| "autoRenamePlugins"
 	| "flawless"
-	| "ignores"
 	| "jsonc"
 	| "markdown"
 	| "namedConfigs"
