@@ -89,3 +89,4 @@ src/typegen.d.ts
 references/
 
 .claude/worktrees
+/.claude/state
