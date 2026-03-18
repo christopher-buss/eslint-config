@@ -213,6 +213,7 @@ export async function isentinel(
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
 			componentExts: componentExtensions,
+			oxlint: enableOxlint,
 			stylistic: stylisticOptions,
 		}),
 	);
@@ -243,7 +244,7 @@ export async function isentinel(
 		);
 	}
 
-	if (enableJsdoc !== false) {
+	if (enableJsdoc !== false && !enableOxlint) {
 		configs.push(jsdoc({ stylistic: stylisticOptions, type: projectType }));
 	}
 
@@ -272,6 +273,7 @@ export async function isentinel(
 					...resolveSubOptions(options, "typescript"),
 					...getOverrides(options, "roblox"),
 					componentExts: componentExtensions,
+					oxlint: enableOxlint,
 					stylistic: stylisticOptions,
 				},
 				shouldFormatLua,
@@ -286,7 +288,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.test !== undefined && options.test !== false) {
+	if (options.test !== undefined && options.test !== false && !enableOxlint) {
 		const testOptions = typeof options.test === "object" ? options.test : {};
 		configs.push(
 			test({
@@ -304,6 +306,7 @@ export async function isentinel(
 			react({
 				...resolveSubOptions(options, "react"),
 				...getOverrides(options, "react"),
+				oxlint: enableOxlint,
 			}),
 		);
 	}

@@ -18,7 +18,7 @@ export async function react(
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
 		OptionsTypeScriptWithTypes &
-		ReactConfig = {},
+		ReactConfig & { oxlint?: boolean } = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		filenameCase = "kebabCase",
@@ -28,6 +28,7 @@ export async function react(
 		importSource,
 		overrides = {},
 		overridesTypeAware,
+		oxlint = false,
 		reactCompiler = true,
 		stylistic = true,
 		typeAware = true,
@@ -70,7 +71,7 @@ export async function react(
 		"react/prefer-read-only-props": "error",
 	};
 
-	return [
+	const configs: Array<TypedFlatConfigItem> = [
 		{
 			name: "isentinel/react/setup",
 			plugins: {
@@ -95,7 +96,10 @@ export async function react(
 					},
 				]
 			: []),
-		{
+	];
+
+	if (!oxlint) {
+		configs.push({
 			name: "isentinel/react/rules",
 			files,
 			languageOptions: {
@@ -271,19 +275,23 @@ export async function react(
 			settings: {
 				"react-x": reactSettings,
 			},
-		},
-		...(isTypeAware
-			? [
-					{
-						name: "isentinel/react/type-aware-rules",
-						files: filesTypeAware,
-						ignores: ignoresTypeAware,
-						rules: {
-							...typeAwareRules,
-							...overridesTypeAware,
-						},
-					},
-				]
-			: []),
-	];
+		});
+	}
+
+	if (isTypeAware) {
+		configs.push({
+			name: "isentinel/react/type-aware-rules",
+			files: filesTypeAware,
+			ignores: ignoresTypeAware,
+			rules: {
+				...typeAwareRules,
+				...overridesTypeAware,
+			},
+			// When oxlint handles the non-type-aware rules block, settings
+			// must be provided here instead
+			...(oxlint ? { settings: { "react-x": reactSettings } } : {}),
+		});
+	}
+
+	return configs;
 }

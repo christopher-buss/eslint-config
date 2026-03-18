@@ -16,13 +16,14 @@ export async function roblox(
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+		OptionsTypeScriptWithTypes & { oxlint?: boolean } = {},
 	formatLua = true,
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
 		overrides = {},
 		overridesTypeAware = {},
+		oxlint = false,
 		parserOptions = {},
 		stylistic = true,
 		typeAware = true,
@@ -89,7 +90,10 @@ export async function roblox(
 		...(isTypeAware
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),
-		{
+	];
+
+	if (!oxlint) {
+		configs.push({
 			name: "isentinel/roblox",
 			files,
 			rules: {
@@ -120,23 +124,22 @@ export async function roblox(
 
 				...overrides,
 			},
-		},
-		...(isTypeAware
-			? [
-					{
-						name: "isentinel/roblox/rules-type-aware",
-						files: filesTypeAware,
-						ignores: ignoresTypeAware,
-						rules: {
-							...typeAwareRules,
-							...overridesTypeAware,
-						},
-					},
-				]
-			: []),
-	];
+		});
+	}
 
-	if (formatLua) {
+	if (isTypeAware) {
+		configs.push({
+			name: "isentinel/roblox/rules-type-aware",
+			files: filesTypeAware,
+			ignores: ignoresTypeAware,
+			rules: {
+				...typeAwareRules,
+				...overridesTypeAware,
+			},
+		});
+	}
+
+	if (formatLua && !oxlint) {
 		const pluginFormatLua = await interopDefault(import("eslint-plugin-format-lua"));
 
 		configs.push(

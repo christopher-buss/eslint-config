@@ -24,7 +24,7 @@ export async function typescript(
 		OptionsStylistic &
 		OptionsTypeScriptErasableOnly &
 		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+		OptionsTypeScriptWithTypes & { oxlint?: boolean } = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
@@ -32,6 +32,7 @@ export async function typescript(
 		outOfProjectFiles,
 		overrides = {},
 		overridesTypeAware = {},
+		oxlint = false,
 		parserOptions = {},
 		parserOptionsNonTypeAware = {},
 		parserOptionsTypeAware = {},
@@ -152,7 +153,7 @@ export async function typescript(
 		});
 	}
 
-	return [
+	const configs: Array<TypedFlatConfigItem> = [
 		{
 			// Install the plugins without globs, so they can be configured
 			// separately.
@@ -167,7 +168,10 @@ export async function typescript(
 		...(isTypeAware
 			? [makeParser(false, files), makeParser(true, filesTypeAware, ignoresTypeAware)]
 			: [makeParser(false, files)]),
-		{
+	];
+
+	if (!oxlint) {
+		configs.push({
 			name: "isentinel/typescript/rules",
 			files,
 			rules: {
@@ -261,36 +265,35 @@ export async function typescript(
 					: {}),
 				...overrides,
 			},
-		},
-		...(isTypeAware
-			? [
-					{
-						name: "isentinel/typescript/rules-type-aware",
-						files: filesTypeAware,
-						ignores: ignoresTypeAware,
-						rules: {
-							...typeAwareRules,
-							...overridesTypeAware,
-						},
-					},
-				]
-			: []),
+		});
+	}
 
-		...(erasableOnly
-			? [
-					{
-						name: "isentinel/typescript/erasable-syntax-only",
-						plugins: {
-							"erasable-syntax-only": erasablePlugin,
-						},
-						rules: {
-							"erasable-syntax-only/enums": "error",
-							"erasable-syntax-only/import-aliases": "error",
-							"erasable-syntax-only/namespaces": "error",
-							"erasable-syntax-only/parameter-properties": "error",
-						} as const,
-					},
-				]
-			: []),
-	];
+	if (isTypeAware) {
+		configs.push({
+			name: "isentinel/typescript/rules-type-aware",
+			files: filesTypeAware,
+			ignores: ignoresTypeAware,
+			rules: {
+				...typeAwareRules,
+				...overridesTypeAware,
+			},
+		});
+	}
+
+	if (erasableOnly && !oxlint) {
+		configs.push({
+			name: "isentinel/typescript/erasable-syntax-only",
+			plugins: {
+				"erasable-syntax-only": erasablePlugin,
+			},
+			rules: {
+				"erasable-syntax-only/enums": "error",
+				"erasable-syntax-only/import-aliases": "error",
+				"erasable-syntax-only/namespaces": "error",
+				"erasable-syntax-only/parameter-properties": "error",
+			} as const,
+		});
+	}
+
+	return configs;
 }

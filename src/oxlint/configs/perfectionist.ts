@@ -1,10 +1,6 @@
-import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../../globs.ts";
-import type {
-	JsPluginRules,
-	OptionsProjectType,
-	TypedOxlintConfigItem,
-} from "../types.ts";
 import type { PerfectionistConfig } from "../../eslint/types.ts";
+import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../../globs.ts";
+import type { JsPluginRules, OptionsProjectType, TypedOxlintConfigItem } from "../types.ts";
 
 type PatternType =
 	| Array<string>

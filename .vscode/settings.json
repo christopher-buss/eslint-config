@@ -9,6 +9,7 @@
 	// Auto fix
 	"editor.codeActionsOnSave": {
 		"source.fixAll.eslint": "explicit",
+		"source.fixAll.oxc": "explicit",
 		"source.organizeImports": "never"
 	},
 
@@ -35,8 +36,9 @@
 		"json",
 		"jsonc",
 		"yaml",
-		"github-actions-workflow"
+		"github-actions-workflow",
+		"toml"
 	],
-	"typescript.tsdk": "node_modules/typescript/lib",
-	"typescript.preferences.importModuleSpecifier": "project-relative"
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.preferences.importModuleSpecifier": "project-relative"
 }
