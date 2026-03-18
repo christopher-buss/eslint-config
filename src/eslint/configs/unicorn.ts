@@ -2,7 +2,7 @@ import { GLOB_ROOT, GLOB_SRC } from "../../globs.ts";
 import { interopDefault, mergeGlobs } from "../../utils.ts";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
 
-/* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
+/* oxlint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
 	args: false,
 	ctx: false,
@@ -33,7 +33,7 @@ const abbreviations = {
 	util: false,
 	utils: false,
 } as const;
-/* eslint-enable @cspell/spellchecker */
+/* oxlint-enable @cspell/spellchecker */
 
 export async function unicorn(
 	options: OptionsStylistic & { root?: Array<string> } = {},
@@ -119,7 +119,6 @@ export async function unicorn(
 			},
 		},
 		{
-			// TODO: Implement in oxc
 			name: "isentinel/unicorn/root",
 			files: rootGlobs,
 			rules: {

@@ -7,7 +7,7 @@ import type {
 	TypedOxlintConfigItem,
 } from "../types.ts";
 
-/* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
+/* oxlint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
 	args: false,
 	ctx: false,
@@ -38,9 +38,9 @@ const abbreviations = {
 	util: false,
 	utils: false,
 } as const;
-/* eslint-enable @cspell/spellchecker */
+/* oxlint-enable @cspell/spellchecker */
 
-export function oxlintUnicorn(
+export function unicorn(
 	options: OptionsStylistic & { root?: Array<string> } = {},
 ): Array<TypedOxlintConfigItem> {
 	const { root: customRootGlobs, stylistic } = options;

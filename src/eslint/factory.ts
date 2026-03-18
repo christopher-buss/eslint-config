@@ -137,7 +137,7 @@ export async function isentinel(
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
-			// eslint-disable-next-line no-console -- Info for plugin
+			// oxlint-disable-next-line no-console -- Info for plugin
 			console.log(
 				"[@isentinel/eslint-config] Detected running in editor, some rules are disabled.",
 			);

@@ -41,7 +41,20 @@ export function oxlintJsdoc(
 	const jsPluginRules = {
 		"jsdoc-js/check-param-names": ["warn", { checkDestructured: false }],
 		"jsdoc-js/check-types": "warn",
-		"jsdoc-js/convert-to-jsdoc-comments": "warn",
+		"jsdoc-js/convert-to-jsdoc-comments": [
+			"warn",
+			{
+				allowedPrefixes: [
+					"@ts-",
+					"istanbul ",
+					"c8 ",
+					"v8 ",
+					"eslint",
+					"prettier-",
+					"oxlint-",
+				],
+			},
+		],
 		"jsdoc-js/informative-docs": "warn",
 		"jsdoc-js/no-types": "warn",
 		"jsdoc-js/no-undefined-types": "error",
