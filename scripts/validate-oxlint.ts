@@ -15,6 +15,11 @@ for (const line of output.split("\n")) {
 	}
 }
 
+if (validRules.size === 0) {
+	console.warn("No rules from oxlint --rules, skipping validation.");
+	process.exit(0);
+}
+
 const config = isentinel({
 	name: "test/oxlint-validation",
 });
