@@ -183,8 +183,26 @@ export async function test(
 	if (enableVitest) {
 		await ensurePackages(["@vitest/eslint-plugin"]);
 		const vitestPlugin = await interopDefault(import("@vitest/eslint-plugin"));
+
+		const useJestExtended = jestOptions.extended === true;
+
+		const jestExtendedPlugin = await (async () => {
+			if (!useJestExtended) {
+				return;
+			}
+
+			await ensurePackages(["eslint-plugin-jest-extended"]);
+			// @ts-expect-error -- No types
+			// eslint-disable-next-line ts/no-unsafe-return -- No types
+			return interopDefault(import("eslint-plugin-jest-extended"));
+		})();
+
 		pluginVitest ??= {
 			...vitestPlugin,
+		};
+
+		pluginJestExtended ??= {
+			...jestExtendedPlugin,
 		};
 
 		configs.push(
@@ -192,6 +210,7 @@ export async function test(
 				name: "isentinel/test/vitest/setup",
 				plugins: {
 					vitest: pluginVitest,
+					...(useJestExtended ? { "jest-extended": pluginJestExtended } : {}),
 				},
 			},
 			{
@@ -282,6 +301,16 @@ export async function test(
 							},
 						},
 					],
+
+					...(useJestExtended
+						? {
+								"jest-extended/prefer-to-be-array": "error",
+								"jest-extended/prefer-to-be-false": "error",
+								"jest-extended/prefer-to-be-object": "error",
+								"jest-extended/prefer-to-be-true": "error",
+								"jest-extended/prefer-to-have-been-called-once": "error",
+							}
+						: {}),
 
 					...(stylistic !== false
 						? {

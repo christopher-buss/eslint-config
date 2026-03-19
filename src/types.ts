@@ -180,6 +180,14 @@ export interface OptionsJest {
 
 export interface OptionsVitest {
 	/**
+	 * Enable the `eslint-plugin-jest-extended` ruleset.
+	 *
+	 * Requires `jest-extended` to be installed.
+	 *
+	 * @default false
+	 */
+	extended?: boolean;
+	/**
 	 * Enable typecheck rules for Vitest.
 	 *
 	 * @default false
