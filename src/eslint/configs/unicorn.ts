@@ -5,6 +5,13 @@ import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
 /* oxlint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
 	args: false,
+	cfg: {
+		config: true,
+	},
+	cov: {
+		coverage: true,
+		covered: true,
+	},
 	ctx: false,
 	dist: {
 		distance: true,
@@ -29,6 +36,9 @@ const abbreviations = {
 	props: false,
 	ref: false,
 	refs: false,
+	stmt: {
+		statement: true,
+	},
 	str: false,
 	util: false,
 	utils: false,
