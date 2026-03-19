@@ -56,6 +56,7 @@ export async function typescript(
 		],
 		"ts/dot-notation": ["error", { allowKeywords: true }],
 		"ts/no-confusing-void-expression": "error",
+		"ts/no-deprecated": "error",
 		"ts/no-duplicate-type-constituents": "error",
 		"ts/no-empty-object-type": "error",
 		"ts/no-floating-promises": [
