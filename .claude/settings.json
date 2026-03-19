@@ -1,0 +1,46 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(gh pr create:*)",
+			"Bash(gh pr view:*)",
+			"Bash(gh pr:*)",
+			"Bash(gh run list:*)",
+			"Bash(gh run view:*)",
+			"Bash(gh:*)",
+			"Glob",
+			"Grep",
+			"LS",
+			"Read",
+			"Read(*)",
+			"Skill(*)",
+			"TodoWrite",
+			"WebFetch",
+			"WebSearch"
+		],
+		"deny": [],
+		"ask": [],
+		"defaultMode": "plan",
+		"additionalDirectories": []
+	},
+	"env": {
+		"CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "true",
+		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+	},
+	"extraKnownMarketplaces": {
+		"claude-plugins-official": {
+			"source": {
+				"source": "github",
+				"repo": "anthropics/claude-plugins-official"
+			}
+		},
+		"isentinel": {
+			"source": {
+				"source": "github",
+				"repo": "christopher-buss/skills"
+			}
+		}
+	},
+	"enabledPlugins": {
+		"sentinel@isentinel": true
+	}
+}

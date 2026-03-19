@@ -3,6 +3,7 @@ antfu
 changelogithub
 dprint
 ependencies
+flowtype
 isentinel
 johnnymorganz
 kilocode
@@ -15,6 +16,7 @@ nonconstructor
 opencode
 oxfmt
 oxfmtrc
+oxlint
 pico
 pobammer
 rbxts

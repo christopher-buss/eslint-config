@@ -5,7 +5,7 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import parse from "parse-gitignore-ts";
+import parseGitignore from "parse-gitignore-ts";
 
 import type { PromptResult } from "../types";
 import { getEslintConfigContent } from "../utils";
@@ -26,7 +26,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	if (fs.existsSync(pathESLintIgnore)) {
 		log.step(ansis.cyan("Migrating existing .eslintignore"));
 		const content = await fsp.readFile(pathESLintIgnore, "utf-8");
-		const parsed = parse(content);
+		const parsed = parseGitignore(content);
 
 		const globs = parsed.globs();
 

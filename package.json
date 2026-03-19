@@ -30,10 +30,10 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
+		"./eslint": "./dist/eslint.mjs",
+		"./oxlint": "./dist/oxlint.mjs",
 		"./package.json": "./package.json"
 	},
-	"main": "./dist/index.mjs",
-	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"bin": "./bin/index.js",
 	"files": [
@@ -44,15 +44,17 @@
 		"build": "nr gen && tsdown --clean --dts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
-		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts",
+		"eslint": "eslint --cache",
+		"gen": "tsx scripts/typegen.ts && tsx scripts/versiongen.ts && tsx scripts/oxlint-defaults.ts && tsx scripts/validate-oxlint.ts",
 		"postgen": "echo 'Generation complete!'",
-		"lint": "eslint --cache",
-		"lint:ci": "eslint --cache --cache-strategy content",
+		"lint": "oxlint && eslint --cache",
+		"lint:ci": "oxlint && eslint --cache --cache-strategy content",
+		"oxlint": "oxlint",
 		"prepack": "nr build",
 		"prepare": "simple-git-hooks",
 		"release": "bumpp",
 		"stub": "tsdown",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "tsgo --noEmit",
 		"watch": "tsdown --watch --dts"
 	},
 	"simple-git-hooks": {
@@ -61,19 +63,24 @@
 	"lint-staged": {
 		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
 		"*.ts": [
-			"sh -c 'tsc --noEmit'"
+			"sh -c 'pnpm tsgo --noEmit'"
 		]
+	},
+	"resolutions": {
+		"@typescript-eslint/types": "catalog:peer",
+		"@typescript-eslint/utils": "catalog:peer",
+		"eslint": "catalog:peer"
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
 		"@clack/prompts": "catalog:prod",
 		"@cspell/eslint-plugin": "catalog:prod",
 		"@eslint-community/eslint-plugin-eslint-comments": "catalog:prod",
+		"@eslint-react/shared": "catalog:prod",
 		"@eslint/compat": "catalog:prod",
 		"@eslint/markdown": "catalog:prod",
 		"@isentinel/dict-rbxts": "catalog:prod",
 		"@isentinel/dict-roblox": "catalog:prod",
-		"@isentinel/eslint-plugin-comment-length": "catalog:prod",
 		"@pobammer-ts/eslint-cease-nonsense-rules": "catalog:prod",
 		"@stylistic/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/eslint-plugin": "catalog:prod",
@@ -86,6 +93,7 @@
 		"eslint-plugin-antfu": "catalog:prod",
 		"eslint-plugin-arrow-return-style-x": "catalog:prod",
 		"eslint-plugin-better-max-params": "catalog:prod",
+		"eslint-plugin-comment-length": "catalog:prod",
 		"eslint-plugin-de-morgan": "catalog:prod",
 		"eslint-plugin-flawless": "catalog:prod",
 		"eslint-plugin-format-lua": "catalog:prod",
@@ -104,11 +112,12 @@
 		"eslint-plugin-unicorn": "catalog:prod",
 		"eslint-plugin-unused-imports": "catalog:prod",
 		"eslint-plugin-yml": "catalog:prod",
-		"find-up-simple": "catalog:prod",
 		"globals": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
+		"oxlint-plugin-eslint": "catalog:prod",
+		"oxlint-plugin-oxlint-comments": "catalog:prod",
 		"prettier": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
@@ -116,13 +125,14 @@
 	},
 	"devDependencies": {
 		"@antfu/ni": "catalog:dev",
-		"@eslint-react/shared": "catalog:dev",
 		"@eslint/config-inspector": "catalog:dev",
 		"@isentinel/eslint-config": "workspace:*",
+		"@isentinel/hooks": "catalog:dev",
 		"@isentinel/tsconfig": "catalog:dev",
 		"@stylistic/eslint-plugin-migrate": "catalog:dev",
 		"@types/node": "catalog:dev",
 		"@types/yargs": "catalog:dev",
+		"@typescript/native-preview": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
 		"eslint": "catalog:peer",
@@ -135,8 +145,11 @@
 		"eslint-plugin-react-naming-convention": "catalog:peer",
 		"eslint-plugin-react-x": "catalog:peer",
 		"eslint-typegen": "catalog:dev",
+		"find-up-simple": "catalog:inline",
 		"jiti": "catalog:dev",
 		"lint-staged": "catalog:dev",
+		"oxlint": "catalog:dev",
+		"oxlint-tsgolint": "catalog:dev",
 		"parse-gitignore-ts": "catalog:dev",
 		"pnpm-workspace-yaml": "catalog:dev",
 		"publint": "catalog:dev",
@@ -157,7 +170,8 @@
 		"eslint-plugin-n": "^17.0.0",
 		"eslint-plugin-react-hooks": "^7.0.0",
 		"eslint-plugin-react-naming-convention": "^2.12.0",
-		"eslint-plugin-react-x": "^2.12.0"
+		"eslint-plugin-react-x": "^2.12.0",
+		"oxlint": "^1.49.0"
 	},
 	"peerDependenciesMeta": {
 		"@vitest/eslint-plugin": {
@@ -180,6 +194,9 @@
 		},
 		"eslint-plugin-react-x": {
 			"optional": true
+		},
+		"oxlint": {
+			"optional": true
 		}
 	},
 	"packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a",
@@ -188,5 +205,21 @@
 	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"inlinedDependencies": {
+		"@eslint-community/eslint-utils": "4.9.1",
+		"@typescript-eslint/scope-manager": "8.57.0",
+		"@typescript-eslint/types": "8.57.0",
+		"@typescript-eslint/utils": "8.57.0",
+		"@typescript-eslint/visitor-keys": "8.57.0",
+		"cached-factory": "0.1.0",
+		"eslint-config-flat-gitignore": "2.2.1",
+		"eslint-plugin-erasable-syntax-only": "0.4.0",
+		"eslint-visitor-keys": [
+			"3.4.3",
+			"5.0.1"
+		],
+		"find-up-simple": "1.0.1",
+		"type-fest": "5.4.4"
 	}
 }

@@ -2,6 +2,7 @@ import type { FlatConfig } from "@eslint/compat";
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
+import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -9,8 +10,9 @@ import path from "node:path";
 import process from "node:process";
 import prettier from "prettier";
 
-import type { OxfmtOptions, PrettierOptions } from "./configs";
-import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
+import type { OxfmtOptions, PrettierOptions } from "./eslint/configs";
+import type { OptionsConfig } from "./eslint/types";
+import type { Awaitable, TypedFlatConfigItem } from "./types";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
@@ -437,11 +439,11 @@ const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
  *
  * @returns The oxfmt configuration options, or an empty object if none found.
  */
-export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
 	for (const filename of OXFMT_CONFIG_FILES) {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
-			const content = await fs.promises.readFile(configPath, "utf-8");
+			const content = fs.readFileSync(configPath, "utf-8");
 			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
 			return config as OxfmtOptions;
 		} catch {
@@ -450,6 +452,10 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 	}
 
 	return {};
+}
+
+export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+	return resolveOxfmtConfigOptionsSync();
 }
 
 /**
@@ -504,4 +510,14 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+export function detectCatalogUsage(): boolean {
+	const workspaceFile = findUpSync("pnpm-workspace.yaml");
+	if (workspaceFile === undefined) {
+		return false;
+	}
+
+	const yaml = fs.readFileSync(workspaceFile, "utf-8");
+	return yaml.includes("catalog:") || yaml.includes("catalogs:");
 }

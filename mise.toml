@@ -1,0 +1,6 @@
+[env]
+_.file = { path = ".env" }
+_.path = ['{{config_root}}/node_modules/.bin']
+
+[tools]
+node = { version = "lts", postinstall = "corepack enable" }
