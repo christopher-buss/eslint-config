@@ -46,6 +46,7 @@ export async function disables(options: {
 			rules: {
 				"antfu/no-import-dist": "off",
 				"antfu/no-import-node-modules-by-path": "off",
+				"antfu/no-top-level-await": "off",
 			},
 		},
 		{
