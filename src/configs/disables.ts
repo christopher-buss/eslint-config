@@ -75,6 +75,7 @@ export async function disables(options: {
 				"sonar/no-duplicate-string": "off",
 				"ts/explicit-function-return-type": "off",
 				"ts/no-empty-function": "off",
+				"ts/no-extraneous-class": "off",
 				"ts/no-non-null-assertion": "off",
 				"ts/unbound-method": "off",
 				"unicorn/consistent-function-scoping": "off",
