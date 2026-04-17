@@ -184,7 +184,7 @@ export async function test(
 		await ensurePackages(["@vitest/eslint-plugin"]);
 		const vitestPlugin = await interopDefault(import("@vitest/eslint-plugin"));
 
-		const useJestExtended = jestOptions.extended === true;
+		const useJestExtended = vitestOptions.extended === true;
 
 		const jestExtendedPlugin = await (async () => {
 			if (!useJestExtended) {
