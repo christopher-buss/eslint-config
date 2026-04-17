@@ -456,6 +456,7 @@ export async function isentinel(
 		composer = composer.disableRulesFix(disableAutofixRules, {
 			builtinRules: async () => {
 				const rules = await import("eslint/use-at-your-own-risk");
+				// eslint-disable-next-line ts/no-deprecated -- No non-deprecated API exposes the built-in rule map.
 				return rules.builtinRules;
 			},
 		});
