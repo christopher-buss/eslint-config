@@ -321,6 +321,7 @@ export async function test(
 					...overrides,
 				},
 				settings: {
+					...(useJestExtended ? { jest: { globalPackage: "vitest" } } : {}),
 					vitest: {
 						typecheck: vitestOptions.typecheck ?? false,
 					},
