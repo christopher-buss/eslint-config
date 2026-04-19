@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    uses: sxzz/workflows/.github/workflows/release.yml@80e37cd3ce8d7134be245dad263f10d2b51e0af1 # v1.3.0
+    uses: sxzz/workflows/.github/workflows/release.yml@69098296b6f6083ed99f38e2040f2a7238580e27 # v1.4.0
     with:
       publish: true
 
