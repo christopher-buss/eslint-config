@@ -1,11 +1,13 @@
-EDITMSG
 antfu
 changelogithub
 dprint
+editmsg
 ependencies
+gypfile
 isentinel
 johnnymorganz
 kilocode
+libc
 lockb
 luatuple
 multilines

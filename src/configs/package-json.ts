@@ -34,14 +34,71 @@ export async function packageJson(
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
 				"package-json/repository-shorthand": "error",
+				"package-json/require-packageManager": "error",
 				"package-json/require-type": "error",
 				"package-json/restrict-private-properties": "error",
-				"package-json/scripts-name-casing": "error",
-				"package-json/sort-collections": "error",
+				"package-json/restrict-top-level-properties": [
+					"error",
+					{
+						ban: [
+							{
+								message: "Configure pnpm options in pnpm-workspace.yaml.",
+								property: "pnpm",
+							},
+							{
+								message: "Configure prettier options in eslint config",
+								property: "prettier",
+							},
+							{
+								message: "Configure commitlint in a dedicated config file.",
+								property: "commitlint",
+							},
+							{
+								message: "Configure ESLint in a dedicated config file.",
+								property: "eslintConfig",
+							},
+							{
+								message: "Configure Jest in a dedicated config file.",
+								property: "jest",
+							},
+							{
+								message: "Configure lint-staged in a dedicated config file.",
+								property: "lint-staged",
+							},
+							{
+								message: "Configure Renovate in a renovate config file.",
+								property: "renovate",
+							},
+							{
+								message: "Configure nx in the nx.json file.",
+								property: "nx",
+							},
+							{
+								message:
+									"Configure simple-git-hooks in simple-git-hooks config file.",
+								property: "simple-git-hooks",
+							},
+							{
+								message: "Configure release-it in a dedicated config file.",
+								property: "release-it",
+							},
+							{
+								message: "Configure Stylelint in a dedicated config file.",
+								property: "stylelint",
+							},
+							{
+								message: "Configure TypeDoc in a dedicated config file.",
+								property: "typedoc",
+							},
+						],
+					},
+				],
 				"package-json/specify-peers-locally": "error",
 				"package-json/unique-dependencies": "error",
 				"package-json/valid-author": "off",
 				"package-json/valid-bin": "error",
+				"package-json/valid-browser": "error",
+				"package-json/valid-bugs": "error",
 				"package-json/valid-bundleDependencies": "error",
 				"package-json/valid-config": "error",
 				"package-json/valid-contributors": "error",
@@ -49,12 +106,16 @@ export async function packageJson(
 				"package-json/valid-dependencies": "error",
 				"package-json/valid-description": "error",
 				"package-json/valid-devDependencies": "error",
+				"package-json/valid-devEngines": "error",
 				"package-json/valid-directories": "error",
 				"package-json/valid-engines": "error",
 				"package-json/valid-exports": "error",
 				"package-json/valid-files": "error",
+				"package-json/valid-funding": "error",
+				"package-json/valid-gypfile": "error",
 				"package-json/valid-homepage": "error",
 				"package-json/valid-keywords": "error",
+				"package-json/valid-libc": "error",
 				"package-json/valid-license": "error",
 				"package-json/valid-main": "error",
 				"package-json/valid-man": "error",
@@ -62,7 +123,10 @@ export async function packageJson(
 				"package-json/valid-name": "error",
 				"package-json/valid-optionalDependencies": "error",
 				"package-json/valid-os": "error",
+				"package-json/valid-packageManager": "error",
 				"package-json/valid-peerDependencies": "error",
+				"package-json/valid-peerDependenciesMeta": "error",
+				"package-json/valid-peerDependenciesMeta-relationship": "error",
 				"package-json/valid-private": "error",
 				"package-json/valid-publishConfig": "error",
 				"package-json/valid-repository": "error",
@@ -81,6 +145,8 @@ export async function packageJson(
 								{ prefer: "explicit" },
 							],
 							"package-json/order-properties": "error",
+							"package-json/scripts-name-casing": "error",
+							"package-json/sort-collections": "error",
 						}
 					: {}),
 
@@ -92,7 +158,7 @@ export async function packageJson(
 							"package-json/require-exports": ["error", { ignorePrivate: true }],
 							"package-json/require-files": ["error", { ignorePrivate: true }],
 							"package-json/require-homepage": ["error", { ignorePrivate: true }],
-							"package-json/require-keywords": "error",
+							"package-json/require-keywords": ["error", { ignorePrivate: true }],
 							"package-json/require-license": ["error", { ignorePrivate: true }],
 							"package-json/require-name": "error",
 							"package-json/require-repository": ["error", { ignorePrivate: true }],
@@ -103,7 +169,9 @@ export async function packageJson(
 
 				...(type === "package" && !roblox
 					? {
+							"package-json/require-bin": ["error", { ignorePrivate: true }],
 							"package-json/require-engines": "error",
+							"package-json/require-module": "error",
 							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
 						}
 					: {}),

@@ -49,20 +49,11 @@
 		"lint": "eslint --cache",
 		"lint:ci": "eslint --cache --cache-strategy content",
 		"prepack": "nr build",
-		"prepare": "simple-git-hooks",
+		"prepare": "simple-git-hooks ./simple-git-hooks.ts",
 		"release": "bumpp",
 		"stub": "tsdown",
 		"typecheck": "tsc --noEmit",
 		"watch": "tsdown --watch --dts"
-	},
-	"simple-git-hooks": {
-		"pre-commit": "pnpm install --frozen-lockfile && pnpm lint-staged"
-	},
-	"lint-staged": {
-		"*": "pnpm exec eslint --fix --cache --no-warn-ignored",
-		"*.ts": [
-			"sh -c 'tsc --noEmit'"
-		]
 	},
 	"dependencies": {
 		"@antfu/install-pkg": "catalog:prod",
