@@ -120,11 +120,11 @@ catalogs:
       specifier: 7.5.1
       version: 7.5.1
     '@isentinel/dict-rbxts':
-      specifier: 1.0.1
-      version: 1.0.1
+      specifier: 1.0.10
+      version: 1.0.10
     '@isentinel/dict-roblox':
-      specifier: 1.0.3
-      version: 1.0.3
+      specifier: 1.0.4
+      version: 1.0.4
     '@isentinel/eslint-plugin-comment-length':
       specifier: 2.2.0
       version: 2.2.0
@@ -278,10 +278,10 @@ importers:
         version: 7.5.1
       '@isentinel/dict-rbxts':
         specifier: catalog:prod
-        version: 1.0.1
+        version: 1.0.10
       '@isentinel/dict-roblox':
         specifier: catalog:prod
-        version: 1.0.3
+        version: 1.0.4
       '@isentinel/eslint-plugin-comment-length':
         specifier: catalog:prod
         version: 2.2.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -1150,11 +1150,13 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@isentinel/dict-rbxts@1.0.1':
-    resolution: {integrity: sha512-Icj7VOG1p/y9i1ngtaguSuSE6ToUeX2XU6uIjUHDmS9qfe1xxYuZMyBa3sVBnP3/oPnWFrMglVqoH/RUOQoQpg==}
+  '@isentinel/dict-rbxts@1.0.10':
+    resolution: {integrity: sha512-7LkjwjdARebFUe4593D/R4MsaNSJZG66hvgtIMnB1cJxz8aNcaVpTGqfnxj6xUx1bPwwVD/b1r8DpfoHlzlchA==}
+    engines: {node: '>=22'}
 
-  '@isentinel/dict-roblox@1.0.3':
-    resolution: {integrity: sha512-XR1KVHZLyyamVobUICxTlDkB3gfLVuV34mdFQeIL7DfCtNI2uCeuZm6g6J63AQzUrqsCIUF166Ogf+TL0przdg==}
+  '@isentinel/dict-roblox@1.0.4':
+    resolution: {integrity: sha512-V9pL6pmTG4qOMP670KIy2+fP9bOOJAk/12AULdU+EwSj5acWN55rWKdB1g00gl1mEKK9LIvzi5452744AjEkUA==}
+    engines: {node: '>=20.18.0'}
 
   '@isentinel/eslint-plugin-comment-length@2.2.0':
     resolution: {integrity: sha512-W/M/LpHMUm0OLX7/A3d+iemSKVt9XEEM3C8RSY1ATCfTUrv0UysNgo9T3oMyyAYt3tScRYwuavUwp6ikMieVFg==}
@@ -4709,9 +4711,9 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@isentinel/dict-rbxts@1.0.1': {}
+  '@isentinel/dict-rbxts@1.0.10': {}
 
-  '@isentinel/dict-roblox@1.0.3': {}
+  '@isentinel/dict-roblox@1.0.4': {}
 
   '@isentinel/eslint-plugin-comment-length@2.2.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:

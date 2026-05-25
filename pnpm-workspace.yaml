@@ -55,8 +55,8 @@ catalogs:
     "@eslint-community/eslint-plugin-eslint-comments": 4.6.0
     "@eslint/compat": 2.0.2
     "@eslint/markdown": 7.5.1
-    "@isentinel/dict-rbxts": 1.0.1
-    "@isentinel/dict-roblox": 1.0.3
+    "@isentinel/dict-rbxts": 1.0.10
+    "@isentinel/dict-roblox": 1.0.4
     "@isentinel/eslint-plugin-comment-length": 2.2.0
     "@pobammer-ts/eslint-cease-nonsense-rules": 1.30.0
     "@stylistic/eslint-plugin": 5.9.0
