@@ -12486,9 +12486,34 @@ type OxfmtOxfmt = []|[{
   
   insertFinalNewline?: boolean
   
+  jsdoc?: (boolean | {
+    
+    addDefaultToDescription?: boolean
+    
+    bracketSpacing?: boolean
+    
+    capitalizeDescriptions?: boolean
+    
+    commentLineStrategy?: ("singleLine" | "multiline" | "keep")
+    
+    descriptionTag?: boolean
+    
+    descriptionWithDot?: boolean
+    
+    keepUnparsableExampleIndent?: boolean
+    
+    lineWrappingStyle?: ("greedy" | "balance")
+    
+    preferCodeFences?: boolean
+    
+    separateReturnsFromParam?: boolean
+    
+    separateTagGroups?: boolean
+  })
+  
   jsxSingleQuote?: boolean
   
-  objectWrap?: ("preserve" | "collapse" | "always")
+  objectWrap?: ("preserve" | "collapse")
   
   printWidth?: number
   
@@ -12502,7 +12527,7 @@ type OxfmtOxfmt = []|[{
   
   singleQuote?: boolean
   
-  sortImports?: {
+  sortImports?: (boolean | {
     
     customGroups?: {
       
@@ -12533,14 +12558,14 @@ type OxfmtOxfmt = []|[{
     partitionByNewline?: boolean
     
     sortSideEffects?: boolean
-  }
+  })
   
   sortPackageJson?: (boolean | {
     
     sortScripts?: boolean
   })
   
-  sortTailwindcss?: {
+  sortTailwindcss?: (boolean | {
     
     attributes?: string[]
     
@@ -12553,7 +12578,16 @@ type OxfmtOxfmt = []|[{
     preserveWhitespace?: boolean
     
     stylesheet?: string
-  }
+  })
+  
+  svelte?: (boolean | {
+    
+    allowShorthand?: boolean
+    
+    indentScriptAndStyle?: boolean
+    
+    sortOrder?: string
+  })
   
   tabWidth?: number
   
@@ -12565,7 +12599,22 @@ type OxfmtOxfmt = []|[{
   
   configPath?: string
   
+  disableNestedConfig?: boolean
+  
+  editorconfig?: (boolean | {
+    
+    cwd?: string
+    
+    onlyCwd?: boolean
+  })
+  
+  ignorePath?: (string | string[])
+  
+  respectOxfmtDefaultIgnores?: boolean
+  
   useConfig?: boolean
+  
+  withNodeModules?: boolean
   
   overrides?: {
     
@@ -12591,9 +12640,34 @@ type OxfmtOxfmt = []|[{
       
       insertFinalNewline?: boolean
       
+      jsdoc?: (boolean | {
+        
+        addDefaultToDescription?: boolean
+        
+        bracketSpacing?: boolean
+        
+        capitalizeDescriptions?: boolean
+        
+        commentLineStrategy?: ("singleLine" | "multiline" | "keep")
+        
+        descriptionTag?: boolean
+        
+        descriptionWithDot?: boolean
+        
+        keepUnparsableExampleIndent?: boolean
+        
+        lineWrappingStyle?: ("greedy" | "balance")
+        
+        preferCodeFences?: boolean
+        
+        separateReturnsFromParam?: boolean
+        
+        separateTagGroups?: boolean
+      })
+      
       jsxSingleQuote?: boolean
       
-      objectWrap?: ("preserve" | "collapse" | "always")
+      objectWrap?: ("preserve" | "collapse")
       
       printWidth?: number
       
@@ -12607,7 +12681,7 @@ type OxfmtOxfmt = []|[{
       
       singleQuote?: boolean
       
-      sortImports?: {
+      sortImports?: (boolean | {
         
         customGroups?: {
           
@@ -12638,14 +12712,14 @@ type OxfmtOxfmt = []|[{
         partitionByNewline?: boolean
         
         sortSideEffects?: boolean
-      }
+      })
       
       sortPackageJson?: (boolean | {
         
         sortScripts?: boolean
       })
       
-      sortTailwindcss?: {
+      sortTailwindcss?: (boolean | {
         
         attributes?: string[]
         
@@ -12658,7 +12732,16 @@ type OxfmtOxfmt = []|[{
         preserveWhitespace?: boolean
         
         stylesheet?: string
-      }
+      })
+      
+      svelte?: (boolean | {
+        
+        allowShorthand?: boolean
+        
+        indentScriptAndStyle?: boolean
+        
+        sortOrder?: string
+      })
       
       tabWidth?: number
       

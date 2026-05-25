@@ -7,9 +7,10 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import type { FormatConfig, JsdocConfig } from "oxfmt";
 import prettier from "prettier";
 
-import type { OxfmtOptions, PrettierOptions } from "./configs";
+import type { PrettierOptions } from "./configs";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -431,6 +432,21 @@ export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
 }
 
 const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+
+/**
+ * Oxfmt's generated types widen `jsdoc.commentLineStrategy` and
+ * `jsdoc.lineWrappingStyle` to `string`, but its JSON schema (and therefore the
+ * generated `oxfmt/oxfmt` rule type) keep them as literal enums. Re-narrow them
+ * so option objects remain assignable to the rule.
+ */
+export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
+	jsdoc?:
+		| boolean
+		| (Omit<JsdocConfig, "commentLineStrategy" | "lineWrappingStyle"> & {
+				commentLineStrategy?: "keep" | "multiline" | "singleLine";
+				lineWrappingStyle?: "balance" | "greedy";
+		  });
+};
 
 /**
  * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`.

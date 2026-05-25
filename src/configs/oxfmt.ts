@@ -1,4 +1,3 @@
-import type { FormatOptions as OxfmtOptions } from "oxfmt";
 import type { Options as PrettierOptions } from "prettier";
 
 import { defaultPluginRenaming } from "../factory";
@@ -22,6 +21,7 @@ import type {
 	OptionsOverrides,
 	TypedFlatConfigItem,
 } from "../types";
+import type { OxfmtOptions } from "../utils";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils";
 
 export async function oxfmt(
@@ -201,6 +201,10 @@ export async function oxfmt(
 						...oxfmtOptions,
 						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
 						proseWrap: "always",
+						// Embedded code blocks (e.g. YAML) that forbid tab
+						// indentation fall back to spaces; use 2 so they match
+						// the standalone yaml config instead of the base width.
+						tabWidth: 2,
 					},
 				],
 			},
@@ -278,5 +282,6 @@ function migratePrettierOptions(prettierOptions: PrettierOptions): Record<string
 	return oxfmtOptions;
 }
 
-export type { FormatOptions as OxfmtOptions } from "oxfmt";
+export { type OxfmtOptions } from "../utils";
+
 export type { Options as PrettierOptions } from "prettier";
