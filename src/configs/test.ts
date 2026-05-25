@@ -86,7 +86,7 @@ export async function test(
 			},
 			{
 				name: "isentinel/test/jest/rules",
-				files,
+				files: jestOptions.files ?? files,
 				rules: {
 					"test/consistent-test-it": "error",
 					"test/expect-expect": "warn",
@@ -215,7 +215,7 @@ export async function test(
 			},
 			{
 				name: "isentinel/test/vitest/rules",
-				files,
+				files: vitestOptions.files ?? files,
 				rules: {
 					"vitest/consistent-each-for": [
 						"error",

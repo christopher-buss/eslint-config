@@ -176,6 +176,12 @@ export interface OptionsJest {
 	 * @default false
 	 */
 	extended?: boolean;
+	/**
+	 * Glob patterns for files that should be considered test files for Jest.
+	 *
+	 * @default ["**\/*.{test,spec}.{ts,tsx,js,jsx}"]
+	 */
+	files?: Array<Array<string> | string>;
 }
 
 export interface OptionsVitest {
@@ -187,6 +193,12 @@ export interface OptionsVitest {
 	 * @default false
 	 */
 	extended?: boolean;
+	/**
+	 * Glob patterns for files that should be considered test files for Vitest.
+	 *
+	 * @default ["**\/*.{test,spec}.{ts,tsx,js,jsx}"]
+	 */
+	files?: Array<Array<string> | string>;
 	/**
 	 * Enable typecheck rules for Vitest.
 	 *

@@ -443,7 +443,7 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 		try {
 			const content = await fs.promises.readFile(configPath, "utf-8");
 			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
-			return config as OxfmtOptions;
+			return config;
 		} catch {
 			continue;
 		}
