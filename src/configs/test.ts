@@ -87,6 +87,7 @@ export async function test(
 			{
 				name: "isentinel/test/jest/rules",
 				files: jestOptions.files ?? files,
+				...(jestOptions.ignores ? { ignores: jestOptions.ignores } : {}),
 				rules: {
 					"test/consistent-test-it": "error",
 					"test/expect-expect": "warn",
@@ -169,6 +170,7 @@ export async function test(
 						: {}),
 
 					...overrides,
+					...jestOptions.overrides,
 				},
 				settings: {
 					jest: {
@@ -216,6 +218,7 @@ export async function test(
 			{
 				name: "isentinel/test/vitest/rules",
 				files: vitestOptions.files ?? files,
+				...(vitestOptions.ignores ? { ignores: vitestOptions.ignores } : {}),
 				rules: {
 					"vitest/consistent-each-for": [
 						"error",
@@ -319,6 +322,7 @@ export async function test(
 						: {}),
 
 					...overrides,
+					...vitestOptions.overrides,
 				},
 				settings: {
 					...(useJestExtended ? { jest: { globalPackage: "vitest" } } : {}),

@@ -182,6 +182,18 @@ export interface OptionsJest {
 	 * @default ["**\/*.{test,spec}.{ts,tsx,js,jsx}"]
 	 */
 	files?: Array<Array<string> | string>;
+	/**
+	 * Glob patterns for test files that the Jest rules should not apply to.
+	 *
+	 * Excludes matching files from the Jest config only (not globally).
+	 */
+	ignores?: Array<string>;
+	/**
+	 * Rule overrides applied to the Jest config only.
+	 *
+	 * Takes precedence over the shared `test.overrides`.
+	 */
+	overrides?: TypedFlatConfigItem["rules"];
 }
 
 export interface OptionsVitest {
@@ -199,6 +211,18 @@ export interface OptionsVitest {
 	 * @default ["**\/*.{test,spec}.{ts,tsx,js,jsx}"]
 	 */
 	files?: Array<Array<string> | string>;
+	/**
+	 * Glob patterns for test files that the Vitest rules should not apply to.
+	 *
+	 * Excludes matching files from the Vitest config only (not globally).
+	 */
+	ignores?: Array<string>;
+	/**
+	 * Rule overrides applied to the Vitest config only.
+	 *
+	 * Takes precedence over the shared `test.overrides`.
+	 */
+	overrides?: TypedFlatConfigItem["rules"];
 	/**
 	 * Enable typecheck rules for Vitest.
 	 *
