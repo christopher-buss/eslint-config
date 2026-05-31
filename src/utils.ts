@@ -252,6 +252,10 @@ export function isInGitHooksOrLintStaged(): boolean {
 }
 
 export function isInAgentSession(): boolean {
+	if (isInGitHooksOrLintStaged()) {
+		return false;
+	}
+
 	return [
 		process.env["CLAUDECODE"],
 		process.env["CLAUDE_CODE_ENTRYPOINT"],
