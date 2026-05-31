@@ -9,7 +9,7 @@ packages:
   - src/*
 
 overrides:
-  semver@6: ^7.0.0
+  semver@6: 7.8.1
 
 patchedDependencies:
   eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
