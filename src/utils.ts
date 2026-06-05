@@ -245,9 +245,10 @@ export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise
 
 export function isInGitHooksOrLintStaged(): boolean {
 	return [
-		process.env["GIT_PARAMS"] ??
-			process.env["VSCODE_GIT_COMMAND"] ??
-			process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
+		process.env["GIT_HOOK"],
+		process.env["GIT_PARAMS"],
+		process.env["VSCODE_GIT_COMMAND"],
+		process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
 	].some(Boolean);
 }
 
