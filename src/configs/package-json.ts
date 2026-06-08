@@ -15,11 +15,22 @@ export async function packageJson(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { roblox = true, stylistic = true, type = "game" } = options;
 
-	const [jsoncEslintParser, pluginPackageJson, atRoot] = await Promise.all([
+	const [jsoncEslintParser, pluginPackageJson, rootDirectory] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
 		interopDefault(import("eslint-plugin-package-json")),
-		isWorkspaceRootCwd(),
+		findWorkspaceRoot(),
 	]);
+
+	const rootOverride: TypedFlatConfigItem = {
+		name: "isentinel/package-json/root",
+		files: ["package.json"],
+		languageOptions: {
+			parser: jsoncEslintParser,
+		},
+		rules: {
+			"package-json/require-packageManager": ["error", { ignorePrivate: false }],
+		},
+	};
 
 	return [
 		{
@@ -181,48 +192,30 @@ export async function packageJson(
 					: {}),
 			},
 		},
-		...(atRoot
-			? [
-					{
-						name: "isentinel/package-json/root",
-						files: ["package.json"],
-						languageOptions: {
-							parser: jsoncEslintParser,
-						},
-						rules: {
-							"package-json/require-packageManager": [
-								"error",
-								{ ignorePrivate: false },
-							],
-						},
-					} satisfies TypedFlatConfigItem,
-				]
-			: []),
+		// Require packageManager on the workspace root even when it is private.
+		// `basePath` anchors the `package.json` glob to the real root directory,
+		// so this holds no matter where ESLint resolves the config's base path
+		// from. That matters under tools like Nx, which lint each project with
+		// its own config base path (the default in ESLint 10 via
+		// `v10_config_lookup_from_file`) while the cwd stays at the workspace
+		// root - without `basePath`, `["package.json"]` would match every
+		// project's own `package.json`.
+		{ ...rootOverride, basePath: rootDirectory },
 	];
 }
 
 /**
- * Determines whether the current working directory is the root of the project.
+ * Resolves the workspace root directory.
  *
- * ESLint `files` globs are resolved relative to the cwd, so `["package.json"]`
- * matches the cwd's own `package.json` regardless of where it sits in a
- * monorepo. When packages are linted in parallel (each with its own cwd),
- * every package would otherwise look like the root. Detect the real root via
- * `pnpm-workspace.yaml`:
- *
- * - Found in the cwd: this is the workspace root.
- * - Found in an ancestor: this is a sub-package, not the root.
- * - Not found anywhere: a standalone project, so the cwd is its root.
+ * The root is the directory containing `pnpm-workspace.yaml`. When no workspace
+ * file exists anywhere up the tree the project is standalone, so the cwd is its
+ * own root.
  *
  * @param cwd - The directory to resolve from, defaulting to the current
  *   working directory.
- * @returns Whether the cwd is the project root.
+ * @returns The absolute path of the workspace root directory.
  */
-async function isWorkspaceRootCwd(cwd = process.cwd()): Promise<boolean> {
+async function findWorkspaceRoot(cwd = process.cwd()): Promise<string> {
 	const workspaceFile = await findUp("pnpm-workspace.yaml", { cwd });
-	if (workspaceFile === undefined) {
-		return true;
-	}
-
-	return path.relative(path.dirname(workspaceFile), cwd) === "";
+	return workspaceFile === undefined ? cwd : path.dirname(workspaceFile);
 }

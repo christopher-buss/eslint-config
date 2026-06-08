@@ -31,6 +31,15 @@ export type Rules = Record<string, Linter.RuleEntry<any> | undefined> & RuleOpti
  */
 export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>, "plugins"> & {
 	/**
+	 * The base directory that `files` and `ignores` patterns in this config
+	 * object are resolved against. Defaults to the location ESLint derives the
+	 * config from. Added in ESLint 9.30.
+	 *
+	 * @see [basePath](https://eslint.org/docs/latest/use/configure/configuration-files#specifying-basepath)
+	 */
+	basePath?: string;
+
+	/**
 	 * An object containing a name-value mapping of plugin names to plugin
 	 * objects. When `files` is specified, these plugins are only available to
 	 * the matching files.
