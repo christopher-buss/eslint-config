@@ -1,3 +1,7 @@
+import { findUp } from "find-up-simple";
+import path from "node:path";
+import process from "node:process";
+
 import type {
 	OptionsHasRoblox,
 	OptionsProjectType,
@@ -11,9 +15,10 @@ export async function packageJson(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { roblox = true, stylistic = true, type = "game" } = options;
 
-	const [jsoncEslintParser, pluginPackageJson] = await Promise.all([
+	const [jsoncEslintParser, pluginPackageJson, atRoot] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
 		interopDefault(import("eslint-plugin-package-json")),
+		isWorkspaceRootCwd(),
 	]);
 
 	return [
@@ -176,15 +181,48 @@ export async function packageJson(
 					: {}),
 			},
 		},
-		{
-			name: "isentinel/package-json/root",
-			files: ["package.json"],
-			languageOptions: {
-				parser: jsoncEslintParser,
-			},
-			rules: {
-				"package-json/require-packageManager": ["error", { ignorePrivate: false }],
-			},
-		},
+		...(atRoot
+			? [
+					{
+						name: "isentinel/package-json/root",
+						files: ["package.json"],
+						languageOptions: {
+							parser: jsoncEslintParser,
+						},
+						rules: {
+							"package-json/require-packageManager": [
+								"error",
+								{ ignorePrivate: false },
+							],
+						},
+					} satisfies TypedFlatConfigItem,
+				]
+			: []),
 	];
+}
+
+/**
+ * Determines whether the current working directory is the root of the project.
+ *
+ * ESLint `files` globs are resolved relative to the cwd, so `["package.json"]`
+ * matches the cwd's own `package.json` regardless of where it sits in a
+ * monorepo. When packages are linted in parallel (each with its own cwd),
+ * every package would otherwise look like the root. Detect the real root via
+ * `pnpm-workspace.yaml`:
+ *
+ * - Found in the cwd: this is the workspace root.
+ * - Found in an ancestor: this is a sub-package, not the root.
+ * - Not found anywhere: a standalone project, so the cwd is its root.
+ *
+ * @param cwd - The directory to resolve from, defaulting to the current
+ *   working directory.
+ * @returns Whether the cwd is the project root.
+ */
+async function isWorkspaceRootCwd(cwd = process.cwd()): Promise<boolean> {
+	const workspaceFile = await findUp("pnpm-workspace.yaml", { cwd });
+	if (workspaceFile === undefined) {
+		return true;
+	}
+
+	return path.relative(path.dirname(workspaceFile), cwd) === "";
 }
