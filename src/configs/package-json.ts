@@ -171,7 +171,6 @@ export async function packageJson(
 					? {
 							"package-json/require-bin": ["error", { ignorePrivate: true }],
 							"package-json/require-engines": "error",
-							"package-json/require-module": "error",
 							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
 						}
 					: {}),
