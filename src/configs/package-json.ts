@@ -34,7 +34,7 @@ export async function packageJson(
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
 				"package-json/repository-shorthand": "error",
-				"package-json/require-packageManager": "error",
+				"package-json/require-packageManager": ["error", { ignorePrivate: true }],
 				"package-json/require-type": "error",
 				"package-json/restrict-private-properties": "error",
 				"package-json/restrict-top-level-properties": [
@@ -174,6 +174,16 @@ export async function packageJson(
 							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
 						}
 					: {}),
+			},
+		},
+		{
+			name: "isentinel/package-json/root",
+			files: ["package.json"],
+			languageOptions: {
+				parser: jsoncEslintParser,
+			},
+			rules: {
+				"package-json/require-packageManager": ["error", { ignorePrivate: false }],
 			},
 		},
 	];
