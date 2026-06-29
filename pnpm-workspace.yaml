@@ -9,8 +9,8 @@ packages:
   - src/*
 
 overrides:
-  "@typescript-eslint/type-utils": 8.60.1
-  "@typescript-eslint/utils": 8.60.1
+  "@typescript-eslint/type-utils": 8.62.0
+  "@typescript-eslint/utils": 8.62.0
   semver@6: ^7.0.0
 
 patchedDependencies:
@@ -61,8 +61,8 @@ catalogs:
     "@isentinel/dict-roblox": 1.0.4
     "@pobammer-ts/eslint-cease-nonsense-rules": 1.38.0
     "@stylistic/eslint-plugin": 5.9.0
-    "@typescript-eslint/eslint-plugin": 8.60.1
-    "@typescript-eslint/parser": 8.60.1
+    "@typescript-eslint/eslint-plugin": 8.62.0
+    "@typescript-eslint/parser": 8.62.0
     ansis: 4.2.0
     eslint-config-flat-gitignore: 2.2.1
     eslint-config-prettier: 10.1.8
