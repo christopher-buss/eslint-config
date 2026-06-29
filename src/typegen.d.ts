@@ -803,6 +803,11 @@ export interface RuleOptions {
    */
   'eslint-plugin/require-test-case-name'?: Linter.RuleEntry<EslintPluginRequireTestCaseName>
   /**
+   * requires the position of errors to be explicitly stated for all expected errors
+   * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/require-test-error-positions.md
+   */
+  'eslint-plugin/require-test-error-positions'?: Linter.RuleEntry<[]>
+  /**
    * require the properties of a test case to be placed in a consistent order
    * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/test-case-property-ordering.md
    */

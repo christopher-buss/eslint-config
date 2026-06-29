@@ -59,6 +59,7 @@ export async function eslintPlugin(
 				"eslint-plugin/require-meta-schema-description": "error",
 				"eslint-plugin/require-meta-type": "error",
 				"eslint-plugin/require-test-case-name": "error",
+				"eslint-plugin/require-test-error-positions": "error",
 				"eslint-plugin/test-case-property-ordering": "error",
 				"eslint-plugin/test-case-shorthand-strings": "error",
 				"eslint-plugin/unique-test-case-names": "error",
