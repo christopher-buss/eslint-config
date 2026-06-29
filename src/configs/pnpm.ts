@@ -62,9 +62,8 @@ export async function pnpm(
 							catalogMode: "prefer",
 							cleanupUnusedCatalogs: true,
 							shellEmulator: true,
-							// TODO: Currently our own config is breaking for
-							// this making it a pain to use
-							// trustPolicy: "no-downgrade",
+							trustPolicy: "no-downgrade",
+							trustPolicyIgnoreAfter: 10080,
 						},
 					},
 				],
