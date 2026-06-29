@@ -7,8 +7,8 @@ import path from "node:path";
 import process from "node:process";
 import parse from "parse-gitignore-ts";
 
-import type { PromptResult } from "../types";
-import { getEslintConfigContent } from "../utils";
+import type { PromptResult } from "../types.ts";
+import { getEslintConfigContent } from "../utils.ts";
 
 export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const cwd = process.cwd();

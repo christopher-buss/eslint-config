@@ -6,8 +6,8 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-import { vscodeSettingsString } from "../constants";
-import type { PromptResult } from "../types";
+import { vscodeSettingsString } from "../constants.ts";
+import type { PromptResult } from "../types.ts";
 
 export async function updateVscodeSettings(result: PromptResult): Promise<void> {
 	const cwd = process.cwd();

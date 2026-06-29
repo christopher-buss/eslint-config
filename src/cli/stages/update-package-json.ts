@@ -6,23 +6,23 @@ import path from "node:path";
 import process from "node:process";
 import type { PackageJson } from "type-fest";
 
-import { version } from "../../../package.json";
-import { dependenciesMap } from "../constants";
-import { versionsMap } from "../constants-generated";
-import type { PromptResult } from "../types";
+import ownPackageJson from "../../../package.json" with { type: "json" };
+import { versionsMap } from "../constants-generated.ts";
+import { dependenciesMap } from "../constants.ts";
+import type { PromptResult } from "../types.ts";
 
 export async function updatePackageJson(result: PromptResult): Promise<void> {
 	const cwd = process.cwd();
 
 	const pathPackageJSON = path.join(cwd, "package.json");
 
-	log.step(ansis.cyan(`Bumping @isentinel/eslint-config to v${version}`));
+	log.step(ansis.cyan(`Bumping @isentinel/eslint-config to v${ownPackageJson.version}`));
 
 	const packageContent = await fsp.readFile(pathPackageJSON, "utf-8");
 	const parsedPackage: PackageJson = JSON.parse(packageContent);
 
 	parsedPackage.devDependencies ??= {};
-	parsedPackage.devDependencies["@isentinel/eslint-config"] = `^${version}`;
+	parsedPackage.devDependencies["@isentinel/eslint-config"] = `^${ownPackageJson.version}`;
 	parsedPackage.devDependencies["eslint"] ??= versionsMap.eslint;
 
 	const addedPackages: Array<string> = [];

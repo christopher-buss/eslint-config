@@ -1,6 +1,6 @@
-import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../globs";
-import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../globs.ts";
+import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 type PatternType =
 	| Array<string>

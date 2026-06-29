@@ -30,8 +30,8 @@ import {
 	typescript,
 	unicorn,
 	yaml,
-} from "../src";
-import { combine } from "../src/utils";
+} from "../src/index.ts";
+import { combine } from "../src/utils.ts";
 
 const configs = await combine(
 	{

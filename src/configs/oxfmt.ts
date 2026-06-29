@@ -1,6 +1,6 @@
 import type { Options as PrettierOptions } from "prettier";
 
-import { defaultPluginRenaming } from "../factory";
+import { defaultPluginRenaming } from "../factory.ts";
 import {
 	GLOB_ALL_JSON,
 	GLOB_CSS,
@@ -13,16 +13,16 @@ import {
 	GLOB_TS,
 	GLOB_TSX,
 	GLOB_YAML,
-} from "../globs";
+} from "../globs.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsFormatters,
 	OptionsOverrides,
 	TypedFlatConfigItem,
-} from "../types";
-import type { OxfmtOptions } from "../utils";
-import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils";
+} from "../types.ts";
+import type { OxfmtOptions } from "../utils.ts";
+import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../utils.ts";
 
 export async function oxfmt(
 	options?: OptionsComponentExtensions &
@@ -282,6 +282,6 @@ function migratePrettierOptions(prettierOptions: PrettierOptions): Record<string
 	return oxfmtOptions;
 }
 
-export { type OxfmtOptions } from "../utils";
+export { type OxfmtOptions } from "../utils.ts";
 
 export type { Options as PrettierOptions } from "prettier";

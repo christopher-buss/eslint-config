@@ -1,6 +1,6 @@
-import { GLOB_ROOT } from "../globs";
-import type { OptionsStylistic, TypedFlatConfigItem } from "../types";
-import { interopDefault, mergeGlobs } from "../utils";
+import { GLOB_ROOT } from "../globs.ts";
+import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import { interopDefault, mergeGlobs } from "../utils.ts";
 
 /* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {

@@ -1,7 +1,7 @@
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
 
-import type { PrettierOptions } from "./configs";
+import type { PrettierOptions } from "./configs/index.ts";
 import {
 	ceaseNonsense,
 	comments,
@@ -33,12 +33,12 @@ import {
 	typescript,
 	unicorn,
 	yaml,
-} from "./configs";
-import { jsx } from "./configs/jsx";
-import { packageJson } from "./configs/package-json";
-import { spelling } from "./configs/spelling";
-import { GLOB_ROOT } from "./globs";
-import type { RuleOptions } from "./typegen";
+} from "./configs/index.ts";
+import { jsx } from "./configs/jsx.ts";
+import { packageJson } from "./configs/package-json.ts";
+import { spelling } from "./configs/spelling.ts";
+import { GLOB_ROOT } from "./globs.ts";
+import type { RuleOptions } from "./typegen.d.ts";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -47,7 +47,7 @@ import type {
 	NamedOptionsConfig,
 	OptionsConfig,
 	TypedFlatConfigItem,
-} from "./types";
+} from "./types.ts";
 import {
 	getOverrides,
 	isInAgentSession,
@@ -58,7 +58,7 @@ import {
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
 	shouldEnableFeature,
-} from "./utils";
+} from "./utils.ts";
 
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",

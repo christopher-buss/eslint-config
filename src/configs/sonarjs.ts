@@ -1,5 +1,5 @@
-import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export async function sonarjs(
 	options: Required<OptionsIsInEditor>,

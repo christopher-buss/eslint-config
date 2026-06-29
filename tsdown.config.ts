@@ -29,7 +29,7 @@ export default defineConfig([
 				"eslint-plugin-erasable-syntax-only",
 				"cached-factory",
 			],
-			onlyBundle: ["eslint-config-flat-gitignore"],
+			onlyBundle: ["eslint-config-flat-gitignore", "@eslint/compat"],
 		},
 		entry: ["src/index.ts"],
 		unused: {

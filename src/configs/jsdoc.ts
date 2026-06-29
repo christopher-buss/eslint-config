@@ -1,11 +1,11 @@
-import { GLOB_SRC } from "../globs";
+import { GLOB_SRC } from "../globs.ts";
 import type {
 	JsdocOptions,
 	OptionsProjectType,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../types";
-import { interopDefault } from "../utils";
+} from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export async function jsdoc(
 	options: JsdocOptions & OptionsProjectType & OptionsStylistic = {},

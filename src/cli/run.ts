@@ -4,12 +4,12 @@ import ansis from "ansis";
 import fs from "node:fs";
 import process from "node:process";
 
-import { frameworkOptions, frameworks } from "./constants";
-import { updateEslintFiles } from "./stages/update-eslint-files";
-import { updatePackageJson } from "./stages/update-package-json";
-import { updateVscodeSettings } from "./stages/update-vscode-settings";
-import type { FrameworkOption, PromptResult } from "./types";
-import { isGitClean } from "./utils";
+import { frameworkOptions, frameworks } from "./constants.ts";
+import { updateEslintFiles } from "./stages/update-eslint-files.ts";
+import { updatePackageJson } from "./stages/update-package-json.ts";
+import { updateVscodeSettings } from "./stages/update-vscode-settings.ts";
+import type { FrameworkOption, PromptResult } from "./types.ts";
+import { isGitClean } from "./utils.ts";
 
 export interface CliRunOptions {
 	/** Use the framework template for optimal customization: react. */

@@ -1,5 +1,5 @@
-import { GLOB_EXCLUDE } from "../globs";
-import type { TypedFlatConfigItem } from "../types";
+import { GLOB_EXCLUDE } from "../globs.ts";
+import type { TypedFlatConfigItem } from "../types.ts";
 
 export async function ignores(
 	userIgnores: ((originals: Array<string>) => Array<string>) | Array<string> = [],

@@ -1,11 +1,11 @@
-import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs";
+import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../globs.ts";
 import type {
 	OptionsOverridesTypeAware,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
-} from "../types";
-import { getTsConfig, interopDefault } from "../utils";
+} from "../types.ts";
+import { getTsConfig, interopDefault } from "../utils.ts";
 
 export async function flawless(
 	options: OptionsOverridesTypeAware &

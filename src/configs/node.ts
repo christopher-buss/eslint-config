@@ -1,5 +1,5 @@
-import type { TypedFlatConfigItem } from "../types";
-import { ensurePackages, interopDefault } from "../utils";
+import type { TypedFlatConfigItem } from "../types.ts";
+import { ensurePackages, interopDefault } from "../utils.ts";
 
 export async function node(): Promise<Array<TypedFlatConfigItem>> {
 	await ensurePackages(["eslint-plugin-n"]);

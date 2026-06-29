@@ -1,6 +1,6 @@
 import ansis from "ansis";
 
-import type { FrameworkOption, PromItem } from "./types";
+import type { FrameworkOption, PromItem } from "./types.ts";
 
 export const vscodeSettingsString = `
   // Disable the default formatter, use eslint instead
@@ -63,4 +63,4 @@ export const dependenciesMap = {
 	test: ["eslint-plugin-jest"],
 } as const;
 
-export { default as pkgJson } from "../../package.json";
+export { default as pkgJson } from "../../package.json" with { type: "json" };

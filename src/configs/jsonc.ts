@@ -1,11 +1,11 @@
-import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC } from "../globs";
+import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC } from "../globs.ts";
 import type {
 	OptionsFiles,
 	OptionsOverrides,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../types";
-import { interopDefault, resolveWithDefaults } from "../utils";
+} from "../types.ts";
+import { interopDefault, resolveWithDefaults } from "../utils.ts";
 
 export async function jsonc(
 	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},

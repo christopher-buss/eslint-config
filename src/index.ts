@@ -1,9 +1,9 @@
-export * from "./configs";
-export * from "./factory";
-export { isentinel as default } from "./factory";
-export * from "./globs";
-export * from "./types";
+export * from "./configs/index.ts";
+export * from "./factory.ts";
+export { isentinel as default } from "./factory.ts";
+export * from "./globs.ts";
+export * from "./types.ts";
 
-export { isInEditorEnvironment } from "./utils";
-export { isInAgentSession } from "./utils";
-export { isInGitHooksOrLintStaged } from "./utils";
+export { isInEditorEnvironment } from "./utils.ts";
+export { isInAgentSession } from "./utils.ts";
+export { isInGitHooksOrLintStaged } from "./utils.ts";

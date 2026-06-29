@@ -1,5 +1,5 @@
-import type { OptionsIsInEditor, OptionsStylistic, TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import type { OptionsIsInEditor, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export async function ceaseNonsense(
 	options: OptionsIsInEditor & OptionsStylistic = {},

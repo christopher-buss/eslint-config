@@ -1,5 +1,5 @@
-import type { TypedFlatConfigItem } from "../types";
-import { interopDefault } from "../utils";
+import type { TypedFlatConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export async function promise(): Promise<Array<TypedFlatConfigItem>> {
 	// @ts-expect-error -- No types

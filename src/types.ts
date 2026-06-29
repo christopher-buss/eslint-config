@@ -6,10 +6,10 @@ import type { Linter } from "eslint";
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import type { SetRequired } from "type-fest";
 
-import type { OxfmtOptions } from "./configs";
-import type { PrettierOptions } from "./configs/oxfmt";
+import type { OxfmtOptions } from "./configs/index.ts";
+import type { PrettierOptions } from "./configs/oxfmt.ts";
 import type { RuleOptions } from "./typegen";
-import type { ExtractRuleOptions } from "./utils";
+import type { ExtractRuleOptions } from "./utils.ts";
 
 export type Awaitable<T> = Promise<T> | T;
 
@@ -618,5 +618,5 @@ export interface OptionsStylistic {
 	stylistic?: boolean | StylisticConfig;
 }
 
-export { type ConfigNames } from "./typegen";
+export type { ConfigNames } from "./typegen";
 export { type FlatConfigComposer } from "eslint-flat-config-utils";

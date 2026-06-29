@@ -7,8 +7,8 @@ import type {
 	OptionsProjectType,
 	OptionsStylistic,
 	TypedFlatConfigItem,
-} from "../types";
-import { interopDefault } from "../utils";
+} from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 export async function packageJson(
 	options: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {},

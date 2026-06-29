@@ -5,8 +5,8 @@ import {
 	GLOB_SRC_EXT,
 	GLOB_TESTS,
 	GLOB_YAML,
-} from "../globs";
-import type { TypedFlatConfigItem } from "../types";
+} from "../globs.ts";
+import type { TypedFlatConfigItem } from "../types.ts";
 
 export async function disables(options: {
 	root: Array<string>;

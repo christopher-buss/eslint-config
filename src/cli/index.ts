@@ -5,8 +5,8 @@ import process from "node:process";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { pkgJson as packageJson } from "./constants";
-import { run } from "./run";
+import { pkgJson as packageJson } from "./constants.ts";
+import { run } from "./run.ts";
 
 function header(): void {
 	console.log("\n");

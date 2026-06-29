@@ -1,4 +1,3 @@
-import type { FlatConfig } from "@eslint/compat";
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
@@ -10,14 +9,14 @@ import process from "node:process";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import prettier from "prettier";
 
-import type { PrettierOptions } from "./configs";
-import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types";
+import type { PrettierOptions } from "./configs/index.ts";
+import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
 type ModuleImport<T> = Promise<T | { default: T }>;
 
-type Parser = NonNullable<FlatConfig["languageOptions"]>["parser"];
+type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
 export const require = createRequire(import.meta.url);
 
