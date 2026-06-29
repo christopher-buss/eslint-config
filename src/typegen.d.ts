@@ -2927,6 +2927,11 @@ export interface RuleOptions {
    */
   'package-json/no-empty-fields'?: Linter.RuleEntry<PackageJsonNoEmptyFields>
   /**
+   * Requires that dependencies do not use local file paths, which will likely result in errors when installing from a registry.
+   * @see https://eslint-plugin-package-json.dev/rules/no-local-dependencies
+   */
+  'package-json/no-local-dependencies'?: Linter.RuleEntry<PackageJsonNoLocalDependencies>
+  /**
    * Prevents adding unnecessary / redundant files.
    * @see https://eslint-plugin-package-json.dev/rules/no-redundant-files
    */
@@ -2937,7 +2942,7 @@ export interface RuleOptions {
    */
   'package-json/no-redundant-publishConfig'?: Linter.RuleEntry<[]>
   /**
-   * Package properties should be declared in standard order
+   * Enforces that package properties are declared in a consistent order.
    * @see https://eslint-plugin-package-json.dev/rules/order-properties
    */
   'package-json/order-properties'?: Linter.RuleEntry<PackageJsonOrderProperties>
@@ -13977,6 +13982,11 @@ type PackageJsonNoEmptyFields = []|[{
   
   ignoreProperties?: string[]
 }]
+// ----- package-json/no-local-dependencies -----
+type PackageJsonNoLocalDependencies = []|[{
+  
+  ignorePrivate?: boolean
+}]
 // ----- package-json/order-properties -----
 type PackageJsonOrderProperties = []|[{
   
@@ -14220,7 +14230,12 @@ type PackageJsonRestrictTopLevelProperties = []|[{
   })[]
 }]
 // ----- package-json/sort-collections -----
-type PackageJsonSortCollections = []|[string[]]
+type PackageJsonSortCollections = []|[(string | {
+  
+  key: string
+  
+  order: string[]
+})[]]
 // ----- padded-blocks -----
 type PaddedBlocks = []|[(("always" | "never") | {
   blocks?: ("always" | "never")

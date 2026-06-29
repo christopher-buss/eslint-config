@@ -47,6 +47,7 @@ export async function packageJson(
 			},
 			rules: {
 				"package-json/no-empty-fields": "error",
+				"package-json/no-local-dependencies": ["error", { ignorePrivate: false }],
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
 				"package-json/repository-shorthand": "error",
