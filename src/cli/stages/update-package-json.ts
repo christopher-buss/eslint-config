@@ -28,11 +28,15 @@ export async function updatePackageJson(result: PromptResult): Promise<void> {
 	const addedPackages: Array<string> = [];
 
 	for (const framework of result.frameworks) {
-		if (framework in dependenciesMap) {
-			for (const dep of dependenciesMap[framework]) {
-				parsedPackage.devDependencies[dep] = versionsMap[dep as keyof typeof versionsMap];
-				addedPackages.push(dep);
-			}
+		if (!(framework in dependenciesMap)) {
+			continue;
+		}
+
+		const dependencies = dependenciesMap[framework];
+		for (const dependency of dependencies) {
+			parsedPackage.devDependencies[dependency] =
+				versionsMap[dependency as keyof typeof versionsMap];
+			addedPackages.push(dependency);
 		}
 	}
 

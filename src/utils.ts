@@ -10,6 +10,7 @@ import type { FormatConfig, JsdocConfig } from "oxfmt";
 import prettier from "prettier";
 
 import type { PrettierOptions } from "./configs/index.ts";
+import { GLOB_SRC_EXT } from "./globs.ts";
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -176,6 +177,10 @@ export function resolveSubOptions<K extends keyof OptionsConfig>(
 		{} as OptionsConfig[K],
 	);
 	return (defaults === false ? {} : defaults) as ResolvedOptions<OptionsConfig[K]>;
+}
+
+export function toSourceGlob(glob: string): string {
+	return glob.startsWith("!") ? `!${glob.slice(1)}.${GLOB_SRC_EXT}` : `${glob}.${GLOB_SRC_EXT}`;
 }
 
 export function getOverrides(

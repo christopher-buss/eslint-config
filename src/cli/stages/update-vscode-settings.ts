@@ -10,12 +10,11 @@ import { vscodeSettingsString } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 
 export async function updateVscodeSettings(result: PromptResult): Promise<void> {
-	const cwd = process.cwd();
-
 	if (!result.updateVscodeSettings) {
 		return;
 	}
 
+	const cwd = process.cwd();
 	const dotVscodePath: string = path.join(cwd, ".vscode");
 	const settingsPath: string = path.join(dotVscodePath, "settings.json");
 

@@ -180,12 +180,11 @@ export async function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
-	const formatterOptions = typeof options.formatters === "object" ? options.formatters : {};
+	const formatterOptions = typeof formatters === "object" ? formatters : {};
 
 	const prettierOptions = formatterOptions.prettierOptions ?? {};
 	const editorConfigOptions = await resolvePrettierConfigOptions();
-	const oxfmtConfigOptions =
-		options.formatters !== false ? await resolveOxfmtConfigOptions() : {};
+	const oxfmtConfigOptions = formatters !== false ? await resolveOxfmtConfigOptions() : {};
 
 	const prettierSettings: PrettierOptions = Object.assign(
 		{
@@ -445,7 +444,7 @@ export async function isentinel(
 			);
 
 			if (enableRoblox) {
-				disableAutofixRules.push("unicorn/no-array-for-each");
+				disableAutofixRules.push("unicorn/no-for-each");
 			}
 		}
 

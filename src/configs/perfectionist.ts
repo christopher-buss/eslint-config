@@ -40,13 +40,15 @@ export async function perfectionist(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { customClassGroups = [], sortObjects, type = "game" } = config ?? {};
 
-	const customGroups = [];
-	for (const customGroup of customClassGroups) {
-		customGroups.push({
-			elementNamePattern: customGroup,
-			groupName: customGroup,
-		});
-	}
+	const customGroups = [
+		...Array.from(customClassGroups, (customGroup) => {
+			return { elementNamePattern: customGroup, groupName: customGroup };
+		}),
+		constructorGroup,
+		createUnsortedMethod("private"),
+		createUnsortedMethod("protected"),
+		createUnsortedMethod("public"),
+	];
 
 	const sortedObjectConfig = sortObjects ?? {
 		customGroups: [
@@ -83,13 +85,6 @@ export async function perfectionist(
 			type: type === "game" ? "unsorted" : "natural",
 		} satisfies CustomGroupDefinition;
 	}
-
-	customGroups.push(
-		constructorGroup,
-		createUnsortedMethod("private"),
-		createUnsortedMethod("protected"),
-		createUnsortedMethod("public"),
-	);
 
 	const pluginPerfectionist = await interopDefault(import("eslint-plugin-perfectionist"));
 
@@ -215,5 +210,5 @@ export async function perfectionist(
 }
 
 function capitalizeFirstLetter(value: string): string {
-	return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+	return value.charAt(0).toUpperCase() + value.slice(1);
 }
