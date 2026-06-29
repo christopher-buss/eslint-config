@@ -64,7 +64,7 @@ catalogs:
     ansis: 4.3.1
     eslint-config-flat-gitignore: 2.3.0
     eslint-config-prettier: 10.1.8
-    eslint-flat-config-utils: 3.0.1
+    eslint-flat-config-utils: 3.2.0
     eslint-merge-processors: 2.0.0
     eslint-plugin-antfu: 3.2.3
     eslint-plugin-arrow-return-style-x: 1.2.6
