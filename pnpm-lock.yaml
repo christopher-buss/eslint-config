@@ -201,8 +201,8 @@ catalogs:
       specifier: 4.0.0
       version: 4.0.0
     eslint-plugin-toml:
-      specifier: 1.1.1
-      version: 1.1.1
+      specifier: 1.4.0
+      version: 1.4.0
     eslint-plugin-unicorn:
       specifier: 63.0.0
       version: 63.0.0
@@ -356,7 +356,7 @@ importers:
         version: 4.0.0(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-toml:
         specifier: catalog:prod
-        version: 1.1.1(@eslint/markdown@7.5.1)(eslint@10.6.0(jiti@2.7.0))
+        version: 1.4.0(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-unicorn:
         specifier: catalog:prod
         version: 63.0.0(eslint@10.6.0(jiti@2.7.0))
@@ -2680,8 +2680,8 @@ packages:
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-toml@1.1.1:
-    resolution: {integrity: sha512-Gg7wxVIYe2bJ1GqcOxmkVqdd1ScE2U3Ia3Q7RLgBhV9NVhAfkFaAOCRwRAAJ2TkbM/dQmXvNuFmAPx4y5XqIHA==}
+  eslint-plugin-toml@1.4.0:
+    resolution: {integrity: sha512-3ErTnfUjXq/23f72XeyRcE0Y4Sd/ME1lsZeezczqpn2R4tE7+Sgco/NUKDXm0xAMz15tzcRz/9RfJRm6AqRO+A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -5905,16 +5905,15 @@ snapshots:
       ts-api-utils: 2.4.0(typescript@6.0.3)
       typescript: 6.0.3
 
-  eslint-plugin-toml@1.1.1(@eslint/markdown@7.5.1)(eslint@10.6.0(jiti@2.7.0)):
+  eslint-plugin-toml@1.4.0(eslint@10.6.0(jiti@2.7.0)):
     dependencies:
-      '@eslint/core': 1.1.0
-      '@eslint/plugin-kit': 0.6.0
-      '@ota-meshi/ast-token-store': 0.2.1(@eslint/markdown@7.5.1)(eslint@10.6.0(jiti@2.7.0))
+      '@eslint/core': 1.2.1
+      '@eslint/plugin-kit': 0.7.2
+      '@ota-meshi/ast-token-store': 0.3.0
       debug: 4.4.3
       eslint: 10.6.0(jiti@2.7.0)
       toml-eslint-parser: 1.0.3
     transitivePeerDependencies:
-      - '@eslint/markdown'
       - supports-color
 
   eslint-plugin-unicorn@63.0.0(eslint@10.6.0(jiti@2.7.0)):
