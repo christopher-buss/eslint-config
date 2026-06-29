@@ -2,7 +2,6 @@ import { GLOB_ROOT } from "../globs.ts";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 import { interopDefault, mergeGlobs } from "../utils.ts";
 
-/* eslint-disable @cspell/spellchecker -- Used to correct abbreviations. */
 const abbreviations = {
 	args: false,
 	ctx: false,
@@ -33,7 +32,6 @@ const abbreviations = {
 	util: false,
 	utils: false,
 } as const;
-/* eslint-enable @cspell/spellchecker */
 
 export async function unicorn(
 	options: OptionsStylistic & { root?: Array<string> } = {},
