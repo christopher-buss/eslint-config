@@ -114,6 +114,7 @@ export async function roblox(
 
 				...(stylistic !== false
 					? {
+							"cease-nonsense/no-array-constructor-elements": "error",
 							"sentinel/prefer-math-min-max": "error",
 						}
 					: {}),
