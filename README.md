@@ -347,6 +347,71 @@ the new prefix:
 type foo = { bar: 2 }
 ```
 
+### Rules Overrides
+
+Certain rules would only be enabled in specific files, for example, `ts/*` rules
+would only be enabled in `.ts` files and `vue/*` rules would only be enabled in
+`.vue` files. If you want to override the rules, you need to specify the file
+extension:
+
+```js
+// eslint.config.js
+import antfu from "@antfu/eslint-config";
+
+export default antfu(
+	{
+		typescript: true,
+		vue: true,
+	},
+	{
+		// Remember to specify the file glob here, otherwise it might cause the
+		// vue plugin to handle non-vue files
+		files: ["**/*.vue"],
+		rules: {
+			"vue/operator-linebreak": ["error", "before"],
+		},
+	},
+	{
+		// Without `files`, they are general rules for all files (Markdown
+		// excluded — see note below)
+		rules: {
+			"style/semi": ["error", "never"],
+		},
+	},
+);
+```
+
+<!-- prettier-ignore -->
+> [!NOTE]
+> Rule overrides without an explicit `files` constraint are> automatically
+> excluded from Markdown files, via
+> [`composer.setDefaultIgnores`](https://github.com/antfu/eslint-flat-config-utils#composersetdefaultignores).
+> This prevents JS-only rules (e.g. `no-irregular-whitespace`,
+> `perfectionist/sort-imports`) from crashing on `@eslint/markdown`'s
+> `SourceCode`, which doesn't expose JS-specific methods like
+> `getAllComments()`. If you want a rule to apply to Markdown, scope it
+> explicitly with `files: ['**/*.md']`.
+
+We also provided the `overrides` options in each integration to make it easier:
+
+```js
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	typescript: {
+		overrides: {
+			"ts/consistent-type-definitions": ["error", "interface"],
+		},
+	},
+	yaml: {
+		overrides: {
+			// ...
+		},
+	},
+});
+```
+
 ### Spell Checker
 
 This config includes the [CSpell](https://cspell.org/) plugin by default, which

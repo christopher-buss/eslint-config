@@ -37,7 +37,7 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
-import { GLOB_ROOT } from "./globs.ts";
+import { GLOB_MARKDOWN, GLOB_ROOT } from "./globs.ts";
 import type { RuleOptions } from "./typegen.d.ts";
 import type {
 	Awaitable,
@@ -428,6 +428,16 @@ export async function isentinel(
 	let composer = new FlatConfigComposerClass<TypedFlatConfigItem, ConfigNames>();
 
 	composer = composer.append(...configs, ...(userConfigs as Array<TypedFlatConfigItem>));
+
+	// Markdown uses the `markdown/gfm` language, whose `SourceCode` lacks
+	// JS-only methods like `getAllComments`. Without this, any rule override
+	// registered without a `files` constraint would apply globally and crash on
+	// `.md` files.
+	if (options.markdown !== false) {
+		composer = composer.setDefaultIgnores((previous) => {
+			return [...previous, GLOB_MARKDOWN];
+		});
+	}
 
 	if (autoRenamePlugins) {
 		composer = composer.renamePlugins(defaultPluginRenaming);
