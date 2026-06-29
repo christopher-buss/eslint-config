@@ -155,6 +155,11 @@ export interface RuleOptions {
    */
   'capitalized-comments'?: Linter.RuleEntry<CapitalizedComments>
   /**
+   * Disallow bracket array type syntax and require Array<T> / ReadonlyArray<T>.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/array-type-generic
+   */
+  'cease-nonsense/array-type-generic'?: Linter.RuleEntry<[]>
+  /**
    * Ban specified Roblox Instance classes in new Instance() calls and JSX elements.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/ban-instances
    */
@@ -165,8 +170,13 @@ export interface RuleOptions {
    */
   'cease-nonsense/ban-react-fc'?: Linter.RuleEntry<[]>
   /**
+   * Enforce dot notation while preserving opt-in roblox-ts visibility-safe bracket access.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/dot-notation
+   */
+  'cease-nonsense/dot-notation'?: Linter.RuleEntry<CeaseNonsenseDotNotation>
+  /**
    * Enforce Ianitor.Check<T> type annotations on complex TypeScript types
-   * @see https://github.com/howmanysmall/eslint-cease-nonsense-rules/blob/main/docs/rules/enforce-ianitor-check-type.md
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/enforce-ianitor-check-type
    */
   'cease-nonsense/enforce-ianitor-check-type'?: Linter.RuleEntry<CeaseNonsenseEnforceIanitorCheckType>
   /**
@@ -188,6 +198,11 @@ export interface RuleOptions {
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/naming-convention
    */
   'cease-nonsense/naming-convention'?: Linter.RuleEntry<CeaseNonsenseNamingConvention>
+  /**
+   * Disallow array constructor element forms and enforce roblox-ts-aware constructor patterns.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-array-constructor-elements
+   */
+  'cease-nonsense/no-array-constructor-elements'?: Linter.RuleEntry<CeaseNonsenseNoArrayConstructorElements>
   /**
    * Disallow array append assignments using array[array.size()] = value and prefer push-based appends.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-array-size-assignment
@@ -213,6 +228,11 @@ export interface RuleOptions {
    */
   'cease-nonsense/no-constant-condition-with-break'?: Linter.RuleEntry<CeaseNonsenseNoConstantConditionWithBreak>
   /**
+   * Disallow empty array literals and require constructor form for empty arrays.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-empty-array-literal
+   */
+  'cease-nonsense/no-empty-array-literal'?: Linter.RuleEntry<CeaseNonsenseNoEmptyArrayLiteral>
+  /**
    * Disallow sending Events back to the same player inside an Events.connect callback; use Functions for request/response.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-events-in-events-callback
    */
@@ -231,6 +251,11 @@ export interface RuleOptions {
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-instance-methods-without-this
    */
   'cease-nonsense/no-instance-methods-without-this'?: Linter.RuleEntry<CeaseNonsenseNoInstanceMethodsWithoutThis>
+  /**
+   * Disallow manually declaring a children prop on React component props when a configured wrapper type should be used instead.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-manual-children-property
+   */
+  'cease-nonsense/no-manual-children-property'?: Linter.RuleEntry<CeaseNonsenseNoManualChildrenProperty>
   /**
    * Disallow React.memo on components with children props, which defeats memoization since children change on every render.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-memo-children
@@ -281,6 +306,11 @@ export interface RuleOptions {
    */
   'cease-nonsense/no-useless-use-effect'?: Linter.RuleEntry<CeaseNonsenseNoUselessUseEffect>
   /**
+   * Disallow useMemo calls that only wrap values static enough to live at module scope.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-useless-use-memo
+   */
+  'cease-nonsense/no-useless-use-memo'?: Linter.RuleEntry<CeaseNonsenseNoUselessUseMemo>
+  /**
    * Disallow useSpring hooks whose config and dependencies are entirely static
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/no-useless-use-spring
    */
@@ -295,6 +325,11 @@ export interface RuleOptions {
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-class-properties
    */
   'cease-nonsense/prefer-class-properties'?: Linter.RuleEntry<CeaseNonsensePreferClassProperties>
+  /**
+   * Prefer a local ContextStack component over directly nesting multiple context providers.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-context-stack
+   */
+  'cease-nonsense/prefer-context-stack'?: Linter.RuleEntry<[]>
   /**
    * Prefer early returns over full-body conditional wrapping in function declarations.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-early-return
@@ -311,10 +346,25 @@ export interface RuleOptions {
    */
   'cease-nonsense/prefer-enum-member'?: Linter.RuleEntry<[]>
   /**
+   * Prefer using `.idiv()` for integer division instead of `math.floor(x / y)` in roblox-ts.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-idiv
+   */
+  'cease-nonsense/prefer-idiv'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer a local Portal component over direct createPortal calls when the project already defines one.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-local-portal-component
+   */
+  'cease-nonsense/prefer-local-portal-component'?: Linter.RuleEntry<[]>
+  /**
    * Prefer that screaming snake case variables always be defined using `const`, and always appear at module scope.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-module-scope-constants
    */
   'cease-nonsense/prefer-module-scope-constants'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer local EqualPadding and DirectionalPadding components over matching <uipadding /> declarations.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-padding-components
+   */
+  'cease-nonsense/prefer-padding-components'?: Linter.RuleEntry<[]>
   /**
    * Enforce Pascal case when naming enums.
    * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-pascal-case-enums
@@ -327,7 +377,7 @@ export interface RuleOptions {
   'cease-nonsense/prefer-pattern-replacements'?: Linter.RuleEntry<CeaseNonsensePreferPatternReplacements>
   /**
    * Enforce that function component props are read-only
-   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-read-only-props
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-read-only-properties
    */
   'cease-nonsense/prefer-read-only-props'?: Linter.RuleEntry<[]>
   /**
@@ -352,6 +402,7 @@ export interface RuleOptions {
   'cease-nonsense/prefer-ternary-conditional-rendering'?: Linter.RuleEntry<[]>
   /**
    * Prefer UDim2.fromScale() or UDim2.fromOffset() over new UDim2() when all offsets or all scales are zero.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/prefer-udim2-shorthand
    */
   'cease-nonsense/prefer-udim2-shorthand'?: Linter.RuleEntry<[]>
   /**
@@ -371,11 +422,12 @@ export interface RuleOptions {
   'cease-nonsense/require-module-level-instantiation'?: Linter.RuleEntry<CeaseNonsenseRequireModuleLevelInstantiation>
   /**
    * Enforce named effect functions for better debuggability. Prevents inline arrow functions in useEffect and similar hooks.
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-named-effect-functions
    */
   'cease-nonsense/require-named-effect-functions'?: Linter.RuleEntry<CeaseNonsenseRequireNamedEffectFunctions>
   /**
    * Enforces balanced opener/closer function calls across all execution paths
-   * @see https://github.com/howmanysmall/eslint-idiot-lint/tree/main/docs/rules/require-paired-calls.md
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/require-paired-calls
    */
   'cease-nonsense/require-paired-calls'?: Linter.RuleEntry<CeaseNonsenseRequirePairedCalls>
   /**
@@ -405,7 +457,7 @@ export interface RuleOptions {
   'cease-nonsense/use-exhaustive-dependencies'?: Linter.RuleEntry<CeaseNonsenseUseExhaustiveDependencies>
   /**
    * Enforce that React hooks are only called at the top level of components or custom hooks, never conditionally or in nested functions
-   * @see https://react.dev/reference/rules/rules-of-hooks
+   * @see https://howmanysmall.github.io/eslint-cease-nonsense-rules/rules/use-hook-at-top-level
    */
   'cease-nonsense/use-hook-at-top-level'?: Linter.RuleEntry<CeaseNonsenseUseHookAtTopLevel>
   /**
@@ -572,6 +624,7 @@ export interface RuleOptions {
   /**
    * disallow unused `eslint-disable` comments
    * @see https://eslint-community.github.io/eslint-plugin-eslint-comments/rules/no-unused-disable.html
+   * @deprecated
    */
   'eslint-comments/no-unused-disable'?: Linter.RuleEntry<[]>
   /**
@@ -3600,7 +3653,7 @@ export interface RuleOptions {
    * Disallow using promises inside of callbacks.
    * @see https://github.com/eslint-community/eslint-plugin-promise/blob/main/docs/rules/no-promise-in-callback.md
    */
-  'promise/no-promise-in-callback'?: Linter.RuleEntry<[]>
+  'promise/no-promise-in-callback'?: Linter.RuleEntry<PromiseNoPromiseInCallback>
   /**
    * Disallow return statements in `finally()`.
    * @see https://github.com/eslint-community/eslint-plugin-promise/blob/main/docs/rules/no-return-in-finally.md
@@ -3654,28 +3707,28 @@ export interface RuleOptions {
    */
   'quotes'?: Linter.RuleEntry<Quotes>
   /**
-   * Enforce the consistent use of the radix argument when using `parseInt()`
+   * Enforce the use of the radix argument when using `parseInt()`
    * @see https://eslint.org/docs/latest/rules/radix
    */
   'radix'?: Linter.RuleEntry<Radix>
   /**
-   * Verifies that automatic effect dependencies are compiled if opted-in
-   */
-  'react-hooks/automatic-effect-dependencies'?: Linter.RuleEntry<ReactHooksAutomaticEffectDependencies>
-  /**
    * Validates against calling capitalized functions/methods instead of using JSX
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/capitalized-calls
    */
   'react-hooks/capitalized-calls'?: Linter.RuleEntry<ReactHooksCapitalizedCalls>
   /**
-   * Validates against higher order functions defining nested components or hooks. Components and hooks should be defined at the module level
+   * Deprecated: this rule has been removed in 7.1.0.
+   * @deprecated
    */
-  'react-hooks/component-hook-factories'?: Linter.RuleEntry<ReactHooksComponentHookFactories>
+  'react-hooks/component-hook-factories'?: Linter.RuleEntry<[]>
   /**
    * Validates the compiler configuration options
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/config
    */
   'react-hooks/config'?: Linter.RuleEntry<ReactHooksConfig>
   /**
    * Validates usage of error boundaries instead of try/catch for errors in child components
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/error-boundaries
    */
   'react-hooks/error-boundaries'?: Linter.RuleEntry<ReactHooksErrorBoundaries>
   /**
@@ -3684,59 +3737,78 @@ export interface RuleOptions {
    */
   'react-hooks/exhaustive-deps'?: Linter.RuleEntry<ReactHooksExhaustiveDeps>
   /**
+   * Validates that effect dependencies are exhaustive and without extraneous values
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/exhaustive-effect-dependencies
+   */
+  'react-hooks/exhaustive-effect-dependencies'?: Linter.RuleEntry<ReactHooksExhaustiveEffectDependencies>
+  /**
    * Validates usage of fbt
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/fbt
    */
   'react-hooks/fbt'?: Linter.RuleEntry<ReactHooksFbt>
   /**
-   * Validates usage of `fire`
-   */
-  'react-hooks/fire'?: Linter.RuleEntry<ReactHooksFire>
-  /**
    * Validates configuration of [gating mode](https://react.dev/reference/react-compiler/gating)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/gating
    */
   'react-hooks/gating'?: Linter.RuleEntry<ReactHooksGating>
   /**
    * Validates against assignment/mutation of globals during render, part of ensuring that [side effects must render outside of render](https://react.dev/reference/rules/components-and-hooks-must-be-pure#side-effects-must-run-outside-of-render)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/globals
    */
   'react-hooks/globals'?: Linter.RuleEntry<ReactHooksGlobals>
   /**
    * Validates the rules of hooks
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/hooks
    */
   'react-hooks/hooks'?: Linter.RuleEntry<ReactHooksHooks>
   /**
    * Validates against mutating props, state, and other values that [are immutable](https://react.dev/reference/rules/components-and-hooks-must-be-pure#props-and-state-are-immutable)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/immutability
    */
   'react-hooks/immutability'?: Linter.RuleEntry<ReactHooksImmutability>
   /**
    * Validates against usage of libraries which are incompatible with memoization (manual or automatic)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/incompatible-library
    */
   'react-hooks/incompatible-library'?: Linter.RuleEntry<ReactHooksIncompatibleLibrary>
   /**
    * Internal invariants
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/invariant
    */
   'react-hooks/invariant'?: Linter.RuleEntry<ReactHooksInvariant>
   /**
+   * Validates that useMemo() and useCallback() specify comprehensive dependencies without extraneous values. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/memo-dependencies
+   */
+  'react-hooks/memo-dependencies'?: Linter.RuleEntry<ReactHooksMemoDependencies>
+  /**
    * Validates that effect dependencies are memoized
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/memoized-effect-dependencies
    */
   'react-hooks/memoized-effect-dependencies'?: Linter.RuleEntry<ReactHooksMemoizedEffectDependencies>
   /**
    * Validates against deriving values from state in an effect
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/no-deriving-state-in-effects
    */
   'react-hooks/no-deriving-state-in-effects'?: Linter.RuleEntry<ReactHooksNoDerivingStateInEffects>
   /**
    * Validates that existing manual memoized is preserved by the compiler. React Compiler will only compile components and hooks if its inference [matches or exceeds the existing manual memoization](https://react.dev/learn/react-compiler/introduction#what-should-i-do-about-usememo-usecallback-and-reactmemo)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/preserve-manual-memoization
    */
   'react-hooks/preserve-manual-memoization'?: Linter.RuleEntry<ReactHooksPreserveManualMemoization>
   /**
    * Validates that [components/hooks are pure](https://react.dev/reference/rules/components-and-hooks-must-be-pure) by checking that they do not call known-impure functions
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/purity
    */
   'react-hooks/purity'?: Linter.RuleEntry<ReactHooksPurity>
   /**
    * Validates correct usage of refs, not reading/writing during render. See the "pitfalls" section in [`useRef()` usage](https://react.dev/reference/react/useRef#usage)
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
    */
   'react-hooks/refs'?: Linter.RuleEntry<ReactHooksRefs>
   /**
    * Validates against suppression of other rules
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/rule-suppression
    */
   'react-hooks/rule-suppression'?: Linter.RuleEntry<ReactHooksRuleSuppression>
   /**
@@ -3745,35 +3817,43 @@ export interface RuleOptions {
    */
   'react-hooks/rules-of-hooks'?: Linter.RuleEntry<ReactHooksRulesOfHooks>
   /**
-   * Validates against calling setState synchronously in an effect, which can lead to re-renders that degrade performance
+   * Validates against calling setState synchronously in an effect. This can indicate non-local derived data, a derived event pattern, or improper external data synchronization.
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
    */
   'react-hooks/set-state-in-effect'?: Linter.RuleEntry<ReactHooksSetStateInEffect>
   /**
    * Validates against setting state during render, which can trigger additional renders and potential infinite render loops
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-render
    */
   'react-hooks/set-state-in-render'?: Linter.RuleEntry<ReactHooksSetStateInRender>
   /**
    * Validates that components are static, not recreated every render. Components that are recreated dynamically can reset state and trigger excessive re-rendering
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
    */
   'react-hooks/static-components'?: Linter.RuleEntry<ReactHooksStaticComponents>
   /**
    * Validates against invalid syntax
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/syntax
    */
   'react-hooks/syntax'?: Linter.RuleEntry<ReactHooksSyntax>
   /**
    * Unimplemented features
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/todo
    */
   'react-hooks/todo'?: Linter.RuleEntry<ReactHooksTodo>
   /**
    * Validates against syntax that we do not plan to support in React Compiler
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/unsupported-syntax
    */
   'react-hooks/unsupported-syntax'?: Linter.RuleEntry<ReactHooksUnsupportedSyntax>
   /**
    * Validates usage of the useMemo() hook against common mistakes. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/use-memo
    */
   'react-hooks/use-memo'?: Linter.RuleEntry<ReactHooksUseMemo>
   /**
    * Validates that useMemos always return a value and that the result of the useMemo is used by the component/hook. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
+   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/void-use-memo
    */
   'react-hooks/void-use-memo'?: Linter.RuleEntry<ReactHooksVoidUseMemo>
   /**
@@ -8939,6 +9019,23 @@ type CeaseNonsenseBanInstances = []|[{
     [k: string]: string | undefined
   })
 }]
+// ----- cease-nonsense/dot-notation -----
+type CeaseNonsenseDotNotation = []|[{
+  
+  allowInaccessibleClassPropertyAccess?: boolean
+  
+  allowIndexSignaturePropertyAccess?: boolean
+  
+  allowKeywords?: boolean
+  
+  allowPattern?: string
+  
+  allowPrivateClassPropertyAccess?: boolean
+  
+  allowProtectedClassPropertyAccess?: boolean
+  
+  environment?: ("roblox-ts" | "standard")
+}]
 // ----- cease-nonsense/enforce-ianitor-check-type -----
 type CeaseNonsenseEnforceIanitorCheckType = []|[{
   baseThreshold?: number
@@ -8963,10 +9060,15 @@ type CeaseNonsenseMemoizedEffectDependencies = []|[{
 }]
 // ----- cease-nonsense/naming-convention -----
 type _CeaseNonsenseNamingConventionFormatOptionsConfig = (_CeaseNonsenseNamingConventionPredefinedFormats[] | null)
-type _CeaseNonsenseNamingConventionPredefinedFormats = ("camelCase" | "PascalCase" | "StrictPascalCase" | "snake_case" | "strictCamelCase" | "UPPER_CASE")
+type _CeaseNonsenseNamingConventionPredefinedFormats = ("camelCase" | "PascalCase" | "snake_case" | "strictCamelCase" | "StrictPascalCase" | "UPPER_CASE")
 type _CeaseNonsenseNamingConventionUnderscoreOptions = ("allow" | "allowDouble" | "allowSingleOrDouble" | "forbid" | "require" | "requireDouble")
 type _CeaseNonsenseNamingConvention_PrefixSuffixConfig = string[]
-type _CeaseNonsenseNamingConventionTypeModifiers = ("array" | "boolean" | "function" | "number" | "string")
+type _CeaseNonsenseNamingConventionTypeMatcher = (("array" | "boolean" | "function" | "number" | "string") | {
+  
+  from?: string
+  
+  name: string
+})
 type CeaseNonsenseNamingConvention = ({
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -8978,7 +9080,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   modifiers?: ("#private" | "abstract" | "async" | "const" | "default" | "destructured" | "exported" | "global" | "namespace" | "override" | "private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "unused")[]
   selector: ("accessor" | "default" | "memberLike" | "method" | "property" | "typeLike" | "variableLike" | "autoAccessor" | "class" | "classicAccessor" | "classMethod" | "classProperty" | "enum" | "enumMember" | "function" | "import" | "interface" | "objectLiteralMethod" | "objectLiteralProperty" | "parameter" | "parameterProperty" | "typeAlias" | "typeMethod" | "typeParameter" | "typeProperty" | "variable")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9012,7 +9114,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "variable"
   modifiers?: ("const" | "destructured" | "exported" | "global" | "unused" | "async")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9035,7 +9137,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "parameter"
   modifiers?: ("destructured" | "unused")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9058,7 +9160,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "classProperty"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9070,7 +9172,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "objectLiteralProperty"
   modifiers?: ("public" | "requiresQuotes")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9082,7 +9184,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "typeProperty"
   modifiers?: ("public" | "readonly" | "requiresQuotes")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9094,7 +9196,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "parameterProperty"
   modifiers?: ("private" | "protected" | "public" | "readonly")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9106,7 +9208,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "property"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9162,7 +9264,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "classicAccessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9174,7 +9276,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "autoAccessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9186,7 +9288,7 @@ type CeaseNonsenseNamingConvention = ({
   filter?: (string | _CeaseNonsenseNamingConvention_MatchRegexConfig)
   selector: "accessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _CeaseNonsenseNamingConventionTypeModifiers[]
+  types?: _CeaseNonsenseNamingConventionTypeMatcher[]
 } | {
   custom?: _CeaseNonsenseNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -9280,6 +9382,13 @@ interface _CeaseNonsenseNamingConvention_MatchRegexConfig {
   match: boolean
   regex: string
 }
+// ----- cease-nonsense/no-array-constructor-elements -----
+type CeaseNonsenseNoArrayConstructorElements = []|[{
+  
+  environment?: ("roblox-ts" | "standard")
+  
+  requireExplicitGenericOnNewArray?: boolean
+}]
 // ----- cease-nonsense/no-array-size-assignment -----
 type CeaseNonsenseNoArraySizeAssignment = []|[{
   
@@ -9288,6 +9397,40 @@ type CeaseNonsenseNoArraySizeAssignment = []|[{
 // ----- cease-nonsense/no-constant-condition-with-break -----
 type CeaseNonsenseNoConstantConditionWithBreak = []|[{
   loopExitCalls?: string[]
+}]
+// ----- cease-nonsense/no-empty-array-literal -----
+type CeaseNonsenseNoEmptyArrayLiteral = []|[{
+  
+  allowedEmptyArrayContexts?: {
+    
+    arrowFunctionBody?: boolean
+    
+    assignmentExpressions?: boolean
+    
+    assignmentPatterns?: boolean
+    
+    callArguments?: boolean
+    
+    conditionalExpressions?: boolean
+    
+    forOfStatements?: boolean
+    
+    jsxAttributes?: boolean
+    
+    logicalExpressions?: boolean
+    
+    propertyValues?: boolean
+    
+    returnStatements?: boolean
+    
+    typeAssertions?: boolean
+  }
+  
+  ignoreInferredNonEmptyLiterals?: boolean
+  
+  inferTypeForEmptyArrayFix?: boolean
+  
+  requireExplicitGenericOnNewArray?: boolean
 }]
 // ----- cease-nonsense/no-events-in-events-callback -----
 type CeaseNonsenseNoEventsInEventsCallback = []|[{
@@ -9300,7 +9443,7 @@ type CeaseNonsenseNoGodComponents = []|[{
   
   ignoreComponents?: string[]
   
-  maxDestructuredProps?: number
+  maxDestructuredProperties?: number
   
   maxLines?: number
   
@@ -9325,6 +9468,11 @@ type CeaseNonsenseNoInstanceMethodsWithoutThis = []|[{
   checkProtected?: boolean
   
   checkPublic?: boolean
+}]
+// ----- cease-nonsense/no-manual-children-property -----
+type CeaseNonsenseNoManualChildrenProperty = []|[{
+  mode?: ("auto" | "fast" | "accurate")
+  wrapperNames?: string[]
 }]
 // ----- cease-nonsense/no-memo-children -----
 type CeaseNonsenseNoMemoChildren = []|[{
@@ -9387,6 +9535,15 @@ type CeaseNonsenseNoUselessUseEffect = []|[{
   reportResetState?: boolean
   
   stateHooks?: string[]
+}]
+// ----- cease-nonsense/no-useless-use-memo -----
+type CeaseNonsenseNoUselessUseMemo = []|[{
+  
+  dependencyMode?: ("empty-or-omitted" | "non-updating" | "aggressive")
+  
+  environment?: ("roblox-ts" | "standard")
+  
+  staticGlobalFactories?: string[]
 }]
 // ----- cease-nonsense/no-useless-use-spring -----
 type CeaseNonsenseNoUselessUseSpring = []|[{
@@ -11785,6 +11942,8 @@ type MaxParams = []|[(number | {
   max?: number
   
   countVoidThis?: boolean
+  
+  countThis?: ("never" | "except-void" | "always")
 })]
 // ----- max-statements -----
 type MaxStatements = []|[(number | {
@@ -17286,6 +17445,10 @@ type PromiseNoCallbackInPromise = []|[{
   exceptions?: string[]
   timeoutsErr?: boolean
 }]
+// ----- promise/no-promise-in-callback -----
+type PromiseNoPromiseInCallback = []|[{
+  exemptDeclarations?: boolean
+}]
 // ----- promise/no-return-wrap -----
 type PromiseNoReturnWrap = []|[{
   allowReject?: boolean
@@ -17321,16 +17484,8 @@ type Quotes = []|[("single" | "double" | "backtick")]|[("single" | "double" | "b
 })]
 // ----- radix -----
 type Radix = []|[("always" | "as-needed")]
-// ----- react-hooks/automatic-effect-dependencies -----
-type ReactHooksAutomaticEffectDependencies = []|[{
-  [k: string]: unknown | undefined
-}]
 // ----- react-hooks/capitalized-calls -----
 type ReactHooksCapitalizedCalls = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/component-hook-factories -----
-type ReactHooksComponentHookFactories = []|[{
   [k: string]: unknown | undefined
 }]
 // ----- react-hooks/config -----
@@ -17348,12 +17503,12 @@ type ReactHooksExhaustiveDeps = []|[{
   experimental_autoDependenciesHooks?: string[]
   requireExplicitEffectDeps?: boolean
 }]
-// ----- react-hooks/fbt -----
-type ReactHooksFbt = []|[{
+// ----- react-hooks/exhaustive-effect-dependencies -----
+type ReactHooksExhaustiveEffectDependencies = []|[{
   [k: string]: unknown | undefined
 }]
-// ----- react-hooks/fire -----
-type ReactHooksFire = []|[{
+// ----- react-hooks/fbt -----
+type ReactHooksFbt = []|[{
   [k: string]: unknown | undefined
 }]
 // ----- react-hooks/gating -----
@@ -17378,6 +17533,10 @@ type ReactHooksIncompatibleLibrary = []|[{
 }]
 // ----- react-hooks/invariant -----
 type ReactHooksInvariant = []|[{
+  [k: string]: unknown | undefined
+}]
+// ----- react-hooks/memo-dependencies -----
+type ReactHooksMemoDependencies = []|[{
   [k: string]: unknown | undefined
 }]
 // ----- react-hooks/memoized-effect-dependencies -----

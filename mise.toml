@@ -1,2 +1,9 @@
 [env]
 _.path = [ '{{config_root}}/node_modules/.bin' ]
+
+[settings]
+experimental = true
+lockfile = true
+
+[tools]
+node = { version = "lts", postinstall = "corepack enable" }
