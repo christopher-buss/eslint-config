@@ -59,6 +59,7 @@
 		"@antfu/install-pkg": "catalog:prod",
 		"@clack/prompts": "catalog:prod",
 		"@cspell/eslint-plugin": "catalog:prod",
+		"@e18e/eslint-plugin": "catalog:prod",
 		"@eslint-community/eslint-plugin-eslint-comments": "catalog:prod",
 		"@eslint/markdown": "catalog:prod",
 		"@isentinel/dict-rbxts": "catalog:prod",

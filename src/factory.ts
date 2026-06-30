@@ -6,6 +6,7 @@ import {
 	ceaseNonsense,
 	comments,
 	disables,
+	e18e,
 	eslintPlugin,
 	flawless,
 	gitignore,
@@ -122,6 +123,7 @@ export async function isentinel(
 	const {
 		autoRenamePlugins = true,
 		componentExts: componentExtensions = [],
+		e18e: enableE18e = true,
 		eslintPlugin: enableEslintPlugin = false,
 		formatters,
 		gitignore: enableGitignore = true,
@@ -246,6 +248,15 @@ export async function isentinel(
 
 	if (enableJsdoc !== false) {
 		configs.push(jsdoc({ stylistic: stylisticOptions, type: projectType }));
+	}
+
+	if (enableE18e !== false && !enableRoblox) {
+		configs.push(
+			e18e({
+				isInEditor,
+				...(enableE18e === true ? {} : enableE18e),
+			}),
+		);
 	}
 
 	// Enable Node.js rules for non-Roblox packages

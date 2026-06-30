@@ -14,16 +14,14 @@ const catalogs = Object.values({
 });
 
 const versions = Object.fromEntries(
-	Array.from(names)
-		.map((name) => {
-			const version = catalogs.map((catalog) => catalog[name]).find(Boolean);
-			if (version === undefined) {
-				throw new Error(`Package ${name} not found`);
-			}
+	Array.from(names, (name) => {
+		const version = catalogs.map((catalog) => catalog[name]).find(Boolean);
+		if (version === undefined) {
+			throw new Error(`Package ${name} not found`);
+		}
 
-			return [name, version] as const;
-		})
-		.sort((a, b) => a[0].localeCompare(b[0])),
+		return [name, version] as const;
+	}).sort((a, b) => a[0].localeCompare(b[0])),
 );
 
 await fs.writeFile(

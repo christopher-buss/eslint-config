@@ -9,6 +9,8 @@ import process from "node:process";
 import { vscodeSettingsString } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 
+const TRAILING_BRACE_REGEX = /\s*\}$/;
+
 export async function updateVscodeSettings(result: PromptResult): Promise<void> {
 	if (!result.updateVscodeSettings) {
 		return;
@@ -30,7 +32,7 @@ export async function updateVscodeSettings(result: PromptResult): Promise<void> 
 
 	let settingsContent = await fsp.readFile(settingsPath, "utf8");
 
-	settingsContent = settingsContent.trim().replace(/\s*\}$/, "");
+	settingsContent = settingsContent.trim().replace(TRAILING_BRACE_REGEX, "");
 	settingsContent += settingsContent.endsWith(",") || settingsContent.endsWith("{") ? "" : ",";
 	settingsContent += `${vscodeSettingsString}}\n`;
 

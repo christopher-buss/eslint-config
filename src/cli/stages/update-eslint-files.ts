@@ -10,6 +10,8 @@ import parse from "parse-gitignore-ts";
 import type { PromptResult } from "../types.ts";
 import { getEslintConfigContent } from "../utils.ts";
 
+const LEGACY_CONFIG_REGEX = /eslint|prettier/;
+
 export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const cwd = process.cwd();
 	const pathESLintIgnore = path.join(cwd, ".eslintignore");
@@ -60,7 +62,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const files = fs.readdirSync(cwd);
 	const legacyConfig: Array<string> = [];
 	for (const file of files) {
-		if (/eslint|prettier/.test(file) && !file.includes("eslint.config.")) {
+		if (LEGACY_CONFIG_REGEX.test(file) && !file.includes("eslint.config.")) {
 			legacyConfig.push(file);
 		}
 	}

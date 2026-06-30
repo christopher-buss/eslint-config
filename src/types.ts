@@ -369,6 +369,30 @@ export type StylisticConfig = Pick<
 	"indent" | "jsx" | "quotes" | "semi"
 > & { arrowLength?: number };
 
+export interface OptionsE18e extends OptionsOverrides {
+	/**
+	 * Include modernization rules.
+	 *
+	 * @see https://github.com/e18e/eslint-plugin#modernization
+	 * @default true
+	 */
+	modernization?: boolean;
+	/**
+	 * Include module replacements rules.
+	 *
+	 * @see https://github.com/e18e/eslint-plugin#module-replacements
+	 * @default options.isInEditor
+	 */
+	moduleReplacements?: boolean;
+	/**
+	 * Include performance improvements rules.
+	 *
+	 * @see https://github.com/e18e/eslint-plugin#performance-improvements
+	 * @default true
+	 */
+	performanceImprovements?: boolean;
+}
+
 export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjectType {
 	/**
 	 * Automatically rename plugins in the config.
@@ -384,6 +408,13 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * This applies to all configs, including user-defined ones.
 	 */
 	defaultSeverity?: "error" | "warn";
+
+	/**
+	 * Options for [@e18e/eslint-plugin](https://github.com/e18e/eslint-plugin).
+	 *
+	 * @default true when not in a roblox project.
+	 */
+	e18e?: boolean | OptionsE18e;
 
 	/**
 	 * Enable ESLint plugin development rules.

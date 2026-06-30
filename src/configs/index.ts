@@ -1,6 +1,7 @@
 export * from "./cease-nonsense.ts";
 export * from "./comments.ts";
 export * from "./disables.ts";
+export * from "./e18e.ts";
 export * from "./eslint-plugin.ts";
 export * from "./flawless.ts";
 export * from "./gitignore.ts";
