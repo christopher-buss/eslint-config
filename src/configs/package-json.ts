@@ -186,7 +186,6 @@ export async function packageJson(
 
 				...(type === "package" && !roblox
 					? {
-							"package-json/require-bin": ["error", { ignorePrivate: true }],
 							"package-json/require-engines": "error",
 							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
 						}
