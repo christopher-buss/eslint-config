@@ -516,26 +516,33 @@ otherwise, you can install them manually:
 pnpm i -D eslint-plugin-eslint-plugin
 ```
 
-### Lint Staged
+### Git hooks
 
-If you want to apply lint and auto-fix before every commit, you can add the
-following to your `package.json`:
+If you want to apply lint and auto-fix before every commit, use
+[hk](https://hk.jdx.dev). Create `hk.pkl` in your project root:
 
-```json
-{
-	"simple-git-hooks": {
-		"pre-commit": "pnpm lint-staged"
-	},
-	"lint-staged": {
-		"*": "eslint --fix"
+```pkl
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+
+hooks {
+	["pre-commit"] {
+		fix = true
+		steps {
+			["eslint"] {
+				glob = List("*")
+				check = "eslint --no-warn-ignored {{files}}"
+				fix = "eslint --fix --no-warn-ignored {{files}}"
+			}
+		}
 	}
 }
 ```
 
-and then
+and then install hk and activate the hooks:
 
 ```bash
-pnpm i -D lint-staged simple-git-hooks
+mise use hk pkl # or see https://hk.jdx.dev for other install methods
+hk install
 ```
 
 ## View what rules are enabled

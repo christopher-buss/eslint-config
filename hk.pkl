@@ -1,0 +1,75 @@
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Windows (Git Bash): hk util + tool invocations misbehave via cmd.exe. Run
+// every step through bash, mirroring bedrock's config.
+local bash: String = "bash -c"
+
+local sharedGuards = new Mapping<String, Step> {
+    ["check-merge-conflict"] = (Builtins.check_merge_conflict) { shell = bash }
+    ["detect-private-key"] = (Builtins.detect_private_key) { shell = bash }
+    ["check-added-large-files"] = (Builtins.check_added_large_files) {
+        shell = bash
+        exclude = List("pnpm-lock.yaml")
+    }
+}
+
+// eslint across every extension the flat config validates. --cache keeps local
+// runs fast; `fix` autofixes staged files when the hook sets fix = true. The
+// GIT_HOOK env keeps the shipped isInGitHooksOrLintStaged() heuristic firing now
+// that lint-staged is gone.
+local lint = new Step {
+    glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.jsonc", "*.md", "*.toml", "*.yaml", "*.yml")
+    check = "eslint --cache --no-warn-ignored {{files}}"
+    fix = "eslint --cache --fix --no-warn-ignored {{files}}"
+    shell = bash
+    env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
+}
+
+// tsc reads tsconfig and checks the whole project, so it can't take a file
+// subset — run the full check, gated on any *.ts(x) change.
+local typecheck = new Step {
+    glob = List("*.ts", "*.tsx")
+    check = "tsc --noEmit"
+    shell = bash
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "none"
+        steps {
+            ...sharedGuards
+            ["lint"] = lint
+            ["typecheck"] = typecheck
+        }
+    }
+    ["pre-push"] {
+        steps {
+            ...sharedGuards
+            ["lint"] = lint
+            ["typecheck"] = typecheck
+        }
+    }
+    ["post-merge"] {
+        steps {
+            ["install-deps"] {
+                glob = List("pnpm-lock.yaml")
+                check = "pnpm install"
+                shell = bash
+            }
+            ["mise-install"] {
+                glob = List("mise.toml")
+                check = "mise install"
+                shell = bash
+            }
+        }
+    }
+    ["check"] {
+        steps {
+            ...sharedGuards
+            ["lint"] = lint
+            ["typecheck"] = typecheck
+        }
+    }
+}

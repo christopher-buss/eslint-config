@@ -30,7 +30,8 @@ pnpm release    # Bump version and publish (uses bumpp)
 ## Workflow
 
 - **After modifying configs**: Always run `pnpm gen` to update type definitions
-- **Pre-commit hooks** (via simple-git-hooks): Runs lint-staged and typecheck
+- **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, and
+  typecheck
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
 
 ## Architecture
