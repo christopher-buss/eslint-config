@@ -146,7 +146,7 @@
 		"eslint-plugin-jest-extended": "^3.0.0",
 		"eslint-plugin-n": "^17.0.0",
 		"eslint-plugin-react-hooks": "^7.0.0",
-		"eslint-plugin-react-naming-convention": "^2.12.0",
+		"eslint-plugin-react-naming-convention": "^2.12.0 || ^5.0.0",
 		"eslint-plugin-react-x": "^2.12.0"
 	},
 	"peerDependenciesMeta": {
