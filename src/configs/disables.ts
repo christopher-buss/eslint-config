@@ -1,9 +1,11 @@
 import {
 	GLOB_BUILD_TOOLS,
 	GLOB_DTS,
+	GLOB_JSX,
 	GLOB_SRC,
 	GLOB_SRC_EXT,
 	GLOB_TESTS,
+	GLOB_TSX,
 	GLOB_YAML,
 } from "../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
@@ -102,6 +104,13 @@ export async function disables(options: {
 			files: [GLOB_YAML],
 			rules: {
 				"no-inline-comments": "off",
+			},
+		},
+		{
+			name: "isentinel/disables/jsx",
+			files: [GLOB_JSX, GLOB_TSX],
+			rules: {
+				"max-lines-per-function": "off",
 			},
 		},
 	];

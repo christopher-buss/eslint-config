@@ -122,8 +122,6 @@ export async function react(
 			rules: {
 				"cease-nonsense/react-hooks-strict-return": "error",
 
-				"max-lines-per-function": "off",
-
 				// recommended rules react-hooks
 				"react-hooks/exhaustive-deps": "error",
 				"react-hooks/rules-of-hooks": "error",
