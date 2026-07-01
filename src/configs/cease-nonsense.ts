@@ -64,7 +64,6 @@ export async function ceaseNonsense(
 				"cease-nonsense/no-commented-code": isInEditor ? "off" : "error",
 				"cease-nonsense/prefer-class-properties": "error",
 				"cease-nonsense/prefer-early-return": ["error", { maximumStatements: 1 }],
-				"cease-nonsense/react-hooks-strict-return": "error",
 				"cease-nonsense/strict-component-boundaries": "error",
 
 				...(stylistic !== false

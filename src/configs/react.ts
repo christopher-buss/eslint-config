@@ -52,6 +52,7 @@ export async function react(
 		pluginTs,
 		pluginUnicorn,
 		pluginUnusedImports,
+		pluginCeaseNonsense,
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
 		interopDefault(import("eslint-plugin-react-jsx")),
@@ -61,6 +62,7 @@ export async function react(
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-unicorn")),
 		interopDefault(import("eslint-plugin-unused-imports")),
+		interopDefault(import("@pobammer-ts/eslint-cease-nonsense-rules")),
 	] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
@@ -83,11 +85,11 @@ export async function react(
 		{
 			name: "isentinel/react/setup",
 			plugins: {
+				"cease-nonsense": pluginCeaseNonsense,
 				"flawless": pluginFlawless,
 				"react": pluginReactCore,
 				"react-hooks": reactHooks,
 				"react-jsx": pluginReactJsx,
-
 				"style": pluginStylistic,
 				"ts": pluginTs,
 				"unicorn": pluginUnicorn,
@@ -118,6 +120,8 @@ export async function react(
 				sourceType: "module",
 			},
 			rules: {
+				"cease-nonsense/react-hooks-strict-return": "error",
+
 				"max-lines-per-function": "off",
 
 				// recommended rules react-hooks
