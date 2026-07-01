@@ -122,6 +122,9 @@ export async function react(
 			rules: {
 				"cease-nonsense/react-hooks-strict-return": "error",
 
+				"flawless/no-unnecessary-use-callback": "error",
+				"flawless/no-unnecessary-use-memo": "error",
+
 				// recommended rules react-hooks
 				"react-hooks/exhaustive-deps": "error",
 				"react-hooks/rules-of-hooks": "error",
