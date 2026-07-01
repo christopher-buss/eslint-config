@@ -246,7 +246,7 @@ catalogs:
 overrides:
   '@typescript-eslint/type-utils': 8.62.1
   '@typescript-eslint/utils': 8.62.1
-  semver@6: ^7.0.0
+  semver@6: 7.8.5
 
 patchedDependencies:
   eslint-config-flat-gitignore: c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b

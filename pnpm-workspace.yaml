@@ -18,7 +18,7 @@ packages:
 overrides:
   "@typescript-eslint/type-utils": 8.62.1
   "@typescript-eslint/utils": 8.62.1
-  semver@6: ^7.0.0
+  semver@6: 7.8.5
 
 patchedDependencies:
   eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
