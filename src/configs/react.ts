@@ -247,6 +247,8 @@ export async function react(
 					? {
 							"flawless/jsx-shorthand-boolean": "warn",
 							"flawless/jsx-shorthand-fragment": "warn",
+							"flawless/prefer-destructuring-assignment": "error",
+
 							"one-var": "off",
 							"react-jsx/no-useless-fragment": "warn",
 							// recommended rules from
