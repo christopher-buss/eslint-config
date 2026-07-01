@@ -165,8 +165,8 @@ catalogs:
       specifier: 2.1.2
       version: 2.1.2
     eslint-plugin-flawless:
-      specifier: 0.1.1
-      version: 0.1.1
+      specifier: 0.1.2
+      version: 0.1.2
     eslint-plugin-format-lua:
       specifier: 2.0.0
       version: 2.0.0
@@ -324,7 +324,7 @@ importers:
         version: 2.1.2(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-flawless:
         specifier: catalog:prod
-        version: 0.1.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
+        version: 0.1.2(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       eslint-plugin-format-lua:
         specifier: catalog:prod
         version: 2.0.0(eslint@10.6.0(jiti@2.7.0))
@@ -2210,8 +2210,8 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0'
 
-  eslint-plugin-flawless@0.1.1:
-    resolution: {integrity: sha512-ER6L9hnLPXZDtnQzaYO4b7p538eCrNKC4ag3pLDvtRfXn9LWOvGe2LV0/tFKybGVDapX200aILkdQ0Ct4cnrFA==}
+  eslint-plugin-flawless@0.1.2:
+    resolution: {integrity: sha512-ENlV4vcYjY7+goSNXKWMFFHm/PAp2KwhoSb//22CIgfQbO1IzgS7PSn27FV6hKzIsWrKn+3gLC6hxweKy+VNfQ==}
     engines: {node: '>=24.12.0'}
     peerDependencies:
       eslint: '>=9.15.0'
@@ -5086,12 +5086,13 @@ snapshots:
       eslint: 10.6.0(jiti@2.7.0)
       estraverse: 5.3.0
 
-  eslint-plugin-flawless@0.1.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3):
+  eslint-plugin-flawless@0.1.2(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/scope-manager': 8.62.1
       '@typescript-eslint/type-utils': 8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       '@typescript-eslint/utils': 8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.6.0(jiti@2.7.0)
+      toml-eslint-parser: 1.0.3
     transitivePeerDependencies:
       - supports-color
       - typescript

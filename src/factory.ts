@@ -25,6 +25,7 @@ import {
 	roblox,
 	sonarjs,
 	sortGithubAction,
+	sortMiseToml,
 	sortPnpmWorkspace,
 	sortRojoProject,
 	sortTsconfig,
@@ -370,6 +371,10 @@ export async function isentinel(
 				stylistic: stylisticOptions,
 			}),
 		);
+
+		if (stylisticOptions !== false) {
+			configs.push(sortMiseToml());
+		}
 	}
 
 	if (options.markdown !== false) {

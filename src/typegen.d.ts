@@ -824,12 +824,17 @@ export interface RuleOptions {
   'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Enforce naming conventions for everything across a codebase
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.1/src/rules/naming-convention/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.2/src/rules/naming-convention/documentation.md
    */
   'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
   /**
+   * Enforce a configured sort order for TOML keys and tables
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.2/src/rules/toml-sort-keys/documentation.md
+   */
+  'flawless/toml-sort-keys'?: Linter.RuleEntry<FlawlessTomlSortKeys>
+  /**
    * Enforce blank lines around top-level YAML block collection keys
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.1/src/rules/yaml-block-key-blank-lines/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.2/src/rules/yaml-block-key-blank-lines/documentation.md
    */
   'flawless/yaml-block-key-blank-lines'?: Linter.RuleEntry<[]>
   /**
@@ -11090,6 +11095,15 @@ interface _FlawlessNamingConvention_MatchRegexConfig {
   match: boolean
   regex: string
 }
+// ----- flawless/toml-sort-keys -----
+type FlawlessTomlSortKeys = {
+  order: (string[] | {
+    caseSensitive?: boolean
+    natural?: boolean
+    type?: ("asc" | "desc")
+  })
+  pathPattern: string
+}[]
 // ----- format-lua/stylua -----
 type FormatLuaStylua = []|[{
   language?: string

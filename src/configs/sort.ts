@@ -1,5 +1,6 @@
-import { GLOB_YAML } from "../globs.ts";
+import { GLOB_MISE, GLOB_YAML } from "../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
+import { interopDefault } from "../utils.ts";
 
 /**
  * Sort GitHub Actions workflow files.
@@ -272,6 +273,155 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 		},
 	];
 	/* eslint-enable sonar/no-duplicate-string*/
+}
+
+/**
+ * Sort mise configuration files by category.
+ *
+ * Requires `toml` config (for the parser) and `eslint-plugin-flawless`.
+ *
+ * @returns A promise resolving to an array of flat configuration items.
+ */
+export async function sortMiseToml(): Promise<Array<TypedFlatConfigItem>> {
+	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+
+	return [
+		{
+			name: "isentinel/sort/mise-toml",
+			files: [...GLOB_MISE],
+			plugins: {
+				flawless: eslintPluginFlawless,
+			},
+			rules: {
+				"flawless/toml-sort-keys": [
+					"error",
+					{
+						order: [
+							"env",
+							"vars",
+							"settings",
+							"tools",
+							"tasks",
+							"task_config",
+							"alias",
+							"plugins",
+							"redactions",
+							"hooks",
+							"watch_files",
+						],
+						pathPattern: "^$",
+					},
+					{
+						order: [
+							// Core behavior
+							"experimental",
+							"activate_aggressive",
+							"auto_install",
+							"auto_install_disable_tools",
+							"auto_env",
+							"offline",
+							"prefer_offline",
+							"quiet",
+							"silent",
+							"verbose",
+
+							// Environment and paths
+							"env_file",
+							"env_cache",
+							"env_cache_ttl",
+							"env_shell_expand",
+							"no_env",
+							"no_hooks",
+
+							// Installation and binaries
+							"all_compile",
+							"always_keep_download",
+							"always_keep_install",
+							"arch",
+							"libc",
+							"os",
+							"jobs",
+
+							// Configuration files
+							"ceiling_paths",
+							"default_config_filename",
+							"default_tool_versions_filename",
+							"global_config_file",
+							"global_config_root",
+							"override_config_filenames",
+							"override_tool_versions_filenames",
+							"ignored_config_paths",
+							"trusted_config_paths",
+
+							// Lockfiles and versioning
+							"lockfile",
+							"lockfile_platforms",
+							"locked",
+							"locked_verify_provenance",
+							"minimum_release_age",
+							"minimum_release_age_excludes",
+							"pin",
+							"prereleases",
+
+							// Security and verification
+							"paranoid",
+							"gpg_verify",
+							"github_attestations",
+							"slsa",
+							"netrc",
+							"netrc_file",
+							"provenance_api_failures_fatal",
+
+							// Display and interaction
+							"color",
+							"color_theme",
+							"yes",
+							"raw",
+							"terminal_progress",
+
+							// Caching and performance
+							"cache_prune_age",
+							"fetch_remote_versions_cache",
+							"fetch_remote_versions_timeout",
+							"http_timeout",
+							"http_retries",
+
+							// Version sources and registries
+							"use_versions_host",
+							"use_versions_host_track",
+							"disable_default_registry",
+							"url_replacements",
+
+							// Shell configuration
+							"unix_default_file_shell_args",
+							"unix_default_inline_shell_args",
+							"windows_default_file_shell_args",
+							"windows_default_inline_shell_args",
+							"windows_executable_extensions",
+							"windows_shim_mode",
+							"use_file_shell_for_executable_tasks",
+
+							// Hints and tool toggles
+							"disable_hints",
+							"disable_tools",
+							"enable_tools",
+						],
+						pathPattern: "^settings$",
+					},
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern: "^settings\\.[^.]+$",
+					},
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern: "^tools$",
+					},
+				],
+				"toml/keys-order": "off",
+				"toml/tables-order": "off",
+			},
+		},
+	];
 }
 
 export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {

@@ -47,6 +47,18 @@ export const GLOB_MARKDOWN_BLOCKS: string = `${GLOB_MARKDOWN}/**/*.{${GLOB_SRC_E
 
 export const GLOB_YAML = "**/*.y?(a)ml";
 export const GLOB_TOML = "**/*.toml";
+export const GLOB_MISE: Array<string> = [
+	"**/mise.toml",
+	"**/mise.*.toml",
+	"**/.mise.toml",
+	"**/.mise.*.toml",
+	"**/mise/config.toml",
+	"**/.mise/config.toml",
+	"**/.config/mise.toml",
+	"**/.config/mise/config.toml",
+	"**/.config/mise/config.*.toml",
+	"**/.config/mise/conf.d/*.toml",
+];
 export const GLOB_HTML = "**/*.htm?(l)";
 export const GLOB_XML = "**/*.xml";
 export const GLOB_GRAPHQL = "**/*.{g,graph}ql";
