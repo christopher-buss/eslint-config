@@ -33,7 +33,11 @@ export async function react(
 		typeAware = true,
 	} = options;
 
-	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-hooks"]);
+	await ensurePackages([
+		"eslint-plugin-react-x",
+		"eslint-plugin-react-jsx",
+		"eslint-plugin-react-hooks",
+	]);
 
 	if (stylistic !== false) {
 		await ensurePackages(["eslint-plugin-react-naming-convention"]);
@@ -41,14 +45,18 @@ export async function react(
 
 	const [
 		pluginReactCore,
+		pluginReactJsx,
 		reactHooks,
+		pluginFlawless,
 		pluginStylistic,
 		pluginTs,
 		pluginUnicorn,
 		pluginUnusedImports,
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
+		interopDefault(import("eslint-plugin-react-jsx")),
 		interopDefault(import("eslint-plugin-react-hooks")),
+		interopDefault(import("eslint-plugin-flawless")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-unicorn")),
@@ -64,18 +72,21 @@ export async function react(
 	} satisfies ESLintReactSettings;
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"react/no-implicit-children": "error",
 		"react/no-implicit-key": "error",
+		"react/no-implicit-ref": "error",
 		"react/no-leaked-conditional-rendering": "warn",
 		"react/no-unused-props": "error",
-		"react/prefer-read-only-props": "error",
 	};
 
 	return [
 		{
 			name: "isentinel/react/setup",
 			plugins: {
+				"flawless": pluginFlawless,
 				"react": pluginReactCore,
 				"react-hooks": reactHooks,
+				"react-jsx": pluginReactJsx,
 
 				"style": pluginStylistic,
 				"ts": pluginTs,
@@ -108,10 +119,6 @@ export async function react(
 			},
 			rules: {
 				"max-lines-per-function": "off",
-				// recommended rules from @eslint-react/hooks-extra
-				// react-lua does not seem to fully support the patterns that
-				// this rule enforces.
-				"react-hooks-extra/no-direct-set-state-in-use-effect": "off",
 
 				// recommended rules react-hooks
 				"react-hooks/exhaustive-deps": "error",
@@ -136,22 +143,18 @@ export async function react(
 						}
 					: {}),
 
+				// recommended rules from eslint-plugin-react-jsx
+				"react-jsx/no-children-prop": "warn",
+				"react-jsx/no-comment-textnodes": "warn",
+				"react-jsx/no-leaked-dollar": "warn",
+
 				// recommended rules from @eslint-react
-				"react/jsx-dollar": "warn",
-				"react/jsx-no-comment-textnodes": "warn",
-				"react/jsx-no-duplicate-props": "off",
-				// Currently experimental: https://eslint-react.xyz/docs/rules/jsx-no-iife
-				"react/jsx-no-iife": "off",
-				"react/jsx-no-undef": "off",
-				"react/jsx-uses-react": "off",
-				"react/jsx-uses-vars": "off",
 				"react/no-access-state-in-setstate": "error",
 				"react/no-array-index-key": "warn",
 				"react/no-children-count": "warn",
 				"react/no-children-for-each": "warn",
 				"react/no-children-map": "warn",
 				"react/no-children-only": "warn",
-				"react/no-children-prop": "warn",
 				"react/no-children-to-array": "warn",
 				"react/no-class-component": "error",
 				"react/no-clone-element": "warn",
@@ -168,14 +171,9 @@ export async function react(
 				"react/no-misused-capture-owner-stack": "off",
 				"react/no-nested-component-definitions": "warn",
 				"react/no-nested-lazy-component-declarations": "warn",
-				"react/no-redundant-should-component-update": "error",
 				"react/no-set-state-in-component-did-mount": "warn",
 				"react/no-set-state-in-component-did-update": "warn",
 				"react/no-set-state-in-component-will-update": "warn",
-				// Not applicable in React Lua
-				"react/no-unnecessary-key": "off",
-				"react/no-unnecessary-use-callback": "error",
-				"react/no-unnecessary-use-memo": "error",
 				"react/no-unnecessary-use-prefix": "error",
 				"react/no-unsafe-component-will-mount": "off",
 				"react/no-unsafe-component-will-receive-props": "off",
@@ -226,8 +224,10 @@ export async function react(
 				"react/no-unused-class-component-members": "off",
 				"react/no-unused-state": "error",
 				"react/no-use-context": "off",
-				"react/no-useless-forward-ref": "error",
-				"react/prefer-use-state-lazy-initialization": "error",
+				"react/use-state": [
+					"error",
+					{ enforceAssignment: false, enforceSetterName: false },
+				],
 
 				"unicorn/filename-case": [
 					"error",
@@ -240,18 +240,15 @@ export async function react(
 
 				...(stylistic !== false
 					? {
+							"flawless/jsx-shorthand-boolean": "warn",
+							"flawless/jsx-shorthand-fragment": "warn",
 							"one-var": "off",
+							"react-jsx/no-useless-fragment": "warn",
 							// recommended rules from
 							// @eslint-react/naming-convention
 							"react-naming-convention/context-name": "error",
 							"react-naming-convention/ref-name": "error",
-							"react-naming-convention/use-state": "error",
-							// Never use shorthand syntax for boolean attributes.
-							"react/jsx-shorthand-boolean": ["warn", -1],
-							"react/jsx-shorthand-fragment": "warn",
-							"react/no-useless-fragment": "warn",
-							"react/prefer-destructuring-assignment": "warn",
-							"react/prefer-namespace-import": "off",
+							"react/use-state": "error",
 							"style/jsx-curly-brace-presence": [
 								"error",
 								{
