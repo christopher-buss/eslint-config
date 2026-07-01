@@ -16,15 +16,17 @@ export async function yaml(
 		stylistic = true,
 	} = options;
 
-	const [pluginYaml, parserYaml] = await Promise.all([
+	const [pluginYaml, parserYaml, eslintPluginFlawless] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
 		interopDefault(import("yaml-eslint-parser")),
+		interopDefault(import("eslint-plugin-flawless")),
 	] as const);
 
 	return [
 		{
 			name: "isentinel/yaml/setup",
 			plugins: {
+				flawless: eslintPluginFlawless,
 				yaml: pluginYaml,
 			},
 		},
@@ -37,8 +39,6 @@ export async function yaml(
 			},
 			rules: {
 				"style/spaced-comment": "off",
-
-				"yaml/block-mapping": "error",
 				"yaml/block-sequence": "error",
 				"yaml/file-extension": "error",
 				"yaml/no-empty-key": "error",
@@ -48,6 +48,8 @@ export async function yaml(
 
 				...(stylistic !== false
 					? {
+							"flawless/yaml-block-key-blank-lines": "error",
+
 							"yaml/block-mapping": "error",
 							"yaml/block-mapping-colon-indicator-newline": "error",
 							"yaml/block-mapping-question-indicator-newline": "error",

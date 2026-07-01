@@ -1,0 +1,232 @@
+diff --git a/lib/index.mjs b/lib/index.mjs
+index 8fca73e571598a0b16e2314e24115c44f4a1a8c8..ccec66e519c48858aca6491b7069f8380f15980f 100644
+--- a/lib/index.mjs
++++ b/lib/index.mjs
+@@ -4202,7 +4202,12 @@ var sort_keys_default = createRule("sort-keys", {
+ 		* Verify for pairs order
+ 		*/
+ 		function verifyPairs(pairs, option) {
+-			const editScript = calcShortestEditScript(pairs, bubbleSort(pairs, option));
++			const sorted = bubbleSort(pairs, option);
++			const editScript = calcShortestEditScript(pairs, sorted);
++			const mappingNode = pairs[0].mapping.node;
++			const useSeqItemReorder = pairs.length === mappingNode.pairs.length && isSeqItemWithInnerComments(mappingNode);
++			const usePlainBlockReorder = !useSeqItemReorder && !option.allowLineSeparatedGroups && isPlainBlockReorderable(mappingNode);
++			const sortedNodes = sorted.map((data) => data.node);
+ 			for (let index = 0; index < editScript.length; index++) {
+ 				const edit = editScript[index];
+ 				if (edit.type !== "delete") continue;
+@@ -4221,6 +4226,8 @@ var sort_keys_default = createRule("sort-keys", {
+ 						},
+ 						*fix(fixer) {
+ 							if (edit.a.mapping.node.style === "flow") yield* fixToMoveDownForFlow(fixer, edit.a, target);
++							else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
++							else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
+ 							else yield* fixToMoveDownForBlock(fixer, edit.a, target);
+ 						}
+ 					});
+@@ -4237,6 +4244,8 @@ var sort_keys_default = createRule("sort-keys", {
+ 						},
+ 						*fix(fixer) {
+ 							if (edit.a.mapping.node.style === "flow") yield* fixToMoveUpForFlow(fixer, edit.a, target);
++							else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
++							else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
+ 							else yield* fixToMoveUpForBlock(fixer, edit.a, target);
+ 						}
+ 					});
+@@ -4404,6 +4413,186 @@ var sort_keys_default = createRule("sort-keys", {
+ 			yield fixer.removeRange(removeRange);
+ 		}
+ 		/**
++		* Counts the blank (whitespace-only) lines in the open line range
++		* (`fromLine`, `toLine`).
++		*/
++		function countBlankLines(fromLine, toLine) {
++			let count = 0;
++			for (let line = fromLine + 1; line < toLine; line++) if (!sourceCode.lines[line - 1].trim()) count++;
++			return count;
++		}
++		/**
++		* Splits the own-line comments after `pair` (before the following `next`
++		* pair): those directly above `next` with no blank line lead it, the rest
++		* trail `pair`.
++		*/
++		function partitionOwnLineComments(between, pair, next) {
++			const ownLine = between.filter((comment) => comment.loc.start.line > pair.loc.end.line && comment.range[0] < next.range[0]);
++			const leadOfNext = [];
++			let boundary = next.loc.start.line;
++			for (let k = ownLine.length - 1; k >= 0; k--) {
++				const comment = ownLine[k];
++				if (comment.loc.end.line + 1 !== boundary) break;
++				leadOfNext.unshift(comment);
++				boundary = comment.loc.start.line;
++			}
++			return {
++				leadOfNext,
++				trailing: ownLine.filter((comment) => !leadOfNext.includes(comment))
++			};
++		}
++		/**
++		* Whether the mapping is a block sequence entry with comments among its pairs.
++		*/
++		function isSeqItemWithInnerComments(node) {
++			if (node.style !== "block" || node.parent.type !== "YAMLSequence") return false;
++			const pairs = node.pairs;
++			if (pairs.length < 2) return false;
++			const dashToken = sourceCode.getTokenBefore(pairs[0]);
++			if (!dashToken || dashToken.loc.end.line !== pairs[0].loc.start.line) return false;
++			for (let index = 0; index < pairs.length; index++) {
++				const pair = pairs[index];
++				const next = pairs[index + 1];
++				for (const comment of sourceCode.getCommentsAfter(pair)) if (next) {
++					if (comment.range[0] < next.range[0]) return true;
++				} else if (comment.loc.start.line === pair.loc.end.line) return true;
++			}
++			return false;
++		}
++		/**
++		* Reconstruct a block sequence entry's pairs in sorted order, keeping each
++		* pair's comments (inline, leading, trailing) with their owner.
++		*/
++		function* fixByReorderingSeqItemBlock(fixer, mapping, sortedNodes) {
++			const pairs = mapping.pairs;
++			const firstPair = pairs[0];
++			const lastPair = pairs[pairs.length - 1];
++			const dashToken = sourceCode.getTokenBefore(firstPair);
++			const dashLineStart = sourceCode.getIndexFromLoc({
++				line: firstPair.loc.start.line,
++				column: 0
++			});
++			const dashIndent = sourceCode.text.slice(dashLineStart, dashToken.range[0]);
++			const dashPrefix = sourceCode.text.slice(dashLineStart, firstPair.range[0]);
++			const bodyIndent = dashPrefix.replace(/\S/g, " ");
++			const lineBreak = /\r\n|\n/u.exec(sourceCode.text)?.[0] ?? "\n";
++			const owned = /* @__PURE__ */ new Map();
++			for (const pair of pairs) owned.set(pair, {
++				leading: [],
++				inlineEnd: pair.range[1],
++				trailing: []
++			});
++			for (let index = 0; index < pairs.length; index++) {
++				const pair = pairs[index];
++				const next = pairs[index + 1];
++				const between = sourceCode.getCommentsAfter(pair);
++				const inline = between.filter((comment) => comment.loc.start.line === pair.loc.end.line);
++				if (inline.length) owned.get(pair).inlineEnd = inline[inline.length - 1].range[1];
++				if (!next) continue;
++				const { leadOfNext, trailing } = partitionOwnLineComments(between, pair, next);
++				owned.get(next).leading = leadOfNext;
++				owned.get(pair).trailing = trailing;
++			}
++			let out = "";
++			sortedNodes.forEach((pair, index) => {
++				const info = owned.get(pair);
++				const core = sourceCode.text.slice(pair.range[0], info.inlineEnd);
++				if (index === 0) {
++					for (const comment of info.leading) out += `${dashIndent}${sourceCode.text.slice(...comment.range)}${lineBreak}`;
++					out += `${dashPrefix}${core}`;
++				} else {
++					for (const comment of info.leading) out += `${lineBreak}${bodyIndent}${sourceCode.text.slice(...comment.range)}`;
++					out += `${lineBreak}${bodyIndent}${core}`;
++				}
++				for (const comment of info.trailing) out += `${lineBreak}${bodyIndent}${sourceCode.text.slice(...comment.range)}`;
++			});
++			yield fixer.replaceTextRange([dashLineStart, owned.get(lastPair).inlineEnd], out);
++		}
++		/**
++		* Whether the given plain block mapping (not a sequence entry) has blank
++		* lines between its pairs, so it should be reordered by single-pass
++		* reconstruction that keeps the separators positionally. The pairwise moves
++		* relocate those blank lines (e.g. dragging a section separator to EOF).
++		*
++		* Bails on values/keys that span multiple lines as a scalar (block scalars,
++		* multiline quoted strings): blank-line accounting around them is unreliable,
++		* so those mappings stay on the pairwise path.
++		*/
++		function isPlainBlockReorderable(node) {
++			if (node.style === "flow" || node.parent.type === "YAMLSequence") return false;
++			const pairs = node.pairs;
++			if (pairs.length < 2) return false;
++			for (const pair of pairs) {
++				if (pair.key && pair.key.loc.start.line !== pair.key.loc.end.line) return false;
++				let value = pair.value;
++				if (value && value.type === "YAMLWithMeta") value = value.value;
++				if (value && value.type === "YAMLScalar" && value.loc.start.line !== value.loc.end.line) return false;
++			}
++			for (let index = 0; index < pairs.length - 1; index++) if (countBlankLines(pairs[index].loc.end.line, pairs[index + 1].loc.start.line) > 0) return true;
++			return false;
++		}
++		/**
++		* Reconstruct a plain block mapping's pairs in sorted order. Each pair's
++		* lines (including its own comments and exact indentation) are sliced
++		* verbatim and only reordered; blank-line separators are preserved
++		* positionally — a gap that held blank lines keeps them between whichever
++		* pairs end up at that boundary.
++		*/
++		function* fixByReorderingPlainBlock(fixer, mapping, sortedNodes) {
++			const pairs = mapping.pairs;
++			const count = pairs.length;
++			const lineBreak = /\r\n|\n/u.exec(sourceCode.text)?.[0] ?? "\n";
++			/** Source index at column 0 of the given line. */
++			function lineStartIndex(line) {
++				return sourceCode.getIndexFromLoc({
++					line,
++					column: 0
++				});
++			}
++			/** Source index at the end of the given line (before its line break). */
++			function lineEndIndex(line) {
++				return sourceCode.getIndexFromLoc({
++					line,
++					column: sourceCode.lines[line - 1].length
++				});
++			}
++			const commentsAfter = pairs.map((pair) => sourceCode.getCommentsAfter(pair));
++			const startLine = pairs.map((pair) => pair.loc.start.line);
++			const endLine = pairs.map((pair, index) => {
++				let end = pair.loc.end.line;
++				const inline = commentsAfter[index].filter((comment) => comment.loc.start.line === pair.loc.end.line);
++				if (inline.length) end = Math.max(end, inline[inline.length - 1].loc.end.line);
++				return end;
++			});
++			const tokenBeforeFirst = sourceCode.getTokenBefore(pairs[0]);
++			const beforeFirst = sourceCode.getCommentsBefore(pairs[0]);
++			let firstBoundary = pairs[0].loc.start.line;
++			for (let k = beforeFirst.length - 1; k >= 0; k--) {
++				const comment = beforeFirst[k];
++				if (comment.loc.end.line + 1 !== firstBoundary) break;
++				if (tokenBeforeFirst && comment.loc.start.line <= tokenBeforeFirst.loc.end.line) break;
++				startLine[0] = comment.loc.start.line;
++				firstBoundary = comment.loc.start.line;
++			}
++			const gapBlanks = [];
++			for (let index = 0; index < count - 1; index++) {
++				const { leadOfNext, trailing } = partitionOwnLineComments(commentsAfter[index], pairs[index], pairs[index + 1]);
++				if (trailing.length) endLine[index] = Math.max(endLine[index], trailing[trailing.length - 1].loc.end.line);
++				if (leadOfNext.length) startLine[index + 1] = leadOfNext[0].loc.start.line;
++				gapBlanks.push(countBlankLines(endLine[index], startLine[index + 1]));
++			}
++			const groupSet = new Set(sortedNodes);
++			let sortedIndex = 0;
++			const targetOrder = pairs.map((pair) => groupSet.has(pair) ? sortedNodes[sortedIndex++] : pair);
++			let out = "";
++			targetOrder.forEach((pair, slot) => {
++				const index = pairs.indexOf(pair);
++				out += sourceCode.text.slice(lineStartIndex(startLine[index]), lineEndIndex(endLine[index]));
++				if (slot < count - 1) out += lineBreak.repeat(1 + gapBlanks[slot]);
++			});
++			yield fixer.replaceTextRange([lineStartIndex(startLine[0]), lineEndIndex(endLine[count - 1])], out);
++		}
++		/**
+ 		* Fix by moving the node after the target node for block.
+ 		*/
+ 		function* fixToMoveDownForBlock(fixer, data, moveTarget) {
+@@ -4479,7 +4668,7 @@ var sort_keys_default = createRule("sort-keys", {
+ 				filter: (t) => !isCommentToken(t) || node.loc.end.line < t.loc.start.line
+ 			});
+ 			if (!afterToken || node.loc.end.line < afterToken.loc.start.line) {
+-				const line = afterToken ? afterToken.loc.start.line - 1 : node.loc.end.line;
++				const line = afterToken && afterToken.loc.start.column >= node.loc.start.column ? afterToken.loc.start.line - 1 : node.loc.end.line;
+ 				end = {
+ 					loc: {
+ 						line,

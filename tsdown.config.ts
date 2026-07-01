@@ -18,6 +18,8 @@ export default defineConfig([
 			alwaysBundle: [
 				// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
 				"eslint-config-flat-gitignore",
+				// Bundled to ship patches/eslint-plugin-yml.patch
+				"eslint-plugin-yml",
 			],
 			neverBundle: [
 				/^@typescript-eslint\//,
@@ -29,7 +31,22 @@ export default defineConfig([
 				"eslint-plugin-erasable-syntax-only",
 				"cached-factory",
 			],
-			onlyBundle: ["eslint-config-flat-gitignore", "@eslint/compat"],
+			onlyBundle: [
+				"eslint-config-flat-gitignore",
+				"@eslint/compat",
+				// eslint-plugin-yml (see alwaysBundle) and its transitive tree
+				"eslint-plugin-yml",
+				"@eslint/plugin-kit",
+				// cspell:disable-next-line
+				"@ota-meshi/ast-token-store",
+				"diff-sequences",
+				"escape-string-regexp",
+				// cspell:disable-next-line
+				"levn",
+				"natural-compare",
+				"prelude-ls",
+				"type-check",
+			],
 		},
 		entry: ["src/index.ts"],
 		unused: {

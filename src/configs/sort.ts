@@ -181,12 +181,12 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 							"continue-on-error",
 							"timeout-minutes",
 						],
-						pathPattern: "^jobs\\.[^.]+\\.steps\\.[^.]+$",
+						pathPattern: "^jobs\\.[^.]+\\.steps\\[\\d+\\]$",
 					},
 					// With
 					{
 						order: ["args", "entrypoint"],
-						pathPattern: "^jobs\\.[^.]+\\.steps\\.[^.]+\\.with$",
+						pathPattern: "^jobs\\.[^.]+\\.steps\\[\\d+\\]\\.with$",
 					},
 					// Strategy
 					{
@@ -284,11 +284,16 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 					"error",
 					{
 						order: [
+							// Settings
 							...[
+								"autoInstallPeers",
+								"blockExoticSubdeps",
 								"cacheDir",
 								"catalogMode",
 								"cleanupUnusedCatalogs",
 								"dedupeDirectDeps",
+								"dedupePeerDependents",
+								"dedupePeers",
 								"deployAllFiles",
 								"enablePrePostScripts",
 								"engineStrict",
@@ -296,13 +301,20 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"hoist",
 								"hoistPattern",
 								"hoistWorkspacePackages",
+								"hoistingLimits",
 								"ignoreCompatibilityDb",
 								"ignoreDepScripts",
 								"ignoreScripts",
 								"ignoreWorkspaceRootCheck",
+								"ignoredWorkspaceGlobs",
+								"includeWorkspaceRoot",
+								"injectWorkspacePackages",
+								"linkWorkspacePackages",
 								"managePackageManagerVersions",
 								"minimumReleaseAge",
 								"minimumReleaseAgeExclude",
+								"minimumReleaseAgeIgnoreMissingTime",
+								"minimumReleaseAgeStrict",
 								"modulesDir",
 								"nodeLinker",
 								"nodeVersion",
@@ -315,17 +327,37 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"registrySupportsTimeField",
 								"requiredScripts",
 								"resolutionMode",
+								"resolvePeersFromWorkspaceRoot",
+								"saveExact",
 								"savePrefix",
+								"saveWorkspaceProtocol",
 								"scriptShell",
 								"shamefullyHoist",
+								"sharedWorkspaceLockfile",
 								"shellEmulator",
 								"stateDir",
+								"strictDepBuilds",
+								"strictPeerDependencies",
 								"supportedArchitectures",
 								"symlink",
 								"tag",
+								"trustLockfile",
 								"trustPolicy",
 								"trustPolicyExclude",
+								"trustPolicyIgnoreAfter",
+								"updateConfig",
 								"updateNotifier",
+								"verifyDepsBeforeRun",
+							],
+
+							// Lockfile
+							...[
+								"gitBranchLockfile",
+								"lockfile",
+								"lockfileIncludeTarballUrl",
+								"mergeGitBranchLockfilesBranchPattern",
+								"peersSuffixMaxLength",
+								"preferFrozenLockfile",
 							],
 
 							// Packages and dependencies
@@ -337,9 +369,11 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 
 							// Other
 							...[
-								"allowedDeprecatedVersions",
+								"allowBuilds",
 								"allowNonAppliedPatches",
+								"allowedDeprecatedVersions",
 								"configDependencies",
+								"dangerouslyAllowAllBuilds",
 								"ignoredBuiltDependencies",
 								"ignoredOptionalDependencies",
 								"neverBuiltDependencies",
@@ -348,6 +382,9 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"packageExtensions",
 								"peerDependencyRules",
 							],
+
+							// Unlisted keys: sort alphabetically, last.
+							{ order: { type: "asc" } },
 						],
 						pathPattern: "^$",
 					},

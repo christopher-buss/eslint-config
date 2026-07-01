@@ -1,23 +1,28 @@
-trustPolicyIgnoreAfter: 10080
 catalogMode: prefer
 cleanupUnusedCatalogs: true
-saveExact: true
-strictPeerDependencies: false
 ignoreWorkspaceRootCheck: true
+
+minimumReleaseAgeExclude:
+  - eslint-plugin-flawless@0.1.1
+
+saveExact: true
 shellEmulator: true
+strictPeerDependencies: false
 trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 10080
 
 packages:
   - fixtures/*
   - src/*
 
 overrides:
-  "@typescript-eslint/type-utils": 8.62.0
-  "@typescript-eslint/utils": 8.62.0
+  "@typescript-eslint/type-utils": 8.62.1
+  "@typescript-eslint/utils": 8.62.1
   semver@6: ^7.0.0
 
 patchedDependencies:
   eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
+  eslint-plugin-yml: patches/eslint-plugin-yml.patch
 
 catalogs:
   dev:
@@ -26,7 +31,7 @@ catalogs:
     "@eslint/config-inspector": 3.0.4
     "@isentinel/tsconfig": 1.2.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
-    "@types/node": 22.16.0
+    "@types/node": 24.1.0
     "@types/yargs": 17.0.35
     bumpp: 11.1.0
     eslint-typegen: 2.3.1
@@ -63,8 +68,8 @@ catalogs:
     "@isentinel/dict-roblox": 1.0.4
     "@pobammer-ts/eslint-cease-nonsense-rules": 1.38.0
     "@stylistic/eslint-plugin": 5.10.0
-    "@typescript-eslint/eslint-plugin": 8.62.0
-    "@typescript-eslint/parser": 8.62.0
+    "@typescript-eslint/eslint-plugin": 8.62.1
+    "@typescript-eslint/parser": 8.62.1
     ansis: 4.3.1
     eslint-config-flat-gitignore: 2.3.0
     eslint-config-prettier: 10.1.8
@@ -75,7 +80,7 @@ catalogs:
     eslint-plugin-better-max-params: 1.0.0
     eslint-plugin-comment-length: 2.3.1
     eslint-plugin-de-morgan: 2.1.2
-    eslint-plugin-flawless: 0.1.0
+    eslint-plugin-flawless: 0.1.1
     eslint-plugin-format-lua: 2.0.0
     eslint-plugin-import-lite: 0.6.0
     eslint-plugin-jsdoc: 63.0.10
@@ -102,10 +107,10 @@ catalogs:
     yaml-eslint-parser: 2.0.0
     yargs: 18.0.0
 
-peerDependencyRules:
-  allowedVersions:
-    eslint-plugin-jest-extended>eslint: "10"
-
 allowBuilds:
   esbuild: true
   simple-git-hooks: true
+
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-jest-extended>eslint: "10"

@@ -824,9 +824,14 @@ export interface RuleOptions {
   'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Enforce naming conventions for everything across a codebase
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.0/src/rules/naming-convention/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.1/src/rules/naming-convention/documentation.md
    */
   'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
+  /**
+   * Enforce blank lines around top-level YAML block collection keys
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.1/src/rules/yaml-block-key-blank-lines/documentation.md
+   */
+  'flawless/yaml-block-key-blank-lines'?: Linter.RuleEntry<[]>
   /**
    * Enforce `for` loop update clause moving the counter in the right direction
    * @see https://eslint.org/docs/latest/rules/for-direction
