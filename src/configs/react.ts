@@ -33,7 +33,7 @@ export async function react(
 		typeAware = true,
 	} = options;
 
-	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-hooks"]);
+	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-jsx"]);
 
 	if (stylistic !== false) {
 		await ensurePackages(["eslint-plugin-react-naming-convention"]);
@@ -41,18 +41,22 @@ export async function react(
 
 	const [
 		pluginReactCore,
-		reactHooks,
+		pluginReactJsx,
+		pluginFlawless,
 		pluginStylistic,
 		pluginTs,
 		pluginUnicorn,
 		pluginUnusedImports,
+		pluginCeaseNonsense,
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
-		interopDefault(import("eslint-plugin-react-hooks")),
+		interopDefault(import("eslint-plugin-react-jsx")),
+		interopDefault(import("eslint-plugin-flawless")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-unicorn")),
 		interopDefault(import("eslint-plugin-unused-imports")),
+		interopDefault(import("@pobammer-ts/eslint-cease-nonsense-rules")),
 	] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
@@ -64,19 +68,21 @@ export async function react(
 	} satisfies ESLintReactSettings;
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"react/no-implicit-children": "error",
 		"react/no-implicit-key": "error",
+		"react/no-implicit-ref": "error",
 		"react/no-leaked-conditional-rendering": "warn",
 		"react/no-unused-props": "error",
-		"react/prefer-read-only-props": "error",
 	};
 
 	return [
 		{
 			name: "isentinel/react/setup",
 			plugins: {
+				"cease-nonsense": pluginCeaseNonsense,
+				"flawless": pluginFlawless,
 				"react": pluginReactCore,
-				"react-hooks": reactHooks,
-
+				"react-jsx": pluginReactJsx,
 				"style": pluginStylistic,
 				"ts": pluginTs,
 				"unicorn": pluginUnicorn,
@@ -107,57 +113,43 @@ export async function react(
 				sourceType: "module",
 			},
 			rules: {
-				"max-lines-per-function": "off",
-				// recommended rules from @eslint-react/hooks-extra
-				// react-lua does not seem to fully support the patterns that
-				// this rule enforces.
-				"react-hooks-extra/no-direct-set-state-in-use-effect": "off",
+				"cease-nonsense/react-hooks-strict-return": "error",
 
-				// recommended rules react-hooks
-				"react-hooks/exhaustive-deps": "error",
-				"react-hooks/rules-of-hooks": "error",
+				"flawless/no-unnecessary-use-callback": "error",
+				"flawless/no-unnecessary-use-memo": "error",
+				"flawless/purity": "error",
+
 				...(reactCompiler
 					? {
-							"react-hooks/component-hook-factories": "error",
-							"react-hooks/config": "off",
-							"react-hooks/error-boundaries": "error",
-							"react-hooks/gating": "off",
-							"react-hooks/globals": "error",
-							"react-hooks/immutability": "error",
-							"react-hooks/incompatible-library": "off",
-							"react-hooks/preserve-manual-memoization": "off",
-							"react-hooks/purity": "off",
-							"react-hooks/refs": "error",
-							"react-hooks/set-state-in-effect": "error",
-							"react-hooks/set-state-in-render": "error",
-							"react-hooks/static-components": "error",
-							"react-hooks/unsupported-syntax": "off",
-							"react-hooks/use-memo": "error",
+							"react/globals": "error",
+							"react/refs": "error",
 						}
 					: {}),
 
+				// recommended rules from eslint-plugin-react-jsx
+				"react-jsx/no-children-prop": "warn",
+				"react-jsx/no-children-prop-with-children": "error",
+				"react-jsx/no-comment-textnodes": "off",
+				"react-jsx/no-key-after-spread": "error",
+				"react-jsx/no-leaked-dollar": "warn",
+				"react-jsx/no-leaked-semicolon": "warn",
+
 				// recommended rules from @eslint-react
-				"react/jsx-dollar": "warn",
-				"react/jsx-no-comment-textnodes": "warn",
-				"react/jsx-no-duplicate-props": "off",
-				// Currently experimental: https://eslint-react.xyz/docs/rules/jsx-no-iife
-				"react/jsx-no-iife": "off",
-				"react/jsx-no-undef": "off",
-				"react/jsx-uses-react": "off",
-				"react/jsx-uses-vars": "off",
+				"react/error-boundaries": "error",
+				"react/exhaustive-deps": "error",
+				"react/immutability": "error",
 				"react/no-access-state-in-setstate": "error",
 				"react/no-array-index-key": "warn",
 				"react/no-children-count": "warn",
 				"react/no-children-for-each": "warn",
 				"react/no-children-map": "warn",
 				"react/no-children-only": "warn",
-				"react/no-children-prop": "warn",
 				"react/no-children-to-array": "warn",
 				"react/no-class-component": "error",
 				"react/no-clone-element": "warn",
-				"react/no-component-will-mount": "off",
-				"react/no-component-will-receive-props": "off",
-				"react/no-component-will-update": "off",
+				"react/no-component-will-mount": "error",
+				"react/no-component-will-receive-props": "error",
+				"react/no-component-will-update": "error",
 				"react/no-create-ref": "error",
 				"react/no-direct-mutation-state": "error",
 				"react/no-duplicate-key": "error",
@@ -168,18 +160,13 @@ export async function react(
 				"react/no-misused-capture-owner-stack": "off",
 				"react/no-nested-component-definitions": "warn",
 				"react/no-nested-lazy-component-declarations": "warn",
-				"react/no-redundant-should-component-update": "error",
 				"react/no-set-state-in-component-did-mount": "warn",
 				"react/no-set-state-in-component-did-update": "warn",
 				"react/no-set-state-in-component-will-update": "warn",
-				// Not applicable in React Lua
-				"react/no-unnecessary-key": "off",
-				"react/no-unnecessary-use-callback": "error",
-				"react/no-unnecessary-use-memo": "error",
 				"react/no-unnecessary-use-prefix": "error",
-				"react/no-unsafe-component-will-mount": "off",
-				"react/no-unsafe-component-will-receive-props": "off",
-				"react/no-unsafe-component-will-update": "off",
+				"react/no-unsafe-component-will-mount": "error",
+				"react/no-unsafe-component-will-receive-props": "error",
+				"react/no-unsafe-component-will-update": "error",
 				"react/no-unstable-context-value": "error",
 				"react/no-unstable-default-props": [
 					"error",
@@ -226,32 +213,30 @@ export async function react(
 				"react/no-unused-class-component-members": "off",
 				"react/no-unused-state": "error",
 				"react/no-use-context": "off",
-				"react/no-useless-forward-ref": "error",
-				"react/prefer-use-state-lazy-initialization": "error",
-
-				"unicorn/filename-case": [
+				"react/rules-of-hooks": "error",
+				"react/set-state-in-effect": "error",
+				"react/set-state-in-render": "error",
+				"react/static-components": "error",
+				"react/use-memo": "error",
+				"react/use-state": [
 					"error",
-					{
-						case: filenameCase,
-						ignore: ["^[A-Z0-9]+\.md$"],
-						multipleFileExtensions: true,
-					},
+					{ enforceAssignment: false, enforceSetterName: false },
 				],
 
 				...(stylistic !== false
 					? {
+							"flawless/jsx-shorthand-boolean": "warn",
+							"flawless/jsx-shorthand-fragment": "warn",
+							"flawless/prefer-destructuring-assignment": "error",
+
 							"one-var": "off",
+
+							"react-jsx/no-useless-fragment": "warn",
 							// recommended rules from
 							// @eslint-react/naming-convention
 							"react-naming-convention/context-name": "error",
 							"react-naming-convention/ref-name": "error",
-							"react-naming-convention/use-state": "error",
-							// Never use shorthand syntax for boolean attributes.
-							"react/jsx-shorthand-boolean": ["warn", -1],
-							"react/jsx-shorthand-fragment": "warn",
-							"react/no-useless-fragment": "warn",
-							"react/prefer-destructuring-assignment": "warn",
-							"react/prefer-namespace-import": "off",
+							"react/use-state": "error",
 							"style/jsx-curly-brace-presence": [
 								"error",
 								{
@@ -262,6 +247,15 @@ export async function react(
 							],
 							"style/jsx-newline": "error",
 							"style/jsx-self-closing-comp": "error",
+
+							"unicorn/filename-case": [
+								"error",
+								{
+									case: filenameCase,
+									ignore: ["^[A-Z0-9]+\.md$"],
+									multipleFileExtensions: true,
+								},
+							],
 						}
 					: {}),
 
