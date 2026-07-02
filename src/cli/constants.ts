@@ -58,7 +58,6 @@ export const dependenciesMap = {
 	react: [
 		"eslint-plugin-react-x",
 		"eslint-plugin-react-jsx",
-		"eslint-plugin-react-hooks",
 		"eslint-plugin-react-naming-convention",
 	],
 	test: ["eslint-plugin-jest"],

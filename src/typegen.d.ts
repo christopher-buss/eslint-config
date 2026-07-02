@@ -824,42 +824,47 @@ export interface RuleOptions {
   'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Disallow shorthand boolean JSX attributes
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/jsx-shorthand-boolean/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/jsx-shorthand-boolean/documentation.md
    */
   'flawless/jsx-shorthand-boolean'?: Linter.RuleEntry<[]>
   /**
    * Disallow the shorthand fragment syntax in favour of a named fragment
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/jsx-shorthand-fragment/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/jsx-shorthand-fragment/documentation.md
    */
   'flawless/jsx-shorthand-fragment'?: Linter.RuleEntry<FlawlessJsxShorthandFragment>
   /**
    * Enforce naming conventions for everything across a codebase
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/naming-convention/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/naming-convention/documentation.md
    */
   'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
   /**
    * Disallow unnecessary usage of 'useCallback'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/no-unnecessary-use-callback/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/no-unnecessary-use-callback/documentation.md
    */
   'flawless/no-unnecessary-use-callback'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary usage of 'useMemo'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/no-unnecessary-use-memo/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/no-unnecessary-use-memo/documentation.md
    */
   'flawless/no-unnecessary-use-memo'?: Linter.RuleEntry<[]>
   /**
    * Enforce destructuring assignment for component props
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/prefer-destructuring-assignment/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/prefer-destructuring-assignment/documentation.md
    */
   'flawless/prefer-destructuring-assignment'?: Linter.RuleEntry<[]>
   /**
+   * Disallow impure calls such as `math.random` or `os.clock` during render
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/purity/documentation.md
+   */
+  'flawless/purity'?: Linter.RuleEntry<FlawlessPurity>
+  /**
    * Enforce a configured sort order for TOML keys and tables
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/toml-sort-keys/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/toml-sort-keys/documentation.md
    */
   'flawless/toml-sort-keys'?: Linter.RuleEntry<FlawlessTomlSortKeys>
   /**
    * Enforce blank lines around top-level YAML block collection keys
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.5/src/rules/yaml-block-key-blank-lines/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/yaml-block-key-blank-lines/documentation.md
    */
   'flawless/yaml-block-key-blank-lines'?: Linter.RuleEntry<[]>
   /**
@@ -3761,151 +3766,6 @@ export interface RuleOptions {
    * @see https://eslint.org/docs/latest/rules/radix
    */
   'radix'?: Linter.RuleEntry<Radix>
-  /**
-   * Validates against calling capitalized functions/methods instead of using JSX
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/capitalized-calls
-   */
-  'react-hooks/capitalized-calls'?: Linter.RuleEntry<ReactHooksCapitalizedCalls>
-  /**
-   * Deprecated: this rule has been removed in 7.1.0.
-   * @deprecated
-   */
-  'react-hooks/component-hook-factories'?: Linter.RuleEntry<[]>
-  /**
-   * Validates the compiler configuration options
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/config
-   */
-  'react-hooks/config'?: Linter.RuleEntry<ReactHooksConfig>
-  /**
-   * Validates usage of error boundaries instead of try/catch for errors in child components
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/error-boundaries
-   */
-  'react-hooks/error-boundaries'?: Linter.RuleEntry<ReactHooksErrorBoundaries>
-  /**
-   * verifies the list of dependencies for Hooks like useEffect and similar
-   * @see https://github.com/facebook/react/issues/14920
-   */
-  'react-hooks/exhaustive-deps'?: Linter.RuleEntry<ReactHooksExhaustiveDeps>
-  /**
-   * Validates that effect dependencies are exhaustive and without extraneous values
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/exhaustive-effect-dependencies
-   */
-  'react-hooks/exhaustive-effect-dependencies'?: Linter.RuleEntry<ReactHooksExhaustiveEffectDependencies>
-  /**
-   * Validates usage of fbt
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/fbt
-   */
-  'react-hooks/fbt'?: Linter.RuleEntry<ReactHooksFbt>
-  /**
-   * Validates configuration of [gating mode](https://react.dev/reference/react-compiler/gating)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/gating
-   */
-  'react-hooks/gating'?: Linter.RuleEntry<ReactHooksGating>
-  /**
-   * Validates against assignment/mutation of globals during render, part of ensuring that [side effects must render outside of render](https://react.dev/reference/rules/components-and-hooks-must-be-pure#side-effects-must-run-outside-of-render)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/globals
-   */
-  'react-hooks/globals'?: Linter.RuleEntry<ReactHooksGlobals>
-  /**
-   * Validates the rules of hooks
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/hooks
-   */
-  'react-hooks/hooks'?: Linter.RuleEntry<ReactHooksHooks>
-  /**
-   * Validates against mutating props, state, and other values that [are immutable](https://react.dev/reference/rules/components-and-hooks-must-be-pure#props-and-state-are-immutable)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/immutability
-   */
-  'react-hooks/immutability'?: Linter.RuleEntry<ReactHooksImmutability>
-  /**
-   * Validates against usage of libraries which are incompatible with memoization (manual or automatic)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/incompatible-library
-   */
-  'react-hooks/incompatible-library'?: Linter.RuleEntry<ReactHooksIncompatibleLibrary>
-  /**
-   * Internal invariants
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/invariant
-   */
-  'react-hooks/invariant'?: Linter.RuleEntry<ReactHooksInvariant>
-  /**
-   * Validates that useMemo() and useCallback() specify comprehensive dependencies without extraneous values. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/memo-dependencies
-   */
-  'react-hooks/memo-dependencies'?: Linter.RuleEntry<ReactHooksMemoDependencies>
-  /**
-   * Validates that effect dependencies are memoized
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/memoized-effect-dependencies
-   */
-  'react-hooks/memoized-effect-dependencies'?: Linter.RuleEntry<ReactHooksMemoizedEffectDependencies>
-  /**
-   * Validates against deriving values from state in an effect
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/no-deriving-state-in-effects
-   */
-  'react-hooks/no-deriving-state-in-effects'?: Linter.RuleEntry<ReactHooksNoDerivingStateInEffects>
-  /**
-   * Validates that existing manual memoized is preserved by the compiler. React Compiler will only compile components and hooks if its inference [matches or exceeds the existing manual memoization](https://react.dev/learn/react-compiler/introduction#what-should-i-do-about-usememo-usecallback-and-reactmemo)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/preserve-manual-memoization
-   */
-  'react-hooks/preserve-manual-memoization'?: Linter.RuleEntry<ReactHooksPreserveManualMemoization>
-  /**
-   * Validates that [components/hooks are pure](https://react.dev/reference/rules/components-and-hooks-must-be-pure) by checking that they do not call known-impure functions
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/purity
-   */
-  'react-hooks/purity'?: Linter.RuleEntry<ReactHooksPurity>
-  /**
-   * Validates correct usage of refs, not reading/writing during render. See the "pitfalls" section in [`useRef()` usage](https://react.dev/reference/react/useRef#usage)
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
-   */
-  'react-hooks/refs'?: Linter.RuleEntry<ReactHooksRefs>
-  /**
-   * Validates against suppression of other rules
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/rule-suppression
-   */
-  'react-hooks/rule-suppression'?: Linter.RuleEntry<ReactHooksRuleSuppression>
-  /**
-   * enforces the Rules of Hooks
-   * @see https://react.dev/reference/rules/rules-of-hooks
-   */
-  'react-hooks/rules-of-hooks'?: Linter.RuleEntry<ReactHooksRulesOfHooks>
-  /**
-   * Validates against calling setState synchronously in an effect. This can indicate non-local derived data, a derived event pattern, or improper external data synchronization.
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
-   */
-  'react-hooks/set-state-in-effect'?: Linter.RuleEntry<ReactHooksSetStateInEffect>
-  /**
-   * Validates against setting state during render, which can trigger additional renders and potential infinite render loops
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-render
-   */
-  'react-hooks/set-state-in-render'?: Linter.RuleEntry<ReactHooksSetStateInRender>
-  /**
-   * Validates that components are static, not recreated every render. Components that are recreated dynamically can reset state and trigger excessive re-rendering
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
-   */
-  'react-hooks/static-components'?: Linter.RuleEntry<ReactHooksStaticComponents>
-  /**
-   * Validates against invalid syntax
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/syntax
-   */
-  'react-hooks/syntax'?: Linter.RuleEntry<ReactHooksSyntax>
-  /**
-   * Unimplemented features
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/todo
-   */
-  'react-hooks/todo'?: Linter.RuleEntry<ReactHooksTodo>
-  /**
-   * Validates against syntax that we do not plan to support in React Compiler
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/unsupported-syntax
-   */
-  'react-hooks/unsupported-syntax'?: Linter.RuleEntry<ReactHooksUnsupportedSyntax>
-  /**
-   * Validates usage of the useMemo() hook against common mistakes. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/use-memo
-   */
-  'react-hooks/use-memo'?: Linter.RuleEntry<ReactHooksUseMemo>
-  /**
-   * Validates that useMemos always return a value and that the result of the useMemo is used by the component/hook. See [`useMemo()` docs](https://react.dev/reference/react/useMemo) for more information.
-   * @see https://react.dev/reference/eslint-plugin-react-hooks/lints/void-use-memo
-   */
-  'react-hooks/void-use-memo'?: Linter.RuleEntry<ReactHooksVoidUseMemo>
   /**
    * Disallows passing 'children' as a prop.
    * @see https://eslint-react.xyz/docs/rules/jsx-no-children-prop
@@ -11086,6 +10946,13 @@ interface _FlawlessNamingConvention_MatchRegexConfig {
   match: boolean
   regex: string
 }
+// ----- flawless/purity -----
+type FlawlessPurity = []|[{
+  
+  additionalFunctions?: string[]
+  
+  ignore?: string[]
+}]
 // ----- flawless/toml-sort-keys -----
 type FlawlessTomlSortKeys = {
   order: (string[] | {
@@ -18430,121 +18297,6 @@ type Quotes = []|[("single" | "double" | "backtick")]|[("single" | "double" | "b
 })]
 // ----- radix -----
 type Radix = []|[("always" | "as-needed")]
-// ----- react-hooks/capitalized-calls -----
-type ReactHooksCapitalizedCalls = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/config -----
-type ReactHooksConfig = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/error-boundaries -----
-type ReactHooksErrorBoundaries = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/exhaustive-deps -----
-type ReactHooksExhaustiveDeps = []|[{
-  additionalHooks?: string
-  enableDangerousAutofixThisMayCauseInfiniteLoops?: boolean
-  experimental_autoDependenciesHooks?: string[]
-  requireExplicitEffectDeps?: boolean
-}]
-// ----- react-hooks/exhaustive-effect-dependencies -----
-type ReactHooksExhaustiveEffectDependencies = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/fbt -----
-type ReactHooksFbt = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/gating -----
-type ReactHooksGating = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/globals -----
-type ReactHooksGlobals = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/hooks -----
-type ReactHooksHooks = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/immutability -----
-type ReactHooksImmutability = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/incompatible-library -----
-type ReactHooksIncompatibleLibrary = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/invariant -----
-type ReactHooksInvariant = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/memo-dependencies -----
-type ReactHooksMemoDependencies = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/memoized-effect-dependencies -----
-type ReactHooksMemoizedEffectDependencies = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/no-deriving-state-in-effects -----
-type ReactHooksNoDerivingStateInEffects = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/preserve-manual-memoization -----
-type ReactHooksPreserveManualMemoization = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/purity -----
-type ReactHooksPurity = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/refs -----
-type ReactHooksRefs = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/rule-suppression -----
-type ReactHooksRuleSuppression = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/rules-of-hooks -----
-type ReactHooksRulesOfHooks = []|[{
-  additionalHooks?: string
-}]
-// ----- react-hooks/set-state-in-effect -----
-type ReactHooksSetStateInEffect = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/set-state-in-render -----
-type ReactHooksSetStateInRender = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/static-components -----
-type ReactHooksStaticComponents = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/syntax -----
-type ReactHooksSyntax = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/todo -----
-type ReactHooksTodo = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/unsupported-syntax -----
-type ReactHooksUnsupportedSyntax = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/use-memo -----
-type ReactHooksUseMemo = []|[{
-  [k: string]: unknown | undefined
-}]
-// ----- react-hooks/void-use-memo -----
-type ReactHooksVoidUseMemo = []|[{
-  [k: string]: unknown | undefined
-}]
 // ----- react-jsx/no-useless-fragment -----
 type ReactJsxNoUselessFragment = []|[{
   

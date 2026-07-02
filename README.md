@@ -492,7 +492,7 @@ Running `npx eslint` should prompt you to install the required dependencies,
 otherwise, you can install them manually:
 
 ```bash
-pnpm i -D eslint-plugin-react-x eslint-plugin-react-hooks eslint-plugin-react-naming-convention eslint-plugin-jest
+pnpm i -D eslint-plugin-react-x eslint-plugin-react-jsx eslint-plugin-react-naming-convention eslint-plugin-jest
 ```
 
 #### ESLint Plugin Development

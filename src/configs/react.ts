@@ -33,11 +33,7 @@ export async function react(
 		typeAware = true,
 	} = options;
 
-	await ensurePackages([
-		"eslint-plugin-react-x",
-		"eslint-plugin-react-jsx",
-		"eslint-plugin-react-hooks",
-	]);
+	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-jsx"]);
 
 	if (stylistic !== false) {
 		await ensurePackages(["eslint-plugin-react-naming-convention"]);
@@ -46,7 +42,6 @@ export async function react(
 	const [
 		pluginReactCore,
 		pluginReactJsx,
-		reactHooks,
 		pluginFlawless,
 		pluginStylistic,
 		pluginTs,
@@ -56,7 +51,6 @@ export async function react(
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
 		interopDefault(import("eslint-plugin-react-jsx")),
-		interopDefault(import("eslint-plugin-react-hooks")),
 		interopDefault(import("eslint-plugin-flawless")),
 		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
@@ -88,7 +82,6 @@ export async function react(
 				"cease-nonsense": pluginCeaseNonsense,
 				"flawless": pluginFlawless,
 				"react": pluginReactCore,
-				"react-hooks": reactHooks,
 				"react-jsx": pluginReactJsx,
 				"style": pluginStylistic,
 				"ts": pluginTs,
@@ -124,36 +117,27 @@ export async function react(
 
 				"flawless/no-unnecessary-use-callback": "error",
 				"flawless/no-unnecessary-use-memo": "error",
+				"flawless/purity": "error",
 
-				// recommended rules react-hooks
-				"react-hooks/exhaustive-deps": "error",
-				"react-hooks/rules-of-hooks": "error",
 				...(reactCompiler
 					? {
-							"react-hooks/component-hook-factories": "error",
-							"react-hooks/config": "off",
-							"react-hooks/error-boundaries": "error",
-							"react-hooks/gating": "off",
-							"react-hooks/globals": "error",
-							"react-hooks/immutability": "error",
-							"react-hooks/incompatible-library": "off",
-							"react-hooks/preserve-manual-memoization": "off",
-							"react-hooks/purity": "off",
-							"react-hooks/refs": "error",
-							"react-hooks/set-state-in-effect": "error",
-							"react-hooks/set-state-in-render": "error",
-							"react-hooks/static-components": "error",
-							"react-hooks/unsupported-syntax": "off",
-							"react-hooks/use-memo": "error",
+							"react/globals": "error",
+							"react/refs": "error",
 						}
 					: {}),
 
 				// recommended rules from eslint-plugin-react-jsx
 				"react-jsx/no-children-prop": "warn",
-				"react-jsx/no-comment-textnodes": "warn",
+				"react-jsx/no-children-prop-with-children": "error",
+				"react-jsx/no-comment-textnodes": "off",
+				"react-jsx/no-key-after-spread": "error",
 				"react-jsx/no-leaked-dollar": "warn",
+				"react-jsx/no-leaked-semicolon": "warn",
 
 				// recommended rules from @eslint-react
+				"react/error-boundaries": "error",
+				"react/exhaustive-deps": "error",
+				"react/immutability": "error",
 				"react/no-access-state-in-setstate": "error",
 				"react/no-array-index-key": "warn",
 				"react/no-children-count": "warn",
@@ -163,9 +147,9 @@ export async function react(
 				"react/no-children-to-array": "warn",
 				"react/no-class-component": "error",
 				"react/no-clone-element": "warn",
-				"react/no-component-will-mount": "off",
-				"react/no-component-will-receive-props": "off",
-				"react/no-component-will-update": "off",
+				"react/no-component-will-mount": "error",
+				"react/no-component-will-receive-props": "error",
+				"react/no-component-will-update": "error",
 				"react/no-create-ref": "error",
 				"react/no-direct-mutation-state": "error",
 				"react/no-duplicate-key": "error",
@@ -180,9 +164,9 @@ export async function react(
 				"react/no-set-state-in-component-did-update": "warn",
 				"react/no-set-state-in-component-will-update": "warn",
 				"react/no-unnecessary-use-prefix": "error",
-				"react/no-unsafe-component-will-mount": "off",
-				"react/no-unsafe-component-will-receive-props": "off",
-				"react/no-unsafe-component-will-update": "off",
+				"react/no-unsafe-component-will-mount": "error",
+				"react/no-unsafe-component-will-receive-props": "error",
+				"react/no-unsafe-component-will-update": "error",
 				"react/no-unstable-context-value": "error",
 				"react/no-unstable-default-props": [
 					"error",
@@ -229,18 +213,14 @@ export async function react(
 				"react/no-unused-class-component-members": "off",
 				"react/no-unused-state": "error",
 				"react/no-use-context": "off",
+				"react/rules-of-hooks": "error",
+				"react/set-state-in-effect": "error",
+				"react/set-state-in-render": "error",
+				"react/static-components": "error",
+				"react/use-memo": "error",
 				"react/use-state": [
 					"error",
 					{ enforceAssignment: false, enforceSetterName: false },
-				],
-
-				"unicorn/filename-case": [
-					"error",
-					{
-						case: filenameCase,
-						ignore: ["^[A-Z0-9]+\.md$"],
-						multipleFileExtensions: true,
-					},
 				],
 
 				...(stylistic !== false
@@ -250,6 +230,7 @@ export async function react(
 							"flawless/prefer-destructuring-assignment": "error",
 
 							"one-var": "off",
+
 							"react-jsx/no-useless-fragment": "warn",
 							// recommended rules from
 							// @eslint-react/naming-convention
@@ -266,6 +247,15 @@ export async function react(
 							],
 							"style/jsx-newline": "error",
 							"style/jsx-self-closing-comp": "error",
+
+							"unicorn/filename-case": [
+								"error",
+								{
+									case: filenameCase,
+									ignore: ["^[A-Z0-9]+\.md$"],
+									multipleFileExtensions: true,
+								},
+							],
 						}
 					: {}),
 

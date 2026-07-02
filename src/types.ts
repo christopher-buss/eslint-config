@@ -535,8 +535,8 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * Requires installing:
 	 *
-	 * - `eslint-plugin-react-x`
-	 * - `eslint-plugin-react-hooks`.
+	 * - `eslint-plugin-react-x`.
+	 * - `eslint-plugin-react-jsx`.
 	 *
 	 * If `stylistic` is enabled, also requires:
 	 *
