@@ -1,5 +1,10 @@
 import { GLOB_ROOT, GLOB_SRC } from "../globs.ts";
-import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import type {
+	OptionsHasRoblox,
+	OptionsStylistic,
+	OptionsUnicorn,
+	TypedFlatConfigItem,
+} from "../types.ts";
 import { interopDefault, mergeGlobs, toSourceGlob } from "../utils.ts";
 
 const abbreviations = {
@@ -34,9 +39,11 @@ const abbreviations = {
 } as const;
 
 export async function unicorn(
-	options: OptionsHasRoblox & OptionsStylistic & { root?: Array<string> } = {},
+	options: OptionsHasRoblox & OptionsStylistic & OptionsUnicorn & { root?: Array<string> } = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { roblox = true, root: customRootGlobs, stylistic = true } = options;
+	const { nameReplacements, roblox = true, root: customRootGlobs, stylistic = true } = options;
+
+	const replacements = { ...abbreviations, ...nameReplacements };
 
 	const pluginUnicorn = await interopDefault(import("eslint-plugin-unicorn"));
 
@@ -79,7 +86,7 @@ export async function unicorn(
 					"error",
 					{
 						checkFilenames: true,
-						replacements: abbreviations,
+						replacements,
 					},
 				],
 				"unicorn/no-array-sort-for-min-max": "error",
@@ -205,7 +212,7 @@ export async function unicorn(
 					"error",
 					{
 						checkFilenames: false,
-						replacements: abbreviations,
+						replacements,
 					},
 				],
 			},

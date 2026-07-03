@@ -236,7 +236,11 @@ export async function isentinel(
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
 		}),
-		unicorn({ root: rootGlobs, stylistic: stylisticOptions }),
+		unicorn({
+			...resolveSubOptions(options, "unicorn"),
+			root: rootGlobs,
+			stylistic: stylisticOptions,
+		}),
 	);
 
 	if (options.flawless === true) {

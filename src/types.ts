@@ -349,6 +349,31 @@ export type ReactConfig = ESLintReactSettings &
 		filenameCase?: "kebabCase" | "pascalCase";
 	};
 
+export interface OptionsUnicorn {
+	/**
+	 * Additional entries merged into the built-in `unicorn/name-replacements`
+	 * list.
+	 *
+	 * Entries are shallow-merged over the defaults, so you can add new
+	 * replacements or disable a built-in one (set it to `false`) without
+	 * replacing the whole list.
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * nameReplacements: {
+	 * 	// Add: flag `props` and suggest `properties`.
+	 * 	props: { properties: true },
+	 * 	// Remove: stop flagging `dist`.
+	 * 	dist: false,
+	 * };
+	 * ```
+	 */
+	nameReplacements?: NonNullable<
+		ExtractRuleOptions<NonNullable<RuleOptions["unicorn/name-replacements"]>>[0]
+	>["replacements"];
+}
+
 export interface SpellCheckConfig {
 	/**
 	 * Whether or not to run the spell checker in the editor.
@@ -611,6 +636,9 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * @default auto-detect based on the dependencies
 	 */
 	typescript?: OptionsTypescript;
+
+	/** Supply custom options for eslint-plugin-unicorn. */
+	unicorn?: OptionsUnicorn;
 
 	/**
 	 * Enable YAML support.
