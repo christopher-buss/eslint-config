@@ -71,6 +71,7 @@ export async function disables(options: {
 			files: [...GLOB_TESTS],
 			rules: {
 				"antfu/no-top-level-await": "off",
+				"e18e/prefer-static-regex": "off",
 				"max-lines": "off",
 				"max-lines-per-function": "off",
 				"no-empty-function": "off",

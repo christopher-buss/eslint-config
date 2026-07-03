@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import {
 	ceaseNonsense,
 	comments,
+	e18e,
 	eslintPlugin,
 	flawless,
 	gitignore,
@@ -44,6 +45,7 @@ const configs = await combine(
 	},
 	ceaseNonsense(),
 	comments(),
+	e18e(),
 	eslintPlugin(),
 	flawless(),
 	gitignore(),

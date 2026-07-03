@@ -566,6 +566,114 @@ export interface RuleOptions {
    */
   'dot-notation'?: Linter.RuleEntry<DotNotation>
   /**
+   * Disallow dependencies in favor of more performant or secure alternatives
+   */
+  'e18e/ban-dependencies'?: Linter.RuleEntry<E18EBanDependencies>
+  /**
+   * Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode
+   */
+  'e18e/no-delete-property'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer optimized alternatives to `indexOf()` equality checks
+   */
+  'e18e/no-indexof-equality'?: Linter.RuleEntry<[]>
+  /**
+   * Disallow spreading the accumulator inside a `reduce` callback (O(N²) growth)
+   */
+  'e18e/no-spread-in-reduce'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.at() over length-based indexing
+   */
+  'e18e/prefer-array-at'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.fill() over Array.from or map with constant values
+   */
+  'e18e/prefer-array-fill'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.from(iterable, mapper) over [...iterable].map(mapper) to avoid intermediate array allocation
+   */
+  'e18e/prefer-array-from-map'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.some() over Array.find() and Array.filter().length checks when checking for element existence
+   */
+  'e18e/prefer-array-some'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.toReversed() over copying and reversing arrays
+   */
+  'e18e/prefer-array-to-reversed'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.toSorted() over copying and sorting arrays
+   */
+  'e18e/prefer-array-to-sorted'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.toSpliced() over copying and splicing arrays
+   */
+  'e18e/prefer-array-to-spliced'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Date.now() over new Date().getTime() and +new Date()
+   */
+  'e18e/prefer-date-now'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer the exponentiation operator ** over Math.pow()
+   */
+  'e18e/prefer-exponentiation-operator'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Array.prototype.flatMap() over .map(fn).flat() to avoid the intermediate array
+   */
+  'e18e/prefer-flatmap-over-map-flat'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer `Map.prototype.getOrInsert()` over reading an entry with a default and writing it back
+   */
+  'e18e/prefer-get-or-insert'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer .includes() over indexOf() comparisons for arrays and strings
+   */
+  'e18e/prefer-includes'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer String.prototype.{includes,startsWith,endsWith} over equivalent regex.test() calls
+   */
+  'e18e/prefer-includes-over-regex-test'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer inline equality checks over temporary object creation for simple comparisons
+   */
+  'e18e/prefer-inline-equality'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer nullish coalescing operator (?? and ??=) over verbose null checks
+   */
+  'e18e/prefer-nullish-coalescing'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer Object.hasOwn() over Object.prototype.hasOwnProperty.call() and obj.hasOwnProperty()
+   */
+  'e18e/prefer-object-has-own'?: Linter.RuleEntry<[]>
+  /**
+   * prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence
+   */
+  'e18e/prefer-regex-test'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer spread syntax over Array.concat(), Array.from(), Object.assign({}, ...), and Function.apply()
+   */
+  'e18e/prefer-spread-syntax'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer hoisting an `Intl.Collator` instance over calling localeCompare in a sort callback
+   */
+  'e18e/prefer-static-collator'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer defining regular expressions at module scope to avoid re-compilation on every function call
+   */
+  'e18e/prefer-static-regex'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer String.fromCharCode() over String.fromCodePoint() for code points below 0x10000
+   */
+  'e18e/prefer-string-fromcharcode'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer passing function and arguments directly to setTimeout/setInterval instead of wrapping in an arrow function or using bind
+   */
+  'e18e/prefer-timer-args'?: Linter.RuleEntry<[]>
+  /**
+   * Prefer URL.canParse() over try-catch blocks for URL validation
+   */
+  'e18e/prefer-url-canparse'?: Linter.RuleEntry<[]>
+  /**
    * Require or disallow newline at the end of files
    * @see https://eslint.org/docs/latest/rules/eol-last
    * @deprecated
@@ -10603,6 +10711,15 @@ type DotLocation = []|[("object" | "property")]
 type DotNotation = []|[{
   allowKeywords?: boolean
   allowPattern?: string
+}]
+// ----- e18e/ban-dependencies -----
+type E18EBanDependencies = []|[{
+  
+  presets?: string[]
+  
+  modules?: string[]
+  
+  allowed?: string[]
 }]
 // ----- eol-last -----
 type EolLast = []|[("always" | "never" | "unix" | "windows")]
@@ -22676,4 +22793,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/cease-nonsense/setup' | 'isentinel/cease-nonsense' | 'isentinel/typescript/rules-type-aware' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/oxfmt/setup' | 'isentinel/oxfmt/javascript' | 'isentinel/oxfmt/typescript' | 'isentinel/oxfmt/css' | 'isentinel/oxfmt/scss' | 'isentinel/oxfmt/less' | 'isentinel/oxfmt/html' | 'isentinel/oxfmt/markdown' | 'isentinel/oxfmt/graphql' | 'isentinel/oxfmt/json' | 'isentinel/oxfmt/yaml' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/package-json/root' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn/setup' | 'isentinel/unicorn/rules' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/cease-nonsense/setup' | 'isentinel/cease-nonsense' | 'isentinel/typescript/rules-type-aware' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/e18e/rules' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/oxfmt/setup' | 'isentinel/oxfmt/javascript' | 'isentinel/oxfmt/typescript' | 'isentinel/oxfmt/css' | 'isentinel/oxfmt/scss' | 'isentinel/oxfmt/less' | 'isentinel/oxfmt/html' | 'isentinel/oxfmt/markdown' | 'isentinel/oxfmt/graphql' | 'isentinel/oxfmt/json' | 'isentinel/oxfmt/yaml' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/package-json/root' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn/setup' | 'isentinel/unicorn/rules' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
