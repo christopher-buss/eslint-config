@@ -43,7 +43,11 @@ export async function unicorn(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const { nameReplacements, roblox = true, root: customRootGlobs, stylistic = true } = options;
 
-	const replacements = { ...abbreviations, ...nameReplacements };
+	const replacements = {
+		...abbreviations,
+		...(roblox ? { buf: false } : {}),
+		...nameReplacements,
+	};
 
 	const pluginUnicorn = await interopDefault(import("eslint-plugin-unicorn"));
 
