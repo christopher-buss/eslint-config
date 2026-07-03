@@ -51,7 +51,6 @@ export async function packageJson(
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
 				"package-json/repository-shorthand": "error",
-				"package-json/require-packageManager": ["error", { ignorePrivate: true }],
 				"package-json/require-type": "error",
 				"package-json/restrict-private-properties": "error",
 				"package-json/restrict-top-level-properties": [
@@ -192,14 +191,6 @@ export async function packageJson(
 					: {}),
 			},
 		},
-		// Require packageManager on the workspace root even when it is private.
-		// `basePath` anchors the `package.json` glob to the real root directory,
-		// so this holds no matter where ESLint resolves the config's base path
-		// from. That matters under tools like Nx, which lint each project with
-		// its own config base path (the default in ESLint 10 via
-		// `v10_config_lookup_from_file`) while the cwd stays at the workspace
-		// root - without `basePath`, `["package.json"]` would match every
-		// project's own `package.json`.
 		{ ...rootOverride, basePath: rootDirectory },
 	];
 }
