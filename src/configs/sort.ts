@@ -217,6 +217,25 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 							"^(?!$|on$|jobs\\.[^.]+$|on\\.(pull_request|pull_request_target|push|workflow_call|workflow_dispatch|workflow_run)$).*",
 					},
 				],
+				"yaml/sort-sequence-values": [
+					"error",
+					// Trigger events
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern: "^on$",
+					},
+					// Branch/tag/path filters and event types
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern:
+							"^on\\.[^.]+\\.(branches|branches-ignore|tags|tags-ignore|paths|paths-ignore|types)$",
+					},
+					// Job dependencies
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern: "^jobs\\.[^.]+\\.needs$",
+					},
+				],
 			},
 		},
 		{
@@ -543,6 +562,15 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 						pathPattern: ".*",
 					},
 				],
+				"yaml/sort-sequence-values": [
+					"error",
+					// Package and build-approval lists
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern:
+							"^(packages|onlyBuiltDependencies|neverBuiltDependencies|ignoredBuiltDependencies|ignoredWorkspaceGlobs)$",
+					},
+				],
 			},
 		},
 	];
@@ -727,6 +755,39 @@ export function sortTsconfig(): Array<TypedFlatConfigItem> {
 							"skipLibCheck",
 						],
 						pathPattern: "^compilerOptions$",
+					},
+				],
+			},
+		},
+	];
+}
+
+/**
+ * Sort CSpell configuration files.
+ *
+ * Requires `yaml` config (for the parser).
+ *
+ * @returns An array of flat configuration items.
+ */
+export function sortCspell(): Array<TypedFlatConfigItem> {
+	return [
+		{
+			name: "isentinel/sort/cspell",
+			files: [
+				"**/cspell.y?(a)ml",
+				"**/cspell.config.y?(a)ml",
+				"**/cspell.config.*.y?(a)ml",
+				"**/.cspell.y?(a)ml",
+				"**/.cspell.config.y?(a)ml",
+			],
+			rules: {
+				"yaml/sort-sequence-values": [
+					"error",
+					// Word, dictionary, and path lists
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern:
+							"^(words|ignoreWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$",
 					},
 				],
 			},

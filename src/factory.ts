@@ -24,6 +24,7 @@ import {
 	react,
 	roblox,
 	sonarjs,
+	sortCspell,
 	sortGithubAction,
 	sortMiseToml,
 	sortPnpmWorkspace,
@@ -399,6 +400,10 @@ export async function isentinel(
 				isInEditor,
 			}),
 		);
+
+		if (stylisticOptions !== false && options.yaml !== false) {
+			configs.push(sortCspell());
+		}
 	}
 
 	configs.push(disables({ root: rootGlobs }));

@@ -23,7 +23,6 @@ maxNumberOfProblems: 1000
 ignorePaths:
   - "**/.git/!(COMMIT_EDITMSG)"
   - "**/.git/!(COMMIT_EDITMSG)/**"
-  - "*-lock.yaml"
   - "*.aff"
   - "*.dic"
   - "*.gz"
@@ -31,6 +30,7 @@ ignorePaths:
   - "*.log"
   - "*.snap"
   - "*.trie"
+  - "*-lock.yaml"
   - .gitignore
   - .vscode/**
   - /package.json
