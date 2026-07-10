@@ -1,5 +1,6 @@
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
 import { findUpSync } from "find-up-simple";
+import path from "node:path";
 import process from "node:process";
 
 import type { TypedFlatConfigItem } from "../types.ts";
@@ -29,20 +30,25 @@ export async function gitignore({
 	const foundGitignore = findUpSync(".gitignore", { cwd: process.cwd() });
 	const foundGitExclude = findUpSync(".git/info/exclude", { cwd: process.cwd() });
 
-	const files = [];
-	if (foundGitignore !== undefined) {
-		files.push(foundGitignore);
-	}
+	const result = resolved({
+		name: "isentinel/gitignore",
+		files: foundGitignore !== undefined ? [foundGitignore] : [],
+		strict: explicit && foundGitExclude === undefined,
+	});
 
 	if (foundGitExclude !== undefined) {
-		files.push(foundGitExclude);
+		// Patterns in .git/info/exclude are relative to the repo root, but the
+		// plugin resolves them against the ignore file's own directory. Setting
+		// cwd to that directory keeps the patterns unprefixed so ESLint applies
+		// them relative to the config root instead.
+		const exclude = resolved({
+			cwd: path.dirname(foundGitExclude),
+			files: [foundGitExclude],
+			filesGitModules: [],
+			strict: false,
+		});
+		result.ignores = [...result.ignores, ...exclude.ignores];
 	}
 
-	return [
-		resolved({
-			name: "isentinel/gitignore",
-			files,
-			strict: explicit,
-		}),
-	];
+	return [result];
 }
