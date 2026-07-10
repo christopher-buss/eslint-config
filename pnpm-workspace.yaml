@@ -3,7 +3,7 @@ cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAgeExclude:
-  - eslint-plugin-flawless@0.1.9 || 0.1.10
+  - eslint-plugin-flawless@0.1.10
 
 saveExact: true
 shellEmulator: true
