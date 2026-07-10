@@ -7,15 +7,11 @@ import type {
 } from "../types.ts";
 import { interopDefault, resolveWithDefaults } from "../utils.ts";
 
-export async function jsonc(
-	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		files = [GLOB_JSON, GLOB_JSON5, GLOB_JSONC],
-		overrides = {},
-		stylistic = true,
-	} = options;
-
+export async function jsonc({
+	files = [GLOB_JSON, GLOB_JSON5, GLOB_JSONC],
+	overrides = {},
+	stylistic = true,
+}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = "tab" } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" || indent === "tab" ? indent : "tab";

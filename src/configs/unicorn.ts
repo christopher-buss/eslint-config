@@ -38,11 +38,14 @@ const abbreviations = {
 	utils: false,
 } as const;
 
-export async function unicorn(
-	options: OptionsHasRoblox & OptionsStylistic & OptionsUnicorn & { root?: Array<string> } = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { nameReplacements, roblox = true, root: customRootGlobs, stylistic = true } = options;
-
+export async function unicorn({
+	nameReplacements,
+	roblox = true,
+	root: customRootGlobs,
+	stylistic = true,
+}: OptionsHasRoblox & OptionsStylistic & OptionsUnicorn & { root?: Array<string> } = {}): Promise<
+	Array<TypedFlatConfigItem>
+> {
 	const replacements = {
 		...abbreviations,
 		...(roblox ? { buf: false } : {}),

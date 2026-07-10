@@ -10,11 +10,13 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function packageJson(
-	options: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { roblox = true, stylistic = true, type = "game" } = options;
-
+export async function packageJson({
+	roblox = true,
+	stylistic = true,
+	type = "game",
+}: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {}): Promise<
+	Array<TypedFlatConfigItem>
+> {
 	const [jsoncEslintParser, pluginPackageJson, rootDirectory] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
 		interopDefault(import("eslint-plugin-package-json")),

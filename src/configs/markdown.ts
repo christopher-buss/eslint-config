@@ -10,16 +10,14 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function markdown(
-	options: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		componentExts: componentExtensions = [],
-		files = [GLOB_MARKDOWN],
-		overrides = {},
-		type = "game",
-	} = options;
-
+export async function markdown({
+	componentExts: componentExtensions = [],
+	files = [GLOB_MARKDOWN],
+	overrides = {},
+	type = "game",
+}: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {}): Promise<
+	Array<TypedFlatConfigItem>
+> {
 	const markdownPlugin = await interopDefault(import("@eslint/markdown"));
 
 	return [

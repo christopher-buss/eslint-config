@@ -7,11 +7,11 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function jsdoc(
-	options: JsdocOptions & OptionsProjectType & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { full = false, stylistic = true, type = "game" } = options;
-
+export async function jsdoc({
+	full = false,
+	stylistic = true,
+	type = "game",
+}: JsdocOptions & OptionsProjectType & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const isPackage = type === "package" || full;
 
 	const pluginJsdoc = await interopDefault(import("eslint-plugin-jsdoc"));

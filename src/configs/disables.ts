@@ -10,11 +10,11 @@ import {
 } from "../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
-export async function disables(options: {
+export async function disables({
+	root,
+}: {
 	root: Array<string>;
 }): Promise<Array<TypedFlatConfigItem>> {
-	const { root } = options;
-
 	return [
 		{
 			name: "isentinel/disables/scripts",

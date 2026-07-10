@@ -7,11 +7,11 @@ import type {
 } from "../types.ts";
 import { interopDefault, resolveWithDefaults } from "../utils.ts";
 
-export async function toml(
-	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { files = [GLOB_TOML], overrides = {}, stylistic = true } = options;
-
+export async function toml({
+	files = [GLOB_TOML],
+	overrides = {},
+	stylistic = true,
+}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = 2 } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" ? indent : 2;

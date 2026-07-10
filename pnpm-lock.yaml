@@ -159,8 +159,8 @@ catalogs:
       specifier: 2.1.2
       version: 2.1.2
     eslint-plugin-flawless:
-      specifier: 0.1.9
-      version: 0.1.9
+      specifier: 0.1.10
+      version: 0.1.10
     eslint-plugin-format-lua:
       specifier: 2.0.0
       version: 2.0.0
@@ -318,7 +318,7 @@ importers:
         version: 2.1.2(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-flawless:
         specifier: catalog:prod
-        version: 0.1.9(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
+        version: 0.1.10(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       eslint-plugin-format-lua:
         specifier: catalog:prod
         version: 2.0.0(eslint@10.6.0(jiti@2.7.0))
@@ -2120,8 +2120,8 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0'
 
-  eslint-plugin-flawless@0.1.9:
-    resolution: {integrity: sha512-AWpsqGbs2/wkUp5pEoj7MSttbuklZ8LFdW2pD5U66yS82wttP1XyeKRCDRKqXgoJXNy+mhjbXeKru47pg0Qkqw==}
+  eslint-plugin-flawless@0.1.10:
+    resolution: {integrity: sha512-CdahDvLHUB/5IT0lePPjsX0BpvyCC+PF1bR5sl14+PhpcLFh3R4lcXPW8pVfVxI3qA8dvDa+Z22AtPLVOhXjWg==}
     engines: {node: '>=24.12.0'}
     peerDependencies:
       eslint: '>=9.15.0'
@@ -4779,7 +4779,7 @@ snapshots:
       eslint: 10.6.0(jiti@2.7.0)
       estraverse: 5.3.0
 
-  eslint-plugin-flawless@0.1.9(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3):
+  eslint-plugin-flawless@0.1.10(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
       '@eslint-react/core': 5.10.0(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       '@typescript-eslint/scope-manager': 8.62.1

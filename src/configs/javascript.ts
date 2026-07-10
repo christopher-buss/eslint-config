@@ -11,15 +11,16 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function javascript(
-	options: OptionsFiles &
-		OptionsHasRoblox &
-		OptionsIsInEditor &
-		OptionsOverrides &
-		OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { isInEditor = false, overrides = {}, roblox = true, stylistic = true } = options;
-
+export async function javascript({
+	isInEditor = false,
+	overrides = {},
+	roblox = true,
+	stylistic = true,
+}: OptionsFiles &
+	OptionsHasRoblox &
+	OptionsIsInEditor &
+	OptionsOverrides &
+	OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters, pluginUnusedImports] =
 		await Promise.all([
 			interopDefault(import("eslint-plugin-antfu")),

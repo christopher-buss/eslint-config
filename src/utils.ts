@@ -59,7 +59,19 @@ export async function combine(
 	return resolved.flat();
 }
 
-export function createTsParser(options: {
+export function createTsParser({
+	componentExtensions = [],
+	configName,
+	files,
+	ignores,
+	outOfProjectFiles,
+	parser,
+	parserOptions = {},
+	parserOptionsNonTypeAware = {},
+	parserOptionsTypeAware = {},
+	tsconfigPath,
+	typeAware,
+}: {
 	componentExtensions?: Array<string>;
 	configName: string;
 	files: Array<Array<string> | string>;
@@ -72,20 +84,6 @@ export function createTsParser(options: {
 	tsconfigPath?: string;
 	typeAware: boolean;
 }): TypedFlatConfigItem {
-	const {
-		componentExtensions = [],
-		configName,
-		files,
-		ignores,
-		outOfProjectFiles,
-		parser,
-		parserOptions = {},
-		parserOptionsNonTypeAware = {},
-		parserOptionsTypeAware = {},
-		tsconfigPath,
-		typeAware,
-	} = options;
-
 	return {
 		name: `isentinel/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
 		files,

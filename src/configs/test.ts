@@ -22,26 +22,22 @@ let pluginTest: typeof PluginJest | undefined;
 let pluginJestExtended: any;
 let pluginVitest: typeof PluginVitest | undefined;
 
-export async function test(
-	options: OptionsFiles &
-		OptionsHasRoblox &
-		OptionsIsInEditor &
-		OptionsOverrides &
-		OptionsProjectType &
-		OptionsStylistic &
-		OptionsTestFramework = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		files = GLOB_TESTS,
-		isInEditor = false,
-		jest = false,
-		overrides = {},
-		roblox: isRoblox = true,
-		stylistic = true,
-		type = "game",
-		vitest = false,
-	} = options;
-
+export async function test({
+	files = GLOB_TESTS,
+	isInEditor = false,
+	jest = false,
+	overrides = {},
+	roblox: isRoblox = true,
+	stylistic = true,
+	type = "game",
+	vitest = false,
+}: OptionsFiles &
+	OptionsHasRoblox &
+	OptionsIsInEditor &
+	OptionsOverrides &
+	OptionsProjectType &
+	OptionsStylistic &
+	OptionsTestFramework = {}): Promise<Array<TypedFlatConfigItem>> {
 	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
 	const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};

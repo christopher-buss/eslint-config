@@ -2,11 +2,10 @@ import { GLOB_SRC } from "../globs.ts";
 import type { OptionsFiles, OptionsOverrides, TypedFlatConfigItem } from "../types.ts";
 import { ensurePackages, interopDefault } from "../utils.ts";
 
-export async function eslintPlugin(
-	options: OptionsFiles & OptionsOverrides = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { files = [GLOB_SRC], overrides = {} } = options;
-
+export async function eslintPlugin({
+	files = [GLOB_SRC],
+	overrides = {},
+}: OptionsFiles & OptionsOverrides = {}): Promise<Array<TypedFlatConfigItem>> {
 	await ensurePackages(["eslint-plugin-eslint-plugin"]);
 
 	const pluginEslintPlugin = await interopDefault(import("eslint-plugin-eslint-plugin"));

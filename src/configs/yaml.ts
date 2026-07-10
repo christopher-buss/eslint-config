@@ -7,15 +7,11 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function yaml(
-	options: OptionsFiles & OptionsOverrides & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		files = [GLOB_YAML, "**/github-actions-workflow"],
-		overrides = {},
-		stylistic = true,
-	} = options;
-
+export async function yaml({
+	files = [GLOB_YAML, "**/github-actions-workflow"],
+	overrides = {},
+	stylistic = true,
+}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [pluginYaml, parserYaml, eslintPluginFlawless] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
 		interopDefault(import("yaml-eslint-parser")),

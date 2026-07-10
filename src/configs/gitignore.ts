@@ -10,11 +10,10 @@ export interface GitignoreOptions {
 	explicit?: boolean;
 }
 
-export async function gitignore(
-	options: GitignoreOptions = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { config = true, explicit = false } = options;
-
+export async function gitignore({
+	config = true,
+	explicit = false,
+}: GitignoreOptions = {}): Promise<Array<TypedFlatConfigItem>> {
 	if (config === false) {
 		return [];
 	}

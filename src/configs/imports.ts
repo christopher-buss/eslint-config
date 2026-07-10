@@ -2,11 +2,10 @@ import { GLOB_SRC } from "../globs.ts";
 import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function imports(
-	options: OptionsProjectType & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { stylistic = true, type = "game" } = options;
-
+export async function imports({
+	stylistic = true,
+	type = "game",
+}: OptionsProjectType & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [pluginImport, pluginAntfu] = await Promise.all([
 		interopDefault(import("eslint-plugin-import-lite")),
 		interopDefault(import("eslint-plugin-antfu")),

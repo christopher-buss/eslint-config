@@ -2,11 +2,10 @@ import { GLOB_SRC } from "../globs.ts";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function comments(
-	options: OptionsFormatters & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const { prettierOptions = {}, stylistic = true } = options;
-
+export async function comments({
+	prettierOptions = {},
+	stylistic = true,
+}: OptionsFormatters & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
 		interopDefault(import("eslint-plugin-comment-length")),
 		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),

@@ -6,18 +6,14 @@ import type {
 } from "../types.ts";
 import { interopDefault } from "../utils.ts";
 
-export async function e18e(
-	options: OptionsE18e & OptionsIsInEditor & OptionsProjectType = {},
-): Promise<Array<TypedFlatConfigItem>> {
-	const {
-		isInEditor = false,
-		modernization = true,
-		type = "game",
-		moduleReplacements = type === "package" && isInEditor,
-		overrides = {},
-		performanceImprovements = true,
-	} = options;
-
+export async function e18e({
+	isInEditor = false,
+	modernization = true,
+	type = "game",
+	moduleReplacements = type === "package" && isInEditor,
+	overrides = {},
+	performanceImprovements = true,
+}: OptionsE18e & OptionsIsInEditor & OptionsProjectType = {}): Promise<Array<TypedFlatConfigItem>> {
 	const pluginE18e = await interopDefault(import("@e18e/eslint-plugin"));
 
 	const { configs } = pluginE18e;
