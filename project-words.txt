@@ -1,8 +1,10 @@
 antfu
 changelogithub
+cves
 dprint
 editmsg
 ependencies
+ghsas
 gypfile
 isentinel
 johnnymorganz

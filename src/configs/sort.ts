@@ -568,7 +568,13 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 					{
 						order: { natural: true, type: "asc" },
 						pathPattern:
-							"^(packages|onlyBuiltDependencies|neverBuiltDependencies|ignoredBuiltDependencies|ignoredWorkspaceGlobs)$",
+							"^(packages|onlyBuiltDependencies|neverBuiltDependencies|ignoredBuiltDependencies|ignoredOptionalDependencies|ignoredWorkspaceGlobs|minimumReleaseAgeExclude|trustPolicyExclude|requiredScripts)$",
+					},
+					// Nested lists
+					{
+						order: { natural: true, type: "asc" },
+						pathPattern:
+							"^(supportedArchitectures\\.(cpu|libc|os)|updateConfig\\.ignoreDependencies|peerDependencyRules\\.(allowAny|ignoreMissing)|auditConfig\\.(ignoreCves|ignoreGhsas))$",
 					},
 				],
 			},
@@ -783,11 +789,11 @@ export function sortCspell(): Array<TypedFlatConfigItem> {
 			rules: {
 				"yaml/sort-sequence-values": [
 					"error",
-					// Word, dictionary, and path lists
+					// Word, dictionary, and path lists (root or nested)
 					{
 						order: { natural: true, type: "asc" },
 						pathPattern:
-							"^(words|ignoreWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$",
+							"^((overrides|languageSettings)\\[\\d+\\]\\.)?(words|userWords|ignoreWords|noSuggestWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$",
 					},
 				],
 			},
