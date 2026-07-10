@@ -11,6 +11,7 @@ export * from "./javascript.ts";
 export * from "./jsdoc.ts";
 export * from "./jsonc.ts";
 export * from "./markdown.ts";
+export * from "./naming.ts";
 export * from "./node.ts";
 export * from "./oxfmt.ts";
 export * from "./package-json.ts";

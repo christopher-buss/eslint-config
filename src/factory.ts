@@ -16,6 +16,7 @@ import {
 	jsdoc,
 	jsonc,
 	markdown,
+	naming,
 	node,
 	oxfmt,
 	perfectionist,
@@ -220,6 +221,7 @@ export async function isentinel(
 	configs.push(
 		ceaseNonsense({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+		flawless({ stylistic: stylisticOptions }),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
 		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
@@ -244,10 +246,10 @@ export async function isentinel(
 		}),
 	);
 
-	if (options.flawless === true) {
+	if (options.naming === true) {
 		configs.push(
-			flawless({
-				...getOverrides(options, "flawless"),
+			naming({
+				...getOverrides(options, "naming"),
 			}),
 		);
 	}

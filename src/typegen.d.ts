@@ -932,47 +932,52 @@ export interface RuleOptions {
   'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Disallow shorthand boolean JSX attributes
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/jsx-shorthand-boolean/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/jsx-shorthand-boolean/documentation.md
    */
   'flawless/jsx-shorthand-boolean'?: Linter.RuleEntry<[]>
   /**
-   * Disallow the shorthand fragment syntax in favour of a named fragment
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/jsx-shorthand-fragment/documentation.md
+   * Enforce a consistent fragment form: the shorthand `<>...</>` or a named fragment
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/jsx-shorthand-fragment/documentation.md
    */
   'flawless/jsx-shorthand-fragment'?: Linter.RuleEntry<FlawlessJsxShorthandFragment>
   /**
    * Enforce naming conventions for everything across a codebase
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/naming-convention/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/naming-convention/documentation.md
    */
   'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
   /**
    * Disallow unnecessary usage of 'useCallback'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/no-unnecessary-use-callback/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/no-unnecessary-use-callback/documentation.md
    */
   'flawless/no-unnecessary-use-callback'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary usage of 'useMemo'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/no-unnecessary-use-memo/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/no-unnecessary-use-memo/documentation.md
    */
   'flawless/no-unnecessary-use-memo'?: Linter.RuleEntry<[]>
   /**
    * Enforce destructuring assignment for component props
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/prefer-destructuring-assignment/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/prefer-destructuring-assignment/documentation.md
    */
   'flawless/prefer-destructuring-assignment'?: Linter.RuleEntry<[]>
   /**
+   * Enforce destructuring parameters in the function signature
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/prefer-parameter-destructuring/documentation.md
+   */
+  'flawless/prefer-parameter-destructuring'?: Linter.RuleEntry<[]>
+  /**
    * Disallow impure calls such as `math.random` or `os.clock` during render
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/purity/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/purity/documentation.md
    */
   'flawless/purity'?: Linter.RuleEntry<FlawlessPurity>
   /**
    * Enforce a configured sort order for TOML keys and tables
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/toml-sort-keys/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/toml-sort-keys/documentation.md
    */
   'flawless/toml-sort-keys'?: Linter.RuleEntry<FlawlessTomlSortKeys>
   /**
    * Enforce blank lines around top-level YAML block collection keys
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.6/src/rules/yaml-block-key-blank-lines/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v0.1.9/src/rules/yaml-block-key-blank-lines/documentation.md
    */
   'flawless/yaml-block-key-blank-lines'?: Linter.RuleEntry<[]>
   /**
@@ -10787,7 +10792,12 @@ type EslintPluginTestCasePropertyOrdering = []|[unknown[]]
 // ----- eslint-plugin/test-case-shorthand-strings -----
 type EslintPluginTestCaseShorthandStrings = []|[("as-needed" | "never" | "consistent" | "consistent-as-needed")]
 // ----- flawless/jsx-shorthand-fragment -----
-type FlawlessJsxShorthandFragment = []|[string]
+type FlawlessJsxShorthandFragment = []|[{
+  
+  fragmentName?: string
+  
+  mode?: ("element" | "syntax")
+}]
 // ----- flawless/naming-convention -----
 type _FlawlessNamingConventionFormatOptionsConfig = (_FlawlessNamingConventionPredefinedFormats[] | null)
 type _FlawlessNamingConventionPredefinedFormats = ("camelCase" | "strictCamelCase" | "PascalCase" | "StrictPascalCase" | "snake_case" | "UPPER_CASE")
@@ -22793,4 +22803,4 @@ type Yoda = []|[("always" | "never")]|[("always" | "never"), {
   onlyEquality?: boolean
 }]
 // Names of all the configs
-export type ConfigNames = 'isentinel/cease-nonsense/setup' | 'isentinel/cease-nonsense' | 'isentinel/typescript/rules-type-aware' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/e18e/rules' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/ts/rules-type-aware' | 'isentinel/flawless/tsx/rules-type-aware' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/node/rules' | 'isentinel/oxfmt/setup' | 'isentinel/oxfmt/javascript' | 'isentinel/oxfmt/typescript' | 'isentinel/oxfmt/css' | 'isentinel/oxfmt/scss' | 'isentinel/oxfmt/less' | 'isentinel/oxfmt/html' | 'isentinel/oxfmt/markdown' | 'isentinel/oxfmt/graphql' | 'isentinel/oxfmt/json' | 'isentinel/oxfmt/yaml' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/package-json/root' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn/setup' | 'isentinel/unicorn/rules' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
+export type ConfigNames = 'isentinel/cease-nonsense/setup' | 'isentinel/cease-nonsense' | 'isentinel/typescript/rules-type-aware' | 'isentinel/eslint/comments' | 'isentinel/eslint/comments/src' | 'isentinel/e18e/rules' | 'isentinel/eslint-plugin/setup' | 'isentinel/eslint-plugin/rules' | 'isentinel/flawless/setup' | 'isentinel/flawless/rules' | 'isentinel/gitignore' | 'isentinel/ignores' | 'isentinel/imports/rules' | 'isentinel/imports/game' | 'isentinel/javascript/setup' | 'isentinel/javascript/rules' | 'isentinel/jsdoc/setup' | 'isentinel/jsdoc' | 'isentinel/jsonc/setup' | 'isentinel/jsonc/rules' | 'isentinel/markdown/setup' | 'isentinel/markdown/processor' | 'isentinel/markdown/parser' | 'isentinel/markdown/disables' | 'isentinel/naming/setup' | 'isentinel/naming/ts/rules-type-aware' | 'isentinel/naming/tsx/rules-type-aware' | 'isentinel/node/rules' | 'isentinel/oxfmt/setup' | 'isentinel/oxfmt/javascript' | 'isentinel/oxfmt/typescript' | 'isentinel/oxfmt/css' | 'isentinel/oxfmt/scss' | 'isentinel/oxfmt/less' | 'isentinel/oxfmt/html' | 'isentinel/oxfmt/markdown' | 'isentinel/oxfmt/graphql' | 'isentinel/oxfmt/json' | 'isentinel/oxfmt/yaml' | 'isentinel/package-json/setup' | 'isentinel/package-json' | 'isentinel/package-json/root' | 'isentinel/perfectionist/setup' | 'isentinel/perfectionist' | 'isentinel/perfectionist/jsx' | 'isentinel/pnpm/setup' | 'isentinel/pnpm/package-json' | 'isentinel/pnpm/pnpm-workspace-yaml' | 'isentinel/promise' | 'isentinel/react/setup' | 'isentinel/react/setup/naming' | 'isentinel/react/rules' | 'isentinel/react/type-aware-rules' | 'isentinel/roblox/setup' | 'isentinel/roblox/parser' | 'isentinel/roblox/type-aware-parser' | 'isentinel/roblox' | 'isentinel/roblox/rules-type-aware' | 'isentinel/roblox/format-lua/setup' | 'isentinel/roblox/format-lua' | 'isentinel/sonarjs' | 'isentinel/spelling/setup' | 'isentinel/spelling' | 'isentinel/stylistic/setup' | 'isentinel/stylistic' | 'isentinel/stylistic/ts' | 'isentinel/stylistic/js' | 'isentinel/stylistic/markdown-code' | 'isentinel/test/jest/setup' | 'isentinel/test/jest/rules' | 'isentinel/test/vitest/setup' | 'isentinel/test/vitest/rules' | 'isentinel/toml/setup' | 'isentinel/toml/rules' | 'isentinel/typescript/setup' | 'isentinel/typescript/parser' | 'isentinel/typescript/type-aware-parser' | 'isentinel/typescript/rules' | 'isentinel/typescript/rules-type-aware' | 'isentinel/typescript/erasable-syntax-only' | 'isentinel/unicorn/setup' | 'isentinel/unicorn/rules' | 'isentinel/unicorn/root' | 'isentinel/yaml/setup' | 'isentinel/yaml/rules'
