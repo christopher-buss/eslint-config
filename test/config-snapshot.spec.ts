@@ -10,6 +10,7 @@ describe("config snapshots", () => {
 		const configs = await isentinel({
 			name: "test/roblox-game",
 			gitignore: false,
+			isAgent: false,
 			isInEditor: false,
 			pnpm: false,
 			spellCheck: false,
@@ -24,6 +25,7 @@ describe("config snapshots", () => {
 		const configs = await isentinel({
 			name: "test/package",
 			gitignore: false,
+			isAgent: false,
 			isInEditor: false,
 			pnpm: false,
 			roblox: false,
@@ -41,6 +43,7 @@ describe("config snapshots", () => {
 			name: "test/minimal",
 			formatters: false,
 			gitignore: false,
+			isAgent: false,
 			isInEditor: false,
 			pnpm: false,
 			spellCheck: false,

@@ -1,5 +1,5 @@
 // Fixable: ts/consistent-type-imports
-import { ReactNode } from "some-framework";
+import type { ReactNode } from "some-framework";
 
 // Fixable: prefer-const
 const jsxTitle = "Hello";

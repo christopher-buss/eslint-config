@@ -141,7 +141,7 @@ export async function isentinel(
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
-	const inAgentSession = isInAgentSession();
+	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
 	if (defaultSeverity === undefined && inAgentSession) {
 		defaultSeverity = "error";

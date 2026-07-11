@@ -107,6 +107,7 @@ async function buildConfig(
 	const composer = await isentinel({
 		name: "test/config",
 		gitignore: false,
+		isAgent: false,
 		isInEditor: false,
 		pnpm: false,
 		spellCheck: false,
