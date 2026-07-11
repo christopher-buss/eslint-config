@@ -1,4 +1,5 @@
-import { execFileSync } from "node:child_process";
+import type { SpawnSyncReturns } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -13,7 +14,64 @@ const FIXTURES_INPUT = path.resolve(PROJECT_ROOT, "fixtures", "input");
 const isWindows = os.platform() === "win32";
 const timeout = isWindows ? 300_000 : 120_000;
 
-const DIAGNOSTIC_PATTERN = /^(?<file>\S+?):(?<line>\d+):\d+: \w+ (?<rule>[^\s:]+):/;
+interface OxlintDiagnostic {
+	code: string;
+	filename: string;
+	labels: Array<{ span: { line: number } }>;
+}
+
+/**
+ * Run the oxlint binary and return the normalized, sorted diagnostics.
+ *
+ * Oxlint exits 1 when diagnostics are found; anything else (spawn error,
+ * config parse failure, crash, empty output) fails loudly instead of
+ * masquerading as "no diagnostics". The JSON reporter is used because the
+ * default (text) reporter output depends on the environment.
+ *
+ * @param workingDirectory - The directory to lint.
+ * @returns Diagnostics as sorted `file:line code` strings.
+ */
+function runOxlint(workingDirectory: string): Array<string> {
+	const binaryName = isWindows ? "oxlint.CMD" : "oxlint";
+	const binary = path.join(PROJECT_ROOT, "node_modules", ".bin", binaryName);
+
+	const result: SpawnSyncReturns<string> = spawnSync(
+		binary,
+		["-c", ".oxlintrc.json", "--disable-nested-config", "-f", "json", "."],
+		{
+			cwd: workingDirectory,
+			encoding: "utf8",
+			shell: isWindows,
+		},
+	);
+
+	const runContext = `status=${result.status}, error=${result.error?.message}, stderr=${result.stderr}`;
+
+	if (result.error !== undefined || result.status === null || result.status > 1) {
+		throw new Error(`oxlint failed to run: ${runContext}`);
+	}
+
+	let parsed: { diagnostics: Array<OxlintDiagnostic> };
+	try {
+		parsed = JSON.parse(result.stdout) as { diagnostics: Array<OxlintDiagnostic> };
+	} catch {
+		throw new Error(`Failed to parse oxlint JSON output. ${runContext}\n${result.stdout}`);
+	}
+
+	const diagnostics = parsed.diagnostics
+		.map((diagnostic) => {
+			const file = diagnostic.filename.replaceAll("\\", "/");
+			const line = diagnostic.labels[0]?.span.line ?? 0;
+			return `${file}:${line} ${diagnostic.code}`;
+		})
+		.sort();
+
+	if (diagnostics.length === 0) {
+		throw new Error(`oxlint produced no diagnostics: ${runContext}\n${result.stdout}`);
+	}
+
+	return diagnostics;
+}
 
 describe("oxlint standalone fixtures", () => {
 	it(
@@ -35,37 +93,8 @@ describe("oxlint standalone fixtures", () => {
 			const configPath = path.join(temporaryDirectory, ".oxlintrc.json");
 			await fs.writeFile(configPath, JSON.stringify(config, undefined, "\t"));
 
-			const binaryName = isWindows ? "oxlint.CMD" : "oxlint";
-			const binary = path.join(PROJECT_ROOT, "node_modules", ".bin", binaryName);
+			const diagnostics = runOxlint(temporaryDirectory);
 
-			let output = "";
-			try {
-				output = execFileSync(
-					binary,
-					["-c", ".oxlintrc.json", "--disable-nested-config", "."],
-					{
-						cwd: temporaryDirectory,
-						encoding: "utf8",
-						shell: isWindows,
-					},
-				);
-			} catch (err) {
-				// oxlint exits non-zero when diagnostics are found
-				const failure = err as { stdout?: string };
-				output = failure.stdout ?? "";
-			}
-
-			const diagnostics = output
-				.split("\n")
-				.map((line) => DIAGNOSTIC_PATTERN.exec(line.trim()))
-				.filter((match) => match !== null)
-				.map((match) => {
-					const file = match.groups?.["file"]?.replaceAll("\\", "/") ?? "";
-					return `${file}:${match.groups?.["line"]} ${match.groups?.["rule"]}`;
-				})
-				.sort();
-
-			expect(diagnostics.length).toBeGreaterThan(0);
 			expect(diagnostics).toMatchSnapshot();
 
 			await fs.rm(temporaryDirectory, { force: true, recursive: true });
