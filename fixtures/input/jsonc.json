@@ -1,0 +1,43 @@
+{
+    "z-last": "should be sorted last",
+    "a-first": "should be sorted first",
+    "m-middle": "should be in middle",
+    "nested-object": {
+        "z-nested": true,
+        "a-nested": false,
+        "m-nested": 42
+    },
+    "number-values": {
+        "integer": 100,
+        "negative": -50,
+        "zero": 0
+    },
+    "array-values": [
+        "zebra",
+        "apple",
+        "mango"
+    ],
+    "mixed-array": [
+        1,
+        "string",
+        true,
+        null
+    ],
+    "deeply-nested": {
+        "level1": {
+            "z-deep": "last",
+            "a-deep": "first"
+        }
+    },
+    "boolean-values": {
+        "z-bool": true,
+        "a-bool": false
+    },
+    "empty-object": {},
+    "empty-array": [],
+    "string-with-special": "hello \"world\"",
+    "multiline": "this is a long string value that contains various characters and tests json handling",
+    "null-value": null,
+    "id": "should-be-first",
+    "name": "should-be-second"
+}

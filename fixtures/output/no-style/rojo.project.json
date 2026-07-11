@@ -1,0 +1,33 @@
+{
+    "name": "fixture-game",
+    "servePort": 34872,
+    "servePlaceIds": [123456],
+    "gameId": 789012,
+    "globIgnorePaths": ["**/*.spec.ts"],
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "$path": "src/shared",
+            "Modules": {
+                "$className": "Folder",
+                "$path": "src/shared/modules"
+            }
+        },
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "$path": "src/server",
+            "Services": {
+                "$className": "Folder",
+                "$path": "src/server/services"
+            }
+        },
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "$path": "src/client"
+            }
+        }
+    }
+}
