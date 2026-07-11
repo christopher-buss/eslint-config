@@ -898,7 +898,7 @@ const UNICORN_NATIVE_RENAMES: Readonly<Record<string, string>> = {
  * Prefix translation for rules that run via jsPlugins. Native oxlint plugin
  * prefixes are reserved, so those jsPlugins use `-js` aliases.
  */
-const JS_PLUGIN_PREFIX_RENAMES: Readonly<Record<string, string>> = {
+export const oxlintJsPluginPrefixRenames: Readonly<Record<string, string>> = {
 	"": "eslint-js",
 	"import": "import-js",
 	"jsdoc": "jsdoc-js",
@@ -999,7 +999,7 @@ export function translateRuleToOxlint(rule: string): string {
 
 	// js-plugin (or unmapped rules used by the standalone factory, which keep
 	// their prefix)
-	const renamed = JS_PLUGIN_PREFIX_RENAMES[prefix];
+	const renamed = oxlintJsPluginPrefixRenames[prefix];
 	return renamed === undefined ? rule : `${renamed}/${name}`;
 }
 

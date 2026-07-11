@@ -6,17 +6,13 @@
  * type modules would make `dist/index.d.mts` depend on `oxlint`, breaking
  * ESLint-only consumers who do not install it.
  */
-import type { Linter } from "eslint";
 import type { DummyRuleMap, OxlintConfig, OxlintOverride } from "oxlint";
 
 import type { OptionsConfig } from "../eslint/types.ts";
-import type { Rules } from "../types.ts";
+import type { OxlintRules } from "./typegen";
 
 /** Rule names implemented natively by oxlint. */
 export type OxlintNativeRuleName = keyof DummyRuleMap;
-
-/** A rule map restricted to native oxlint rules. */
-export type OxlintRules = Partial<Record<OxlintNativeRuleName, Linter.RuleEntry>>;
 
 /** Top-level oxlint `settings`. */
 export type OxlintSettings = NonNullable<OxlintConfig["settings"]>;
@@ -40,7 +36,7 @@ export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
 	 * An object containing the configured rules, using canonical oxlint rule
 	 * names (native names or jsPlugin-prefixed names).
 	 */
-	rules?: Rules;
+	rules?: OxlintRules;
 
 	/**
 	 * Plugin-specific settings. The factory strips these from fragments and
@@ -89,4 +85,10 @@ export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
 		options?: OxlintLinterOptions;
 	};
 
+export type {
+	OxlintNativeRuleOptions,
+	OxlintRenamedJsPluginRuleOptions,
+	OxlintRuleOptions,
+	OxlintRules,
+} from "./typegen";
 export type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";

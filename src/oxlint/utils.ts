@@ -168,7 +168,9 @@ export function createOxlintConfigs({
 			files,
 			...(globals ? { globals } : {}),
 			plugins: nativePlugins,
-			rules: nativeRules,
+			// The split rules are keyed by translated oxlint names, which the
+			// eslint-side `Rules` typing cannot express.
+			rules: nativeRules as TypedOxlintConfigItem["rules"],
 			...(settings ? { settings } : {}),
 		});
 	}
@@ -180,7 +182,7 @@ export function createOxlintConfigs({
 			files,
 			...(globals && fragments.length === 0 ? { globals } : {}),
 			jsPlugins,
-			rules: jsPluginRules,
+			rules: jsPluginRules as TypedOxlintConfigItem["rules"],
 			...(settings && fragments.length === 0 ? { settings } : {}),
 		});
 	}

@@ -48,7 +48,7 @@
 		"build": "nr gen && tsdown --clean --dts && node scripts/check-dist.ts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts --out-dir ./.eslint-config-inspector",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
-		"gen": "node scripts/typegen.ts && node scripts/versiongen.ts",
+		"gen": "node scripts/typegen.ts && node scripts/typegen-oxlint.ts && node scripts/versiongen.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "oxlint && eslint --cache",
 		"lint:ci": "oxlint && eslint --cache --cache-strategy content",

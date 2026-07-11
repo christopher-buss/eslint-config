@@ -78,11 +78,13 @@ export function oxlintOxfmt(
 			{
 				name,
 				files,
+				// The split rules are keyed by translated oxlint names, which
+				// the eslint-side `Rules` typing cannot express.
 				rules: {
 					...nativeRules,
 					"arrow-body-style": "off",
 					"prefer-arrow-callback": "off",
-				},
+				} as TypedOxlintConfigItem["rules"],
 			},
 			{
 				name: `${name}/js-plugin`,
@@ -91,7 +93,7 @@ export function oxlintOxfmt(
 				rules: {
 					...jsPluginRules,
 					"oxfmt/oxfmt": ["error", oxfmtOptions],
-				},
+				} as TypedOxlintConfigItem["rules"],
 			},
 		];
 	}
