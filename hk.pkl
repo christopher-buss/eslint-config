@@ -12,6 +12,16 @@ local sharedGuards = new Mapping<String, Step> {
     }
 }
 
+local oxlint = new Step {
+    glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs")
+    // --type-aware is intentionally omitted: oxlint-tsgolint intermittently
+    // segfaults at exit on Windows; CI runs the type-aware pass.
+    check = "pnpm exec oxlint {{files}}"
+    fix = "pnpm exec oxlint --fix {{files}}"
+    shell = bash
+    env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
+}
+
 local lint = new Step {
     glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.jsonc", "*.md", "*.toml", "*.yaml", "*.yml")
     check = "eslint --cache --no-warn-ignored {{files}}"
@@ -32,6 +42,7 @@ hooks {
         stash = "none"
         steps {
             ...sharedGuards
+            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
         }
@@ -39,6 +50,7 @@ hooks {
     ["pre-push"] {
         steps {
             ...sharedGuards
+            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
         }
@@ -60,6 +72,7 @@ hooks {
     ["check"] {
         steps {
             ...sharedGuards
+            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
         }

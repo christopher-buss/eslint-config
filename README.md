@@ -495,6 +495,40 @@ otherwise, you can install them manually:
 pnpm i -D eslint-plugin-react-x eslint-plugin-react-jsx eslint-plugin-react-naming-convention eslint-plugin-jest
 ```
 
+#### Oxlint
+
+The config can run alongside (or be replaced by)
+[oxlint](https://oxc.rs/docs/guide/usage/linter/) in three modes: ESLint-only
+(the default), hybrid (`oxlint --type-aware && eslint`), and oxlint standalone
+via the `@isentinel/eslint-config/oxlint` export.
+
+```ts
+// eslint.config.ts - hybrid mode: ESLint drops every rule oxlint covers
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	oxlint: true,
+});
+```
+
+```ts
+// oxlint.config.ts
+import { isentinel } from "@isentinel/eslint-config/oxlint";
+
+export default isentinel({
+	name: "project/options",
+});
+```
+
+Requires the optional peer dependencies:
+
+```bash
+pnpm i -D oxlint oxlint-tsgolint
+```
+
+See [docs/oxlint.md](./docs/oxlint.md) for the per-rule mapping, what stays in
+ESLint and why, and migration notes.
+
 #### ESLint Plugin Development
 
 If you're developing an ESLint plugin, you can enable specialized rules to help
