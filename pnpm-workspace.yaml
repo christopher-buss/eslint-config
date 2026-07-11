@@ -44,6 +44,7 @@ catalogs:
     type-fest: 5.7.0
     typescript: 6.0.3
     unplugin-unused: 0.5.7
+    vitest: 4.1.10
   peer:
     "@vitest/eslint-plugin": 1.6.20
     eslint: 10.6.0

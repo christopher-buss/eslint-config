@@ -481,6 +481,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	ignores?: ((originals: Array<string>) => Array<string>) | Array<string>;
 
 	/**
+	 * Control behavior changes made for agent sessions, such as disabling
+	 * certain autofixes and raising the default severity.
+	 *
+	 * @default auto-detect based on the process.env
+	 */
+	isAgent?: boolean;
+
+	/**
 	 * Control to disable some rules in editors.
 	 *
 	 * @default auto-detect based on the process.env
