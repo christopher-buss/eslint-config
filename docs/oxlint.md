@@ -45,6 +45,11 @@ export default isentinel({
 });
 ```
 
+> [!NOTE] In hybrid mode, give the oxlint factory only the structural options
+> (`type`, `roblox`, `stylistic`, `root`, ignores...). Do NOT mirror `test` or
+> `react`: those rule families stay in ESLint (see below), and enabling them on
+> the oxlint side would double-lint the same files.
+
 Then run both linters:
 
 ```jsonc
@@ -81,6 +86,13 @@ keeps running in ESLint, notably:
   `settings.jest.globalPackage`
   ([oxc#23290](https://github.com/oxc-project/oxc/issues/23290)), and the vitest
   plugin cannot run under oxlint's jsPlugin runtime.
+- **Type-aware plugin rules** — any rule whose `meta.docs.requiresTypeChecking`
+  is true (`sonar/no-ignored-return`, `sonar/no-redundant-optional`,
+  `sonar/no-try-promise`, `unicorn/no-non-function-verb-prefix`,
+  `arrow-style/no-export-default-arrow`, `eslint-plugin/no-property-in-node`,
+  four `test/*` jest rules). The oxlint factory refuses to emit them as
+  jsPlugins because they crash or silently no-op without type information; a
+  test enforces this against the plugins' runtime metadata.
 - **Type-aware custom rules** — `roblox/*` type-aware rules,
   `sentinel/explicit-size-check`, `cease-nonsense/prefer-read-only-props`,
   `flawless/*` and `naming`; oxlint jsPlugins have no type information.
@@ -129,6 +141,20 @@ name**:
 
 The official [`@oxlint/migrate`](https://github.com/oxc-project/oxlint-migrate)
 tool can convert comments in bulk with `--replace-eslint-comments`.
+
+## ESLint 10 peer note
+
+If you are on ESLint 10, `@typescript-eslint/utils` and
+`@typescript-eslint/type-utils` must resolve to `>=8.62.1` or ESLint crashes at
+startup (`Class extends value undefined`). This repo pins them via pnpm
+`overrides`, which do not travel with the published package — add the same
+overrides to your own `pnpm-workspace.yaml` if you hit that error:
+
+```yaml
+overrides:
+  "@typescript-eslint/type-utils": 8.62.1
+  "@typescript-eslint/utils": 8.62.1
+```
 
 ## Validating the config
 

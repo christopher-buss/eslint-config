@@ -1,4 +1,12 @@
-import { GLOB_BUILD_TOOLS, GLOB_DTS, GLOB_SRC, GLOB_SRC_EXT, GLOB_TESTS } from "../../globs.ts";
+import {
+	GLOB_BUILD_TOOLS,
+	GLOB_DTS,
+	GLOB_JSX,
+	GLOB_SRC,
+	GLOB_SRC_EXT,
+	GLOB_TESTS,
+	GLOB_TSX,
+} from "../../globs.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
@@ -91,6 +99,13 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			rules: {
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
+			},
+		}),
+		...createOxlintConfigs({
+			name: "isentinel/disables/jsx",
+			files: [GLOB_JSX, GLOB_TSX],
+			rules: {
+				"max-lines-per-function": "off",
 			},
 		}),
 	];

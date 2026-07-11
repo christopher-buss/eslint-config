@@ -1,3 +1,4 @@
+import { GLOB_MARKDOWN } from "../globs.ts";
 import { isOxlintCovered } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
@@ -6,23 +7,59 @@ import type { TypedFlatConfigItem } from "./types.ts";
  * resolved ESLint configs. Only enabled rules in `isentinel/*` configs are
  * removed; `"off"` entries and user configs are left untouched.
  *
+ * Oxlint cannot lint Markdown virtual files (fenced code blocks processed by
+ * the markdown plugin), so every dropped rule is re-added in a sibling config
+ * scoped to the Markdown-virtual subset of the original config's files. The
+ * sibling is inserted directly after the original so later configs (for
+ * example the markdown disables) still take precedence.
+ *
  * @param configs - The resolved flat config items (mutated in place).
  */
 export function dropOxlintCoveredRules(configs: Array<TypedFlatConfigItem>): void {
-	for (const config of configs) {
-		if (config.name === undefined || !config.name.startsWith("isentinel/")) {
+	for (let index = 0; index < configs.length; index += 1) {
+		const config = configs[index];
+		if (
+			config?.name === undefined ||
+			!config.name.startsWith("isentinel/") ||
+			config.name.endsWith("/markdown-code") ||
+			config.rules === undefined ||
+			targetsMarkdown(config.files)
+		) {
 			continue;
 		}
 
-		if (config.rules === undefined || targetsMarkdown(config.files)) {
+		const dropped = dropCoveredRulesFromConfig(config.rules);
+		if (Object.keys(dropped).length === 0) {
 			continue;
 		}
 
-		dropCoveredRulesFromConfig(config.rules);
+		// Configs that explicitly ignore Markdown VIRTUAL files (the
+		// type-aware configs use ignores like "**/*.md/**") must not get a
+		// Markdown sibling: their rules cannot run without type information,
+		// which Markdown code blocks never have. Note the trailing slash —
+		// the factory's default ignores ("**/*.md") only exclude Markdown
+		// files themselves, not the virtual code blocks inside them.
+		const ignoresMarkdownVirtual = (config.ignores ?? []).some(
+			(pattern) => typeof pattern === "string" && pattern.includes(".md/"),
+		);
+		if (ignoresMarkdownVirtual) {
+			continue;
+		}
+
+		configs.splice(index + 1, 0, {
+			name: `${config.name}/markdown-code`,
+			files: markdownVirtualFiles(config.files),
+			rules: dropped,
+		});
+		index += 1;
 	}
 }
 
-function dropCoveredRulesFromConfig(rules: NonNullable<TypedFlatConfigItem["rules"]>): void {
+function dropCoveredRulesFromConfig(
+	rules: NonNullable<TypedFlatConfigItem["rules"]>,
+): NonNullable<TypedFlatConfigItem["rules"]> {
+	const dropped: NonNullable<TypedFlatConfigItem["rules"]> = {};
+
 	for (const [rule, value] of Object.entries(rules)) {
 		if (value === undefined || !isOxlintCovered(rule)) {
 			continue;
@@ -33,8 +70,30 @@ function dropCoveredRulesFromConfig(rules: NonNullable<TypedFlatConfigItem["rule
 			continue;
 		}
 
+		dropped[rule] = value;
 		delete rules[rule];
 	}
+
+	return dropped;
+}
+
+/**
+ * Narrow a config's `files` patterns to the Markdown-virtual subset by
+ * AND-combining each pattern with the Markdown container glob.
+ *
+ * @param files - The original config's `files` patterns.
+ * @returns Patterns matching only Markdown code blocks covered by the config.
+ */
+function markdownVirtualFiles(
+	files: TypedFlatConfigItem["files"],
+): NonNullable<TypedFlatConfigItem["files"]> {
+	if (files === undefined) {
+		return [[`${GLOB_MARKDOWN}/**`]];
+	}
+
+	return files.map((pattern) => {
+		return [`${GLOB_MARKDOWN}/**`, ...[pattern].flat()];
+	});
 }
 
 /**

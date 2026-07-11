@@ -39,6 +39,31 @@ export function oxlintOxfmt(
 	// rules are dropped by the splitter.
 	const { jsPluginRules, jsPlugins, nativeRules } = splitOxlintRules(canonicalDisables);
 
+	// The splitter drops unmapped "off" rules, but the `@stylistic` disables
+	// must survive: other configs (react, user overrides) enable unmapped
+	// `style/*` rules that ESLint's formatter-compat layer turns off, and this
+	// config runs last to mirror that (e.g. `style/jsx-newline`). Names are
+	// checked against the plugin so oxlint never sees an unknown rule.
+	const stylisticPlugin = require("@stylistic/eslint-plugin") as {
+		rules: Record<string, unknown>;
+	};
+	for (const [rule, value] of Object.entries(canonicalDisables)) {
+		if (!rule.startsWith("style/") || jsPluginRules[rule] !== undefined) {
+			continue;
+		}
+
+		if (stylisticPlugin.rules[rule.slice("style/".length)] !== undefined) {
+			jsPluginRules[rule] = value;
+		}
+	}
+
+	const hasStylePlugin = jsPlugins.some(
+		(plugin) => typeof plugin !== "string" && plugin.name === "style",
+	);
+	if (!hasStylePlugin) {
+		jsPlugins.push({ name: "style", specifier: "@stylistic/eslint-plugin" });
+	}
+
 	const oxfmtPlugin = { name: "oxfmt", specifier: "eslint-plugin-oxfmt" };
 
 	const jsFiles = oxfmtFiles?.flat() ?? [GLOB_JS, GLOB_JSX];

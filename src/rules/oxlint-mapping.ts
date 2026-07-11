@@ -41,6 +41,8 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"test/*":
 		"Jest rules stay in ESLint: the native oxlint jest plugin does not support settings.jest.globalPackage (https://github.com/oxc-project/oxc/issues/23290) and we use @rbxts/jest-globals",
+	"type-aware jsPlugin rules":
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-redundant-optional, sonar/no-try-promise, unicorn/no-non-function-verb-prefix, arrow-style/no-export-default-arrow, eslint-plugin/no-property-in-node, test/no-error-equal, test/no-unnecessary-assertion, test/unbound-method, test/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"vitest/*":
@@ -335,7 +337,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/no-mismatched-map-key": "js-plugin",
 	"unicorn/no-misrefactored-assignment": "js-plugin",
 	"unicorn/no-negated-array-predicate": "js-plugin",
-	"unicorn/no-non-function-verb-prefix": "js-plugin",
 	"unicorn/no-object-methods-with-collections": "js-plugin",
 	"unicorn/no-optional-chaining-on-undeclared-variable": "js-plugin",
 	"unicorn/no-redundant-comparison": "js-plugin",
@@ -468,7 +469,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"sonar/no-identical-conditions": "js-plugin",
 	"sonar/no-identical-expressions": "js-plugin",
 	"sonar/no-identical-functions": "js-plugin",
-	"sonar/no-ignored-return": "js-plugin",
 	"sonar/no-inverted-boolean-check": "js-plugin",
 	"sonar/no-nested-conditional": "js-plugin",
 	"sonar/no-nested-incdec": "js-plugin",
@@ -477,8 +477,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"sonar/no-parameter-reassignment": "js-plugin",
 	"sonar/no-redundant-boolean": "js-plugin",
 	"sonar/no-redundant-jump": "js-plugin",
-	"sonar/no-redundant-optional": "js-plugin",
-	"sonar/no-try-promise": "js-plugin",
 	"sonar/no-unthrown-error": "js-plugin",
 	"sonar/no-unused-collection": "js-plugin",
 	"sonar/no-use-of-empty-return-value": "js-plugin",
@@ -531,7 +529,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 
 	// Part: Stylistic (run via jsPlugin)
 	"arrow-style/arrow-return-style": "js-plugin",
-	"arrow-style/no-export-default-arrow": "js-plugin",
 	"style/lines-between-class-members": "js-plugin",
 	"style/multiline-comment-style": "js-plugin",
 	"style/object-property-newline": "js-plugin",
@@ -585,7 +582,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"eslint-plugin/no-missing-message-ids": "js-plugin",
 	"eslint-plugin/no-missing-placeholders": "js-plugin",
 	"eslint-plugin/no-only-tests": "js-plugin",
-	"eslint-plugin/no-property-in-node": "js-plugin",
 	"eslint-plugin/no-unused-message-ids": "js-plugin",
 	"eslint-plugin/no-unused-placeholders": "js-plugin",
 	"eslint-plugin/no-useless-token-range": "js-plugin",
@@ -617,12 +613,36 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 };
 
 /**
+ * Type-aware ESLint rules (meta.docs.requiresTypeChecking) that our shared
+ * rule maps reference. Oxlint jsPlugins have no type information, so these
+ * rules crash (e.g. Eslint-plugin-jest throws) or silently no-op (e.g.
+ * Eslint-plugin-sonarjs skips) when run inside oxlint. The oxlint factory
+ * must never emit them; in hybrid mode they stay in ESLint.
+ *
+ * A test asserts (against the plugins' runtime metadata) that no rule
+ * emitted as a jsPlugin requires type checking.
+ */
+export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
+	"arrow-style/no-export-default-arrow",
+	"eslint-plugin/no-property-in-node",
+	"sonar/no-ignored-return",
+	"sonar/no-redundant-optional",
+	"sonar/no-try-promise",
+	"test/no-error-equal",
+	"test/no-unnecessary-assertion",
+	"test/unbound-method",
+	"test/valid-expect-with-promise",
+	"unicorn/no-non-function-verb-prefix",
+]);
+
+/**
  * Rules that must not run inside oxlint at all (even in standalone mode)
  * because they misbehave under oxlint's jsPlugin runtime. See
  * {@link staysInEslint} for the reasons.
  */
 export const excludedFromOxlint: ReadonlySet<string> = new Set([
 	"unicorn/no-unsafe-string-replacement",
+	...typeAwareJsPluginRules,
 ]);
 
 /**

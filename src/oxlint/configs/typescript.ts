@@ -1,6 +1,7 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import {
 	erasableSyntaxOnlyRules,
+	typescriptRecommendedOverrides,
 	typescriptRules,
 	typescriptStrictPresetRules,
 	typescriptTypeAwareRules,
@@ -39,6 +40,7 @@ export function oxlintTypescript(
 		name: "isentinel/typescript",
 		files,
 		rules: {
+			...typescriptRecommendedOverrides(),
 			...typescriptStrictPresetRules(),
 			...typescriptRules({ stylistic }),
 			// Type-aware rules are executed by oxlint-tsgolint and require

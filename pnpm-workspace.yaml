@@ -32,11 +32,13 @@ catalogs:
     "@isentinel/tsconfig": 1.2.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 24.1.0
+    "@types/picomatch": 4.0.3
     "@types/yargs": 17.0.35
     bumpp: 11.1.0
     eslint-typegen: 2.3.1
     jiti: 2.7.0
     parse-gitignore-ts: 1.0.0
+    picomatch: 4.0.5
     pnpm-workspace-yaml: 1.6.1
     publint: 0.3.21
     rimraf: 6.1.3

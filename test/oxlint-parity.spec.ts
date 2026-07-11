@@ -1,0 +1,299 @@
+import { describe, it } from "vitest";
+
+import { isentinel } from "../src";
+import {
+	isOxlintCovered,
+	isentinel as oxlintIsentinel,
+	oxlintJsPlugins,
+	translateRuleToOxlint,
+} from "../src/oxlint";
+import type { OxlintConfig } from "../src/oxlint";
+import type { Severity } from "./oxlint-helpers";
+import { effectiveEslintRules, effectiveOxlintRules } from "./oxlint-helpers";
+
+interface PluginRuleMeta {
+	meta?: { docs?: Record<string, unknown> };
+}
+
+interface ParityVariant {
+	name: string;
+	files: Array<string>;
+	options: Record<string, unknown>;
+}
+
+/**
+ * Coverage direction: every mapped rule enabled in ESLint-only must be enabled
+ * in oxlint for the same file.
+ *
+ * @param filePath - The file path under comparison.
+ * @param eslintEffective - Effective ESLint severities.
+ * @param oxlintEffective - Effective oxlint severities.
+ * @returns Human-readable problems.
+ */
+function findMissingCoverage(
+	filePath: string,
+	eslintEffective: Map<string, Severity>,
+	oxlintEffective: Map<string, Severity>,
+): Array<string> {
+	const missing: Array<string> = [];
+
+	for (const [rule, severity] of eslintEffective) {
+		if (severity !== "enabled" || !isOxlintCovered(rule)) {
+			continue;
+		}
+
+		const translated = translateRuleToOxlint(rule);
+		if (oxlintEffective.get(translated) !== "enabled") {
+			missing.push(`${filePath}: ${rule} -> ${translated}`);
+		}
+	}
+
+	return missing;
+}
+
+/**
+ * Over-reporting direction: rules ESLint-only effectively disables for a file
+ * must not be enabled by oxlint (e.g. `no-undef` on TS files, formatter-compat
+ * style disables).
+ *
+ * @param filePath - The file path under comparison.
+ * @param eslintEffective - Effective ESLint severities.
+ * @param oxlintEffective - Effective oxlint severities.
+ * @returns Human-readable problems.
+ */
+function findOverReported(
+	filePath: string,
+	eslintEffective: Map<string, Severity>,
+	oxlintEffective: Map<string, Severity>,
+): Array<string> {
+	// Translated names of every rule ESLint effectively enables: another
+	// ESLint rule (e.g. the ts/ extension variant) may enable the same oxlint
+	// rule that a base rule disables.
+	const enabledTranslations = new Set<string>();
+	for (const [rule, severity] of eslintEffective) {
+		if (severity === "enabled") {
+			enabledTranslations.add(translateRuleToOxlint(rule));
+		}
+	}
+
+	const overReported: Array<string> = [];
+	for (const [rule, severity] of eslintEffective) {
+		if (severity !== "off") {
+			continue;
+		}
+
+		const translated = translateRuleToOxlint(rule);
+		if (!enabledTranslations.has(translated) && oxlintEffective.get(translated) === "enabled") {
+			overReported.push(`${filePath}: ${rule} -> ${translated}`);
+		}
+	}
+
+	return overReported;
+}
+
+const baseOptions = {
+	gitignore: false,
+	isAgent: false,
+	isInEditor: false,
+	pnpm: false,
+} as const;
+
+const variants: Array<ParityVariant> = [
+	{
+		name: "roblox-game",
+		files: ["src/services/service.ts", "src/components/component.tsx", "src/util.js"],
+		options: { ...baseOptions },
+	},
+	{
+		name: "package",
+		files: ["src/index.ts", "src/utilities/helper.ts"],
+		options: { ...baseOptions, roblox: false, type: "package" },
+	},
+	{
+		name: "react",
+		files: ["src/components/component.tsx"],
+		options: { ...baseOptions, react: true },
+	},
+];
+
+describe("oxlint per-file severity parity", () => {
+	describe.for(variants)("$name", (variant: ParityVariant) => {
+		it("should agree with the ESLint-only config on effective severities", async ({
+			expect,
+		}) => {
+			expect.hasAssertions();
+
+			const eslintOnly = [
+				...(await isentinel({ name: "test/parity-eslint", ...variant.options })),
+			];
+			const oxlintConfig = oxlintIsentinel({
+				name: "test/parity-oxlint",
+				...variant.options,
+			});
+
+			const missing: Array<string> = [];
+			const overReported: Array<string> = [];
+			for (const filePath of variant.files) {
+				const eslintEffective = effectiveEslintRules(eslintOnly, filePath);
+				const oxlintEffective = effectiveOxlintRules(oxlintConfig, filePath);
+
+				missing.push(...findMissingCoverage(filePath, eslintEffective, oxlintEffective));
+				overReported.push(...findOverReported(filePath, eslintEffective, oxlintEffective));
+			}
+
+			expect(missing).toStrictEqual([]);
+			expect(overReported).toStrictEqual([]);
+		});
+	});
+});
+
+/**
+ * Collect all enabled jsPlugin-prefixed rules per plugin alias from a
+ * generated oxlint config.
+ *
+ * @param config - The generated oxlint config.
+ * @param specifiers - Registered jsPlugin aliases.
+ * @returns Rule names per plugin alias.
+ */
+function collectEmittedJsPluginRules(
+	config: OxlintConfig,
+	specifiers: Map<string, string>,
+): Map<string, Set<string>> {
+	const emitted = new Map<string, Set<string>>();
+
+	/**
+	 * Record the jsPlugin-prefixed enabled rules of one rule map.
+	 *
+	 * @param rules - The rule map to scan.
+	 */
+	function collectFrom(rules: Record<string, unknown> | undefined): void {
+		const entries = Object.entries(rules ?? {});
+		for (const [rule, value] of entries) {
+			const severity = Array.isArray(value) ? (value[0] as unknown) : value;
+			if (value === undefined || severity === "off" || severity === 0) {
+				continue;
+			}
+
+			const slashIndex = rule.indexOf("/");
+			const prefix = slashIndex === -1 ? "" : rule.slice(0, slashIndex);
+			if (prefix === "" || !specifiers.has(prefix)) {
+				continue;
+			}
+
+			const rulesForPlugin = emitted.get(prefix) ?? new Set<string>();
+			rulesForPlugin.add(rule.slice(slashIndex + 1));
+			emitted.set(prefix, rulesForPlugin);
+		}
+	}
+
+	collectFrom(config.rules);
+	const overrides = config.overrides ?? [];
+	for (const override of overrides) {
+		collectFrom(override.rules);
+	}
+
+	return emitted;
+}
+
+/**
+ * Registered jsPlugin aliases (alias to package specifier) of a generated
+ * oxlint config.
+ *
+ * @param config - The generated oxlint config.
+ * @returns Alias to specifier.
+ */
+function jsPluginSpecifiers(config: OxlintConfig): Map<string, string> {
+	const specifiers = new Map<string, string>();
+	const jsPlugins = config.jsPlugins ?? [];
+	for (const jsPlugin of jsPlugins) {
+		if (typeof jsPlugin !== "string") {
+			specifiers.set(jsPlugin.name, jsPlugin.specifier);
+		}
+	}
+
+	return specifiers;
+}
+
+/**
+ * Check one plugin's emitted rules against its runtime metadata.
+ *
+ * @param prefix - The jsPlugin alias.
+ * @param specifier - The plugin package specifier.
+ * @param ruleNames - The emitted rule names (without prefix).
+ * @returns Human-readable problems for rules that require type information.
+ */
+async function findTypeAwareRulesInPlugin(
+	prefix: string,
+	specifier: string,
+	ruleNames: Set<string>,
+): Promise<Array<string>> {
+	const module_ = (await import(specifier)) as {
+		default?: { rules?: Record<string, PluginRuleMeta> };
+		rules?: Record<string, PluginRuleMeta>;
+	};
+	const plugin = module_.default ?? module_;
+
+	const problems: Array<string> = [];
+	for (const ruleName of ruleNames) {
+		const rule = plugin.rules?.[ruleName];
+		if (rule?.meta?.docs?.["requiresTypeChecking"] === true) {
+			problems.push(`${prefix}/${ruleName} (${specifier}) requires type information`);
+		}
+	}
+
+	return problems;
+}
+
+/**
+ * Find every emitted jsPlugin rule of a generated config that requires type
+ * information (per the plugins' runtime metadata).
+ *
+ * @param config - The generated oxlint config.
+ * @returns Human-readable problems.
+ */
+async function findTypeAwareEmissions(config: OxlintConfig): Promise<Array<string>> {
+	const specifiers = jsPluginSpecifiers(config);
+	const emittedByPlugin = collectEmittedJsPluginRules(config, specifiers);
+
+	const problems: Array<string> = [];
+	for (const [prefix, ruleNames] of emittedByPlugin) {
+		const specifier = specifiers.get(prefix);
+		if (specifier !== undefined && specifier !== "oxlint-plugin-oxlint-comments") {
+			problems.push(...(await findTypeAwareRulesInPlugin(prefix, specifier, ruleNames)));
+		}
+	}
+
+	return problems;
+}
+
+describe("oxlint jsPlugin type-awareness", () => {
+	const jsPluginVariants: Array<Record<string, unknown>> = [
+		{ ...baseOptions },
+		{
+			...baseOptions,
+			eslintPlugin: true,
+			react: true,
+			roblox: false,
+			test: { jest: true },
+			type: "package",
+			typescript: { erasableOnly: true },
+		},
+	];
+
+	it("should never emit a jsPlugin rule that requires type information", async ({ expect }) => {
+		expect.hasAssertions();
+
+		const problems: Array<string> = [];
+		for (const options of jsPluginVariants) {
+			const config = oxlintIsentinel({ name: "test/type-aware", ...options });
+			problems.push(...(await findTypeAwareEmissions(config)));
+		}
+
+		expect(problems).toStrictEqual([]);
+	});
+
+	it("should keep every known jsPlugin prefix resolvable", ({ expect }) => {
+		expect.hasAssertions();
+		expect(Object.keys(oxlintJsPlugins).length).toBeGreaterThan(20);
+	});
+});

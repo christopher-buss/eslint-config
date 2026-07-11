@@ -12,6 +12,7 @@ import {
 	translateRuleToOxlint,
 } from "../src/oxlint";
 import type { OxlintConfig } from "../src/oxlint";
+import { effectiveEslintRules, enabledFromEffective } from "./oxlint-helpers";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -74,6 +75,9 @@ function collectEnabledRules(
 
 /**
  * Collect all rule names with a non-"off" entry anywhere in the configs.
+ * Markdown-code sibling configs (synthesized by hybrid mode to keep dropped
+ * rules alive inside Markdown code blocks) are excluded so the hybrid drop is
+ * visible to the comparison.
  *
  * @param configs - The resolved flat config items.
  * @returns The enabled rule names.
@@ -82,6 +86,10 @@ function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<string> {
 	const enabled = new Set<string>();
 
 	for (const config of configs) {
+		if (config.name?.endsWith("/markdown-code") === true) {
+			continue;
+		}
+
 		collectEnabledRules(config.rules, enabled);
 	}
 
@@ -176,6 +184,22 @@ describe("oxlint hybrid coverage", () => {
 			);
 
 			expect(missing).toStrictEqual([]);
+
+			// Oxlint cannot lint Markdown code blocks, so hybrid mode must
+			// keep the ESLint-only effective rule set for Markdown-virtual
+			// files (the synthesized markdown-code siblings provide this).
+			const markdownPath = "docs/guide.md/0_0.ts";
+			const markdownBefore = enabledFromEffective(
+				effectiveEslintRules([...eslintOnly], markdownPath),
+			);
+			const markdownAfter = enabledFromEffective(
+				effectiveEslintRules([...hybrid], markdownPath),
+			);
+			const lostInMarkdown = [...markdownBefore].filter((rule) => !markdownAfter.has(rule));
+			const gainedInMarkdown = [...markdownAfter].filter((rule) => !markdownBefore.has(rule));
+
+			expect(lostInMarkdown).toStrictEqual([]);
+			expect(gainedInMarkdown).toStrictEqual([]);
 		});
 	});
 

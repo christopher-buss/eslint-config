@@ -176,6 +176,48 @@ export function typescriptTypeAwareRules(): TypedFlatConfigItem["rules"] {
 }
 
 /**
+ * Static port of the `@typescript-eslint` `eslint-recommended` overrides:
+ * core rules that are redundant (or wrong) on TypeScript files because the
+ * compiler already checks them — most importantly `no-undef`, which would
+ * otherwise flag every ambient global (Roblox/Lua globals, roblox-ts macros).
+ *
+ * The ESLint factory spreads the preset dynamically from the plugin; the
+ * oxlint factory applies this static copy to its TypeScript files.
+ *
+ * @returns The rule map.
+ */
+export function typescriptRecommendedOverrides(): TypedFlatConfigItem["rules"] {
+	return {
+		"constructor-super": "off",
+		"getter-return": "off",
+		// Base-rule disables from the `strict` preset (the ts/ extension
+		// variants replace them)
+		"no-array-constructor": "off",
+		"no-class-assign": "off",
+		"no-const-assign": "off",
+		"no-dupe-args": "off",
+		"no-dupe-class-members": "off",
+		"no-dupe-keys": "off",
+		"no-func-assign": "off",
+		"no-import-assign": "off",
+		"no-new-native-nonconstructor": "off",
+		"no-obj-calls": "off",
+		"no-redeclare": "off",
+		"no-setter-return": "off",
+		"no-this-before-super": "off",
+		"no-undef": "off",
+		"no-unreachable": "off",
+		"no-unsafe-negation": "off",
+		"no-var": "error",
+		"no-with": "off",
+		"prefer-const": "error",
+		"prefer-rest-params": "error",
+
+		"prefer-spread": "error",
+	};
+}
+
+/**
  * Rules enabled by the `@typescript-eslint` `strict` preset that are not
  * already configured explicitly in {@link typescriptRules}.
  *
