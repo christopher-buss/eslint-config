@@ -21,19 +21,6 @@ export default isentinel(
 		},
 	},
 	{
-		name: "local/src-overrides",
-		files: ["src/**/*.ts"],
-		rules: {
-			"max-lines": "off",
-			"max-lines-per-function": "off",
-			"sonar/cognitive-complexity": "off",
-			"ts/no-inferrable-types": "off",
-
-			// Lots of configs are still untyped so we can't rely on this
-			"ts/no-unsafe-assignment": "off",
-		},
-	},
-	{
 		name: "local/style-migrate",
 		files: ["src/eslint/configs/*.ts"],
 		plugins: {
