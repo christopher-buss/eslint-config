@@ -57,7 +57,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					});
 				},
 
-				// eslint-disable-next-line perfectionist/sort-objects -- keep the order of prompts
+				// oxlint-disable-next-line perfectionist/sort-objects -- keep the order of prompts
 				frameworks: async ({ results }) => {
 					const isArgumentTemplateValid =
 						argumentTemplate &&

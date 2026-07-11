@@ -477,6 +477,27 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 }
 
 /**
+ * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`,
+ * synchronously. Used by the (synchronous) oxlint factory.
+ *
+ * @returns The oxfmt configuration options, or an empty object if none found.
+ */
+export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
+	for (const filename of OXFMT_CONFIG_FILES) {
+		const configPath = path.resolve(process.cwd(), filename);
+		try {
+			const content = fs.readFileSync(configPath, "utf-8");
+			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
+			return config;
+		} catch {
+			continue;
+		}
+	}
+
+	return {};
+}
+
+/**
  * Override the severity of all rules in a rules object, preserving rule
  * options. Rules set to `"off"` are not affected.
  *

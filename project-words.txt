@@ -4,6 +4,7 @@ cves
 dprint
 editmsg
 ependencies
+extglob
 ghsas
 gypfile
 isentinel
@@ -24,6 +25,8 @@ nonconstructor
 opencode
 oxfmt
 oxfmtrc
+oxlint
+oxlintrc
 pico
 pobammer
 rbxts
@@ -36,6 +39,7 @@ stylua
 sxzz
 textnodes
 tsdoc
+tsgolint
 typecheck
 unthrown
 worktree

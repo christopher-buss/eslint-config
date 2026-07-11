@@ -59,4 +59,21 @@ export default defineConfig([
 		...sharedOptions,
 		entry: ["src/cli.ts"],
 	},
+	{
+		...sharedOptions,
+		deps: {
+			neverBundle: [
+				/^@typescript-eslint\//,
+				/^@eslint-react\//,
+				/^@eslint-community\//,
+				"zod",
+				"type-fest",
+				"eslint-visitor-keys",
+				"eslint-plugin-erasable-syntax-only",
+				"cached-factory",
+				"oxlint",
+			],
+		},
+		entry: { oxlint: "src/oxlint/index.ts" },
+	},
 ]);

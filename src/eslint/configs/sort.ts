@@ -10,7 +10,7 @@ import type { TypedFlatConfigItem } from "../types.ts";
  * @returns An array of flat configuration items.
  */
 export function sortGithubAction(): Array<TypedFlatConfigItem> {
-	/* eslint-disable sonar/no-duplicate-string -- GitHub Actions property names repeated in different ordering contexts. */
+	/* oxlint-disable sonar/no-duplicate-string -- GitHub Actions property names repeated in different ordering contexts. */
 	return [
 		{
 			name: "isentinel/sort/github-actions",
@@ -291,7 +291,7 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 			},
 		},
 	];
-	/* eslint-enable sonar/no-duplicate-string*/
+	/* oxlint-enable sonar/no-duplicate-string */
 }
 
 /**

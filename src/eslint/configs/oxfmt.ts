@@ -13,6 +13,7 @@ import {
 	GLOB_TSX,
 	GLOB_YAML,
 } from "../../globs.ts";
+import { buildOxfmtOptions } from "../../rules/oxfmt.ts";
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils.ts";
 import { defaultPluginRenaming } from "../plugin-renaming.ts";
@@ -31,6 +32,7 @@ export async function oxfmt(
 			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
 			oxfmtOptions?: OxfmtOptions;
+			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
@@ -40,6 +42,7 @@ export async function oxfmt(
 		formatters = {},
 		oxfmtConfigOptions = {},
 		oxfmtOptions: userOxfmtOptions,
+		oxlint: enableOxlint = false,
 		prettierOptions = {},
 	} = options ?? {};
 
@@ -53,37 +56,11 @@ export async function oxfmt(
 		...resolveWithDefaults(formatters, {}),
 	} satisfies OptionsFormatters;
 
-	const defaultSortImports = {
-		customGroups: [
-			{ elementNamePattern: ["react"], groupName: "react" },
-			{ elementNamePattern: ["@*/**"], groupName: "scoped" },
-		],
-		groups: [
-			"react",
-			"scoped",
-			["type-builtin", "type-external", "builtin", "external"],
-			[
-				"type-internal",
-				"internal",
-				"type-parent",
-				"type-sibling",
-				"type-index",
-				"parent",
-				"sibling",
-				"index",
-			],
-			"unknown",
-		],
-		newlinesBetween: true,
-	};
-
-	const oxfmtOptions = {
-		sortImports: defaultSortImports,
-		sortPackageJson: false,
-		...migratePrettierOptions(prettierOptions),
-		...oxfmtConfigOptions,
-		...userOxfmtOptions,
-	} satisfies OxfmtOptions;
+	const oxfmtOptions = buildOxfmtOptions({
+		oxfmtConfigOptions,
+		oxfmtOptions: userOxfmtOptions,
+		prettierOptions,
+	});
 
 	const [configPrettier, pluginOxfmt] = await Promise.all([
 		interopDefault(import("eslint-config-prettier/flat")),
@@ -118,7 +95,10 @@ export async function oxfmt(
 		rules: {
 			...rules,
 			"arrow-body-style": "off",
-			"oxfmt/oxfmt": ["error", oxfmtOptions],
+			// When running alongside oxlint, real JS/TS files are formatted by
+			// oxlint; ESLint keeps the formatting-conflict disables and only
+			// formats Markdown code blocks (below).
+			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
 			"prefer-arrow-callback": "off",
 		},
 	});
@@ -137,10 +117,25 @@ export async function oxfmt(
 		rules: {
 			...rules,
 			"arrow-body-style": "off",
-			"oxfmt/oxfmt": ["error", oxfmtOptions],
+			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
 			"prefer-arrow-callback": "off",
 		},
 	});
+
+	if (enableOxlint) {
+		configs.push({
+			name: "isentinel/oxfmt/markdown-code",
+			files: [
+				`${GLOB_MARKDOWN}/${GLOB_JS}`,
+				`${GLOB_MARKDOWN}/${GLOB_JSX}`,
+				`${GLOB_MARKDOWN}/${GLOB_TS}`,
+				`${GLOB_MARKDOWN}/${GLOB_TSX}`,
+			],
+			rules: {
+				"oxfmt/oxfmt": ["error", oxfmtOptions],
+			},
+		});
+	}
 
 	if (formattingOptions.css) {
 		configs.push(
@@ -252,34 +247,6 @@ export async function oxfmt(
 	}
 
 	return configs;
-}
-
-const UNSUPPORTED_PRETTIER_KEYS = new Set([
-	"experimentalOperatorPosition",
-	"experimentalTernaries",
-	"jsdocPreferCodeFences",
-	"jsdocPrintWidth",
-	"parser",
-	"plugins",
-	"tsdoc",
-]);
-
-function migratePrettierOptions(prettierOptions: PrettierOptions): Record<string, unknown> {
-	const oxfmtOptions: Record<string, unknown> = {};
-
-	for (const [key, value] of Object.entries(prettierOptions)) {
-		if (UNSUPPORTED_PRETTIER_KEYS.has(key)) {
-			continue;
-		}
-
-		if (key === "endOfLine" && value === "auto") {
-			continue;
-		}
-
-		oxfmtOptions[key] = value;
-	}
-
-	return oxfmtOptions;
 }
 
 export { type OxfmtOptions } from "../../utils.ts";

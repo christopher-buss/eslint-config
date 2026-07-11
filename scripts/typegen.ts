@@ -39,7 +39,7 @@ const configs = await combine(
 	{
 		plugins: {
 			"": {
-				// eslint-disable-next-line ts/no-deprecated -- No non-deprecated API exposes the built-in rule map.
+				// oxlint-disable-next-line typescript/no-deprecated -- No non-deprecated API exposes the built-in rule map.
 				rules: Object.fromEntries(builtinRules),
 			},
 		},

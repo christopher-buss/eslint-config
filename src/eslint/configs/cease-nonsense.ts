@@ -1,4 +1,5 @@
 import { GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
+import { ceaseNonsenseRules } from "../../rules/cease-nonsense.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
 	OptionsComponentExtensions,
@@ -60,19 +61,7 @@ export async function ceaseNonsense(
 			plugins: {
 				"cease-nonsense": pluginCeaseNonsense,
 			},
-			rules: {
-				"cease-nonsense/no-commented-code": isInEditor ? "off" : "error",
-				"cease-nonsense/prefer-class-properties": "error",
-				"cease-nonsense/prefer-early-return": ["error", { maximumStatements: 1 }],
-				"cease-nonsense/strict-component-boundaries": "error",
-
-				...(stylistic !== false
-					? {
-							"cease-nonsense/prefer-module-scope-constants": "error",
-							"cease-nonsense/prefer-singular-enums": "error",
-						}
-					: {}),
-			},
+			rules: ceaseNonsenseRules({ isInEditor, stylistic }),
 		},
 		...(isTypeAware
 			? [

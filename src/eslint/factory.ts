@@ -54,6 +54,7 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
+import { dropOxlintCoveredRules } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type {
 	Awaitable,
@@ -123,6 +124,7 @@ export async function isentinel(
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
+		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		root: customRootGlobs,
@@ -141,7 +143,7 @@ export async function isentinel(
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
-			// eslint-disable-next-line no-console -- Info for plugin
+			// oxlint-disable-next-line no-console -- Info for plugin
 			console.log(
 				"[@isentinel/eslint-config] Detected running in editor, some rules are disabled.",
 			);
@@ -419,6 +421,7 @@ export async function isentinel(
 							},
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
+				oxlint: enableOxlint,
 				prettierOptions: prettierSettings,
 			}),
 		);
@@ -461,6 +464,14 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
+	if (enableOxlint) {
+		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
+		// drop them from the ESLint configs.
+		composer = composer.onResolved((resolved) => {
+			dropOxlintCoveredRules(resolved);
+		});
+	}
+
 	if (isInEditor || inAgentSession) {
 		const disableAutofixRules: Array<keyof RuleOptions> = [];
 
@@ -483,7 +494,7 @@ export async function isentinel(
 		composer = composer.disableRulesFix(disableAutofixRules, {
 			builtinRules: async () => {
 				const rules = await import("eslint/use-at-your-own-risk");
-				// eslint-disable-next-line ts/no-deprecated -- No non-deprecated API exposes the built-in rule map.
+				// oxlint-disable-next-line typescript/no-deprecated -- No non-deprecated API exposes the built-in rule map.
 				return rules.builtinRules;
 			},
 		});
