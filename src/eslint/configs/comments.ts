@@ -1,0 +1,63 @@
+import { GLOB_SRC } from "../../globs.ts";
+import { interopDefault } from "../../utils.ts";
+import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+
+export async function comments({
+	prettierOptions = {},
+	stylistic = true,
+}: OptionsFormatters & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
+		interopDefault(import("eslint-plugin-comment-length")),
+		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
+		interopDefault(import("@stylistic/eslint-plugin")),
+	]);
+
+	return [
+		{
+			name: "isentinel/eslint/comments",
+			plugins: {
+				"comment-length": pluginCommentLength,
+				"eslint-comments": pluginComments,
+				"style": pluginStylistic,
+			},
+			rules: {
+				"eslint-comments/disable-enable-pair": ["error", { allowWholeFile: true }],
+				"eslint-comments/no-aggregating-enable": "error",
+				"eslint-comments/no-duplicate-disable": "error",
+				"eslint-comments/no-unlimited-disable": "error",
+				"eslint-comments/no-unused-enable": "error",
+				"eslint-comments/require-description": [
+					"error",
+					{
+						ignore: ["eslint-enable"],
+					},
+				],
+
+				...(stylistic !== false
+					? {
+							"no-inline-comments": "error",
+							"style/multiline-comment-style": ["error", "separate-lines"],
+						}
+					: {}),
+			},
+		},
+		...(stylistic !== false
+			? [
+					{
+						name: "isentinel/eslint/comments/src",
+						files: [GLOB_SRC],
+						rules: {
+							"comment-length/limit-single-line-comments": [
+								"error",
+								{
+									maxLength:
+										(Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
+									tabSize: prettierOptions.tabWidth ?? 4,
+								},
+							],
+						},
+					} as TypedFlatConfigItem,
+				]
+			: []),
+	];
+}
