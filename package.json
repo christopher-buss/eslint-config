@@ -30,6 +30,7 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
+		"./oxlint": "./dist/oxlint.mjs",
 		"./package.json": "./package.json"
 	},
 	"main": "./dist/index.mjs",
@@ -46,14 +47,16 @@
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"gen": "node scripts/typegen.ts && node scripts/versiongen.ts",
 		"postgen": "echo 'Generation complete!'",
-		"lint": "eslint --cache",
-		"lint:ci": "eslint --cache --cache-strategy content",
+		"lint": "oxlint --type-aware && eslint --cache",
+		"lint:ci": "oxlint --type-aware && eslint --cache --cache-strategy content",
+		"oxlint": "oxlint --type-aware",
 		"prepack": "nr build",
 		"release": "bumpp",
 		"stub": "tsdown",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit",
+		"validate:oxlint": "node scripts/validate-oxlint.ts",
 		"watch": "tsdown --watch --dts"
 	},
 	"dependencies": {
@@ -101,6 +104,8 @@
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
+		"oxlint-plugin-eslint": "catalog:prod",
+		"oxlint-plugin-oxlint-comments": "catalog:prod",
 		"prettier": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
@@ -128,6 +133,8 @@
 		"eslint-plugin-react-x": "catalog:peer",
 		"eslint-typegen": "catalog:dev",
 		"jiti": "catalog:dev",
+		"oxlint": "catalog:peer",
+		"oxlint-tsgolint": "catalog:peer",
 		"parse-gitignore-ts": "catalog:dev",
 		"pnpm-workspace-yaml": "catalog:dev",
 		"publint": "catalog:dev",
@@ -147,7 +154,9 @@
 		"eslint-plugin-n": "^17.0.0 || ^18.0.0",
 		"eslint-plugin-react-jsx": "^5.10.0",
 		"eslint-plugin-react-naming-convention": "^5.10.0",
-		"eslint-plugin-react-x": "^5.10.0"
+		"eslint-plugin-react-x": "^5.10.0",
+		"oxlint": ">=1.73.0",
+		"oxlint-tsgolint": ">=0.24.0"
 	},
 	"peerDependenciesMeta": {
 		"@vitest/eslint-plugin": {
@@ -172,6 +181,12 @@
 			"optional": true
 		},
 		"eslint-plugin-react-x": {
+			"optional": true
+		},
+		"oxlint": {
+			"optional": true
+		},
+		"oxlint-tsgolint": {
 			"optional": true
 		}
 	},
