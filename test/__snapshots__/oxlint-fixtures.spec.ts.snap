@@ -131,6 +131,14 @@ exports[`oxlint standalone fixtures > should produce the expected diagnostics 1`
   "tsx.tsx:96 sonar(no-duplicate-string)",
   "tsx.tsx:98 eslint-js(id-length)",
   "tsx.tsx:99 eslint-js(id-length)",
+  "typescript.ts:177 typescript(no-unnecessary-boolean-literal-compare)",
+  "typescript.ts:184 typescript(promise-function-async)",
+  "typescript.ts:185 typescript(promise-function-async)",
+  "typescript.ts:26 typescript(no-unnecessary-condition)",
+  "typescript.ts:280 typescript(no-unnecessary-template-expression)",
+  "typescript.ts:63 typescript(prefer-nullish-coalescing)",
+  "typescript.ts:63 typescript(strict-boolean-expressions)",
   "typescript.ts:7 undefined",
+  "typescript.ts:93 typescript(prefer-includes)",
 ]
 `;

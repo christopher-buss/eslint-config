@@ -1,3 +1,4 @@
+import { isPackageExists } from "local-pkg";
 import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
 import { defineConfig } from "oxlint";
 
@@ -32,7 +33,7 @@ import { oxlintStylistic } from "./configs/stylistic.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
-import type { OxlintOptionsConfig, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
+import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
 
 /**
  * Generate an oxlint configuration based on the provided options.
@@ -47,18 +48,21 @@ import type { OxlintOptionsConfig, OxlintSettings, TypedOxlintConfigItem } from 
  * @returns The oxlint configuration.
  */
 export function isentinel(
-	factoryOptions?: Omit<TypedOxlintConfigItem, "files"> & OxlintOptionsConfig,
+	factoryOptions?: OxlintFactoryOptions,
 	...userConfigs: Array<TypedOxlintConfigItem>
 ): OxlintConfig {
 	const options = factoryOptions ?? { name: "isentinel" };
 	const {
 		componentExts: componentExtensions = [],
+		env,
 		eslintPlugin: enableEslintPlugin = false,
 		formatters,
 		gitignore: enableGitignore = true,
+		globals,
 		ignores,
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
+		options: linterOptions,
 		react: enableReact = false,
 		root: customRootGlobs,
 		rules = {},
@@ -290,6 +294,14 @@ export function isentinel(
 		});
 	}
 
+	if (globals && Object.keys(globals).length > 0) {
+		mergeFragment({
+			name: "isentinel/options-globals",
+			files: [GLOB_SRC],
+			globals,
+		});
+	}
+
 	for (const userConfig of userConfigs) {
 		mergeFragment(userConfig);
 	}
@@ -318,8 +330,14 @@ export function isentinel(
 			style: "off",
 			suspicious: "off",
 		},
+		...(env ? { env } : {}),
+		...(globals ? { globals } : {}),
 		ignorePatterns,
 		jsPlugins: [...jsPlugins.values()],
+		options: {
+			typeAware: isPackageExists("oxlint-tsgolint"),
+			...linterOptions,
+		},
 		overrides,
 		plugins: [...nativePlugins] as OxlintConfig["plugins"],
 		settings: mergedSettings,

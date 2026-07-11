@@ -337,9 +337,9 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * When enabled, ESLint drops every rule that oxlint covers (see the oxlint
 	 * rule mapping) and only runs the rules that stay in ESLint. Use together
-	 * with the `@isentinel/eslint-config/oxlint` factory and run `oxlint
-	 * --type-aware && eslint` (type-aware rules are executed by
-	 * oxlint-tsgolint).
+	 * with the `@isentinel/eslint-config/oxlint` factory and run `oxlint &&
+	 * eslint` (type-aware rules are executed by oxlint-tsgolint; the oxlint
+	 * factory enables `typeAware` in the generated config by default).
 	 *
 	 * Requires installing the optional peer dependencies `oxlint` and
 	 * `oxlint-tsgolint`.

@@ -308,6 +308,74 @@ describe("oxlint options-level rules", () => {
 	});
 });
 
+describe("oxlint linter options", () => {
+	it("should enable typeAware by default", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/linter-options",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+		});
+
+		expect(config.options).toStrictEqual({ typeAware: true });
+	});
+
+	it("should merge user options over the defaults", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/linter-options",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			options: { maxWarnings: 10, typeAware: false },
+		});
+
+		expect(config.options).toStrictEqual({ maxWarnings: 10, typeAware: false });
+	});
+});
+
+describe("oxlint env and globals", () => {
+	it("should pass env and globals through to the top level", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/env-globals",
+			env: { browser: true, node: false },
+			gitignore: false,
+			globals: { MyGlobal: "readonly" },
+			isAgent: false,
+			isInEditor: false,
+		});
+
+		expect(config.env).toStrictEqual({ browser: true, node: false });
+		expect(config.globals).toStrictEqual({ MyGlobal: "readonly" });
+	});
+
+	it("should emit user globals as a trailing override that beats the preset", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/env-globals",
+			gitignore: false,
+			globals: { window: "off" },
+			isAgent: false,
+			isInEditor: false,
+		});
+
+		const overrides = config.overrides ?? [];
+		const withWindow = overrides
+			.map((override, index) => ({ index, value: override.globals?.["window"] }))
+			.filter((entry) => entry.value !== undefined);
+
+		expect(withWindow.length).toBeGreaterThanOrEqual(2);
+		expect(withWindow[0]?.value).toBe("readonly");
+		expect(withWindow.at(-1)?.value).toBe("off");
+	});
+});
+
 describe("oxlint jsPlugin type-awareness", () => {
 	const jsPluginVariants: Array<Record<string, unknown>> = [
 		{ ...baseOptions },

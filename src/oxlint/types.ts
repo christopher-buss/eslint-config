@@ -21,6 +21,9 @@ export type OxlintRules = Partial<Record<OxlintNativeRuleName, Linter.RuleEntry>
 /** Top-level oxlint `settings`. */
 export type OxlintSettings = NonNullable<OxlintConfig["settings"]>;
 
+/** Top-level oxlint linter `options` (typeAware, maxWarnings, ...). */
+export type OxlintLinterOptions = NonNullable<OxlintConfig["options"]>;
+
 /** Built-in oxlint plugin names. */
 export type OxlintPlugin = NonNullable<OxlintConfig["plugins"]>[number];
 
@@ -67,5 +70,24 @@ export type OxlintOptionsConfig = Omit<
 	| "toml"
 	| "yaml"
 >;
+
+/**
+ * Options accepted by the oxlint factory function.
+ *
+ * Combines oxlint config fields (`env`, `globals`, `rules`, ...) with the
+ * shared preset options and the top-level linter `options` object.
+ */
+export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
+	OxlintOptionsConfig & {
+		/**
+		 * Top-level linter options emitted into the generated config
+		 * (`typeAware`, `typeCheck`, `maxWarnings`, ...).
+		 *
+		 * `typeAware` defaults to `true` when `oxlint-tsgolint` is resolvable,
+		 * so type-aware rules run without passing `--type-aware` on the CLI.
+		 * CLI flags take precedence over these values.
+		 */
+		options?: OxlintLinterOptions;
+	};
 
 export type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";

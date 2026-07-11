@@ -127,6 +127,9 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "specifier": "eslint-plugin-oxfmt",
     },
   ],
+  "options": {
+    "typeAware": true,
+  },
   "overrides": [
     {
       "files": [
@@ -3810,6 +3813,9 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "specifier": "eslint-plugin-oxfmt",
     },
   ],
+  "options": {
+    "typeAware": true,
+  },
   "overrides": [
     {
       "files": [

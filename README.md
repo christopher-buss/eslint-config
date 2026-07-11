@@ -499,8 +499,8 @@ pnpm i -D eslint-plugin-react-x eslint-plugin-react-jsx eslint-plugin-react-nami
 
 The config can run alongside (or be replaced by)
 [oxlint](https://oxc.rs/docs/guide/usage/linter/) in three modes: ESLint-only
-(the default), hybrid (`oxlint --type-aware && eslint`), and oxlint standalone
-via the `@isentinel/eslint-config/oxlint` export.
+(the default), hybrid (`oxlint && eslint`), and oxlint standalone via the
+`@isentinel/eslint-config/oxlint` export.
 
 ```ts
 // eslint.config.ts - hybrid mode: ESLint drops every rule oxlint covers

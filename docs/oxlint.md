@@ -56,26 +56,28 @@ Then run both linters:
 // package.json
 {
 	"scripts": {
-		"lint": "oxlint --type-aware && eslint --cache",
+		"lint": "oxlint && eslint --cache",
 	},
 }
 ```
 
-> [!IMPORTANT] Run oxlint with `--type-aware`. The type-aware `ts/*` rules are
-> executed by oxlint-tsgolint; without the flag they are silently skipped and
-> you lose coverage for them (they are dropped from ESLint in hybrid mode).
+> [!IMPORTANT] The type-aware `ts/*` rules are executed by oxlint-tsgolint. The
+> factory enables `options.typeAware` in the generated config by default (when
+> `oxlint-tsgolint` is resolvable), so no `--type-aware` CLI flag is needed.
+> Without type-aware linting those rules are silently skipped and you lose
+> coverage for them (they are dropped from ESLint in hybrid mode).
 
 ### How rules are split
 
 The split is driven by an explicit per-rule mapping (`oxlintRuleMapping`,
 exported from `@isentinel/eslint-config/oxlint`):
 
-| Target          | Meaning                                                      |
-| --------------- | ------------------------------------------------------------ |
-| `native`        | Implemented natively in oxlint (Rust)                        |
-| `tsgolint`      | Type-aware rule executed by oxlint-tsgolint (`--type-aware`) |
-| `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin  |
-| stays in ESLint | Not in the mapping; documented in `staysInEslint`            |
+| Target          | Meaning                                                     |
+| --------------- | ----------------------------------------------------------- |
+| `native`        | Implemented natively in oxlint (Rust)                       |
+| `tsgolint`      | Type-aware rule executed by oxlint-tsgolint (`typeAware`)   |
+| `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin |
+| stays in ESLint | Not in the mapping; documented in `staysInEslint`           |
 
 With `oxlint: true`, the ESLint factory drops every mapped rule; everything else
 keeps running in ESLint, notably:
@@ -138,6 +140,40 @@ Standalone mode keeps spell checking (CSpell), directive-comment hygiene
 running the ESLint plugins as jsPlugins. Note the limitations above: JSON, YAML,
 TOML, Markdown, pnpm and the type-aware custom rules are only available through
 ESLint.
+
+## Linter options, env and globals
+
+The factory passes oxlint's config-level `options`, `env` and `globals` through
+to the generated config:
+
+```ts
+// oxlint.config.ts
+import { isentinel } from "@isentinel/eslint-config/oxlint";
+
+export default isentinel({
+	name: "project/options",
+	env: { browser: false },
+	globals: { $: "readonly", window: "off" },
+	options: { maxWarnings: 10 },
+	type: "game",
+});
+```
+
+- **`options`** — top-level linter options (`typeAware`, `typeCheck`,
+  `maxWarnings`, `denyWarnings`, `reportUnusedDisableDirectives`,
+  `respectEslintDisableDirectives`). The factory emits `typeAware: true` by
+  default whenever `oxlint-tsgolint` is resolvable (oxlint errors when
+  `typeAware` is enabled without it), so type-aware rules run without any CLI
+  flag; user-provided values win. CLI flags take precedence over config
+  `options` when both are set.
+- **`env`** — enables or disables predefined environment globals (`browser`,
+  `node`, `es2021`...). Emitted at the top level.
+- **`globals`** — declares project globals as `"readonly"`, `"writable"` or
+  `"off"`. Values are emitted at the top level and as a trailing override for
+  source files, so they win over the globals the preset declares (browser, node
+  and ES2021). Note that oxlint does not let `"off"` remove globals that come
+  from `env` or the ES builtins — it only removes globals declared at an outer
+  config level.
 
 ## Migrating disable comments
 
