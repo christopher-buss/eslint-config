@@ -348,6 +348,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	oxlint?: boolean;
 
+	/**
+	 * Warn at config-build time when a user config references a rule that oxlint
+	 * owns in hybrid mode (`oxlint: true`), where the ESLint entry has no effect.
+	 *
+	 * @default true
+	 */
+	oxlintWarnDeadRules?: boolean;
+
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;
 

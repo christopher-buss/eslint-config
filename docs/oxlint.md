@@ -105,6 +105,19 @@ keeps running in ESLint, notably:
 A test suite asserts that every rule dropped from ESLint in hybrid mode is
 enabled in the oxlint factory output, so coverage loss is a test failure.
 
+### Dead rule warning
+
+Because the ESLint side drops every oxlint-owned rule (and lets oxlint format
+real JS/TS files), any rule in _your own_ config that oxlint owns has no effect
+in ESLint. Setting `"oxfmt/oxfmt": "off"` in a scoped ESLint block, for example,
+does not stop oxlint from formatting the file.
+
+In hybrid mode the factory warns at config-build time and lists each such entry
+(rule name and config block), telling you to move it to `oxlint.config.ts` (or
+your oxfmt options) or remove it. Entries scoped to Markdown virtual files
+(`**/*.md/**`) are exempt, since oxlint cannot lint them. Suppress the warning
+with `oxlintWarnDeadRules: false`.
+
 ## Standalone mode
 
 Use only oxlint (no ESLint) via the dedicated export:

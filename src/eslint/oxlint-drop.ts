@@ -2,6 +2,37 @@ import { GLOB_MARKDOWN_CODE } from "../globs.ts";
 import { isOxlintCovered } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
+const HYBRID_FORMATTING_RULES = new Set(["oxfmt/oxfmt"]);
+
+interface DeadRuleReference {
+	config: string;
+	rule: string;
+}
+
+/**
+ * Warn when a user-supplied config references a rule that oxlint owns in hybrid
+ * mode (`oxlint: true`). The preset drops every oxlint-covered rule from the
+ * ESLint side and lets oxlint format real JS/TS files, so such entries silently
+ * do nothing. Markdown-scoped configs are exempt: oxlint cannot lint Markdown
+ * virtual files, so the preset re-enables those rules there.
+ *
+ * @param configs - The resolved flat config items.
+ */
+export function warnDeadMappedRules(configs: Array<TypedFlatConfigItem>): void {
+	const references = findDeadMappedRules(configs);
+	if (references.length === 0) {
+		return;
+	}
+
+	const lines = references.map(({ config, rule }) => `  - "${rule}" in ${config}`);
+	// oxlint-disable-next-line no-console -- Info for plugin
+	console.warn(
+		"[@isentinel/eslint-config] These config entries reference rules that " +
+			"oxlint owns in hybrid mode, so they have no effect in ESLint. Move " +
+			`them to oxlint.config.ts (or your oxfmt options) or remove them:\n${lines.join("\n")}`,
+	);
+}
+
 /**
  * Remove rules covered by oxlint (per the oxlint rule mapping) from the
  * resolved ESLint configs. Only enabled rules in `isentinel/*` configs are
@@ -55,6 +86,56 @@ export function dropOxlintCoveredRules(configs: Array<TypedFlatConfigItem>): voi
 	}
 }
 
+function isPresetConfig(config: TypedFlatConfigItem): boolean {
+	return config.name?.startsWith("isentinel/") ?? false;
+}
+
+function describeConfig(config: TypedFlatConfigItem): string {
+	return config.name !== undefined ? `config "${config.name}"` : "an unnamed config";
+}
+
+/**
+ * Whether every file pattern of a config targets Markdown content (either
+ * `.md` files or virtual code blocks inside them). Oxlint cannot lint those,
+ * so their rules always stay in ESLint.
+ *
+ * @param files - The config's `files` patterns.
+ * @returns Whether the config only targets Markdown content.
+ */
+function targetsMarkdown(files: TypedFlatConfigItem["files"]): boolean {
+	if (files === undefined) {
+		return false;
+	}
+
+	const patterns = files.flat();
+	return (
+		patterns.length > 0 &&
+		patterns.every((pattern) => typeof pattern === "string" && pattern.includes(".md"))
+	);
+}
+
+function findDeadMappedRules(configs: Array<TypedFlatConfigItem>): Array<DeadRuleReference> {
+	const references: Array<DeadRuleReference> = [];
+
+	for (const config of configs) {
+		if (config.rules === undefined || isPresetConfig(config) || targetsMarkdown(config.files)) {
+			continue;
+		}
+
+		const label = describeConfig(config);
+		for (const [rule, value] of Object.entries(config.rules)) {
+			if (
+				value !== undefined &&
+				(isOxlintCovered(rule) || HYBRID_FORMATTING_RULES.has(rule))
+			) {
+				references.push({ config: label, rule });
+			}
+		}
+	}
+
+	return references;
+}
+
 function dropCoveredRulesFromConfig(
 	rules: NonNullable<TypedFlatConfigItem["rules"]>,
 ): NonNullable<TypedFlatConfigItem["rules"]> {
@@ -100,24 +181,4 @@ function markdownVirtualFiles(
 	return files.map((pattern) => {
 		return [GLOB_MARKDOWN_CODE, ...[pattern].flat()];
 	});
-}
-
-/**
- * Whether every file pattern of a config targets Markdown content (either
- * `.md` files or virtual code blocks inside them). Oxlint cannot lint those,
- * so their rules always stay in ESLint.
- *
- * @param files - The config's `files` patterns.
- * @returns Whether the config only targets Markdown content.
- */
-function targetsMarkdown(files: TypedFlatConfigItem["files"]): boolean {
-	if (files === undefined) {
-		return false;
-	}
-
-	const patterns = files.flat();
-	return (
-		patterns.length > 0 &&
-		patterns.every((pattern) => typeof pattern === "string" && pattern.includes(".md"))
-	);
 }

@@ -54,7 +54,7 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
-import { dropOxlintCoveredRules } from "./oxlint-drop.ts";
+import { dropOxlintCoveredRules, warnDeadMappedRules } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type {
 	Awaitable,
@@ -468,6 +468,10 @@ export async function isentinel(
 		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
 		// drop them from the ESLint configs.
 		composer = composer.onResolved((resolved) => {
+			if (options.oxlintWarnDeadRules !== false) {
+				warnDeadMappedRules(resolved);
+			}
+
 			dropOxlintCoveredRules(resolved);
 		});
 	}
