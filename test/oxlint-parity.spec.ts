@@ -266,6 +266,48 @@ async function findTypeAwareEmissions(config: OxlintConfig): Promise<Array<strin
 	return problems;
 }
 
+describe("oxlint options-level rules", () => {
+	it("should let options.rules override the preset for source files", ({ expect }) => {
+		expect.hasAssertions();
+
+		// no-console is enabled by the preset's javascript config
+		const config = oxlintIsentinel({
+			name: "test/options-rules",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			rules: { "no-console": "off" },
+		});
+
+		const effective = effectiveOxlintRules(config, "src/services/service.ts");
+
+		expect(effective.get("no-console")).toBe("off");
+	});
+
+	it("should let explicit user configs win over options.rules", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel(
+			{
+				name: "test/options-rules",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				rules: { "no-console": "off" },
+			},
+			{
+				name: "user/override",
+				files: ["src/**"],
+				rules: { "no-console": "error" },
+			},
+		);
+
+		const effective = effectiveOxlintRules(config, "src/services/service.ts");
+
+		expect(effective.get("no-console")).toBe("enabled");
+	});
+});
+
 describe("oxlint jsPlugin type-awareness", () => {
 	const jsPluginVariants: Array<Record<string, unknown>> = [
 		{ ...baseOptions },

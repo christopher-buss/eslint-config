@@ -3669,7 +3669,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     "unicorn",
     "jsdoc",
   ],
-  "rules": {},
   "settings": {
     "perfectionist": {
       "order": "asc",
@@ -7478,7 +7477,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     "jsdoc",
     "node",
   ],
-  "rules": {},
   "settings": {
     "jest": {
       "globalPackage": "@rbxts/jest-globals",

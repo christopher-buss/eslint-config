@@ -1,7 +1,7 @@
 import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
 import { defineConfig } from "oxlint";
 
-import { GLOB_EXCLUDE, GLOB_ROOT } from "../globs.ts";
+import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import {
 	getOverrides,
@@ -282,6 +282,14 @@ export function isentinel(
 		mergeFragment(fragment);
 	}
 
+	if (Object.keys(rules).length > 0) {
+		mergeFragment({
+			name: "isentinel/options-rules",
+			files: [GLOB_SRC],
+			rules,
+		});
+	}
+
 	for (const userConfig of userConfigs) {
 		mergeFragment(userConfig);
 	}
@@ -314,7 +322,6 @@ export function isentinel(
 		jsPlugins: [...jsPlugins.values()],
 		overrides,
 		plugins: [...nativePlugins] as OxlintConfig["plugins"],
-		rules: rules as DummyRuleMap,
 		settings: mergedSettings,
 	});
 }
