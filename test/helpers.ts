@@ -55,8 +55,10 @@ const TSCONFIG_ROBLOX = JSON.stringify(
 /**
  * Copy input fixtures, lint with --fix, return map of filename to
  * fixed content.
- * @param name
- * @param options
+ *
+ * @param name - Unique name for the temporary fixture directory.
+ * @param options - Factory options for the config variant under test.
+ * @returns A map of fixture filename to its post-fix content.
  */
 export async function runFixtureLint(
 	name: string,
@@ -81,7 +83,9 @@ export async function runFixtureLint(
 
 /**
  * Serialize a flat config array for snapshot comparison.
- * @param configs
+ *
+ * @param configs - The resolved flat config items.
+ * @returns Plain objects with non-deterministic fields stripped.
  */
 export function serializeConfigs(
 	configs: Array<TypedFlatConfigItem>,
@@ -91,8 +95,10 @@ export function serializeConfigs(
 
 /**
  * Build ESLint config array from factory options.
- * @param temporaryDirectory
- * @param options
+ *
+ * @param temporaryDirectory - Directory containing the fixture tsconfig.
+ * @param options - Factory options for the config variant under test.
+ * @returns The resolved flat config array.
  */
 async function buildConfig(
 	temporaryDirectory: string,
@@ -115,7 +121,9 @@ async function buildConfig(
 
 /**
  * Read all output files from temp directory, excluding the lint tsconfig.
- * @param temporaryDirectory
+ *
+ * @param temporaryDirectory - Directory to read the linted files from.
+ * @returns A map of filename to file content.
  */
 async function collectOutput(temporaryDirectory: string): Promise<Map<string, string>> {
 	const output = new Map<string, string>();
@@ -140,8 +148,10 @@ async function collectOutput(temporaryDirectory: string): Promise<Map<string, st
 
 /**
  * Copy input fixtures and write tsconfig to temp directory.
- * @param name
- * @param isRoblox
+ *
+ * @param name - Unique name for the temporary fixture directory.
+ * @param isRoblox - Whether to write the roblox-ts tsconfig variant.
+ * @returns The absolute path of the prepared directory.
  */
 async function prepareTemporaryDirectory(name: string, isRoblox: boolean): Promise<string> {
 	const temporaryDirectory = path.resolve(FIXTURES_TEMP, name);
@@ -155,7 +165,9 @@ async function prepareTemporaryDirectory(name: string, isRoblox: boolean): Promi
 
 /**
  * Extract parser name from a parser object.
- * @param parser
+ *
+ * @param parser - The parser value from languageOptions.
+ * @returns The parser name, or "unknown" when it cannot be determined.
  */
 function extractParserName(parser: unknown): string {
 	if (typeof parser !== "object" || parser === null) {
@@ -170,7 +182,9 @@ function extractParserName(parser: unknown): string {
 
 /**
  * Serialize language options, stripping non-deterministic fields.
- * @param languageOptions
+ *
+ * @param languageOptions - The languageOptions object to serialize.
+ * @returns A copy safe for snapshot comparison.
  */
 function serializeLanguageOptions(
 	languageOptions: Record<string, unknown>,
@@ -195,7 +209,9 @@ function serializeLanguageOptions(
 
 /**
  * Serialize rules object to sorted array of rule names.
- * @param rules
+ *
+ * @param rules - The rules record from a config item.
+ * @returns Sorted rule names, disabled rules prefixed with "-".
  */
 function serializeRules(rules: Record<string, unknown>): Array<string> {
 	const result: Array<string> = [];
@@ -217,7 +233,9 @@ function serializeRules(rules: Record<string, unknown>): Array<string> {
 
 /**
  * Serialize a single config item.
- * @param config
+ *
+ * @param config - The flat config item to serialize.
+ * @returns A plain object safe for snapshot comparison.
  */
 function serializeSingleConfig(config: TypedFlatConfigItem): Record<string, unknown> {
 	const serialized: Record<string, unknown> = {};

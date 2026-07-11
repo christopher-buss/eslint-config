@@ -33,16 +33,6 @@ export default isentinel(
 		},
 	},
 	{
-		name: "local/test-overrides",
-		files: ["test/**/*.ts"],
-		rules: {
-			"jsdoc/require-param-description": "off",
-			"jsdoc/require-returns": "off",
-			"max-lines-per-function": "off",
-			"ts/no-unsafe-assignment": "off",
-		},
-	},
-	{
 		name: "local/style-migrate",
 		files: ["src/configs/*.ts"],
 		plugins: {
