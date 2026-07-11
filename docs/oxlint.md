@@ -142,6 +142,18 @@ name**:
 The official [`@oxlint/migrate`](https://github.com/oxc-project/oxlint-migrate)
 tool can convert comments in bulk with `--replace-eslint-comments`.
 
+## Known issue: intermittent segfault formatting Markdown
+
+Linting a Markdown file occasionally (roughly 1 in 15 runs) crashes node with a
+segmentation fault (exit 139 / 0xC0000005). This is **independent of oxlint and
+hybrid mode** — it reproduces identically with the published ESLint-only config
+(`6.0.0-beta.6`) and disappears when `oxfmt/oxfmt` is disabled for `**/*.md` —
+the crash is in eslint-plugin-oxfmt's synckit worker invoking the oxfmt native
+binding on Markdown files (the oxfmt CLI and the in-process `format()` API do
+not crash on the same input). Until fixed upstream, rerun the lint on a crash;
+disabling Markdown formatting (`formatters: { markdown: false }`) avoids it at
+the cost of unformatted Markdown.
+
 ## ESLint 10 peer note
 
 If you are on ESLint 10, `@typescript-eslint/utils` and

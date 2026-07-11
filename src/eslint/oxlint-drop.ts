@@ -1,4 +1,4 @@
-import { GLOB_MARKDOWN } from "../globs.ts";
+import { GLOB_MARKDOWN_CODE } from "../globs.ts";
 import { isOxlintCovered } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
@@ -78,8 +78,14 @@ function dropCoveredRulesFromConfig(
 }
 
 /**
- * Narrow a config's `files` patterns to the Markdown-virtual subset by
- * AND-combining each pattern with the Markdown container glob.
+ * Narrow a config's `files` patterns to the Markdown JS/TS code-block subset
+ * by AND-combining each pattern with the Markdown code-block glob.
+ *
+ * The glob must be extension-restricted (not a bare Markdown container glob):
+ * the markdown processor also emits virtual files for non-JS fences (json,
+ * sh, and notably markdown, which yields a virtual `*.md/*.md` file that the
+ * plugin-registering configs default-ignore — matching it would make ESLint
+ * fail with "could not find plugin").
  *
  * @param files - The original config's `files` patterns.
  * @returns Patterns matching only Markdown code blocks covered by the config.
@@ -88,11 +94,11 @@ function markdownVirtualFiles(
 	files: TypedFlatConfigItem["files"],
 ): NonNullable<TypedFlatConfigItem["files"]> {
 	if (files === undefined) {
-		return [[`${GLOB_MARKDOWN}/**`]];
+		return [GLOB_MARKDOWN_CODE];
 	}
 
 	return files.map((pattern) => {
-		return [`${GLOB_MARKDOWN}/**`, ...[pattern].flat()];
+		return [GLOB_MARKDOWN_CODE, ...[pattern].flat()];
 	});
 }
 
