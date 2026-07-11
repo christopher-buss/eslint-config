@@ -33,7 +33,6 @@ import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { OxlintOptionsConfig, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
-import { toOxlintGlob } from "./utils.ts";
 
 /**
  * Generate an oxlint configuration based on the provided options.
@@ -253,11 +252,10 @@ export function isentinel(
 	const mergedSettings: OxlintSettings = {};
 
 	const gitignorePatterns = enableGitignore !== false ? oxlintGitignore() : [];
-	const ignorePatterns = (
+	const ignorePatterns =
 		typeof ignores === "function"
 			? ignores([...GLOB_EXCLUDE, ...gitignorePatterns])
-			: [...GLOB_EXCLUDE, ...gitignorePatterns, ...(ignores ?? [])]
-	).map(toOxlintGlob);
+			: [...GLOB_EXCLUDE, ...gitignorePatterns, ...(ignores ?? [])];
 
 	function mergeFragment(config: TypedOxlintConfigItem): void {
 		const fragmentPlugins = config.plugins ?? [];
@@ -276,7 +274,7 @@ export function isentinel(
 		}
 
 		const { name: _name, plugins: _plugins, settings: _settings, ...override } = config;
-		overrides.push(normalizeOverrideGlobs(override as OxlintOverride));
+		overrides.push(override as OxlintOverride);
 	}
 
 	const fragments = configs.flat();
@@ -319,12 +317,4 @@ export function isentinel(
 		rules: rules as DummyRuleMap,
 		settings: mergedSettings,
 	});
-}
-
-function normalizeOverrideGlobs(override: OxlintOverride): OxlintOverride {
-	return {
-		...override,
-		...(override.excludeFiles ? { excludeFiles: override.excludeFiles.map(toOxlintGlob) } : {}),
-		files: override.files.map(toOxlintGlob),
-	};
 }

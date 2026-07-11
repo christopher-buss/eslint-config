@@ -10,8 +10,6 @@ import {
 import type { Rules } from "../types.ts";
 import type { OxlintPlugin, TypedOxlintConfigItem } from "./types.ts";
 
-const CHARACTER_CLASS_PATTERN = /^\[([^\]]+)\]$/;
-
 const NATIVE_PLUGINS = new Set<OxlintPlugin>([
 	"eslint",
 	"import",
@@ -44,29 +42,6 @@ export interface OxlintConfigFragmentOptions {
 	globals?: TypedOxlintConfigItem["globals"];
 	rules: Rules | undefined;
 	settings?: TypedOxlintConfigItem["settings"];
-}
-
-/**
- * Convert an ESLint extglob pattern to oxlint-compatible glob syntax.
- *
- * Oxlint supports braces and character classes but not extglob groups, so
- * `?(...)` groups are rewritten as brace alternations with an empty branch
- * (`**\/*.?([cm])ts` becomes `**\/*.{,c,m}ts`).
- *
- * @param pattern - The ESLint glob pattern.
- * @returns The oxlint-compatible glob pattern.
- */
-export function toOxlintGlob(pattern: string): string {
-	return pattern.replaceAll(/\?\(([^)]+)\)/g, (_match, inner: string) => {
-		const alternatives = inner
-			.split("|")
-			.flatMap((part) => {
-				const characterClass = CHARACTER_CLASS_PATTERN.exec(part);
-				return characterClass?.[1] !== undefined ? [...characterClass[1]] : [part];
-			})
-			.join(",");
-		return `{,${alternatives}}`;
-	});
 }
 
 /**

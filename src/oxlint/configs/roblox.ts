@@ -14,8 +14,8 @@ export function oxlintRoblox(
 	const { componentExts: componentExtensions = [], overrides = {}, stylistic = true } = options;
 
 	const files = options.files?.flat() ?? [
-		"**/*/*.?([cm])ts",
-		"**/*/*.?([cm])tsx",
+		"**/*/*.{,c,m}ts",
+		"**/*/*.{,c,m}tsx",
 		...componentExtensions.map((extension) => `**/*/*.${extension}`),
 	];
 

@@ -780,11 +780,11 @@ export function sortCspell(): Array<TypedFlatConfigItem> {
 		{
 			name: "isentinel/sort/cspell",
 			files: [
-				"**/cspell.y?(a)ml",
-				"**/cspell.config.y?(a)ml",
-				"**/cspell.config.*.y?(a)ml",
-				"**/.cspell.y?(a)ml",
-				"**/.cspell.config.y?(a)ml",
+				"**/cspell.y{,a}ml",
+				"**/cspell.config.y{,a}ml",
+				"**/cspell.config.*.y{,a}ml",
+				"**/.cspell.y{,a}ml",
+				"**/.cspell.config.y{,a}ml",
 			],
 			rules: {
 				"yaml/sort-sequence-values": [
