@@ -9,9 +9,10 @@ import process from "node:process";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import prettier from "prettier";
 
-import type { PrettierOptions } from "./configs/index.ts";
+import type { PrettierOptions } from "./eslint/configs/index.ts";
+import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
-import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from "./types.ts";
+import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 

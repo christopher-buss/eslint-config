@@ -34,7 +34,7 @@ export default isentinel(
 	},
 	{
 		name: "local/style-migrate",
-		files: ["src/configs/*.ts"],
+		files: ["src/eslint/configs/*.ts"],
 		plugins: {
 			"style-migrate": styleMigrate,
 		},
