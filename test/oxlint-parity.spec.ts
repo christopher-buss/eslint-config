@@ -344,6 +344,22 @@ describe("oxlint options-level rules", () => {
 		expect(effective.get(translated)).toBe("off");
 		expect(registered).toContain("eslint-js");
 	});
+
+	it("should preserve unmapped off entries from options.rules", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/options-unmapped-off",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			rules: { "react-x/no-nested-component-definitions": "off" },
+		});
+
+		const effective = effectiveOxlintRules(config, "src/index.ts");
+
+		expect(effective.get("react-x/no-nested-component-definitions")).toBe("off");
+	});
 });
 
 describe("oxlint linter options", () => {

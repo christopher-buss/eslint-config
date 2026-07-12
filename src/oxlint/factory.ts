@@ -292,6 +292,7 @@ export function isentinel(
 		const optionsFragments = createOxlintConfigs({
 			name: "isentinel/options-rules",
 			files: [GLOB_SRC],
+			keepUnmappedOff: true,
 			rules,
 		});
 		for (const fragment of optionsFragments) {

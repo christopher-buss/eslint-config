@@ -42,6 +42,7 @@ export interface OxlintConfigFragmentOptions {
 	excludeFiles?: Array<string>;
 	files: Array<string>;
 	globals?: TypedOxlintConfigItem["globals"];
+	keepUnmappedOff?: boolean;
 	rules: Rules | undefined;
 	settings?: TypedOxlintConfigItem["settings"];
 }
@@ -53,12 +54,18 @@ export interface OxlintConfigFragmentOptions {
  * Rules that are not part of the hybrid mapping (for example jest or react
  * rules, which only run in standalone mode) are treated as jsPlugin rules.
  * Disabled unmapped rules are skipped so that no jsPlugin is loaded solely for
- * an "off" entry.
+ * an "off" entry, unless `keepUnmappedOff` is set (user options.rules must not
+ * silently discard an explicit disable).
  *
  * @param rules - The canonical rule map.
+ * @param keepUnmappedOff - Emit disabled unmapped rules instead of skipping
+ *   them (without registering a jsPlugin for them).
  * @returns The split rules with the plugins each side requires.
  */
-export function splitOxlintRules(rules: Rules | undefined): SplitOxlintRules {
+export function splitOxlintRules(
+	rules: Rules | undefined,
+	keepUnmappedOff = false,
+): SplitOxlintRules {
 	const nativeRules: Rules = {};
 	const jsPluginRules: Rules = {};
 	const nativePlugins = new Set<OxlintPlugin>();
@@ -74,11 +81,20 @@ export function splitOxlintRules(rules: Rules | undefined): SplitOxlintRules {
 		const covered = isOxlintCovered(rule);
 		const severity = Array.isArray(value) ? value[0] : value;
 		const isOff = severity === "off" || severity === 0;
+		const translated = translateRuleToOxlint(rule);
 		if (!covered && isOff) {
+			// Preserve an explicit user disable, but only when oxlint can resolve
+			// the plugin; emitting a rule for an unregistered plugin errors the
+			// whole config build.
+			const prefix = translated.slice(0, translated.indexOf("/"));
+			if (keepUnmappedOff && oxlintJsPlugins[prefix] !== undefined) {
+				jsPluginRules[translated] = value;
+				jsPluginPrefixes.add(prefix);
+			}
+
 			continue;
 		}
 
-		const translated = translateRuleToOxlint(rule);
 		const target = covered ? mappedTarget(rule) : "js-plugin";
 
 		if (target === "js-plugin") {
@@ -132,10 +148,14 @@ export function createOxlintConfigs({
 	excludeFiles,
 	files,
 	globals,
+	keepUnmappedOff = false,
 	rules,
 	settings,
 }: OxlintConfigFragmentOptions): Array<TypedOxlintConfigItem> {
-	const { jsPluginRules, jsPlugins, nativePlugins, nativeRules } = splitOxlintRules(rules);
+	const { jsPluginRules, jsPlugins, nativePlugins, nativeRules } = splitOxlintRules(
+		rules,
+		keepUnmappedOff,
+	);
 
 	const fragments: Array<TypedOxlintConfigItem> = [];
 
