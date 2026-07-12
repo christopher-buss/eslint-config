@@ -726,6 +726,17 @@ export function isOxlintCovered(rule: string): boolean {
 }
 
 /**
+ * Whether the rule runs via oxlint-tsgolint (`oxlint --type-aware`); such rules
+ * are noise without type information, so they are gated on `typeAware`.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether the rule is executed by oxlint-tsgolint.
+ */
+export function isTsgolintRule(rule: string): boolean {
+	return oxlintRuleMapping[rule] === "tsgolint";
+}
+
+/**
  * Translate a canonical ESLint rule name into its oxlint configuration name.
  *
  * @param rule - The canonical ESLint rule name.
@@ -759,6 +770,31 @@ export function translateRuleToOxlint(rule: string): string {
 	// their prefix)
 	const renamed = JS_PLUGIN_PREFIX_RENAMES[prefix];
 	return renamed === undefined ? rule : `${renamed}/${name}`;
+}
+
+/**
+ * Whether a rule is a TypeScript extension rule that oxlint implements as its
+ * TypeScript-aware core rule, so `ts/<name>` and the bare core `<name>`
+ * collapse onto a single native entry. The extension entry must win.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether the rule collapses onto a shared native core rule.
+ */
+export function collapsesToTsCoreRule(rule: string): boolean {
+	const { name, prefix } = splitRuleName(rule);
+	return prefix === "ts" && TS_EXTENSION_TO_CORE.has(name);
+}
+
+/**
+ * Whether a rule is the bare core counterpart of a collapsing TypeScript
+ * extension rule; its severity must yield to the extension entry.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether the rule is such a core counterpart.
+ */
+export function isTsCoreCounterpartRule(rule: string): boolean {
+	const { name, prefix } = splitRuleName(rule);
+	return prefix === "" && TS_EXTENSION_TO_CORE.has(name);
 }
 
 function splitRuleName(rule: string): { name: string; prefix: string } {

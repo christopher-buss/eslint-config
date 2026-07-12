@@ -73,6 +73,7 @@ export function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+	const typeAware = linterOptions?.typeAware ?? isPackageExists("oxlint-tsgolint");
 
 	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
@@ -138,6 +139,7 @@ export function isentinel(
 			...getOverrides(options, "typescript"),
 			componentExts: componentExtensions,
 			stylistic: stylisticOptions,
+			typeAware,
 		}),
 		oxlintUnicorn({
 			...resolveSubOptions(options, "unicorn"),
@@ -338,7 +340,7 @@ export function isentinel(
 		ignorePatterns,
 		jsPlugins: [...jsPlugins.values()],
 		options: {
-			typeAware: isPackageExists("oxlint-tsgolint"),
+			typeAware,
 			...linterOptions,
 		},
 		overrides,

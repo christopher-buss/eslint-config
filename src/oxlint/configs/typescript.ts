@@ -1,4 +1,5 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
+import { isTsgolintRule } from "../../rules/oxlint-mapping.ts";
 import {
 	erasableSyntaxOnlyRules,
 	typescriptRecommendedOverrides,
@@ -12,6 +13,7 @@ import type {
 	OptionsOverrides,
 	OptionsStylistic,
 	OptionsTypeScriptErasableOnly,
+	Rules,
 } from "../../types.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
@@ -21,13 +23,14 @@ export function oxlintTypescript(
 		OptionsFiles &
 		OptionsOverrides &
 		OptionsStylistic &
-		OptionsTypeScriptErasableOnly = {},
+		OptionsTypeScriptErasableOnly & { typeAware?: boolean } = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		erasableOnly = false,
 		overrides = {},
 		stylistic = true,
+		typeAware = true,
 	} = options;
 
 	const files = options.files?.flat() ?? [
@@ -36,6 +39,13 @@ export function oxlintTypescript(
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
+	const typeAwareRules = typescriptTypeAwareRules() ?? {};
+	const gatedTypeAwareRules = typeAware
+		? typeAwareRules
+		: (Object.fromEntries(
+				Object.entries(typeAwareRules).filter(([rule]) => !isTsgolintRule(rule)),
+			) as Rules);
+
 	return createOxlintConfigs({
 		name: "isentinel/typescript",
 		files,
@@ -43,9 +53,7 @@ export function oxlintTypescript(
 			...typescriptRecommendedOverrides(),
 			...typescriptStrictPresetRules(),
 			...typescriptRules({ stylistic }),
-			// Type-aware rules are executed by oxlint-tsgolint and require
-			// running oxlint with `--type-aware`.
-			...typescriptTypeAwareRules(),
+			...gatedTypeAwareRules,
 			...(erasableOnly ? erasableSyntaxOnlyRules() : {}),
 			...overrides,
 		},

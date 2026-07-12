@@ -1,8 +1,10 @@
 import type { ExternalPluginEntry } from "oxlint";
 
 import {
+	collapsesToTsCoreRule,
 	excludedFromOxlint,
 	isOxlintCovered,
+	isTsCoreCounterpartRule,
 	oxlintJsPlugins,
 	oxlintRuleMapping,
 	translateRuleToOxlint,
@@ -61,6 +63,7 @@ export function splitOxlintRules(rules: Rules | undefined): SplitOxlintRules {
 	const jsPluginRules: Rules = {};
 	const nativePlugins = new Set<OxlintPlugin>();
 	const jsPluginPrefixes = new Set<string>();
+	const tsCollapsed = new Set<string>();
 
 	const entries = Object.entries(rules ?? {});
 	for (const [rule, value] of entries) {
@@ -85,7 +88,13 @@ export function splitOxlintRules(rules: Rules | undefined): SplitOxlintRules {
 			continue;
 		}
 
-		nativeRules[translated] = value;
+		if (collapsesToTsCoreRule(rule)) {
+			tsCollapsed.add(translated);
+			nativeRules[translated] = value;
+		} else if (!isTsCoreCounterpartRule(rule) || !tsCollapsed.has(translated)) {
+			nativeRules[translated] = value;
+		}
+
 		const slashIndex = translated.indexOf("/");
 		const nativePrefix = slashIndex === -1 ? "eslint" : translated.slice(0, slashIndex);
 		if (NATIVE_PLUGINS.has(nativePrefix as OxlintPlugin)) {
