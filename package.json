@@ -30,7 +30,10 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
-		"./oxlint": "./dist/oxlint.mjs",
+		"./oxlint": {
+			"types": "./dist/oxlint.d.mts",
+			"default": "./dist/oxlint.mjs"
+		},
 		"./package.json": "./package.json"
 	},
 	"main": "./dist/index.mjs",
@@ -42,7 +45,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "nr gen && tsdown --clean --dts",
+		"build": "nr gen && tsdown --clean --dts && node scripts/check-dist.ts",
 		"build:inspector": "pnpm build && pnpm dlx @eslint/config-inspector build --config eslint-inspector.config.ts --out-dir ./.eslint-config-inspector",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"gen": "node scripts/typegen.ts && node scripts/versiongen.ts",

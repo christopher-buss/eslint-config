@@ -120,6 +120,11 @@ your oxfmt options) or remove it. Entries scoped to Markdown virtual files
 (`**/*.md/**`) are exempt, since oxlint cannot lint them. Suppress the warning
 with `oxlintWarnDeadRules: false`.
 
+The check treats every config not named `isentinel/*` as yours, so a third-party
+shareable config you compose in can trigger the warning too (its oxlint-owned
+entries are genuinely inert in hybrid mode). Suppress it with
+`oxlintWarnDeadRules: false` if you cannot edit that config.
+
 ## Standalone mode
 
 Use only oxlint (no ESLint) via the dedicated export:
