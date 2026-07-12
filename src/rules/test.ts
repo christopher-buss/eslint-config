@@ -31,9 +31,10 @@ export function jestExtendedRules(): TypedFlatConfigItem["rules"] {
 /**
  * Jest rules shared between the ESLint and oxlint factories.
  *
- * In hybrid mode these stay in ESLint (oxc-project/oxc#23290 — the native
- * oxlint jest plugin does not support `settings.jest.globalPackage`); the
- * standalone oxlint factory runs `eslint-plugin-jest` as a jsPlugin instead.
+ * Both factories run `eslint-plugin-jest` as a jsPlugin: the native oxlint jest
+ * plugin does not support `settings.jest.globalPackage` (oxc-project/oxc#23290)
+ * and we use `@rbxts/jest-globals`. The four type-aware jest rules stay in
+ * ESLint (jsPlugins have no type information).
  *
  * @param options - Shared rule options.
  * @returns The rule map.
@@ -122,9 +123,9 @@ export function jestRules({
 /**
  * Vitest rules shared between the ESLint and oxlint factories.
  *
- * In hybrid mode these stay in ESLint (`@vitest/eslint-plugin` is an optional
- * peer and its rule set diverges from oxlint's native vitest plugin); the
- * standalone oxlint factory runs it as a jsPlugin instead.
+ * Both factories run `@vitest/eslint-plugin` (an optional peer) as a jsPlugin;
+ * `vitest/require-mock-type-parameters` is functionally type-aware and stays in
+ * ESLint (jsPlugins have no type information).
  *
  * @param options - Shared rule options.
  * @returns The rule map.

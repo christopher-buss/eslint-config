@@ -16,7 +16,9 @@ import {
 import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
+import { oxlintE18e } from "./configs/e18e.ts";
 import { oxlintEslintPlugin } from "./configs/eslint-plugin.ts";
+import { oxlintFlawless } from "./configs/flawless.ts";
 import { oxlintGitignore } from "./configs/gitignore.ts";
 import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
@@ -55,6 +57,7 @@ export function isentinel(
 	const options = factoryOptions ?? { name: "isentinel" };
 	const {
 		componentExts: componentExtensions = [],
+		e18e: enableE18e = true,
 		env,
 		eslintPlugin: enableEslintPlugin = false,
 		formatters,
@@ -168,6 +171,15 @@ export function isentinel(
 		);
 	}
 
+	if (enableE18e !== false && !enableRoblox) {
+		configs.push(
+			oxlintE18e({
+				isInEditor,
+				...(enableE18e === true ? {} : enableE18e),
+			}),
+		);
+	}
+
 	if (projectType === "package" && !enableRoblox) {
 		configs.push(oxlintNode());
 	}
@@ -186,16 +198,6 @@ export function isentinel(
 		);
 	}
 
-	if (enableReact !== false) {
-		const reactOptions = typeof enableReact === "object" ? enableReact : {};
-		configs.push(
-			oxlintReact({
-				stylistic: stylisticOptions,
-				...reactOptions,
-			}),
-		);
-	}
-
 	if (stylisticOptions !== false) {
 		configs.push(
 			oxlintPerfectionist({
@@ -203,6 +205,16 @@ export function isentinel(
 				type: projectType,
 			}),
 			oxlintStylistic(stylisticOptions, prettierSettings),
+		);
+	}
+
+	if (enableReact !== false) {
+		const reactOptions = typeof enableReact === "object" ? enableReact : {};
+		configs.push(
+			oxlintReact({
+				stylistic: stylisticOptions,
+				...reactOptions,
+			}),
 		);
 	}
 
@@ -230,6 +242,7 @@ export function isentinel(
 			isInEditor,
 			stylistic: stylisticOptions,
 		}),
+		oxlintFlawless({ stylistic: stylisticOptions }),
 		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		oxlintDisables({ root: rootGlobs }),
 	);

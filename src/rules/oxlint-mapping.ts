@@ -25,28 +25,27 @@ export type OxlintTarget =
 export const staysInEslint: Readonly<Record<string, string>> = {
 	"cease-nonsense/prefer-read-only-props":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
-	"e18e/*": "Kept in ESLint to limit hybrid-mode scope; candidate for a future move",
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
-	"flawless/*": "Type-aware custom rules; oxlint jsPlugins have no type information",
+	"flawless/naming-convention":
+		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
 	"format-lua/*": "Oxlint cannot lint Lua files",
-	"jest-extended/*": "Stays with the jest rules (see test/*)",
 	"jsonc/yaml/toml/markdown/package-json/pnpm/sort-*":
 		"Oxlint only lints JS/TS files; JSON, YAML, TOML and Markdown stay in ESLint",
-	"react/*":
-		"Optional peer plugin set with type-aware rules interleaved; standalone oxlint offers a react config, hybrid keeps it in ESLint",
+	"react/* (type-aware)":
+		"The @eslint-react type-aware rules (no-implicit-children/key/ref, no-leaked-conditional-rendering, no-unused-props) need type information but do NOT declare requiresTypeChecking, so the metadata-based parity test cannot catch them; they are excluded manually and stay in ESLint",
 	"roblox/* (type-aware)":
 		"Type-aware custom rules (lua-truthiness etc.); oxlint jsPlugins have no type information",
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
-	"test/*":
-		"Jest rules stay in ESLint: the native oxlint jest plugin does not support settings.jest.globalPackage (https://github.com/oxc-project/oxc/issues/23290) and we use @rbxts/jest-globals",
+	"test/* (type-aware)":
+		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin, which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
 	"type-aware jsPlugin rules":
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-redundant-optional, sonar/no-try-promise, unicorn/no-non-function-verb-prefix, arrow-style/no-export-default-arrow, eslint-plugin/no-property-in-node, test/no-error-equal, test/no-unnecessary-assertion, test/unbound-method, test/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
-	"vitest/*":
-		"Optional peer plugin whose rule set diverges from oxlint's native vitest plugin; kept in ESLint when in doubt",
+	"vitest/require-mock-type-parameters":
+		"Functionally type-aware; ESLint reports it with type information but oxlint's jsPlugin has none. The rest of the vitest family runs in oxlint via @vitest/eslint-plugin as a jsPlugin (re-verified non-crashing on oxlint 1.73)",
 };
 
 export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
@@ -386,6 +385,13 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// Part: Imports (import-lite; native ports)
 	"import/first": "native",
 	"import/newline-after-import": "native",
+	// Sanctioned native-strict divergence (audited via
+	// scripts/audit-native-parity.ts): oxlint's native no-duplicates flags split
+	// type/value imports; eslint-plugin-import-lite does not by default. Setting
+	// the ESLint side to { "prefer-inline": true } narrows the gap but is a
+	// breaking change for consumers with existing split imports and still leaves
+	// a per-group vs per-node diagnostic-count difference, so it is left off and
+	// the divergence is accepted by preference.
 	"import/no-duplicates": "native",
 	"import/no-mutable-exports": "native",
 	"import/no-named-default": "native",
@@ -527,8 +533,31 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unused-imports/no-unused-imports": "js-plugin",
 	"unused-imports/no-unused-vars": "js-plugin",
 
+	// Part: e18e (run via jsPlugin; non-roblox projects only)
+	"e18e/ban-dependencies": "js-plugin",
+	"e18e/prefer-array-at": "js-plugin",
+	"e18e/prefer-array-fill": "js-plugin",
+	"e18e/prefer-array-from-map": "js-plugin",
+	"e18e/prefer-array-some": "js-plugin",
+	"e18e/prefer-array-to-reversed": "js-plugin",
+	"e18e/prefer-array-to-sorted": "js-plugin",
+	"e18e/prefer-array-to-spliced": "js-plugin",
+	"e18e/prefer-date-now": "js-plugin",
+	"e18e/prefer-includes": "js-plugin",
+	"e18e/prefer-nullish-coalescing": "js-plugin",
+	"e18e/prefer-object-has-own": "js-plugin",
+	"e18e/prefer-regex-test": "js-plugin",
+	"e18e/prefer-spread-syntax": "js-plugin",
+	"e18e/prefer-static-regex": "js-plugin",
+	"e18e/prefer-string-fromcharcode": "js-plugin",
+	"e18e/prefer-timer-args": "js-plugin",
+	"e18e/prefer-url-canparse": "js-plugin",
+
 	// Part: Stylistic (run via jsPlugin)
 	"arrow-style/arrow-return-style": "js-plugin",
+	"style/jsx-curly-brace-presence": "js-plugin",
+	"style/jsx-newline": "js-plugin",
+	"style/jsx-self-closing-comp": "js-plugin",
 	"style/lines-between-class-members": "js-plugin",
 	"style/multiline-comment-style": "js-plugin",
 	"style/object-property-newline": "js-plugin",
@@ -548,7 +577,204 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"cease-nonsense/prefer-early-return": "js-plugin",
 	"cease-nonsense/prefer-module-scope-constants": "js-plugin",
 	"cease-nonsense/prefer-singular-enums": "js-plugin",
+	"cease-nonsense/react-hooks-strict-return": "js-plugin",
 	"cease-nonsense/strict-component-boundaries": "js-plugin",
+
+	// Part: Flawless react syntax rules (run via jsPlugin); the type-aware
+	// flawless rules stay in ESLint
+	"flawless/jsx-shorthand-boolean": "js-plugin",
+	"flawless/jsx-shorthand-fragment": "js-plugin",
+	"flawless/no-unnecessary-use-callback": "js-plugin",
+	"flawless/no-unnecessary-use-memo": "js-plugin",
+	"flawless/prefer-destructuring-assignment": "js-plugin",
+	"flawless/prefer-parameter-destructuring": "js-plugin",
+	"flawless/purity": "js-plugin",
+
+	// Part: React (@eslint-react via eslint-plugin-react-x; run via jsPlugin
+	// under the react-x alias — oxlint reserves the native react prefix). The
+	// type-aware rules (see typeAwareJsPluginRules) stay in ESLint.
+	"react/error-boundaries": "js-plugin",
+	"react/exhaustive-deps": "js-plugin",
+	"react/globals": "js-plugin",
+	"react/immutability": "js-plugin",
+	"react/no-access-state-in-setstate": "js-plugin",
+	"react/no-array-index-key": "js-plugin",
+	"react/no-children-count": "js-plugin",
+	"react/no-children-for-each": "js-plugin",
+	"react/no-children-map": "js-plugin",
+	"react/no-children-only": "js-plugin",
+	"react/no-children-to-array": "js-plugin",
+	"react/no-class-component": "js-plugin",
+	"react/no-clone-element": "js-plugin",
+	"react/no-component-will-mount": "js-plugin",
+	"react/no-component-will-receive-props": "js-plugin",
+	"react/no-component-will-update": "js-plugin",
+	"react/no-create-ref": "js-plugin",
+	"react/no-direct-mutation-state": "js-plugin",
+	"react/no-duplicate-key": "js-plugin",
+	"react/no-forward-ref": "js-plugin",
+	"react/no-missing-component-display-name": "js-plugin",
+	"react/no-missing-context-display-name": "js-plugin",
+	"react/no-missing-key": "js-plugin",
+	"react/no-misused-capture-owner-stack": "js-plugin",
+	"react/no-nested-component-definitions": "js-plugin",
+	"react/no-nested-lazy-component-declarations": "js-plugin",
+	"react/no-set-state-in-component-did-mount": "js-plugin",
+	"react/no-set-state-in-component-did-update": "js-plugin",
+	"react/no-set-state-in-component-will-update": "js-plugin",
+	"react/no-unnecessary-use-prefix": "js-plugin",
+	"react/no-unsafe-component-will-mount": "js-plugin",
+	"react/no-unsafe-component-will-receive-props": "js-plugin",
+	"react/no-unsafe-component-will-update": "js-plugin",
+	"react/no-unstable-context-value": "js-plugin",
+	"react/no-unstable-default-props": "js-plugin",
+	"react/no-unused-class-component-members": "js-plugin",
+	"react/no-unused-state": "js-plugin",
+	"react/no-use-context": "js-plugin",
+	"react/refs": "js-plugin",
+	"react/rules-of-hooks": "js-plugin",
+	"react/set-state-in-effect": "js-plugin",
+	"react/set-state-in-render": "js-plugin",
+	"react/static-components": "js-plugin",
+	"react/use-memo": "js-plugin",
+	"react/use-state": "js-plugin",
+
+	// Part: React JSX (eslint-plugin-react-jsx; run via jsPlugin)
+	"react-jsx/no-children-prop": "js-plugin",
+	"react-jsx/no-children-prop-with-children": "js-plugin",
+	"react-jsx/no-comment-textnodes": "js-plugin",
+	"react-jsx/no-key-after-spread": "js-plugin",
+	"react-jsx/no-leaked-dollar": "js-plugin",
+	"react-jsx/no-leaked-semicolon": "js-plugin",
+	"react-jsx/no-useless-fragment": "js-plugin",
+
+	// Part: React naming convention (run via jsPlugin)
+	"react-naming-convention/context-name": "js-plugin",
+	"react-naming-convention/ref-name": "js-plugin",
+
+	// Part: Jest (eslint-plugin-jest via jsPlugin; honors
+	// settings.jest.globalPackage = @rbxts/jest-globals, scoped to test files.
+	// The four type-aware jest rules stay in ESLint, see typeAwareJsPluginRules)
+	"test/consistent-test-it": "js-plugin",
+	"test/expect-expect": "js-plugin",
+	"test/max-expects": "js-plugin",
+	"test/max-nested-describe": "js-plugin",
+	"test/no-alias-methods": "js-plugin",
+	"test/no-commented-out-tests": "js-plugin",
+	"test/no-conditional-expect": "js-plugin",
+	"test/no-conditional-in-test": "js-plugin",
+	"test/no-disabled-tests": "js-plugin",
+	"test/no-done-callback": "js-plugin",
+	"test/no-duplicate-hooks": "js-plugin",
+	"test/no-export": "js-plugin",
+	"test/no-focused-tests": "js-plugin",
+	"test/no-hooks": "js-plugin",
+	"test/no-identical-title": "js-plugin",
+	"test/no-standalone-expect": "js-plugin",
+	"test/no-test-prefixes": "js-plugin",
+	"test/no-test-return-statement": "js-plugin",
+	"test/no-unneeded-async-expect-function": "js-plugin",
+	"test/no-untyped-mock-factory": "js-plugin",
+	"test/padding-around-all": "js-plugin",
+	"test/prefer-called-with": "js-plugin",
+	"test/prefer-comparison-matcher": "js-plugin",
+	"test/prefer-each": "js-plugin",
+	"test/prefer-ending-with-an-expect": "js-plugin",
+	"test/prefer-equality-matcher": "js-plugin",
+	"test/prefer-expect-assertions": "js-plugin",
+	"test/prefer-hooks-in-order": "js-plugin",
+	"test/prefer-lowercase-title": "js-plugin",
+	"test/prefer-mock-promise-shorthand": "js-plugin",
+	"test/prefer-mock-return-shorthand": "js-plugin",
+	"test/prefer-spy-on": "js-plugin",
+	"test/prefer-strict-equal": "js-plugin",
+	"test/prefer-to-be": "js-plugin",
+	"test/prefer-to-contain": "js-plugin",
+	"test/prefer-to-have-been-called": "js-plugin",
+	"test/prefer-to-have-been-called-times": "js-plugin",
+	"test/prefer-to-have-length": "js-plugin",
+	"test/prefer-todo": "js-plugin",
+	"test/require-hook": "js-plugin",
+	"test/require-to-throw-message": "js-plugin",
+	"test/require-top-level-describe": "js-plugin",
+	"test/valid-describe-callback": "js-plugin",
+	"test/valid-expect": "js-plugin",
+	"test/valid-expect-in-promise": "js-plugin",
+	"test/valid-title": "js-plugin",
+
+	// Part: Jest extended (run via jsPlugin)
+	"jest-extended/prefer-to-be-array": "js-plugin",
+	"jest-extended/prefer-to-be-false": "js-plugin",
+	"jest-extended/prefer-to-be-object": "js-plugin",
+	"jest-extended/prefer-to-be-true": "js-plugin",
+	"jest-extended/prefer-to-have-been-called-once": "js-plugin",
+
+	// Part: Vitest (@vitest/eslint-plugin via jsPlugin, renamed vitest-js;
+	// re-verified non-crashing on oxlint 1.73. require-mock-type-parameters is
+	// functionally type-aware — it stays in ESLint, see typeAwareJsPluginRules)
+	"vitest/consistent-each-for": "js-plugin",
+	"vitest/consistent-test-filename": "js-plugin",
+	"vitest/consistent-test-it": "js-plugin",
+	"vitest/consistent-vitest-vi": "js-plugin",
+	"vitest/expect-expect": "js-plugin",
+	"vitest/hoisted-apis-on-top": "js-plugin",
+	"vitest/max-expects": "js-plugin",
+	"vitest/max-nested-describe": "js-plugin",
+	"vitest/no-alias-methods": "js-plugin",
+	"vitest/no-commented-out-tests": "js-plugin",
+	"vitest/no-conditional-expect": "js-plugin",
+	"vitest/no-conditional-in-test": "js-plugin",
+	"vitest/no-conditional-tests": "js-plugin",
+	"vitest/no-disabled-tests": "js-plugin",
+	"vitest/no-duplicate-hooks": "js-plugin",
+	"vitest/no-focused-tests": "js-plugin",
+	"vitest/no-hooks": "js-plugin",
+	"vitest/no-identical-title": "js-plugin",
+	"vitest/no-import-node-test": "js-plugin",
+	"vitest/no-interpolation-in-snapshots": "js-plugin",
+	"vitest/no-large-snapshots": "js-plugin",
+	"vitest/no-mocks-import": "js-plugin",
+	"vitest/no-standalone-expect": "js-plugin",
+	"vitest/no-test-prefixes": "js-plugin",
+	"vitest/no-test-return-statement": "js-plugin",
+	"vitest/no-unneeded-async-expect-function": "js-plugin",
+	"vitest/padding-around-all": "js-plugin",
+	"vitest/prefer-called-exactly-once-with": "js-plugin",
+	"vitest/prefer-called-once": "js-plugin",
+	"vitest/prefer-called-with": "js-plugin",
+	"vitest/prefer-comparison-matcher": "js-plugin",
+	"vitest/prefer-describe-function-title": "js-plugin",
+	"vitest/prefer-each": "js-plugin",
+	"vitest/prefer-equality-matcher": "js-plugin",
+	"vitest/prefer-expect-assertions": "js-plugin",
+	"vitest/prefer-expect-resolves": "js-plugin",
+	"vitest/prefer-expect-type-of": "js-plugin",
+	"vitest/prefer-hooks-in-order": "js-plugin",
+	"vitest/prefer-hooks-on-top": "js-plugin",
+	"vitest/prefer-import-in-mock": "js-plugin",
+	"vitest/prefer-importing-vitest-globals": "js-plugin",
+	"vitest/prefer-lowercase-title": "js-plugin",
+	"vitest/prefer-mock-promise-shorthand": "js-plugin",
+	"vitest/prefer-mock-return-shorthand": "js-plugin",
+	"vitest/prefer-snapshot-hint": "js-plugin",
+	"vitest/prefer-spy-on": "js-plugin",
+	"vitest/prefer-strict-boolean-matchers": "js-plugin",
+	"vitest/prefer-strict-equal": "js-plugin",
+	"vitest/prefer-to-be": "js-plugin",
+	"vitest/prefer-to-be-object": "js-plugin",
+	"vitest/prefer-to-contain": "js-plugin",
+	"vitest/prefer-to-have-been-called-times": "js-plugin",
+	"vitest/prefer-to-have-length": "js-plugin",
+	"vitest/prefer-todo": "js-plugin",
+	"vitest/prefer-vi-mocked": "js-plugin",
+	"vitest/require-awaited-expect-poll": "js-plugin",
+	"vitest/require-local-test-context-for-concurrent-snapshots": "js-plugin",
+	"vitest/require-to-throw-message": "js-plugin",
+	"vitest/require-top-level-describe": "js-plugin",
+	"vitest/valid-describe-callback": "js-plugin",
+	"vitest/valid-expect": "js-plugin",
+	"vitest/valid-expect-in-promise": "js-plugin",
+	"vitest/valid-title": "js-plugin",
 
 	// Part: Roblox (run via jsPlugin; the type-aware roblox rules stay in
 	// ESLint)
@@ -625,6 +851,14 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"arrow-style/no-export-default-arrow",
 	"eslint-plugin/no-property-in-node",
+	// The @eslint-react type-aware rules do NOT declare
+	// meta.docs.requiresTypeChecking, so the metadata-based parity test cannot
+	// catch them; they are listed manually.
+	"react/no-implicit-children",
+	"react/no-implicit-key",
+	"react/no-implicit-ref",
+	"react/no-leaked-conditional-rendering",
+	"react/no-unused-props",
 	"sonar/no-ignored-return",
 	"sonar/no-redundant-optional",
 	"sonar/no-try-promise",
@@ -633,6 +867,9 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"test/unbound-method",
 	"test/valid-expect-with-promise",
 	"unicorn/no-non-function-verb-prefix",
+	// Functionally type-aware (no requiresTypeChecking flag): ESLint reports it
+	// with type information, oxlint's jsPlugin has none — verified empirically.
+	"vitest/require-mock-type-parameters",
 ]);
 
 /**
@@ -688,6 +925,7 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"cease-nonsense": "@pobammer-ts/eslint-cease-nonsense-rules",
 	"comment-length": "eslint-plugin-comment-length",
 	"de-morgan": "eslint-plugin-de-morgan",
+	"e18e": "@e18e/eslint-plugin",
 	"erasable-syntax-only": "eslint-plugin-erasable-syntax-only",
 	"eslint-js": "oxlint-plugin-eslint",
 	"eslint-plugin": "eslint-plugin-eslint-plugin",

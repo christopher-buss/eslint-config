@@ -1,3 +1,4 @@
+import { e18eRules } from "../../rules/e18e.ts";
 import { interopDefault } from "../../utils.ts";
 import type {
 	OptionsE18e,
@@ -16,8 +17,6 @@ export async function e18e({
 }: OptionsE18e & OptionsIsInEditor & OptionsProjectType = {}): Promise<Array<TypedFlatConfigItem>> {
 	const pluginE18e = await interopDefault(import("@e18e/eslint-plugin"));
 
-	const { configs } = pluginE18e;
-
 	return [
 		{
 			name: "isentinel/e18e/rules",
@@ -25,9 +24,7 @@ export async function e18e({
 				e18e: pluginE18e,
 			},
 			rules: {
-				...(modernization ? { ...configs.modernization.rules } : {}),
-				...(moduleReplacements ? { ...configs.moduleReplacements.rules } : {}),
-				...(performanceImprovements ? { ...configs.performanceImprovements.rules } : {}),
+				...e18eRules({ modernization, moduleReplacements, performanceImprovements }),
 
 				...overrides,
 			},

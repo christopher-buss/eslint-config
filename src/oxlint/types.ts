@@ -59,7 +59,6 @@ export type TypedOxlintConfigItem = Omit<OxlintOverride, "rules"> & {
 export type OxlintOptionsConfig = Omit<
 	OptionsConfig,
 	| "autoRenamePlugins"
-	| "e18e"
 	| "flawless"
 	| "jsonc"
 	| "markdown"

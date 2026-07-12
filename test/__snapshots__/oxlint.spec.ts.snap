@@ -115,6 +115,10 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "specifier": "@cspell/eslint-plugin",
     },
     {
+      "name": "flawless",
+      "specifier": "eslint-plugin-flawless",
+    },
+    {
       "name": "oxlint-comments",
       "specifier": "oxlint-plugin-oxlint-comments",
     },
@@ -2784,6 +2788,12 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       ],
       "rules": {
         "antfu/top-level-function": "error",
+        "style/jsx-curly-brace-presence": [
+          "error",
+          {
+            "propElementValues": "always",
+          },
+        ],
         "style/lines-between-class-members": [
           "error",
           {
@@ -2994,6 +3004,20 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "cease-nonsense/prefer-module-scope-constants": "error",
         "cease-nonsense/prefer-singular-enums": "error",
         "cease-nonsense/strict-component-boundaries": "error",
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}ts",
+      ],
+      "jsPlugins": [
+        {
+          "name": "flawless",
+          "specifier": "eslint-plugin-flawless",
+        },
+      ],
+      "rules": {
+        "flawless/prefer-parameter-destructuring": "warn",
       },
     },
     {
@@ -3769,6 +3793,10 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "specifier": "eslint-plugin-jsdoc",
     },
     {
+      "name": "e18e",
+      "specifier": "@e18e/eslint-plugin",
+    },
+    {
       "name": "node-js",
       "specifier": "eslint-plugin-n",
     },
@@ -3795,6 +3823,10 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     {
       "name": "cease-nonsense",
       "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
+    },
+    {
+      "name": "flawless",
+      "specifier": "eslint-plugin-flawless",
     },
     {
       "name": "oxlint-comments",
@@ -6154,6 +6186,54 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "jsPlugins": [
+        {
+          "name": "e18e",
+          "specifier": "@e18e/eslint-plugin",
+        },
+      ],
+      "rules": {
+        "e18e/prefer-array-at": "error",
+        "e18e/prefer-array-fill": "error",
+        "e18e/prefer-array-from-map": "error",
+        "e18e/prefer-array-some": "error",
+        "e18e/prefer-array-to-reversed": "error",
+        "e18e/prefer-array-to-sorted": "error",
+        "e18e/prefer-array-to-spliced": "error",
+        "e18e/prefer-date-now": "error",
+        "e18e/prefer-includes": "error",
+        "e18e/prefer-nullish-coalescing": "error",
+        "e18e/prefer-object-has-own": "error",
+        "e18e/prefer-regex-test": "error",
+        "e18e/prefer-spread-syntax": "error",
+        "e18e/prefer-static-regex": "error",
+        "e18e/prefer-string-fromcharcode": "error",
+        "e18e/prefer-timer-args": "error",
+        "e18e/prefer-url-canparse": "error",
+      },
+    },
+    {
+      "files": [
+        "**/__tests__/**/*.{,c,m}[jt]s{,x}",
+        "**/*.spec.{,c,m}[jt]s{,x}",
+        "**/*.test.{,c,m}[jt]s{,x}",
+        "**/*.bench.{,c,m}[jt]s{,x}",
+        "**/*.benchmark.{,c,m}[jt]s{,x}",
+      ],
+      "jsPlugins": [
+        {
+          "name": "e18e",
+          "specifier": "@e18e/eslint-plugin",
+        },
+      ],
+      "rules": {
+        "e18e/prefer-static-regex": "off",
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "rules": {
         "node/handle-callback-err": [
           "error",
@@ -6594,6 +6674,12 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       ],
       "rules": {
         "antfu/top-level-function": "error",
+        "style/jsx-curly-brace-presence": [
+          "error",
+          {
+            "propElementValues": "always",
+          },
+        ],
         "style/lines-between-class-members": [
           "error",
           {
@@ -6804,6 +6890,20 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "cease-nonsense/prefer-module-scope-constants": "error",
         "cease-nonsense/prefer-singular-enums": "error",
         "cease-nonsense/strict-component-boundaries": "error",
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}ts",
+      ],
+      "jsPlugins": [
+        {
+          "name": "flawless",
+          "specifier": "eslint-plugin-flawless",
+        },
+      ],
+      "rules": {
+        "flawless/prefer-parameter-destructuring": "warn",
       },
     },
     {

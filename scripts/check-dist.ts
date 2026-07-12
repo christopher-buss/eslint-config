@@ -18,7 +18,7 @@ const leaked = [
 		...Array.from(contents.matchAll(oxlintTypePattern), (match) => match[0]),
 		...Array.from(contents.matchAll(oxlintModulePattern), (match) => match[0]),
 	]),
-].sort();
+].toSorted();
 
 if (leaked.length > 0) {
 	console.error(`[check-dist] dist/index.d.mts leaks oxlint references: ${leaked.join(", ")}`);

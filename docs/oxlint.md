@@ -45,10 +45,12 @@ export default isentinel({
 });
 ```
 
-> [!NOTE] In hybrid mode, give the oxlint factory only the structural options
-> (`type`, `roblox`, `stylistic`, `root`, ignores...). Do NOT mirror `test` or
-> `react`: those rule families stay in ESLint (see below), and enabling them on
-> the oxlint side would double-lint the same files.
+> [!NOTE] In hybrid mode, give the oxlint factory the same structural and plugin
+> options you gave ESLint (`type`, `roblox`, `stylistic`, `root`, `react`,
+> `test`, ignores...). The react, jest and vitest families now run in oxlint as
+> jsPlugins, and ESLint keeps only their type-aware rules, so mirroring the
+> options avoids both coverage loss and double-linting. e18e is handled
+> automatically (both factories enable it for non-roblox projects).
 
 Then run both linters:
 
@@ -94,10 +96,6 @@ keeps running in ESLint, notably:
 
 - **JSON / YAML / TOML / Markdown / package.json / pnpm rules** — oxlint only
   lints JS/TS files.
-- **Jest and Vitest rules** — the native oxlint jest plugin does not support
-  `settings.jest.globalPackage`
-  ([oxc#23290](https://github.com/oxc-project/oxc/issues/23290)), and the vitest
-  plugin cannot run under oxlint's jsPlugin runtime.
 - **Type-aware plugin rules** — any rule whose `meta.docs.requiresTypeChecking`
   is true (`sonar/no-ignored-return`, `sonar/no-redundant-optional`,
   `sonar/no-try-promise`, `unicorn/no-non-function-verb-prefix`,
@@ -105,10 +103,22 @@ keeps running in ESLint, notably:
   four `test/*` jest rules). The oxlint factory refuses to emit them as
   jsPlugins because they crash or silently no-op without type information; a
   test enforces this against the plugins' runtime metadata.
+- **Functionally type-aware rules** — `vitest/require-mock-type-parameters` and
+  the type-aware React rules below do not declare `requiresTypeChecking` but
+  still need type information, so they are excluded manually. The rest of the
+  jest and vitest families run in oxlint via their real ESLint plugin as a
+  jsPlugin (jest honors `settings.jest.globalPackage = @rbxts/jest-globals`).
 - **Type-aware custom rules** — `roblox/*` type-aware rules,
   `sentinel/explicit-size-check`, `cease-nonsense/prefer-read-only-props`,
-  `flawless/*` and `naming`; oxlint jsPlugins have no type information.
-- **React rules** — optional peer plugins with type-aware rules interleaved.
+  `flawless/naming-convention` and `naming`; oxlint jsPlugins have no type
+  information.
+- **Type-aware React rules** — `react/no-implicit-children`,
+  `react/no-implicit-key`, `react/no-implicit-ref`,
+  `react/no-leaked-conditional-rendering` and `react/no-unused-props` need type
+  information but do not declare `requiresTypeChecking`, so they are excluded
+  manually. The rest of the react family (react-x, react-jsx,
+  react-naming-convention, the flawless react syntax rules) runs in oxlint as
+  jsPlugins.
 - **`eslint-comments/*`** — these lint `eslint-disable` directives;
   `oxlint-comments/*` covers the oxlint directives on the oxlint side.
 - **Markdown code blocks** — rules and formatting for fenced code blocks stay in

@@ -115,6 +115,16 @@ const variants: Array<ParityVariant> = [
 		options: { ...baseOptions, react: true },
 	},
 	{
+		name: "jest",
+		files: ["src/services/service.spec.ts", "src/util.test.ts"],
+		options: { ...baseOptions, test: { jest: true } },
+	},
+	{
+		name: "vitest",
+		files: ["src/index.spec.ts", "src/util.test.ts"],
+		options: { ...baseOptions, roblox: false, test: { vitest: true }, type: "package" },
+	},
+	{
 		// Exercises the disables scope globs (dts/test/bin/scripts/cli/root) on
 		// both engines so a glob divergence surfaces as a parity failure.
 		name: "scopes",

@@ -18,6 +18,7 @@ export interface ArrowStyleRuleOptions {
  * @returns The rule map.
  */
 export function stylisticRules({
+	jsx = true,
 	quotes = "double",
 }: StylisticConfig = {}): TypedFlatConfigItem["rules"] {
 	return {
@@ -28,6 +29,10 @@ export function stylisticRules({
 		"arrow-style/no-export-default-arrow": "error",
 
 		"curly": ["error", "all"],
+
+		...(jsx
+			? { "style/jsx-curly-brace-presence": ["error", { propElementValues: "always" }] }
+			: {}),
 
 		"style/lines-between-class-members": [
 			"error",

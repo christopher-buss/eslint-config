@@ -1,10 +1,12 @@
 antfu
+canparse
 changelogithub
 cves
 dprint
 editmsg
 ependencies
 extglob
+fromcharcode
 ghsas
 gypfile
 isentinel

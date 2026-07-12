@@ -128,6 +128,31 @@ const variants: Array<HybridVariant> = [
 		oxlintOptions: { ...baseOptions },
 	},
 	{
+		name: "roblox-react",
+		eslintOptions: { ...baseOptions, react: true },
+		oxlintOptions: { ...baseOptions, react: true },
+	},
+	{
+		name: "roblox-jest",
+		eslintOptions: { ...baseOptions, test: { jest: true } },
+		oxlintOptions: { ...baseOptions, test: { jest: true } },
+	},
+	{
+		name: "package-vitest",
+		eslintOptions: {
+			...baseOptions,
+			roblox: false,
+			test: { vitest: true },
+			type: "package",
+		},
+		oxlintOptions: {
+			...baseOptions,
+			roblox: false,
+			test: { vitest: true },
+			type: "package",
+		},
+	},
+	{
 		name: "package",
 		eslintOptions: {
 			...baseOptions,
