@@ -149,7 +149,6 @@ export function isentinel(
 	if (enableJsdoc !== false) {
 		configs.push(
 			oxlintJsdoc({
-				...(typeof enableJsdoc === "object" ? enableJsdoc : {}),
 				stylistic: stylisticOptions,
 				type: projectType,
 			}),

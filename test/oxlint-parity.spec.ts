@@ -376,6 +376,48 @@ describe("oxlint env and globals", () => {
 	});
 });
 
+function enabledJsdocRules(effective: Map<string, Severity>, translate: boolean): Set<string> {
+	const rules = new Set<string>();
+	for (const [rule, severity] of effective) {
+		if (severity !== "enabled") {
+			continue;
+		}
+
+		const name = translate ? translateRuleToOxlint(rule) : rule;
+		if (name.startsWith("jsdoc/") || name.startsWith("jsdoc-js/")) {
+			rules.add(name);
+		}
+	}
+
+	return rules;
+}
+
+describe("oxlint jsdoc parity", () => {
+	// Variant coverage matters: the in-repo consumer uses neither jsdoc:full
+	// nor package mode, so this asymmetry only surfaced on a real project.
+	it("should enable the same jsdoc rules as ESLint under jsdoc:full", async ({ expect }) => {
+		expect.hasAssertions();
+
+		const options = { ...baseOptions, jsdoc: { full: true } };
+		const eslintOnly = [...(await isentinel({ name: "test/jsdoc-eslint", ...options }))];
+		const oxlintConfig = oxlintIsentinel({ name: "test/jsdoc-oxlint", ...options });
+
+		const eslintJsdoc = enabledJsdocRules(
+			effectiveEslintRules(eslintOnly, "src/index.ts"),
+			true,
+		);
+		const oxlintJsdoc = enabledJsdocRules(
+			effectiveOxlintRules(oxlintConfig, "src/index.ts"),
+			false,
+		);
+
+		expect(oxlintJsdoc).toStrictEqual(eslintJsdoc);
+		expect(oxlintJsdoc.has("jsdoc/require-param")).toBe(false);
+		expect(oxlintJsdoc.has("jsdoc/require-returns")).toBe(false);
+		expect(oxlintJsdoc.has("jsdoc-js/require-template")).toBe(false);
+	});
+});
+
 describe("oxlint jsPlugin type-awareness", () => {
 	const jsPluginVariants: Array<Record<string, unknown>> = [
 		{ ...baseOptions },
