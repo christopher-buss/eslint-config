@@ -63,9 +63,15 @@ Then run both linters:
 
 > [!IMPORTANT] The type-aware `ts/*` rules are executed by oxlint-tsgolint. The
 > factory enables `options.typeAware` in the generated config by default (when
-> `oxlint-tsgolint` is resolvable), so no `--type-aware` CLI flag is needed.
-> Without type-aware linting those rules are silently skipped and you lose
-> coverage for them (they are dropped from ESLint in hybrid mode).
+> `oxlint-tsgolint` is resolvable), so no `--type-aware` CLI flag is needed. If
+> `oxlint-tsgolint` is not installed, the ESLint factory keeps these rules in
+> ESLint instead of dropping them (and warns at config-build time), so they run
+> in exactly one engine either way.
+>
+> Residual edge: if you have `oxlint-tsgolint` installed but explicitly set
+> `options: { typeAware: false }` in your oxlint config, those rules run in
+> neither engine — the ESLint factory cannot see your oxlint config, so it still
+> drops them. Disabling `typeAware` in hybrid mode is on you.
 
 ### How rules are split
 

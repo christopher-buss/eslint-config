@@ -1,5 +1,6 @@
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
+import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import type { RuleOptions } from "../typegen.d.ts";
@@ -54,7 +55,7 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
-import { dropOxlintCoveredRules, warnDeadMappedRules } from "./oxlint-drop.ts";
+import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type {
 	Awaitable,
@@ -465,14 +466,20 @@ export async function isentinel(
 	}
 
 	if (enableOxlint) {
+		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
+		if (!tsgolintAvailable) {
+			warnMissingTsgolint();
+		}
+
 		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
-		// drop them from the ESLint configs.
+		// drop them from the ESLint configs. Type-aware rules are kept in
+		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
 				warnDeadMappedRules(resolved);
 			}
 
-			dropOxlintCoveredRules(resolved);
+			dropOxlintCoveredRules(resolved, tsgolintAvailable);
 		});
 	}
 

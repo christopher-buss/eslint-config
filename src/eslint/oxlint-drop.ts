@@ -1,5 +1,5 @@
 import { GLOB_MARKDOWN_CODE } from "../globs.ts";
-import { isOxlintCovered } from "../rules/oxlint-mapping.ts";
+import { isOxlintCovered, isTsgolintRule } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 const HYBRID_FORMATTING_RULES = new Set(["oxfmt/oxfmt"]);
@@ -34,6 +34,19 @@ export function warnDeadMappedRules(configs: Array<TypedFlatConfigItem>): void {
 }
 
 /**
+ * Warn that hybrid mode is enabled without oxlint-tsgolint, so the type-aware
+ * rules stay in ESLint instead of running in oxlint.
+ */
+export function warnMissingTsgolint(): void {
+	// oxlint-disable-next-line no-console -- Info for plugin
+	console.warn(
+		"[@isentinel/eslint-config] Hybrid mode is enabled but oxlint-tsgolint " +
+			"is not installed. Type-aware rules stay in ESLint instead of running " +
+			"in oxlint; install oxlint-tsgolint for the full hand-off.",
+	);
+}
+
+/**
  * Remove rules covered by oxlint (per the oxlint rule mapping) from the
  * resolved ESLint configs. Only enabled rules in `isentinel/*` configs are
  * removed; `"off"` entries and user configs are left untouched.
@@ -45,8 +58,14 @@ export function warnDeadMappedRules(configs: Array<TypedFlatConfigItem>): void {
  * example the markdown disables) still take precedence.
  *
  * @param configs - The resolved flat config items (mutated in place).
+ * @param typeAware - Whether oxlint runs type-aware (oxlint-tsgolint present).
+ *   When `false`, tsgolint rules are kept in ESLint so they do not vanish from
+ *   both engines.
  */
-export function dropOxlintCoveredRules(configs: Array<TypedFlatConfigItem>): void {
+export function dropOxlintCoveredRules(
+	configs: Array<TypedFlatConfigItem>,
+	typeAware = true,
+): void {
 	for (let index = 0; index < configs.length; index += 1) {
 		const config = configs[index];
 		if (
@@ -59,7 +78,7 @@ export function dropOxlintCoveredRules(configs: Array<TypedFlatConfigItem>): voi
 			continue;
 		}
 
-		const dropped = dropCoveredRulesFromConfig(config.rules);
+		const dropped = dropCoveredRulesFromConfig(config.rules, typeAware);
 		if (Object.keys(dropped).length === 0) {
 			continue;
 		}
@@ -138,11 +157,12 @@ function findDeadMappedRules(configs: Array<TypedFlatConfigItem>): Array<DeadRul
 
 function dropCoveredRulesFromConfig(
 	rules: NonNullable<TypedFlatConfigItem["rules"]>,
+	typeAware: boolean,
 ): NonNullable<TypedFlatConfigItem["rules"]> {
 	const dropped: NonNullable<TypedFlatConfigItem["rules"]> = {};
 
 	for (const [rule, value] of Object.entries(rules)) {
-		if (value === undefined || !isOxlintCovered(rule)) {
+		if (value === undefined || !isOxlintCovered(rule) || (!typeAware && isTsgolintRule(rule))) {
 			continue;
 		}
 

@@ -1,7 +1,21 @@
 import { describe, it } from "vitest";
 
+import { dropOxlintCoveredRules } from "../src/eslint/oxlint-drop";
+import type { TypedFlatConfigItem } from "../src/eslint/types";
 import { isentinel as oxlintIsentinel } from "../src/oxlint";
 import type { OxlintConfig } from "../src/oxlint";
+
+function typeAwareRulesConfig(): TypedFlatConfigItem {
+	return {
+		name: "isentinel/typescript/rules-type-aware",
+		files: ["**/*.ts"],
+		ignores: ["**/*.md/**"],
+		rules: {
+			"no-console": "error",
+			"ts/no-floating-promises": "error",
+		},
+	};
+}
 
 const baseOptions = {
 	gitignore: false,
@@ -56,5 +70,26 @@ describe("oxlint tsgolint gating", () => {
 		expect(config.options?.typeAware).toBe(false);
 		expect(names.has("typescript/no-floating-promises")).toBe(false);
 		expect(names.has("typescript/consistent-type-assertions")).toBe(true);
+	});
+});
+
+describe("hybrid tsgolint drop gating", () => {
+	it("should keep tsgolint rules in ESLint when oxlint-tsgolint is absent", ({ expect }) => {
+		expect.hasAssertions();
+
+		const configs = [typeAwareRulesConfig()];
+		dropOxlintCoveredRules(configs, false);
+
+		expect(configs[0]?.rules?.["ts/no-floating-promises"]).toBe("error");
+		expect(configs[0]?.rules?.["no-console"]).toBeUndefined();
+	});
+
+	it("should drop tsgolint rules from ESLint when oxlint-tsgolint is present", ({ expect }) => {
+		expect.hasAssertions();
+
+		const configs = [typeAwareRulesConfig()];
+		dropOxlintCoveredRules(configs, true);
+
+		expect(configs[0]?.rules?.["ts/no-floating-promises"]).toBeUndefined();
 	});
 });
