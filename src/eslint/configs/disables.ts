@@ -81,6 +81,7 @@ export async function disables({
 				"ts/no-empty-function": "off",
 				"ts/no-extraneous-class": "off",
 				"ts/no-non-null-assertion": "off",
+				"ts/no-unused-expressions": "off",
 				"ts/unbound-method": "off",
 				"unicorn/consistent-function-scoping": "off",
 			},

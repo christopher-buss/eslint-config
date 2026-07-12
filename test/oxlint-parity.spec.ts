@@ -114,6 +114,21 @@ const variants: Array<ParityVariant> = [
 		files: ["src/components/component.tsx"],
 		options: { ...baseOptions, react: true },
 	},
+	{
+		// Exercises the disables scope globs (dts/test/bin/scripts/cli/root) on
+		// both engines so a glob divergence surfaces as a parity failure.
+		name: "scopes",
+		files: [
+			"src/types/env.d.ts",
+			"src/services/service.spec.ts",
+			"src/util.test.ts",
+			"bin/run.ts",
+			"scripts/build.ts",
+			"src/cli/run.ts",
+			"build.config.ts",
+		],
+		options: { ...baseOptions },
+	},
 ];
 
 describe("oxlint per-file severity parity", () => {
