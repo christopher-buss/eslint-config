@@ -71,7 +71,11 @@ Then run both linters:
 > Residual edge: if you have `oxlint-tsgolint` installed but explicitly set
 > `options: { typeAware: false }` in your oxlint config, those rules run in
 > neither engine — the ESLint factory cannot see your oxlint config, so it still
-> drops them. Disabling `typeAware` in hybrid mode is on you.
+> drops them. Disabling `typeAware` in hybrid mode is on you. Likewise, when
+> ESLint and oxlint run from different working directories (per-package monorepo
+> linting), their two `oxlint-tsgolint` resolutions can disagree; keep the peer
+> resolvable from every lint cwd (or set `options.typeAware` explicitly) to
+> avoid double-reporting or one-sided coverage.
 
 ### How rules are split
 

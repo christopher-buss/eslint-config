@@ -1,3 +1,4 @@
+import { isPackageExists } from "local-pkg";
 import type { ExternalPluginEntry } from "oxlint";
 
 import {
@@ -83,11 +84,12 @@ export function splitOxlintRules(
 		const isOff = severity === "off" || severity === 0;
 		const translated = translateRuleToOxlint(rule);
 		if (!covered && isOff) {
-			// Preserve an explicit user disable, but only when oxlint can resolve
-			// the plugin; emitting a rule for an unregistered plugin errors the
-			// whole config build.
+			// Preserve an explicit user disable, but only when the plugin is
+			// installed: oxlint errors the whole config build both on an
+			// unregistered plugin and on a registered-but-unresolvable one.
 			const prefix = translated.slice(0, translated.indexOf("/"));
-			if (keepUnmappedOff && oxlintJsPlugins[prefix] !== undefined) {
+			const specifier = oxlintJsPlugins[prefix];
+			if (keepUnmappedOff && specifier !== undefined && isPackageExists(specifier)) {
 				jsPluginRules[translated] = value;
 				jsPluginPrefixes.add(prefix);
 			}
