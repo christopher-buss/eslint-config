@@ -306,6 +306,29 @@ describe("oxlint options-level rules", () => {
 
 		expect(effective.get("no-console")).toBe("enabled");
 	});
+
+	it("should translate and register jsPlugin rules from options.rules", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/options-js-plugin",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			roblox: false,
+			rules: { "no-restricted-syntax": "off" },
+			type: "package",
+		});
+
+		const translated = translateRuleToOxlint("no-restricted-syntax");
+		const effective = effectiveOxlintRules(config, "src/index.ts");
+		const registered = (config.jsPlugins ?? []).map((plugin) => {
+			return typeof plugin === "string" ? plugin : plugin.name;
+		});
+
+		expect(effective.get(translated)).toBe("off");
+		expect(registered).toContain("eslint-js");
+	});
 });
 
 describe("oxlint linter options", () => {

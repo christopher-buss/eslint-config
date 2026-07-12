@@ -34,6 +34,7 @@ import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
+import { createOxlintConfigs } from "./utils.ts";
 
 /**
  * Generate an oxlint configuration based on the provided options.
@@ -286,11 +287,14 @@ export function isentinel(
 	}
 
 	if (Object.keys(rules).length > 0) {
-		mergeFragment({
+		const optionsFragments = createOxlintConfigs({
 			name: "isentinel/options-rules",
 			files: [GLOB_SRC],
 			rules,
 		});
+		for (const fragment of optionsFragments) {
+			mergeFragment(fragment);
+		}
 	}
 
 	if (globals && Object.keys(globals).length > 0) {
