@@ -1,3 +1,4 @@
+import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
 import { typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
@@ -87,6 +88,18 @@ export function applyTypeAwareSplit(
 		}
 
 		filterConfigRules(config, typeAwareRules, mode);
+	}
+
+	if (mode === "only") {
+		// The non-JS/TS-language config modules are not composed in "only"
+		// mode, but a rules config (for example a user block scoping rules
+		// "off" for JSON or YAML files) can still pull those files into the
+		// run, where the default JS parser fails on them. Ignore them
+		// globally; the non-type-aware pass lints them.
+		configs.push({
+			name: "isentinel/type-aware-split/ignores",
+			ignores: [GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML],
+		});
 	}
 
 	configs.push({

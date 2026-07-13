@@ -246,6 +246,16 @@ describe("type-aware split", () => {
 			);
 
 			expect(withOtherLanguages).toStrictEqual([]);
+
+			// Non-JS/TS files must be globally ignored: surviving rule configs
+			// (for example user blocks scoping rules off for JSON files) would
+			// otherwise pull them into the run without a matching parser.
+			const globalIgnores = slow.find(
+				(config) => config.name === "isentinel/type-aware-split/ignores",
+			);
+
+			expect(globalIgnores?.ignores).toContain("**/*.json{,5,c}");
+			expect(globalIgnores?.ignores).toContain("**/*.y{,a}ml");
 		});
 
 		it("should silence unused disable directives in both passes", async ({ expect }) => {
