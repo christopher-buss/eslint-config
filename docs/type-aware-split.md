@@ -1,9 +1,15 @@
 # Type-Aware Split
 
 Type-aware rules need a TypeScript program and therefore dominate ESLint wall
-time on large projects. The `typeAware` factory option splits the config into
-two complementary passes so the cheap rules can run cached and parallel while
-only the type-aware remainder runs serially:
+time on large projects. Before reaching for a split, try an explicit numeric
+`--concurrency` on your existing single config — serial type-aware linting
+degrades badly as the run grows, and a fixed worker count (not `auto`, whose
+heuristic under-parallelizes type-aware workloads) routinely cuts a cold run by
+an order of magnitude.
+
+The `typeAware` factory option additionally splits the config into two
+complementary passes, so the non-type-aware majority gives near-instant
+feedback without ever building a TypeScript program:
 
 ```ts
 // eslint.config.ts — the full config; editors and hooks keep using this one.
@@ -30,20 +36,23 @@ export default isentinel({ type: "game", typeAware: "only" });
 // package.json
 {
 	"scripts": {
-		"lint:fast": "eslint --config eslint.fast.config.ts --cache --cache-location .eslintcache-fast --concurrency auto",
-		"lint:slow": "eslint --config eslint.slow.config.ts --cache --cache-location .eslintcache-slow",
+		"lint:fast": "eslint --config eslint.fast.config.ts --cache --cache-location .eslintcache-fast --concurrency 8",
+		"lint:slow": "eslint --config eslint.slow.config.ts --cache --cache-location .eslintcache-slow --concurrency 8",
 	},
 }
 ```
 
 Use a distinct `--cache-location` per pass — the two passes have different
-configs, so sharing one cache file would invalidate it on every run.
+configs, so sharing one cache file would invalidate it on every run. Use a
+fixed `--concurrency` count rather than `auto`: the type-aware pass
+parallelizes well, but every worker builds its own TypeScript program, so pick
+a worker count your memory can afford.
 
 ## What each mode does
 
 - `typeAware: false` drops every rule that requires type information and removes
   the type-aware parser setup (`projectService`), so no TypeScript program is
-  ever built. This is what makes `--cache` and `--concurrency` worthwhile.
+  ever built and the pass stays fast regardless of cache state.
 - `typeAware: "only"` keeps only the type-aware rules plus the parser setup they
   need, and skips the non-JS/TS-language configs (JSON, YAML, TOML, Markdown,
   pnpm, spell checking, formatting) entirely — those files are not linted in

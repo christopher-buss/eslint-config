@@ -449,11 +449,15 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * ESLint passes.
 	 *
 	 * - `false` — drop every rule that requires type information and the
-	 *   type-aware parser setup, so no TypeScript program is built. Pairs well
-	 *   with `--cache` and `--concurrency auto`.
+	 *   type-aware parser setup, so no TypeScript program is built.
 	 * - `"only"` — keep only the type-aware rules (plus the parser setup they
 	 *   need) and drop the non-JS/TS-language configs (JSON, YAML, TOML,
-	 *   Markdown, pnpm, spell checking, formatting) entirely. Run serially.
+	 *   Markdown, pnpm, spell checking, formatting) entirely.
+	 *
+	 * Both passes benefit from `--cache` (use a distinct `--cache-location`
+	 * per pass) and an explicit numeric `--concurrency`: type-aware linting
+	 * parallelizes well, but each worker builds its own TypeScript program, so
+	 * prefer a fixed worker count over `auto` and mind memory.
 	 *
 	 * For every file, the effective rules of the two passes together equal the
 	 * full config exactly. Both modes disable unused-disable-directive
