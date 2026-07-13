@@ -73,11 +73,11 @@ the fast pass and effective severities are preserved exactly.
 
 ## Caveats
 
-- **Custom type-aware rules** must either declare
-  `meta.docs.requiresTypeChecking` or be enabled in a config whose name contains
-  `type-aware` (for example via `overridesTypeAware`). Otherwise they are sorted
-  into the fast pass, where no type information exists, and will crash or
-  silently no-op.
+- **Custom type-aware rules** must declare `meta.docs.requiresTypeChecking`, be
+  enabled in a config whose name contains `type-aware` (for example via
+  `overridesTypeAware`), or be listed in the factory's `typeAwareRules` option.
+  Otherwise they are sorted into the fast pass, where no type information
+  exists, and will crash or silently no-op.
 - **Unused disable directives** are only reported by the full config. A
   directive for a rule that runs in the other pass would be a false "unused"
   report, so both split modes set

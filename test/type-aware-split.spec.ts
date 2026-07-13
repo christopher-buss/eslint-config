@@ -263,6 +263,22 @@ describe("type-aware split", () => {
 		});
 	});
 
+	it("should classify rules listed in typeAwareRules as type-aware", async ({ expect }) => {
+		expect.hasAssertions();
+
+		const options = { ...baseOptions, typeAwareRules: ["no-console"] };
+		const [fast, slow] = await Promise.all([
+			isentinel({ name: "test/split-extra-fast", ...options, typeAware: false }),
+			isentinel({ name: "test/split-extra-slow", ...options, typeAware: "only" }),
+		]);
+
+		const fastEffective = effectiveEslintRules([...fast], "src/services/service.ts");
+		const slowEffective = effectiveEslintRules([...slow], "src/services/service.ts");
+
+		expect(fastEffective.has("no-console")).toBe(false);
+		expect(slowEffective.has("no-console")).toBe(true);
+	});
+
 	it("should reject typeAware 'only' without type-aware linting", async ({ expect }) => {
 		expect.hasAssertions();
 

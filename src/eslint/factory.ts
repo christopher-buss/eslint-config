@@ -507,7 +507,7 @@ export async function isentinel(
 
 	if (typeAwareMode !== undefined) {
 		composer = composer.onResolved((resolved) => {
-			applyTypeAwareSplit(resolved, typeAwareMode);
+			applyTypeAwareSplit(resolved, typeAwareMode, options.typeAwareRules);
 		});
 	}
 

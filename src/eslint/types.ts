@@ -467,6 +467,15 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	typeAware?: "only" | boolean;
 
 	/**
+	 * Additional rules to classify as type-aware for the `typeAware` split.
+	 *
+	 * Use this for custom or third-party rules that need type information but
+	 * neither declare `meta.docs.requiresTypeChecking` nor are enabled in a
+	 * config whose name contains `type-aware`.
+	 */
+	typeAwareRules?: Array<string>;
+
+	/**
 	 * Enable TypeScript support.
 	 *
 	 * Passing an object to enable TypeScript Language Server support.

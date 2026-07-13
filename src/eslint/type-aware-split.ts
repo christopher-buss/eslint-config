@@ -62,12 +62,18 @@ export function collectTypeAwareRules(configs: Array<TypedFlatConfigItem>): Set<
  * @param configs - The resolved flat config items (mutated in place).
  * @param mode - `false` drops every type-aware rule; `"only"` keeps only
  *   type-aware rules.
+ * @param extraTypeAwareRules - Additional rules to classify as type-aware (the
+ *   factory's `typeAwareRules` option).
  */
 export function applyTypeAwareSplit(
 	configs: Array<TypedFlatConfigItem>,
 	mode: TypeAwareSplitMode,
+	extraTypeAwareRules: Array<string> = [],
 ): void {
 	const typeAwareRules = collectTypeAwareRules(configs);
+	for (const rule of extraTypeAwareRules) {
+		typeAwareRules.add(rule);
+	}
 
 	for (let index = configs.length - 1; index >= 0; index -= 1) {
 		const config = configs[index];
