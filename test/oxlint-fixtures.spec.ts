@@ -101,4 +101,38 @@ describe("oxlint standalone fixtures", () => {
 		},
 		timeout,
 	);
+
+	it(
+		"should run the cspell jsPlugin end-to-end",
+		async ({ expect }) => {
+			expect.hasAssertions();
+
+			const temporaryDirectory = path.resolve(FIXTURES_TEMP, "oxlint-spellcheck");
+			await fs.mkdir(temporaryDirectory, { recursive: true });
+			await fs.writeFile(
+				path.join(temporaryDirectory, "input.ts"),
+				// oxlint-disable-next-line @cspell/spellchecker -- deliberate misspellings
+				'export const RECIEVE_MESAGE = "definately wrogn";\n',
+			);
+
+			const config = oxlintIsentinel({
+				name: "test/oxlint-spellcheck",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+			});
+
+			const configPath = path.join(temporaryDirectory, ".oxlintrc.json");
+			await fs.writeFile(configPath, JSON.stringify(config, undefined, "\t"));
+
+			const diagnostics = runOxlint(temporaryDirectory);
+
+			expect(diagnostics.some((diagnostic) => diagnostic.includes("spellchecker"))).toBe(
+				true,
+			);
+
+			await fs.rm(temporaryDirectory, { force: true, recursive: true });
+		},
+		timeout,
+	);
 });

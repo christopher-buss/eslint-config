@@ -1,3 +1,4 @@
+import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
 import { isentinel } from "../src";
@@ -525,8 +526,69 @@ describe("oxlint jsPlugin type-awareness", () => {
 		expect(problems).toStrictEqual([]);
 	});
 
-	it("should keep every known jsPlugin prefix resolvable", ({ expect }) => {
+	it("should register a resolvable jsPlugin for every emitted prefixed rule", ({ expect }) => {
 		expect.hasAssertions();
 		expect(Object.keys(oxlintJsPlugins).length).toBeGreaterThan(20);
+
+		for (const options of jsPluginVariants) {
+			const config = oxlintIsentinel({ name: "test/js-plugin-prefixes", ...options });
+
+			const registered = registeredJsPlugins(config);
+			expect(registered.size).toBeGreaterThan(0);
+
+			for (const [prefix, specifier] of registered) {
+				expect(oxlintJsPlugins[prefix]).toBe(specifier);
+				expect(isPackageExists(specifier), `${specifier} should be installed`).toBe(true);
+			}
+
+			const knownPrefixes = new Set<string>([
+				...((config.plugins ?? []) as Array<string>),
+				...registered.keys(),
+			]);
+			expect(unresolvedPrefixedRules(config, knownPrefixes)).toStrictEqual([]);
+		}
 	});
 });
+
+/**
+ * Collect the jsPlugin entries registered on a built oxlint config, keyed by
+ * plugin name (rule prefix).
+ *
+ * @param config - The built oxlint config.
+ * @returns Plugin name to package specifier.
+ */
+function registeredJsPlugins(config: OxlintConfig): Map<string, string> {
+	const registered = new Map<string, string>();
+	const entries = config.jsPlugins ?? [];
+	for (const entry of entries) {
+		if (typeof entry !== "string") {
+			registered.set(entry.name, entry.specifier);
+		}
+	}
+
+	return registered;
+}
+
+/**
+ * Find rules emitted in overrides whose prefix is neither a native oxlint
+ * plugin nor a registered jsPlugin — these would only fail at oxlint runtime.
+ *
+ * @param config - The built oxlint config.
+ * @param knownPrefixes - Native plugin names plus registered jsPlugin names.
+ * @returns Rule names with an unresolvable prefix.
+ */
+function unresolvedPrefixedRules(config: OxlintConfig, knownPrefixes: Set<string>): Array<string> {
+	const unresolved = new Set<string>();
+	const overrides = config.overrides ?? [];
+	for (const override of overrides) {
+		const ruleNames = Object.keys(override.rules ?? {});
+		for (const rule of ruleNames) {
+			const slashIndex = rule.indexOf("/");
+			if (slashIndex !== -1 && !knownPrefixes.has(rule.slice(0, slashIndex))) {
+				unresolved.add(rule);
+			}
+		}
+	}
+
+	return [...unresolved];
+}
