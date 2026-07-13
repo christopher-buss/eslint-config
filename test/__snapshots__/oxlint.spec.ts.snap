@@ -1482,6 +1482,12 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "no-dupe-class-members": "error",
         "no-dupe-keys": "error",
         "no-duplicate-case": "error",
+        "no-duplicate-imports": [
+          "error",
+          {
+            "allowSeparateTypeImports": true,
+          },
+        ],
         "no-else-return": [
           "error",
           {
@@ -1783,7 +1789,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
             "count": 1,
           },
         ],
-        "import/no-duplicates": "error",
         "import/no-mutable-exports": "error",
         "import/no-named-default": "error",
       },
@@ -3210,8 +3215,8 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "**/*.d.{,c,m}ts",
       ],
       "rules": {
-        "import/no-duplicates": "off",
         "max-lines": "off",
+        "no-duplicate-imports": "off",
       },
     },
     {
@@ -5200,6 +5205,12 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "no-dupe-class-members": "error",
         "no-dupe-keys": "error",
         "no-duplicate-case": "error",
+        "no-duplicate-imports": [
+          "error",
+          {
+            "allowSeparateTypeImports": true,
+          },
+        ],
         "no-else-return": [
           "error",
           {
@@ -5506,7 +5517,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
             "count": 1,
           },
         ],
-        "import/no-duplicates": "error",
         "import/no-mutable-exports": "error",
         "import/no-named-default": "error",
       },
@@ -7096,8 +7106,8 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "**/*.d.{,c,m}ts",
       ],
       "rules": {
-        "import/no-duplicates": "off",
         "max-lines": "off",
+        "no-duplicate-imports": "off",
       },
     },
     {

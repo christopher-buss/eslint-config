@@ -82,6 +82,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"no-dupe-class-members": "native",
 	"no-dupe-keys": "native",
 	"no-duplicate-case": "native",
+	"no-duplicate-imports": "native",
 	"no-else-return": "native",
 	"no-empty": "native",
 	"no-empty-character-class": "native",
@@ -385,14 +386,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// Part: Imports (import-lite; native ports)
 	"import/first": "native",
 	"import/newline-after-import": "native",
-	// Sanctioned native-strict divergence (audited via
-	// scripts/audit-native-parity.ts): oxlint's native no-duplicates flags split
-	// type/value imports; eslint-plugin-import-lite does not by default. Setting
-	// the ESLint side to { "prefer-inline": true } narrows the gap but is a
-	// breaking change for consumers with existing split imports and still leaves
-	// a per-group vs per-node diagnostic-count difference, so it is left off and
-	// the divergence is accepted by preference.
-	"import/no-duplicates": "native",
 	"import/no-mutable-exports": "native",
 	"import/no-named-default": "native",
 

@@ -15,7 +15,6 @@ export function importsRules({
 		"antfu/no-import-node-modules-by-path": "error",
 
 		"import/first": "error",
-		"import/no-duplicates": "error",
 		"import/no-mutable-exports": "error",
 		"import/no-named-default": "error",
 

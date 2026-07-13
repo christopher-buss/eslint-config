@@ -86,6 +86,7 @@ export function javascriptRules({
 		"no-dupe-class-members": "error",
 		"no-dupe-keys": "error",
 		"no-duplicate-case": "error",
+		"no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
 		"no-else-return": ["error", { allowElseIf: false }],
 		"no-empty": ["error", { allowEmptyCatch: true }],
 		"no-empty-character-class": "error",

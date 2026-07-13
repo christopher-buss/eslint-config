@@ -52,8 +52,8 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			files: [GLOB_DTS],
 			rules: {
 				"cease-nonsense/prefer-class-properties": "off",
-				"import/no-duplicates": "off",
 				"max-lines": "off",
+				"no-duplicate-imports": "off",
 				"no-restricted-syntax": "off",
 				"roblox/no-namespace-merging": "off",
 				"sonar/no-duplicate-string": "off",
