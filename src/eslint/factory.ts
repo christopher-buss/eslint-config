@@ -1,5 +1,6 @@
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
+import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import type { RuleOptions } from "../typegen.d.ts";
@@ -54,6 +55,7 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
+import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type {
 	Awaitable,
@@ -123,6 +125,7 @@ export async function isentinel(
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
+		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		root: customRootGlobs,
@@ -141,7 +144,7 @@ export async function isentinel(
 	if (isInEditor === undefined) {
 		isInEditor = isInEditorEnvironment();
 		if (isInEditor) {
-			// eslint-disable-next-line no-console -- Info for plugin
+			// oxlint-disable-next-line no-console -- Info for plugin
 			console.log(
 				"[@isentinel/eslint-config] Detected running in editor, some rules are disabled.",
 			);
@@ -246,7 +249,13 @@ export async function isentinel(
 	}
 
 	if (enableJsdoc !== false) {
-		configs.push(jsdoc({ stylistic: stylisticOptions, type: projectType }));
+		configs.push(
+			jsdoc({
+				...resolveSubOptions(options, "jsdoc"),
+				stylistic: stylisticOptions,
+				type: projectType,
+			}),
+		);
 	}
 
 	if (enableE18e !== false && !enableRoblox) {
@@ -419,6 +428,7 @@ export async function isentinel(
 							},
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
+				oxlint: enableOxlint,
 				prettierOptions: prettierSettings,
 			}),
 		);
@@ -461,6 +471,24 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
+	if (enableOxlint) {
+		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
+		if (!tsgolintAvailable) {
+			warnMissingTsgolint();
+		}
+
+		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
+		// drop them from the ESLint configs. Type-aware rules are kept in
+		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
+		composer = composer.onResolved((resolved) => {
+			if (options.oxlintWarnDeadRules !== false) {
+				warnDeadMappedRules(resolved);
+			}
+
+			dropOxlintCoveredRules(resolved, tsgolintAvailable);
+		});
+	}
+
 	if (isInEditor || inAgentSession) {
 		const disableAutofixRules: Array<keyof RuleOptions> = [];
 
@@ -483,7 +511,7 @@ export async function isentinel(
 		composer = composer.disableRulesFix(disableAutofixRules, {
 			builtinRules: async () => {
 				const rules = await import("eslint/use-at-your-own-risk");
-				// eslint-disable-next-line ts/no-deprecated -- No non-deprecated API exposes the built-in rule map.
+				// oxlint-disable-next-line typescript/no-deprecated -- No non-deprecated API exposes the built-in rule map.
 				return rules.builtinRules;
 			},
 		});

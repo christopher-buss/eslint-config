@@ -1,4 +1,5 @@
 import { GLOB_SRC } from "../../globs.ts";
+import { importsGameRules, importsRules } from "../../rules/imports.ts";
 import { interopDefault } from "../../utils.ts";
 import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
@@ -18,40 +19,14 @@ export async function imports({
 				antfu: pluginAntfu,
 				import: pluginImport,
 			},
-			rules: {
-				"antfu/import-dedupe": "error",
-				"antfu/no-import-dist": "error",
-				"antfu/no-import-node-modules-by-path": "error",
-
-				"import/first": "error",
-				"import/no-duplicates": "error",
-				"import/no-mutable-exports": "error",
-				"import/no-named-default": "error",
-
-				...(stylistic !== false
-					? {
-							"import/newline-after-import": [
-								"error",
-								{ considerComments: true, count: 1 },
-							],
-						}
-					: {}),
-			},
+			rules: importsRules({ stylistic }),
 		},
 		...(type === "game"
 			? [
 					{
 						name: "isentinel/imports/game",
 						files: [`src/${GLOB_SRC}`],
-						rules: {
-							"no-restricted-syntax": [
-								"error",
-								{
-									message: "Prefer named exports",
-									selector: "ExportDefaultDeclaration",
-								},
-							],
-						} satisfies TypedFlatConfigItem["rules"],
+						rules: importsGameRules(),
 					},
 				]
 			: []),

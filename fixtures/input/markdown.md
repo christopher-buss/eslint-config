@@ -35,6 +35,7 @@ More text content here.
 const unused_import_test = 42
 let mutable = "value"
 const obj2 = {method: function() { return 1 }}
+export const inst = { fn: () => 0 }
 ```
 
 ## Lists
@@ -48,3 +49,25 @@ const obj2 = {method: function() { return 1 }}
 [Example Link](https://example.com)
 
 ![](missing-alt.png)
+
+## Non-code fences
+
+A markdown fence (creates a virtual `*.md/*.md` file):
+
+```markdown
+# Nested heading
+
+Some nested prose.
+```
+
+A json fence:
+
+```json
+{ "b": 2, "a": 1 }
+```
+
+A shell fence:
+
+```sh
+echo "hello"
+```

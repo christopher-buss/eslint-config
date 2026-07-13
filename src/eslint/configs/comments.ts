@@ -1,4 +1,5 @@
 import { GLOB_SRC } from "../../globs.ts";
+import { commentLengthRules, commentsRules } from "../../rules/comments.ts";
 import { interopDefault } from "../../utils.ts";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
@@ -33,12 +34,7 @@ export async function comments({
 					},
 				],
 
-				...(stylistic !== false
-					? {
-							"no-inline-comments": "error",
-							"style/multiline-comment-style": ["error", "separate-lines"],
-						}
-					: {}),
+				...commentsRules({ stylistic }),
 			},
 		},
 		...(stylistic !== false
@@ -46,16 +42,10 @@ export async function comments({
 					{
 						name: "isentinel/eslint/comments/src",
 						files: [GLOB_SRC],
-						rules: {
-							"comment-length/limit-single-line-comments": [
-								"error",
-								{
-									maxLength:
-										(Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
-									tabSize: prettierOptions.tabWidth ?? 4,
-								},
-							],
-						},
+						rules: commentLengthRules({
+							maxLength: (Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
+							tabSize: prettierOptions.tabWidth ?? 4,
+						}),
 					} as TypedFlatConfigItem,
 				]
 			: []),

@@ -67,6 +67,9 @@ jobs:
       - name: Lint
         run: nr lint:ci
 
+      - name: Validate oxlint config
+        run: nr validate:oxlint
+
       - name: Typecheck
         run: nr typecheck
 

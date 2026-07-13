@@ -10,8 +10,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/cease-nonsense",
     "plugins": [
@@ -28,8 +28,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -62,7 +62,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/eslint/comments/src",
     "rules": [
@@ -77,7 +77,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
+      "**/*.{,c,m}ts",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [
@@ -123,7 +123,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "**/CHANGELOG*.md",
       "**/LICENSE*",
       "**/__snapshots__",
-      "**/auto-import?(s).d.ts",
+      "**/auto-import{,s}.d.ts",
       "**/components.d.ts",
       "**/roblox.yml",
     ],
@@ -144,14 +144,13 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "antfu/no-import-node-modules-by-path",
       "import/first",
       "import/newline-after-import",
-      "import/no-duplicates",
       "import/no-mutable-exports",
       "import/no-named-default",
     ],
   },
   {
     "files": [
-      "src/**/*.?([cm])[jt]s?(x)",
+      "src/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/imports/game",
     "rules": [
@@ -259,7 +258,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/javascript/rules",
     "plugins": [
@@ -308,6 +307,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "no-dupe-class-members",
       "no-dupe-keys",
       "no-duplicate-case",
+      "no-duplicate-imports",
       "no-else-return",
       "no-empty",
       "no-empty-character-class",
@@ -487,8 +487,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [],
     "languageOptions": {
@@ -506,8 +506,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -525,8 +525,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/typescript/rules",
     "rules": [
@@ -619,8 +619,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -692,7 +692,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/rules",
     "rules": [
@@ -781,20 +781,20 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/root",
     "rules": [
@@ -809,7 +809,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/jsdoc",
     "rules": [
@@ -847,8 +847,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -869,8 +869,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [],
     "languageOptions": {
@@ -888,8 +888,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -907,8 +907,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "name": "isentinel/roblox",
     "rules": [
@@ -935,8 +935,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -962,7 +962,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.lua?(u)",
+      "**/*.lua{,u}",
     ],
     "languageOptions": {
       "parser": "parser-plain",
@@ -982,7 +982,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/stylistic",
     "rules": [
@@ -1062,8 +1062,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/stylistic/ts",
     "rules": [
@@ -1072,8 +1072,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])js",
-      "**/*.?([cm])jsx",
+      "**/*.{,c,m}js",
+      "**/*.{,c,m}jsx",
     ],
     "name": "isentinel/stylistic/js",
     "rules": [
@@ -1082,7 +1082,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.md/**/*.?([cm])[jt]s?(x)",
+      "**/*.md/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/stylistic/markdown-code",
     "rules": [
@@ -1097,7 +1097,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/perfectionist",
     "rules": [
@@ -1128,8 +1128,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/perfectionist/jsx",
     "rules": [
@@ -1221,7 +1221,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
       "**/github-actions-workflow",
     ],
     "languageOptions": {
@@ -1254,7 +1254,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      ".github/workflows/**/*.y?(a)ml",
+      ".github/workflows/**/*.y{,a}ml",
     ],
     "name": "isentinel/sort/github-actions",
     "rules": [
@@ -1264,7 +1264,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      ".github/actions/**/*.y?(a)ml",
+      ".github/actions/**/*.y{,a}ml",
     ],
     "name": "isentinel/sort/github-composite-actions",
     "rules": [
@@ -1374,7 +1374,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.md/**/*.{?([cm])[jt]s?(x),json,json5,jsonc,y?(a)ml,{c,le,sc}ss,htm?(l),toml,{g,graph}ql}",
+      "**/*.md/**/*.{{,c,m}[jt]s{,x},json,json5,jsonc,y{,a}ml,{c,le,sc}ss,htm{,l},toml,{g,graph}ql}",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -1422,7 +1422,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/scripts/**/*.?([cm])[jt]s?(x)",
+      "**/scripts/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -1433,8 +1433,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/cli/**/*.?([cm])[jt]s?(x)",
-      "**/cli.?([cm])[jt]s?(x)",
+      "**/cli/**/*.{,c,m}[jt]s{,x}",
+      "**/cli.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/cli",
     "rules": [
@@ -1445,14 +1445,14 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   {
     "files": [
       "**/.husky/**/*",
-      "**/config/**/*.?([cm])[jt]s?(x)",
-      "**/*config.?([cm])[jt]s?(x)",
-      "**/*config.*.?([cm])[jt]s?(x)",
-      "**/build/**/*.?([cm])[jt]s?(x)",
-      "**/tools/**/*.?([cm])[jt]s?(x)",
-      "**/setup/**/*.?([cm])[jt]s?(x)",
-      "**/dev/**/*.?([cm])[jt]s?(x)",
-      "**/tasks/**/*.?([cm])[jt]s?(x)",
+      "**/config/**/*.{,c,m}[jt]s{,x}",
+      "**/*config.{,c,m}[jt]s{,x}",
+      "**/*config.*.{,c,m}[jt]s{,x}",
+      "**/build/**/*.{,c,m}[jt]s{,x}",
+      "**/tools/**/*.{,c,m}[jt]s{,x}",
+      "**/setup/**/*.{,c,m}[jt]s{,x}",
+      "**/dev/**/*.{,c,m}[jt]s{,x}",
+      "**/tasks/**/*.{,c,m}[jt]s{,x}",
       "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/build-tools",
@@ -1465,7 +1465,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   {
     "files": [
       "**/bin/**/*",
-      "**/bin.?([cm])[jt]s?(x)",
+      "**/bin.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/bin",
     "rules": [
@@ -1476,15 +1476,15 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.d.?([cm])ts",
+      "**/*.d.{,c,m}ts",
     ],
     "name": "isentinel/disables/dts",
     "rules": [
       "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
-      "-import/no-duplicates",
       "-max-lines",
+      "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
       "-sonar/no-duplicate-string",
@@ -1493,11 +1493,11 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/__tests__/**/*.?([cm])[jt]s?(x)",
-      "**/*.spec.?([cm])[jt]s?(x)",
-      "**/*.test.?([cm])[jt]s?(x)",
-      "**/*.bench.?([cm])[jt]s?(x)",
-      "**/*.benchmark.?([cm])[jt]s?(x)",
+      "**/__tests__/**/*.{,c,m}[jt]s{,x}",
+      "**/*.spec.{,c,m}[jt]s{,x}",
+      "**/*.test.{,c,m}[jt]s{,x}",
+      "**/*.bench.{,c,m}[jt]s{,x}",
+      "**/*.benchmark.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/test",
     "rules": [
@@ -1512,6 +1512,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "-ts/no-empty-function",
       "-ts/no-extraneous-class",
       "-ts/no-non-null-assertion",
+      "-ts/no-unused-expressions",
       "-ts/unbound-method",
       "-unicorn/consistent-function-scoping",
     ],
@@ -1535,7 +1536,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "packages/*/*/*",
       "apps/*/*/*",
       "libs/*/*/*",
-      "*.md/**/*.?([cm])[jt]s?(x)",
+      "*.md/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/root",
     "rules": [
@@ -1545,7 +1546,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
     ],
     "name": "isentinel/disables/yaml",
     "rules": [
@@ -1554,8 +1555,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
@@ -1570,10 +1571,10 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])js",
-      "**/*.?([cm])jsx",
-      "**/*.md/**/*.?([cm])js",
-      "**/*.md/**/*.?([cm])jsx",
+      "**/*.{,c,m}js",
+      "**/*.{,c,m}jsx",
+      "**/*.md/**/*.{,c,m}js",
+      "**/*.md/**/*.{,c,m}jsx",
     ],
     "name": "isentinel/oxfmt/javascript",
     "rules": [
@@ -1940,10 +1941,10 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
-      "**/*.md/**/*.?([cm])ts",
-      "**/*.md/**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
+      "**/*.md/**/*.{,c,m}ts",
+      "**/*.md/**/*.{,c,m}tsx",
     ],
     "name": "isentinel/oxfmt/typescript",
     "rules": [
@@ -2380,7 +2381,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.json?(5|c)",
+      "**/*.json{,5,c}",
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
@@ -2389,7 +2390,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
@@ -2412,8 +2413,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/cease-nonsense",
     "plugins": [
@@ -2428,8 +2429,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -2466,7 +2467,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
+      "**/*.{,c,m}ts",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [],
@@ -2510,7 +2511,7 @@ exports[`config snapshots > should match minimal config 1`] = `
       "**/CHANGELOG*.md",
       "**/LICENSE*",
       "**/__snapshots__",
-      "**/auto-import?(s).d.ts",
+      "**/auto-import{,s}.d.ts",
       "**/components.d.ts",
       "**/roblox.yml",
     ],
@@ -2530,14 +2531,13 @@ exports[`config snapshots > should match minimal config 1`] = `
       "antfu/no-import-dist",
       "antfu/no-import-node-modules-by-path",
       "import/first",
-      "import/no-duplicates",
       "import/no-mutable-exports",
       "import/no-named-default",
     ],
   },
   {
     "files": [
-      "src/**/*.?([cm])[jt]s?(x)",
+      "src/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/imports/game",
     "rules": [
@@ -2640,7 +2640,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/javascript/rules",
     "plugins": [
@@ -2686,6 +2686,7 @@ exports[`config snapshots > should match minimal config 1`] = `
       "no-dupe-class-members",
       "no-dupe-keys",
       "no-duplicate-case",
+      "no-duplicate-imports",
       "no-else-return",
       "no-empty",
       "no-empty-character-class",
@@ -2860,8 +2861,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [],
     "languageOptions": {
@@ -2879,8 +2880,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -2898,8 +2899,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/typescript/rules",
     "rules": [
@@ -2987,8 +2988,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -3060,7 +3061,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/rules",
     "rules": [
@@ -3146,20 +3147,20 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/root",
     "rules": [
@@ -3174,7 +3175,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/jsdoc",
     "rules": [
@@ -3204,8 +3205,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -3226,8 +3227,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [],
     "languageOptions": {
@@ -3245,8 +3246,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -3264,8 +3265,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "name": "isentinel/roblox",
     "rules": [
@@ -3290,8 +3291,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*/*.?([cm])ts",
-      "**/*/*.?([cm])tsx",
+      "**/*/*.{,c,m}ts",
+      "**/*/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -3372,7 +3373,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
       "**/github-actions-workflow",
     ],
     "languageOptions": {
@@ -3458,7 +3459,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.md/**/*.{?([cm])[jt]s?(x),json,json5,jsonc,y?(a)ml,{c,le,sc}ss,htm?(l),toml,{g,graph}ql}",
+      "**/*.md/**/*.{{,c,m}[jt]s{,x},json,json5,jsonc,y{,a}ml,{c,le,sc}ss,htm{,l},toml,{g,graph}ql}",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -3506,7 +3507,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/scripts/**/*.?([cm])[jt]s?(x)",
+      "**/scripts/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -3517,8 +3518,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/cli/**/*.?([cm])[jt]s?(x)",
-      "**/cli.?([cm])[jt]s?(x)",
+      "**/cli/**/*.{,c,m}[jt]s{,x}",
+      "**/cli.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/cli",
     "rules": [
@@ -3529,14 +3530,14 @@ exports[`config snapshots > should match minimal config 1`] = `
   {
     "files": [
       "**/.husky/**/*",
-      "**/config/**/*.?([cm])[jt]s?(x)",
-      "**/*config.?([cm])[jt]s?(x)",
-      "**/*config.*.?([cm])[jt]s?(x)",
-      "**/build/**/*.?([cm])[jt]s?(x)",
-      "**/tools/**/*.?([cm])[jt]s?(x)",
-      "**/setup/**/*.?([cm])[jt]s?(x)",
-      "**/dev/**/*.?([cm])[jt]s?(x)",
-      "**/tasks/**/*.?([cm])[jt]s?(x)",
+      "**/config/**/*.{,c,m}[jt]s{,x}",
+      "**/*config.{,c,m}[jt]s{,x}",
+      "**/*config.*.{,c,m}[jt]s{,x}",
+      "**/build/**/*.{,c,m}[jt]s{,x}",
+      "**/tools/**/*.{,c,m}[jt]s{,x}",
+      "**/setup/**/*.{,c,m}[jt]s{,x}",
+      "**/dev/**/*.{,c,m}[jt]s{,x}",
+      "**/tasks/**/*.{,c,m}[jt]s{,x}",
       "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/build-tools",
@@ -3549,7 +3550,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   {
     "files": [
       "**/bin/**/*",
-      "**/bin.?([cm])[jt]s?(x)",
+      "**/bin.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/bin",
     "rules": [
@@ -3560,15 +3561,15 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.d.?([cm])ts",
+      "**/*.d.{,c,m}ts",
     ],
     "name": "isentinel/disables/dts",
     "rules": [
       "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
-      "-import/no-duplicates",
       "-max-lines",
+      "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
       "-sonar/no-duplicate-string",
@@ -3577,11 +3578,11 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/__tests__/**/*.?([cm])[jt]s?(x)",
-      "**/*.spec.?([cm])[jt]s?(x)",
-      "**/*.test.?([cm])[jt]s?(x)",
-      "**/*.bench.?([cm])[jt]s?(x)",
-      "**/*.benchmark.?([cm])[jt]s?(x)",
+      "**/__tests__/**/*.{,c,m}[jt]s{,x}",
+      "**/*.spec.{,c,m}[jt]s{,x}",
+      "**/*.test.{,c,m}[jt]s{,x}",
+      "**/*.bench.{,c,m}[jt]s{,x}",
+      "**/*.benchmark.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/test",
     "rules": [
@@ -3596,6 +3597,7 @@ exports[`config snapshots > should match minimal config 1`] = `
       "-ts/no-empty-function",
       "-ts/no-extraneous-class",
       "-ts/no-non-null-assertion",
+      "-ts/no-unused-expressions",
       "-ts/unbound-method",
       "-unicorn/consistent-function-scoping",
     ],
@@ -3619,7 +3621,7 @@ exports[`config snapshots > should match minimal config 1`] = `
       "packages/*/*/*",
       "apps/*/*/*",
       "libs/*/*/*",
-      "*.md/**/*.?([cm])[jt]s?(x)",
+      "*.md/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/root",
     "rules": [
@@ -3629,7 +3631,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
     ],
     "name": "isentinel/disables/yaml",
     "rules": [
@@ -3638,8 +3640,8 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
@@ -3662,8 +3664,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/cease-nonsense",
     "plugins": [
@@ -3680,8 +3682,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -3714,7 +3716,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/eslint/comments/src",
     "rules": [
@@ -3729,7 +3731,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
+      "**/*.{,c,m}ts",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [
@@ -3775,7 +3777,7 @@ exports[`config snapshots > should match package mode config 1`] = `
       "**/CHANGELOG*.md",
       "**/LICENSE*",
       "**/__snapshots__",
-      "**/auto-import?(s).d.ts",
+      "**/auto-import{,s}.d.ts",
       "**/components.d.ts",
       "**/roblox.yml",
     ],
@@ -3796,7 +3798,6 @@ exports[`config snapshots > should match package mode config 1`] = `
       "antfu/no-import-node-modules-by-path",
       "import/first",
       "import/newline-after-import",
-      "import/no-duplicates",
       "import/no-mutable-exports",
       "import/no-named-default",
     ],
@@ -3916,7 +3917,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/javascript/rules",
     "plugins": [
@@ -3965,6 +3966,7 @@ exports[`config snapshots > should match package mode config 1`] = `
       "no-dupe-class-members",
       "no-dupe-keys",
       "no-duplicate-case",
+      "no-duplicate-imports",
       "no-else-return",
       "no-empty",
       "no-empty-character-class",
@@ -4145,8 +4147,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [],
     "languageOptions": {
@@ -4164,8 +4166,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -4183,8 +4185,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/typescript/rules",
     "rules": [
@@ -4277,8 +4279,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "ignores": [
       "**/*.md/**",
@@ -4350,7 +4352,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/rules",
     "rules": [
@@ -4439,20 +4441,20 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
-      "*.?([cm])[jt]s?(x)",
-      "packages/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*.?([cm])[jt]s?(x)",
-      "packages/*/*/*.?([cm])[jt]s?(x)",
-      "apps/*/*/*.?([cm])[jt]s?(x)",
-      "libs/*/*/*.?([cm])[jt]s?(x)",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
+      "*.{,c,m}[jt]s{,x}",
+      "packages/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*.{,c,m}[jt]s{,x}",
+      "packages/*/*/*.{,c,m}[jt]s{,x}",
+      "apps/*/*/*.{,c,m}[jt]s{,x}",
+      "libs/*/*/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/unicorn/root",
     "rules": [
@@ -4467,7 +4469,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/jsdoc",
     "rules": [
@@ -4556,8 +4558,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -4578,7 +4580,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/stylistic",
     "rules": [
@@ -4658,8 +4660,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/stylistic/ts",
     "rules": [
@@ -4668,8 +4670,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])js",
-      "**/*.?([cm])jsx",
+      "**/*.{,c,m}js",
+      "**/*.{,c,m}jsx",
     ],
     "name": "isentinel/stylistic/js",
     "rules": [
@@ -4678,7 +4680,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.md/**/*.?([cm])[jt]s?(x)",
+      "**/*.md/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/stylistic/markdown-code",
     "rules": [
@@ -4693,7 +4695,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])[jt]s?(x)",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/perfectionist",
     "rules": [
@@ -4725,8 +4727,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/perfectionist/jsx",
     "rules": [
@@ -4808,7 +4810,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
       "**/github-actions-workflow",
     ],
     "languageOptions": {
@@ -4841,7 +4843,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      ".github/workflows/**/*.y?(a)ml",
+      ".github/workflows/**/*.y{,a}ml",
     ],
     "name": "isentinel/sort/github-actions",
     "rules": [
@@ -4851,7 +4853,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      ".github/actions/**/*.y?(a)ml",
+      ".github/actions/**/*.y{,a}ml",
     ],
     "name": "isentinel/sort/github-composite-actions",
     "rules": [
@@ -4964,7 +4966,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.md/**/*.{?([cm])[jt]s?(x),json,json5,jsonc,y?(a)ml,{c,le,sc}ss,htm?(l),toml,{g,graph}ql}",
+      "**/*.md/**/*.{{,c,m}[jt]s{,x},json,json5,jsonc,y{,a}ml,{c,le,sc}ss,htm{,l},toml,{g,graph}ql}",
     ],
     "languageOptions": {
       "parserOptions": {
@@ -5012,7 +5014,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/scripts/**/*.?([cm])[jt]s?(x)",
+      "**/scripts/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -5023,8 +5025,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/cli/**/*.?([cm])[jt]s?(x)",
-      "**/cli.?([cm])[jt]s?(x)",
+      "**/cli/**/*.{,c,m}[jt]s{,x}",
+      "**/cli.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/cli",
     "rules": [
@@ -5035,14 +5037,14 @@ exports[`config snapshots > should match package mode config 1`] = `
   {
     "files": [
       "**/.husky/**/*",
-      "**/config/**/*.?([cm])[jt]s?(x)",
-      "**/*config.?([cm])[jt]s?(x)",
-      "**/*config.*.?([cm])[jt]s?(x)",
-      "**/build/**/*.?([cm])[jt]s?(x)",
-      "**/tools/**/*.?([cm])[jt]s?(x)",
-      "**/setup/**/*.?([cm])[jt]s?(x)",
-      "**/dev/**/*.?([cm])[jt]s?(x)",
-      "**/tasks/**/*.?([cm])[jt]s?(x)",
+      "**/config/**/*.{,c,m}[jt]s{,x}",
+      "**/*config.{,c,m}[jt]s{,x}",
+      "**/*config.*.{,c,m}[jt]s{,x}",
+      "**/build/**/*.{,c,m}[jt]s{,x}",
+      "**/tools/**/*.{,c,m}[jt]s{,x}",
+      "**/setup/**/*.{,c,m}[jt]s{,x}",
+      "**/dev/**/*.{,c,m}[jt]s{,x}",
+      "**/tasks/**/*.{,c,m}[jt]s{,x}",
       "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/build-tools",
@@ -5055,7 +5057,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   {
     "files": [
       "**/bin/**/*",
-      "**/bin.?([cm])[jt]s?(x)",
+      "**/bin.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/bin",
     "rules": [
@@ -5066,15 +5068,15 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.d.?([cm])ts",
+      "**/*.d.{,c,m}ts",
     ],
     "name": "isentinel/disables/dts",
     "rules": [
       "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
-      "-import/no-duplicates",
       "-max-lines",
+      "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
       "-sonar/no-duplicate-string",
@@ -5083,11 +5085,11 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/__tests__/**/*.?([cm])[jt]s?(x)",
-      "**/*.spec.?([cm])[jt]s?(x)",
-      "**/*.test.?([cm])[jt]s?(x)",
-      "**/*.bench.?([cm])[jt]s?(x)",
-      "**/*.benchmark.?([cm])[jt]s?(x)",
+      "**/__tests__/**/*.{,c,m}[jt]s{,x}",
+      "**/*.spec.{,c,m}[jt]s{,x}",
+      "**/*.test.{,c,m}[jt]s{,x}",
+      "**/*.bench.{,c,m}[jt]s{,x}",
+      "**/*.benchmark.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/test",
     "rules": [
@@ -5102,6 +5104,7 @@ exports[`config snapshots > should match package mode config 1`] = `
       "-ts/no-empty-function",
       "-ts/no-extraneous-class",
       "-ts/no-non-null-assertion",
+      "-ts/no-unused-expressions",
       "-ts/unbound-method",
       "-unicorn/consistent-function-scoping",
     ],
@@ -5125,7 +5128,7 @@ exports[`config snapshots > should match package mode config 1`] = `
       "packages/*/*/*",
       "apps/*/*/*",
       "libs/*/*/*",
-      "*.md/**/*.?([cm])[jt]s?(x)",
+      "*.md/**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/disables/root",
     "rules": [
@@ -5135,7 +5138,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
     ],
     "name": "isentinel/disables/yaml",
     "rules": [
@@ -5144,8 +5147,8 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])jsx",
-      "**/*.?([cm])tsx",
+      "**/*.{,c,m}jsx",
+      "**/*.{,c,m}tsx",
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
@@ -5160,10 +5163,10 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])js",
-      "**/*.?([cm])jsx",
-      "**/*.md/**/*.?([cm])js",
-      "**/*.md/**/*.?([cm])jsx",
+      "**/*.{,c,m}js",
+      "**/*.{,c,m}jsx",
+      "**/*.md/**/*.{,c,m}js",
+      "**/*.md/**/*.{,c,m}jsx",
     ],
     "name": "isentinel/oxfmt/javascript",
     "rules": [
@@ -5530,10 +5533,10 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.?([cm])ts",
-      "**/*.?([cm])tsx",
-      "**/*.md/**/*.?([cm])ts",
-      "**/*.md/**/*.?([cm])tsx",
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
+      "**/*.md/**/*.{,c,m}ts",
+      "**/*.md/**/*.{,c,m}tsx",
     ],
     "name": "isentinel/oxfmt/typescript",
     "rules": [
@@ -5970,7 +5973,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.json?(5|c)",
+      "**/*.json{,5,c}",
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
@@ -5979,7 +5982,7 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.y?(a)ml",
+      "**/*.y{,a}ml",
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [

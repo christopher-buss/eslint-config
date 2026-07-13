@@ -1,6 +1,7 @@
 import type { Linter } from "eslint";
 
 import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../../globs.ts";
+import { arrowStyleRules, stylisticRules } from "../../rules/stylistic.ts";
 import { interopDefault } from "../../utils.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 import type { PrettierOptions } from "./oxfmt.ts";
@@ -36,19 +37,15 @@ export async function stylistic(
 	});
 
 	function createArrowStyleRule(_: string, maxLength?: number): Linter.RulesRecord {
-		return {
-			"arrow-style/arrow-return-style": [
-				"error",
-				{
-					jsxAlwaysUseExplicitReturn: true,
-					maxLen: maxLength ?? arrowLength ?? prettierOptions.printWidth ?? 100,
-					maxObjectProperties: 2,
-					namedExportsAlwaysUseExplicitReturn: true,
-					objectReturnStyle: "complex-explicit" as const,
-					usePrettier: prettierOptions,
-				},
-			],
-		};
+		return arrowStyleRules({
+			arrowLength,
+			maxLength,
+			printWidth:
+				typeof prettierOptions.printWidth === "number"
+					? prettierOptions.printWidth
+					: undefined,
+			usePrettier: prettierOptions,
+		}) as Linter.RulesRecord;
 	}
 
 	return [
@@ -66,54 +63,7 @@ export async function stylistic(
 			rules: {
 				...config.rules,
 
-				"antfu/consistent-list-newline": "off",
-				"antfu/if-newline": "off",
-				"antfu/top-level-function": "error",
-
-				"arrow-style/no-export-default-arrow": "error",
-
-				"curly": ["error", "all"],
-
-				"style/lines-between-class-members": [
-					"error",
-					{
-						enforce: [{ blankLine: "always", next: "method", prev: "method" }],
-					},
-				],
-
-				"style/object-property-newline": ["error", { allowAllPropertiesOnSameLine: true }],
-				"style/padding-line-between-statements": [
-					"error",
-					{
-						blankLine: "always",
-						next: "*",
-						prev: ["block", "block-like", "class", "export", "import"],
-					},
-					{
-						blankLine: "never",
-						next: "*",
-						prev: ["case"],
-					},
-					{
-						blankLine: "any",
-						next: ["export", "import"],
-						prev: ["export", "import"],
-					},
-					{
-						blankLine: "any",
-						next: "*",
-						prev: ["do"],
-					},
-				],
-				"style/quotes": [
-					"error",
-					"double",
-					{
-						allowTemplateLiterals: "never",
-						avoidEscape: true,
-					},
-				],
-				"style/spaced-comment": ["error", "always", { markers: ["!native", "!optimize"] }],
+				...stylisticRules({ indent, jsx, quotes, semi }),
 			},
 		},
 		{

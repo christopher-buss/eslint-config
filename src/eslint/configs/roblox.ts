@@ -1,4 +1,5 @@
 import { GLOB_LUA, GLOB_MARKDOWN } from "../../globs.ts";
+import { robloxRules } from "../../rules/roblox.ts";
 import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../../utils.ts";
 import type {
 	OptionsComponentExtensions,
@@ -36,12 +37,12 @@ export async function roblox(
 	] as const);
 
 	const files = options.files ?? [
-		"**/*/*.?([cm])ts",
-		"**/*/*.?([cm])tsx",
+		"**/*/*.{,c,m}ts",
+		"**/*/*.{,c,m}tsx",
 		...componentExtensions.map((extension) => `**/*/*.${extension}`),
 	];
 
-	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.?([cm])ts", "**/*/*.?([cm])tsx"];
+	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.{,c,m}ts", "**/*/*.{,c,m}tsx"];
 	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
@@ -93,31 +94,7 @@ export async function roblox(
 			name: "isentinel/roblox",
 			files,
 			rules: {
-				"cease-nonsense/no-array-size-assignment": "error",
-
-				"roblox/no-any": "error",
-				"roblox/no-enum-merging": "error",
-				"roblox/no-export-assignment-let": "error",
-				"roblox/no-for-in": "error",
-				"roblox/no-function-expression-name": "error",
-				"roblox/no-get-set": "error",
-				"roblox/no-implicit-self": "error",
-				"roblox/no-invalid-identifier": "error",
-				"roblox/no-namespace-merging": "error",
-				"roblox/no-null": "error",
-				"roblox/no-private-identifier": "error",
-				"roblox/no-unsupported-syntax": "error",
-				"roblox/no-user-defined-lua-tuple": "error",
-				"roblox/no-value-typeof": "error",
-				"roblox/prefer-get-players": "error",
-				"roblox/prefer-task-library": "error",
-
-				...(stylistic !== false
-					? {
-							"cease-nonsense/no-array-constructor-elements": "error",
-							"sentinel/prefer-math-min-max": "error",
-						}
-					: {}),
+				...robloxRules({ stylistic }),
 
 				...overrides,
 			},

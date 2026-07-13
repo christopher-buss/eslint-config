@@ -332,6 +332,30 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 */
 	naming?: boolean | OptionsOverridesTypeAware;
 
+	/**
+	 * Run ESLint alongside oxlint (hybrid mode).
+	 *
+	 * When enabled, ESLint drops every rule that oxlint covers (see the oxlint
+	 * rule mapping) and only runs the rules that stay in ESLint. Use together
+	 * with the `@isentinel/eslint-config/oxlint` factory and run `oxlint &&
+	 * eslint` (type-aware rules are executed by oxlint-tsgolint; the oxlint
+	 * factory enables `typeAware` in the generated config by default).
+	 *
+	 * Requires installing the optional peer dependencies `oxlint` and
+	 * `oxlint-tsgolint`.
+	 *
+	 * @default false
+	 */
+	oxlint?: boolean;
+
+	/**
+	 * Warn at config-build time when a user config references a rule that oxlint
+	 * owns in hybrid mode (`oxlint: true`), where the ESLint entry has no effect.
+	 *
+	 * @default true
+	 */
+	oxlintWarnDeadRules?: boolean;
+
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;
 
