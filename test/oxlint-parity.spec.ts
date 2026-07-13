@@ -456,29 +456,46 @@ function enabledJsdocRules(effective: Map<string, Severity>, translate: boolean)
 	return rules;
 }
 
+/**
+ * Effective enabled jsdoc rule sets for both engines under the given options.
+ *
+ * @param options - Factory options to apply to both engines.
+ * @returns The eslint and oxlint enabled jsdoc rule sets for `src/index.ts`.
+ */
+async function jsdocRuleSets(
+	options: Record<string, unknown>,
+): Promise<{ eslint: Set<string>; oxlint: Set<string> }> {
+	const eslintOnly = [...(await isentinel({ name: "test/jsdoc-eslint", ...options }))];
+	const oxlintConfig = oxlintIsentinel({ name: "test/jsdoc-oxlint", ...options });
+	return {
+		eslint: enabledJsdocRules(effectiveEslintRules(eslintOnly, "src/index.ts"), true),
+		oxlint: enabledJsdocRules(effectiveOxlintRules(oxlintConfig, "src/index.ts"), false),
+	};
+}
+
 describe("oxlint jsdoc parity", () => {
 	// Variant coverage matters: the in-repo consumer uses neither jsdoc:full
 	// nor package mode, so this asymmetry only surfaced on a real project.
-	it("should enable the same jsdoc rules as ESLint under jsdoc:full", async ({ expect }) => {
+	it("should enable the full jsdoc tier on both engines under jsdoc:full", async ({ expect }) => {
 		expect.hasAssertions();
 
-		const options = { ...baseOptions, jsdoc: { full: true } };
-		const eslintOnly = [...(await isentinel({ name: "test/jsdoc-eslint", ...options }))];
-		const oxlintConfig = oxlintIsentinel({ name: "test/jsdoc-oxlint", ...options });
+		const { eslint, oxlint } = await jsdocRuleSets({ ...baseOptions, jsdoc: { full: true } });
 
-		const eslintJsdoc = enabledJsdocRules(
-			effectiveEslintRules(eslintOnly, "src/index.ts"),
-			true,
-		);
-		const oxlintJsdoc = enabledJsdocRules(
-			effectiveOxlintRules(oxlintConfig, "src/index.ts"),
-			false,
-		);
+		expect(oxlint).toStrictEqual(eslint);
+		expect(oxlint.has("jsdoc/require-param")).toBe(true);
+		expect(oxlint.has("jsdoc/require-returns")).toBe(true);
+		expect(oxlint.has("jsdoc-js/require-template")).toBe(true);
+	});
 
-		expect(oxlintJsdoc).toStrictEqual(eslintJsdoc);
-		expect(oxlintJsdoc.has("jsdoc/require-param")).toBe(false);
-		expect(oxlintJsdoc.has("jsdoc/require-returns")).toBe(false);
-		expect(oxlintJsdoc.has("jsdoc-js/require-template")).toBe(false);
+	it("should omit the full jsdoc tier on both engines by default (game)", async ({ expect }) => {
+		expect.hasAssertions();
+
+		const { eslint, oxlint } = await jsdocRuleSets({ ...baseOptions });
+
+		expect(oxlint).toStrictEqual(eslint);
+		expect(oxlint.has("jsdoc/require-param")).toBe(false);
+		expect(oxlint.has("jsdoc/require-returns")).toBe(false);
+		expect(oxlint.has("jsdoc-js/require-template")).toBe(false);
 	});
 });
 

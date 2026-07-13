@@ -155,6 +155,7 @@ export function isentinel(
 	if (enableJsdoc !== false) {
 		configs.push(
 			oxlintJsdoc({
+				...resolveSubOptions(options, "jsdoc"),
 				stylistic: stylisticOptions,
 				type: projectType,
 			}),

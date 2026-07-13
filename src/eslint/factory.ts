@@ -249,7 +249,13 @@ export async function isentinel(
 	}
 
 	if (enableJsdoc !== false) {
-		configs.push(jsdoc({ stylistic: stylisticOptions, type: projectType }));
+		configs.push(
+			jsdoc({
+				...resolveSubOptions(options, "jsdoc"),
+				stylistic: stylisticOptions,
+				type: projectType,
+			}),
+		);
 	}
 
 	if (enableE18e !== false && !enableRoblox) {
