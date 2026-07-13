@@ -529,6 +529,15 @@ pnpm i -D oxlint oxlint-tsgolint
 See [docs/oxlint.md](./docs/oxlint.md) for the per-rule mapping, what stays in
 ESLint and why, and migration notes.
 
+#### Type-Aware Split
+
+On large projects the type-aware rules dominate ESLint wall time. The
+`typeAware` option splits the config into two complementary passes: a
+non-type-aware pass (`typeAware: false`) that never builds a TypeScript program
+and can run with `--cache` and `--concurrency auto`, and a type-aware-only pass
+(`typeAware: "only"`) that runs serially. Together they cover exactly the full
+config. See [docs/type-aware-split.md](./docs/type-aware-split.md).
+
 #### ESLint Plugin Development
 
 If you're developing an ESLint plugin, you can enable specialized rules to help

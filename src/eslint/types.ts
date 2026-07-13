@@ -445,6 +445,28 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	toml?: boolean | OptionsOverrides;
 
 	/**
+	 * Split the config by type-aware linting so a large project can lint in two
+	 * ESLint passes.
+	 *
+	 * - `false` — drop every rule that requires type information and the
+	 *   type-aware parser setup, so no TypeScript program is built. Pairs well
+	 *   with `--cache` and `--concurrency auto`.
+	 * - `"only"` — keep only the type-aware rules (plus the parser setup they
+	 *   need) and drop the non-JS/TS-language configs (JSON, YAML, TOML,
+	 *   Markdown, pnpm, spell checking, formatting) entirely. Run serially.
+	 *
+	 * For every file, the effective rules of the two passes together equal the
+	 * full config exactly. Both modes disable unused-disable-directive
+	 * reporting; only the full config reports those. Custom type-aware rules
+	 * must either declare `meta.docs.requiresTypeChecking` or be enabled in a
+	 * config whose name contains `type-aware` (for example via
+	 * `overridesTypeAware`) to be sorted into the `"only"` pass.
+	 *
+	 * @default undefined - single full config
+	 */
+	typeAware?: "only" | boolean;
+
+	/**
 	 * Enable TypeScript support.
 	 *
 	 * Passing an object to enable TypeScript Language Server support.
