@@ -57,6 +57,8 @@ import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
 import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
+import { applyTypeAwareSplit } from "./type-aware-split.ts";
+import type { TypeAwareSplitMode } from "./type-aware-split.ts";
 import type {
 	Awaitable,
 	ConfigNames,
@@ -134,6 +136,20 @@ export async function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	const typeAwareMode: TypeAwareSplitMode | undefined =
+		options.typeAware === false || options.typeAware === "only" ? options.typeAware : undefined;
+	const typeAwareOnly = typeAwareMode === "only";
+	const typescriptOptions = resolveSubOptions(options, "typescript");
+	if (
+		typeAwareOnly &&
+		"typeAware" in typescriptOptions &&
+		typescriptOptions.typeAware === false
+	) {
+		throw new Error(
+			'[@isentinel/eslint-config] `typeAware: "only"` requires type-aware linting; do not combine it with `typescript.typeAware: false`.',
+		);
+	}
 
 	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
@@ -285,7 +301,7 @@ export async function isentinel(
 	}
 
 	if (enableRoblox) {
-		const shouldFormatLua = shouldEnableFeature(formatters, "lua");
+		const shouldFormatLua = shouldEnableFeature(formatters, "lua") && !typeAwareOnly;
 		configs.push(
 			roblox(
 				{
@@ -328,7 +344,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.jsonc !== false) {
+	if (options.jsonc !== false && !typeAwareOnly) {
 		configs.push(
 			jsonc({
 				...getOverrides(options, "jsonc"),
@@ -345,7 +361,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.yaml !== false) {
+	if (options.yaml !== false && !typeAwareOnly) {
 		configs.push(
 			yaml({
 				...getOverrides(options, "yaml"),
@@ -358,7 +374,7 @@ export async function isentinel(
 		}
 	}
 
-	if (enableCatalogs !== false) {
+	if (enableCatalogs !== false && !typeAwareOnly) {
 		configs.push(
 			pnpm({
 				isInEditor,
@@ -371,7 +387,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.toml !== false) {
+	if (options.toml !== false && !typeAwareOnly) {
 		configs.push(
 			toml({
 				...getOverrides(options, "toml"),
@@ -384,7 +400,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.markdown !== false) {
+	if (options.markdown !== false && !typeAwareOnly) {
 		configs.push(
 			markdown({
 				...getOverrides(options, "markdown"),
@@ -394,7 +410,7 @@ export async function isentinel(
 		);
 	}
 
-	if (enableSpellCheck !== false) {
+	if (enableSpellCheck !== false && !typeAwareOnly) {
 		configs.push(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
@@ -410,7 +426,7 @@ export async function isentinel(
 
 	configs.push(disables({ root: rootGlobs }));
 
-	if (stylisticOptions !== false) {
+	if (stylisticOptions !== false && !typeAwareOnly) {
 		// Oxfmt must be the last config
 		configs.push(
 			oxfmt({
@@ -486,6 +502,12 @@ export async function isentinel(
 			}
 
 			dropOxlintCoveredRules(resolved, tsgolintAvailable);
+		});
+	}
+
+	if (typeAwareMode !== undefined) {
+		composer = composer.onResolved((resolved) => {
+			applyTypeAwareSplit(resolved, typeAwareMode, options.typeAwareRules);
 		});
 	}
 

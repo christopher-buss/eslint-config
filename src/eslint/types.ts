@@ -445,6 +445,41 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	toml?: boolean | OptionsOverrides;
 
 	/**
+	 * Split the config by type-aware linting so a large project can lint in two
+	 * ESLint passes.
+	 *
+	 * - `false` — drop every rule that requires type information and the
+	 *   type-aware parser setup, so no TypeScript program is built.
+	 * - `"only"` — keep only the type-aware rules (plus the parser setup they
+	 *   need) and drop the non-JS/TS-language configs (JSON, YAML, TOML,
+	 *   Markdown, pnpm, spell checking, formatting) entirely.
+	 *
+	 * Both passes benefit from `--cache` (use a distinct `--cache-location`
+	 * per pass) and an explicit numeric `--concurrency`: type-aware linting
+	 * parallelizes well, but each worker builds its own TypeScript program, so
+	 * prefer a fixed worker count over `auto` and mind memory.
+	 *
+	 * For every file, the effective rules of the two passes together equal the
+	 * full config exactly. Both modes disable unused-disable-directive
+	 * reporting; only the full config reports those. Custom type-aware rules
+	 * must either declare `meta.docs.requiresTypeChecking` or be enabled in a
+	 * config whose name contains `type-aware` (for example via
+	 * `overridesTypeAware`) to be sorted into the `"only"` pass.
+	 *
+	 * @default undefined - single full config
+	 */
+	typeAware?: "only" | boolean;
+
+	/**
+	 * Additional rules to classify as type-aware for the `typeAware` split.
+	 *
+	 * Use this for custom or third-party rules that need type information but
+	 * neither declare `meta.docs.requiresTypeChecking` nor are enabled in a
+	 * config whose name contains `type-aware`.
+	 */
+	typeAwareRules?: Array<string>;
+
+	/**
 	 * Enable TypeScript support.
 	 *
 	 * Passing an object to enable TypeScript Language Server support.
