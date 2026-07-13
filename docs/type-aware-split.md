@@ -8,8 +8,8 @@ heuristic under-parallelizes type-aware workloads) routinely cuts a cold run by
 an order of magnitude.
 
 The `typeAware` factory option additionally splits the config into two
-complementary passes, so the non-type-aware majority gives near-instant
-feedback without ever building a TypeScript program:
+complementary passes, so the non-type-aware majority gives near-instant feedback
+without ever building a TypeScript program:
 
 ```ts
 // eslint.config.ts — the full config; editors and hooks keep using this one.
@@ -43,10 +43,10 @@ export default isentinel({ type: "game", typeAware: "only" });
 ```
 
 Use a distinct `--cache-location` per pass — the two passes have different
-configs, so sharing one cache file would invalidate it on every run. Use a
-fixed `--concurrency` count rather than `auto`: the type-aware pass
-parallelizes well, but every worker builds its own TypeScript program, so pick
-a worker count your memory can afford.
+configs, so sharing one cache file would invalidate it on every run. Use a fixed
+`--concurrency` count rather than `auto`: the type-aware pass parallelizes well,
+but every worker builds its own TypeScript program, so pick a worker count your
+memory can afford.
 
 ## What each mode does
 

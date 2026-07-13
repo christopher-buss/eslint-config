@@ -535,8 +535,8 @@ On large projects the type-aware rules dominate ESLint wall time; an explicit
 numeric `--concurrency` is the biggest single win. The `typeAware` option
 additionally splits the config into two complementary passes: a non-type-aware
 pass (`typeAware: false`) that never builds a TypeScript program and a
-type-aware-only pass (`typeAware: "only"`). Together they cover exactly the
-full config. See [docs/type-aware-split.md](./docs/type-aware-split.md).
+type-aware-only pass (`typeAware: "only"`). Together they cover exactly the full
+config. See [docs/type-aware-split.md](./docs/type-aware-split.md).
 
 #### ESLint Plugin Development
 
