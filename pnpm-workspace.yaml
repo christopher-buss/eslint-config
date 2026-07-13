@@ -12,7 +12,6 @@ trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 10080
 
 packages:
-  - fixtures/*
   - src/*
 
 overrides:

@@ -525,8 +525,6 @@ importers:
         specifier: catalog:dev
         version: 4.1.10(@types/node@24.1.0)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
 
-  fixtures/input: {}
-
 packages:
 
   '@altano/repository-tools@2.0.3':
