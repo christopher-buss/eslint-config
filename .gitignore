@@ -81,6 +81,7 @@ _fixtures
 .history
 
 src/typegen.d.ts
+src/oxlint/typegen.d.ts
 .eslint-config-inspector
 
 # cspell

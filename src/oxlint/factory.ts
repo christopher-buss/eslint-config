@@ -4,6 +4,7 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
+import type { Rules } from "../types.ts";
 import {
 	getOverrides,
 	isInAgentSession,
@@ -294,7 +295,7 @@ export function isentinel(
 		}
 
 		const { name: _name, plugins: _plugins, settings: _settings, ...override } = config;
-		overrides.push(override as OxlintOverride);
+		overrides.push(override);
 	}
 
 	const fragments = configs.flat();
@@ -307,7 +308,9 @@ export function isentinel(
 			name: "isentinel/options-rules",
 			files: [GLOB_SRC],
 			keepUnmappedOff: true,
-			rules,
+			// The split accepts eslint-named rules and translates them; the
+			// oxlint-facing `OxlintRules` typing cannot express that input.
+			rules: rules as Rules,
 		});
 		for (const fragment of optionsFragments) {
 			mergeFragment(fragment);

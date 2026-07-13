@@ -8,7 +8,7 @@ local sharedGuards = new Mapping<String, Step> {
     ["detect-private-key"] = (Builtins.detect_private_key) { shell = bash }
     ["check-added-large-files"] = (Builtins.check_added_large_files) {
         shell = bash
-        exclude = List("pnpm-lock.yaml", "src/typegen.d.ts")
+        exclude = List("pnpm-lock.yaml", "src/typegen.d.ts", "src/oxlint/typegen.d.ts")
     }
 }
 
