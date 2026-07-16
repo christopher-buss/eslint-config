@@ -68,7 +68,7 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
-    "@pobammer-ts/eslint-cease-nonsense-rules": 1.38.0
+    "@pobammer-ts/eslint-cease-nonsense-rules": 1.42.3
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.62.1
     "@typescript-eslint/parser": 8.62.1
