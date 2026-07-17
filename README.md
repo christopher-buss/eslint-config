@@ -412,6 +412,37 @@ export default isentinel({
 });
 ```
 
+#### Redundant Override Detection
+
+Overrides that re-state what the preset already resolves to by default fail to
+typecheck, so you learn immediately (in-editor, no lint run needed) when a
+preset update makes one of your overrides redundant:
+
+```ts
+export default isentinel({
+	rules: {
+		// Type error: 'no-alert' already defaults to this value in the preset;
+		// remove the override, or set `redundancyCheck: false` to disable this
+		// check
+		"no-alert": "error",
+	},
+});
+```
+
+The check understands severity aliases (`2` ≙ `"error"`), option tuples (flagged
+only on an exact match), flat-config merge semantics (a bare severity keeps the
+previous options, so it is redundant whenever the severity matches), and the
+`type`/`roblox` variants — a rule that only defaults to `"error"` for
+`type: "package"` is not flagged in a game config. It applies to the top-level
+`rules`, every per-integration `overrides`, and un-scoped extra configs; both
+the ESLint and oxlint factories are covered.
+
+Compared defaults are the canonical (CI, non-editor) ones: editor/agent
+downgrades, `defaultSeverity` promotion and oxlint hybrid rule-dropping are
+intentionally ignored. `files`-scoped configs and composer `.override()` calls
+are not checked. Opt out entirely with `redundancyCheck: false`, or per line
+with `// @ts-expect-error`.
+
 ### Spell Checker
 
 This config includes the [CSpell](https://cspell.org/) plugin by default, which

@@ -388,6 +388,18 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	react?: boolean | ReactConfig;
 
 	/**
+	 * Flag rule overrides that re-state what the preset already resolves to by
+	 * default, as a type error on the redundant entry.
+	 *
+	 * The check is purely type-level (no runtime cost) and compares against the
+	 * canonical (non-editor) preset defaults for the selected `type`/`roblox`
+	 * variant. Overrides in `files`-scoped user configs are not checked.
+	 *
+	 * @default true
+	 */
+	redundancyCheck?: boolean;
+
+	/**
 	 * Enable Roblox linting rules.
 	 *
 	 * @default true
