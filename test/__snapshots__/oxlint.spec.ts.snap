@@ -1745,6 +1745,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
           },
         ],
         "eslint-js/no-dupe-args": "error",
+        "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
         "eslint-js/no-octal-escape": "error",
         "eslint-js/no-restricted-syntax": [
@@ -5514,6 +5515,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           },
         ],
         "eslint-js/no-dupe-args": "error",
+        "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
         "eslint-js/no-octal-escape": "error",
         "eslint-js/no-restricted-syntax": [
