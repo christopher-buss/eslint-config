@@ -61,14 +61,25 @@ describe("redundancyCheck: sub-config overrides", () => {
 	});
 });
 
+describe("redundancyCheck: file-scope overrides", () => {
+	it("checks jsonc overrides against the jsonc scope", () => {
+		// @ts-expect-error - redundant within jsonc.overrides
+		void isentinel({ jsonc: { overrides: { "jsonc/no-dupe-keys": "error" } } });
+		void isentinel({ jsonc: { overrides: { "jsonc/no-dupe-keys": "off" } } });
+	});
+});
+
 describe("redundancyCheck: user configs", () => {
 	it("checks unscoped rest-argument configs", () => {
 		// @ts-expect-error - redundant in an unscoped user config
 		void isentinel({}, { rules: { "no-alert": "error" } });
+		// @ts-expect-error - redundant inside a config array
+		void isentinel({}, [{ rules: { "no-alert": "error" } }]);
 	});
 
 	it("allows meaningful and files-scoped user configs", () => {
 		void isentinel({}, { rules: { "no-alert": "off" } });
+		void isentinel({}, [{ rules: { "no-alert": "off" } }]);
 		void isentinel({}, { files: ["**/*.spec.ts"], rules: { "no-alert": "error" } });
 	});
 });
