@@ -124,7 +124,6 @@ export async function markdown({
 				"ts/no-require-imports": "off",
 				"ts/no-unused-vars": "off",
 				"ts/no-use-before-define": "off",
-				"ts/no-var-requires": "off",
 				"unicode-bom": "off",
 				"unused-imports/no-unused-imports": "off",
 				"unused-imports/no-unused-vars": "off",

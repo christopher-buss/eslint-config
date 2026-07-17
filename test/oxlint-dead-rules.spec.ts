@@ -102,6 +102,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 			{ ...baseOptions, oxlint: true },
 			{
 				name: "user/stays",
+				// oxlint-disable-next-line typescript/no-deprecated -- Used to test that ESLint rules don't warn in hybrid mode
 				rules: { "eslint-comments/no-unused-disable": "off" },
 			},
 		);
