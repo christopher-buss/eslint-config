@@ -15,7 +15,7 @@ export type OxlintTarget =
 	| "js-plugin"
 	/** Implemented natively in oxlint (Rust). */
 	| "native"
-	/** Type-aware rule implemented by oxlint-tsgolint (`oxlint --type-aware`). */
+	/** Type-aware rule run by oxlint-tsgolint (`oxlint --type-aware`). */
 	| "tsgolint";
 
 /**
@@ -903,7 +903,7 @@ const TS_EXTENSION_TO_CORE = new Set([
 	"prefer-destructuring",
 ]);
 
-/** Unicorn rules renamed in eslint-plugin-unicorn v70 but not (yet) in oxlint. */
+/** Unicorn rules renamed in eslint-plugin-unicorn v70 but not in oxlint. */
 const UNICORN_NATIVE_RENAMES: Readonly<Record<string, string>> = {
 	"no-for-each": "no-array-for-each",
 };

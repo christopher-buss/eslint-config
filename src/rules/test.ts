@@ -123,9 +123,10 @@ export function jestRules({
 /**
  * Vitest rules shared between the ESLint and oxlint factories.
  *
- * The ESLint factory runs `@vitest/eslint-plugin` (an optional peer). The oxlint
- * factory runs the family as native rules, except `padding-around-all` and
- * `prefer-vi-mocked` (no native port) which run via the plugin as a jsPlugin.
+ * The ESLint factory runs `@vitest/eslint-plugin` (an optional peer). The
+ * oxlint factory runs the family as native rules, except `padding-around-all`
+ * and `prefer-vi-mocked` (no native port) which run via the plugin as a
+ * jsPlugin.
  *
  * @param options - Shared rule options.
  * @returns The rule map.

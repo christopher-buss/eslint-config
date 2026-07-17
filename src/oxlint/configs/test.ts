@@ -17,12 +17,13 @@ import { createOxlintConfigs } from "../utils.ts";
 /**
  * Test rules for standalone oxlint.
  *
- * Jest runs through `eslint-plugin-jest` as a jsPlugin: the native oxlint jest
- * plugin does not support `settings.jest.globalPackage`
+ * Jest runs through `eslint-plugin-jest` as a jsPlugin: the native oxlint
+ * jest plugin does not support `settings.jest.globalPackage`
  * (https://github.com/oxc-project/oxc/issues/23290). Vitest runs as native
- * oxlint rules, except `padding-around-all` and `prefer-vi-mocked` (no native
- * port) which run via `@vitest/eslint-plugin` as a jsPlugin. The four type-aware
- * jest rules are filtered out because oxlint has no type information for them.
+ * oxlint rules, except `padding-around-all` and `prefer-vi-mocked` (no
+ * native port) which run via `@vitest/eslint-plugin` as a jsPlugin. The
+ * four type-aware jest rules are filtered out because oxlint has no type
+ * information for them.
  *
  * @param options - The test rule options.
  * @returns The generated config fragments.

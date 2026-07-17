@@ -44,6 +44,9 @@ export async function comments({
 						files: [GLOB_SRC],
 						rules: commentLengthRules({
 							maxLength: (Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
+							/* Remove when oxc wraps multi-line comments: https://github.com/oxc-project/oxc/issues/24633 */
+							multiLineMaxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
+							semanticComments: ["oxlint-disable", "oxlint-enable"],
 							tabSize: prettierOptions.tabWidth ?? 4,
 						}),
 					} as TypedFlatConfigItem,

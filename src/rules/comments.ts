@@ -2,6 +2,7 @@ import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface CommentLengthRuleOptions {
 	maxLength: number;
+	multiLineMaxLength: number;
 	/** Directive comments treated as semantic (never wrapped). */
 	semanticComments?: Array<string>;
 	tabSize: number;
@@ -38,10 +39,20 @@ export function commentsRules({
  */
 export function commentLengthRules({
 	maxLength,
+	multiLineMaxLength,
 	semanticComments,
 	tabSize,
 }: CommentLengthRuleOptions): TypedFlatConfigItem["rules"] {
 	return {
+		"comment-length/limit-multi-line-comments": [
+			"error",
+			{
+				maxLength: multiLineMaxLength,
+				mode: "compact-on-overflow",
+				...(semanticComments ? { semanticComments } : {}),
+				tabSize,
+			},
+		],
 		"comment-length/limit-single-line-comments": [
 			"error",
 			{

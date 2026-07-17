@@ -349,8 +349,9 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	oxlint?: boolean;
 
 	/**
-	 * Warn at config-build time when a user config references a rule that oxlint
-	 * owns in hybrid mode (`oxlint: true`), where the ESLint entry has no effect.
+	 * Warn at config-build time when a user config references a rule that
+	 * oxlint owns in hybrid mode (`oxlint: true`), where the ESLint entry has
+	 * no effect.
 	 *
 	 * @default true
 	 */
@@ -404,8 +405,9 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * Pass an object with `files` to scope the roblox (Luau runtime) rules to
 	 * specific globs. Every TS/JS file outside that scope — the "complement" —
-	 * is then treated as standard-TS/Node land and receives node rules, e18e and
-	 * the non-roblox JS/unicorn rules instead (for example a `scripts/` folder).
+	 * is then treated as standard-TS/Node land and receives node rules, e18e
+	 * and the non-roblox JS/unicorn rules instead (for example a `scripts/`
+	 * folder).
 	 *
 	 * `false` treats the whole project as the complement; `true` (or an object
 	 * without `files`) applies the roblox ruleset everywhere and adds no

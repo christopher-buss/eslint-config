@@ -3119,6 +3119,18 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         },
       ],
       "rules": {
+        "comment-length/limit-multi-line-comments": [
+          "error",
+          {
+            "maxLength": 80,
+            "mode": "compact-on-overflow",
+            "semanticComments": [
+              "oxlint-disable",
+              "oxlint-enable",
+            ],
+            "tabSize": 4,
+          },
+        ],
         "comment-length/limit-single-line-comments": [
           "error",
           {
@@ -7040,6 +7052,18 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         },
       ],
       "rules": {
+        "comment-length/limit-multi-line-comments": [
+          "error",
+          {
+            "maxLength": 80,
+            "mode": "compact-on-overflow",
+            "semanticComments": [
+              "oxlint-disable",
+              "oxlint-enable",
+            ],
+            "tabSize": 4,
+          },
+        ],
         "comment-length/limit-single-line-comments": [
           "error",
           {

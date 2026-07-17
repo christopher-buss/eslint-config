@@ -77,10 +77,10 @@ export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
 		/**
 		 * Rule categories to enable at the top level.
 		 *
-		 * The preset enables its rules explicitly and disables every category by
-		 * default, so oxlint's own category defaults do not fire on top of the
-		 * curated set. Values here are merged over that default, so enabling one
-		 * category leaves the rest off.
+		 * The preset enables its rules explicitly and disables every category
+		 * by default, so oxlint's own category defaults do not fire on top of
+		 * the curated set. Values here are merged over that default, so
+		 * enabling one category leaves the rest off.
 		 */
 		categories?: RuleCategories;
 

@@ -18,9 +18,9 @@ export async function unicorn({
 	OptionsStylistic &
 	OptionsUnicorn & {
 		/**
-		 * When set, re-apply the non-roblox rules to every source (and root) file
-		 * except these globs (the roblox scope), so the complement is linted as
-		 * standard-TS/Node land.
+		 * When set, re-apply the non-roblox rules to every source (and root)
+		 * file except these globs (the roblox scope), so the complement is
+		 * linted as standard-TS/Node land.
 		 */
 		complementIgnores?: Array<string>;
 		root?: Array<string>;
