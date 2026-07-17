@@ -15,15 +15,16 @@ import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
  * @returns The oxc config fragment.
  */
 export function oxlintOxc(
-	options: OptionsFiles & OptionsHasRoblox = {},
+	options: OptionsFiles & OptionsHasRoblox & { excludeFiles?: Array<string> } = {},
 ): Array<TypedOxlintConfigItem> {
-	const { roblox = true } = options;
+	const { excludeFiles, roblox = true } = options;
 
 	const files = options.files?.flat() ?? [GLOB_SRC];
 
 	return [
 		{
 			name: "isentinel/oxc",
+			...(excludeFiles ? { excludeFiles } : {}),
 			files,
 			plugins: ["oxc"],
 			rules: {

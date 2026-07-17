@@ -13,6 +13,7 @@ import type {
 } from "../types.ts";
 
 export async function javascript({
+	complementIgnores,
 	isInEditor = false,
 	overrides = {},
 	roblox = true,
@@ -21,7 +22,14 @@ export async function javascript({
 	OptionsHasRoblox &
 	OptionsIsInEditor &
 	OptionsOverrides &
-	OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+	OptionsStylistic & {
+		/**
+		 * When set, re-apply the non-roblox rules to every source file except
+		 * these globs (the roblox scope), so the complement is linted as
+		 * standard-TS/Node land.
+		 */
+		complementIgnores?: Array<string>;
+	} = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters, pluginUnusedImports] =
 		await Promise.all([
 			interopDefault(import("eslint-plugin-antfu")),
@@ -72,5 +80,19 @@ export async function javascript({
 				...overrides,
 			},
 		},
+		...(complementIgnores
+			? [
+					{
+						name: "isentinel/javascript/complement",
+						files: [GLOB_SRC],
+						ignores: complementIgnores,
+						rules: {
+							...javascriptRules({ isInEditor, roblox: false, stylistic }),
+
+							...overrides,
+						},
+					},
+				]
+			: []),
 	];
 }

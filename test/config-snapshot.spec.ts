@@ -74,6 +74,59 @@ describe("config snapshots", () => {
 		expect(gameRules).not.toHaveProperty("unicorn/no-accidental-bitwise-operator");
 	});
 
+	it("should scope roblox rules and apply node rules to the complement", async () => {
+		expect.hasAssertions();
+
+		const configs = [
+			...(await isentinel({
+				name: "test/scoped-roblox",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				pnpm: false,
+				roblox: { files: ["src/**"] },
+				spellCheck: false,
+			})),
+		];
+
+		// Roblox plugin rules bind only to the scoped files.
+		const robloxConfig = configs.find((config) => config.name === "isentinel/roblox");
+		expect(robloxConfig?.files).toStrictEqual(["src/**"]);
+
+		// The complement (everything outside src/**) gets node rules.
+		const nodeConfig = configs.find((config) => config.name === "isentinel/node/rules");
+		expect(nodeConfig).toBeDefined();
+		expect(nodeConfig?.ignores).toStrictEqual(["src/**"]);
+
+		// The complement gets the non-roblox unicorn rules; the roblox base does
+		// not.
+		const complementUnicorn = configs.find(
+			(config) => config.name === "isentinel/unicorn/complement",
+		);
+		expect(complementUnicorn?.ignores).toStrictEqual(["src/**"]);
+		expect(complementUnicorn?.rules).toHaveProperty("unicorn/no-accidental-bitwise-operator");
+
+		const baseUnicorn = findUnicornRules(configs);
+		expect(baseUnicorn).not.toHaveProperty("unicorn/no-accidental-bitwise-operator");
+	});
+
+	it("should not add node rules to the default roblox config", async () => {
+		expect.hasAssertions();
+
+		const configs = [
+			...(await isentinel({
+				name: "test/default-roblox",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				pnpm: false,
+				spellCheck: false,
+			})),
+		];
+
+		expect(configs.find((config) => config.name === "isentinel/node/rules")).toBeUndefined();
+	});
+
 	it("should match minimal config", async () => {
 		expect.hasAssertions();
 

@@ -402,6 +402,15 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	/**
 	 * Enable Roblox linting rules.
 	 *
+	 * Pass an object with `files` to scope the roblox (Luau runtime) rules to
+	 * specific globs. Every TS/JS file outside that scope — the "complement" —
+	 * is then treated as standard-TS/Node land and receives node rules, e18e and
+	 * the non-roblox JS/unicorn rules instead (for example a `scripts/` folder).
+	 *
+	 * `false` treats the whole project as the complement; `true` (or an object
+	 * without `files`) applies the roblox ruleset everywhere and adds no
+	 * complement configs.
+	 *
 	 * @default true
 	 */
 	roblox?: boolean | (OptionsFilesTypeAware & OptionsOverridesTypeAware);

@@ -118,6 +118,17 @@ export function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	// See the ESLint factory: files outside a scoped `roblox` glob form the
+	// standard-TS/Node complement. `undefined` means no complement (default /
+	// unscoped) or the whole tree is the complement (`roblox: false`).
+	const robloxScopedFiles =
+		typeof options.roblox === "object" && options.roblox.files !== undefined
+			? options.roblox.files.flat()
+			: undefined;
+	const hasComplement = !enableRoblox || robloxScopedFiles !== undefined;
+	const needsComplementOverlay = enableRoblox && robloxScopedFiles !== undefined;
+
 	const typeAware = linterOptions?.typeAware ?? isPackageExists("oxlint-tsgolint");
 
 	const inAgentSession = options.isAgent ?? isInAgentSession();
@@ -214,17 +225,40 @@ export function isentinel(
 		);
 	}
 
-	if (enableE18e !== false && !enableRoblox) {
+	// Re-apply the non-roblox JS and unicorn rules to the complement (files
+	// outside the roblox scope), overriding the roblox-flavored base there.
+	if (needsComplementOverlay) {
+		configs.push(
+			oxlintJavascript({
+				...getOverrides(options, "javascript"),
+				excludeFiles: robloxScopedFiles,
+				isInEditor,
+				roblox: false,
+				stylistic: stylisticOptions,
+			}),
+			oxlintUnicorn({
+				...resolveSubOptions(options, "unicorn"),
+				excludeFiles: robloxScopedFiles,
+				roblox: false,
+				stylistic: stylisticOptions,
+			}),
+		);
+	}
+
+	if (enableE18e !== false && hasComplement) {
 		configs.push(
 			oxlintE18e({
+				excludeFiles: robloxScopedFiles,
 				isInEditor,
+				type: projectType,
 				...(enableE18e === true ? {} : enableE18e),
 			}),
 		);
 	}
 
-	if (projectType === "package" && !enableRoblox) {
-		configs.push(oxlintNode());
+	// Node rules cover the complement regardless of the game/package distinction.
+	if (hasComplement) {
+		configs.push(oxlintNode({ excludeFiles: robloxScopedFiles }));
 	}
 
 	if (enableTest !== false) {
@@ -281,6 +315,9 @@ export function isentinel(
 
 	if (enableOxc) {
 		configs.push(oxlintOxc({ roblox: enableRoblox }));
+		if (needsComplementOverlay) {
+			configs.push(oxlintOxc({ excludeFiles: robloxScopedFiles, roblox: false }));
+		}
 	}
 
 	configs.push(

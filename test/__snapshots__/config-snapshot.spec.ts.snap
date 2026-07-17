@@ -4543,8 +4543,8 @@ exports[`config snapshots > should match package mode config 1`] = `
     ],
   },
   {
-    "ignores": [
-      "**/*.md",
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/e18e/rules",
     "plugins": [
@@ -4571,8 +4571,8 @@ exports[`config snapshots > should match package mode config 1`] = `
     ],
   },
   {
-    "ignores": [
-      "**/*.md",
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/node/rules",
     "plugins": [

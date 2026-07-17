@@ -7,12 +7,14 @@ import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
 export function oxlintUnicorn({
+	excludeFiles,
 	nameReplacements,
 	roblox = true,
 	root: customRootGlobs,
 	stylistic = true,
 }: OptionsHasRoblox &
 	OptionsStylistic & {
+		excludeFiles?: Array<string>;
 		nameReplacements?: UnicornNameReplacements;
 		root?: Array<string>;
 	} = {}): Array<TypedOxlintConfigItem> {
@@ -21,11 +23,13 @@ export function oxlintUnicorn({
 	return [
 		...createOxlintConfigs({
 			name: "isentinel/unicorn",
+			...(excludeFiles ? { excludeFiles } : {}),
 			files: [GLOB_SRC],
 			rules: unicornRules({ nameReplacements, roblox, stylistic }),
 		}),
 		...createOxlintConfigs({
 			name: "isentinel/unicorn/root",
+			...(excludeFiles ? { excludeFiles } : {}),
 			files: rootGlobs,
 			rules: unicornRootRules({ nameReplacements, roblox }),
 		}),

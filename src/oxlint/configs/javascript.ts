@@ -17,14 +17,21 @@ export function oxlintJavascript(
 		OptionsHasRoblox &
 		OptionsIsInEditor &
 		OptionsOverrides &
-		OptionsStylistic = {},
+		OptionsStylistic & { excludeFiles?: Array<string> } = {},
 ): Array<TypedOxlintConfigItem> {
-	const { isInEditor = false, overrides = {}, roblox = true, stylistic = true } = options;
+	const {
+		excludeFiles,
+		isInEditor = false,
+		overrides = {},
+		roblox = true,
+		stylistic = true,
+	} = options;
 
 	const files = options.files?.flat() ?? [GLOB_SRC];
 
 	return createOxlintConfigs({
 		name: "isentinel/javascript",
+		...(excludeFiles ? { excludeFiles } : {}),
 		files,
 		globals: {
 			...toGlobals(globals.browser),

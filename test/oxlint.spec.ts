@@ -497,6 +497,39 @@ describe("oxc rules", () => {
 	});
 });
 
+describe("scoped roblox complement", () => {
+	function nodeOverrides(config: OxlintConfig): NonNullable<OxlintConfig["overrides"]> {
+		return (config.overrides ?? []).filter((override) => {
+			return Object.keys(override.rules ?? {}).some((rule) => rule.startsWith("node/"));
+		});
+	}
+
+	it("applies node rules to the complement with the roblox scope excluded", ({ expect }) => {
+		const config = oxlintIsentinel({
+			name: "test/scoped-roblox",
+			gitignore: false,
+			roblox: { files: ["src/**"] },
+			spellCheck: false,
+		});
+
+		const overrides = nodeOverrides(config);
+		expect(overrides.length).toBeGreaterThan(0);
+		for (const override of overrides) {
+			expect(override.excludeFiles).toStrictEqual(["src/**"]);
+		}
+	});
+
+	it("adds no node rules to the default roblox config", ({ expect }) => {
+		const config = oxlintIsentinel({
+			name: "test/default-roblox",
+			gitignore: false,
+			spellCheck: false,
+		});
+
+		expect(nodeOverrides(config)).toHaveLength(0);
+	});
+});
+
 /**
  * Serialize an oxlint config for snapshotting, stripping machine-specific
  * values (absolute dictionary URLs).

@@ -176,6 +176,20 @@ export async function isentinel(
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 
+	// When `roblox` is scoped to specific files (or disabled entirely) the files
+	// it does not cover form the "complement": standard-TS/Node land that gets
+	// node rules, e18e and the non-roblox JS/unicorn rules instead of the
+	// roblox-flavored set. `robloxScopedFiles` is the roblox glob when the scope
+	// is explicit; `undefined` for `roblox: false` (whole tree is complement) and
+	// for the default/unscoped case (no complement, preserving the old
+	// footprint).
+	const robloxScopedFiles =
+		typeof options.roblox === "object" && options.roblox.files !== undefined
+			? options.roblox.files.flat()
+			: undefined;
+	const hasComplement = !enableRoblox || robloxScopedFiles !== undefined;
+	const needsComplementOverlay = enableRoblox && robloxScopedFiles !== undefined;
+
 	const typeAwareMode: TypeAwareSplitMode | undefined =
 		options.typeAware === false || options.typeAware === "only" ? options.typeAware : undefined;
 	const typeAwareOnly = typeAwareMode === "only";
@@ -276,6 +290,7 @@ export async function isentinel(
 		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
 		javascript({
 			...getOverrides(options, "javascript"),
+			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			isInEditor,
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
@@ -290,6 +305,7 @@ export async function isentinel(
 		}),
 		unicorn({
 			...resolveSubOptions(options, "unicorn"),
+			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			roblox: enableRoblox,
 			root: rootGlobs,
 			stylistic: stylisticOptions,
@@ -314,18 +330,22 @@ export async function isentinel(
 		);
 	}
 
-	if (enableE18e !== false && !enableRoblox) {
+	if (enableE18e !== false && hasComplement) {
 		configs.push(
 			e18e({
+				ignores: robloxScopedFiles,
 				isInEditor,
+				type: projectType,
 				...(enableE18e === true ? {} : enableE18e),
 			}),
 		);
 	}
 
-	// Enable Node.js rules for non-Roblox packages
-	if (projectType === "package" && !enableRoblox) {
-		configs.push(node());
+	// Node rules cover the complement: any TS/JS file outside the roblox scope
+	// runs in a standard-TS/Node environment, independent of the game/package
+	// distinction.
+	if (hasComplement) {
+		configs.push(node({ ignores: robloxScopedFiles }));
 	}
 
 	if (enableJsx) {
