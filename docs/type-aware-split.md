@@ -70,7 +70,6 @@ A rule is type-aware when any of these hold:
 - its `meta.docs.requiresTypeChecking` is `true`;
 - it is in the preset's manual list of functionally type-aware rules that do not
   declare the flag (the type-aware React rules,
-  `vitest/require-mock-type-parameters`,
   `cease-nonsense/prefer-read-only-props`, ...);
 - it is enabled in a config item whose name contains `type-aware` (this covers
   `overridesTypeAware` and the preset's type-aware config blocks).

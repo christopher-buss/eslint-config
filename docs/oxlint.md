@@ -47,10 +47,11 @@ export default isentinel({
 
 > [!NOTE] In hybrid mode, give the oxlint factory the same structural and plugin
 > options you gave ESLint (`type`, `roblox`, `stylistic`, `root`, `react`,
-> `test`, ignores...). The react, jest and vitest families now run in oxlint as
-> jsPlugins, and ESLint keeps only their type-aware rules, so mirroring the
-> options avoids both coverage loss and double-linting. e18e is handled
-> automatically (both factories enable it for non-roblox projects).
+> `test`, ignores...). The react and jest families run in oxlint as jsPlugins
+> and vitest runs as native oxlint rules (bar two rules with no native port),
+> while ESLint keeps only their type-aware rules, so mirroring the options
+> avoids both coverage loss and double-linting. e18e is handled automatically
+> (both factories enable it for non-roblox projects).
 
 Then run both linters:
 
@@ -103,11 +104,14 @@ keeps running in ESLint, notably:
   four `test/*` jest rules). The oxlint factory refuses to emit them as
   jsPlugins because they crash or silently no-op without type information; a
   test enforces this against the plugins' runtime metadata.
-- **Functionally type-aware rules** — `vitest/require-mock-type-parameters` and
-  the type-aware React rules below do not declare `requiresTypeChecking` but
-  still need type information, so they are excluded manually. The rest of the
-  jest and vitest families run in oxlint via their real ESLint plugin as a
-  jsPlugin (jest honors `settings.jest.globalPackage = @rbxts/jest-globals`).
+- **Functionally type-aware rules** — the type-aware React rules below do not
+  declare `requiresTypeChecking` but still need type information, so they are
+  excluded manually. The jest family runs in oxlint via its real ESLint plugin
+  as a jsPlugin (jest honors
+  `settings.jest.globalPackage = @rbxts/jest-globals`); the vitest family runs
+  as native oxlint rules, except `vitest/padding-around-all` and
+  `vitest/prefer-vi-mocked` (no native port) which run via
+  `@vitest/eslint-plugin` as a jsPlugin.
 - **Type-aware custom rules** — `roblox/*` type-aware rules,
   `sentinel/explicit-size-check`, `cease-nonsense/prefer-read-only-props`,
   `flawless/naming-convention` and `naming`; oxlint jsPlugins have no type

@@ -123,9 +123,9 @@ export function jestRules({
 /**
  * Vitest rules shared between the ESLint and oxlint factories.
  *
- * Both factories run `@vitest/eslint-plugin` (an optional peer) as a jsPlugin;
- * `vitest/require-mock-type-parameters` is functionally type-aware and stays in
- * ESLint (jsPlugins have no type information).
+ * The ESLint factory runs `@vitest/eslint-plugin` (an optional peer). The oxlint
+ * factory runs the family as native rules, except `padding-around-all` and
+ * `prefer-vi-mocked` (no native port) which run via the plugin as a jsPlugin.
  *
  * @param options - Shared rule options.
  * @returns The rule map.

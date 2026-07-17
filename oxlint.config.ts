@@ -5,8 +5,6 @@ export default isentinel(
 		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
 		roblox: false,
-		// Vitest rules stay in ESLint (see eslint.config.ts): the vitest
-		// plugin cannot run under oxlint's jsPlugin runtime.
 		type: "package",
 		typescript: {
 			erasableOnly: true,
