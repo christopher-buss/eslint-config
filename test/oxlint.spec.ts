@@ -292,6 +292,48 @@ describe("oxlint config snapshots", () => {
 	});
 });
 
+const ALL_CATEGORIES_OFF = {
+	correctness: "off",
+	nursery: "off",
+	pedantic: "off",
+	perf: "off",
+	restriction: "off",
+	style: "off",
+	suspicious: "off",
+};
+
+describe("oxlint categories", () => {
+	it("should disable every category by default", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({ name: "test/oxlint-categories-default" });
+
+		expect(config.categories).toStrictEqual(ALL_CATEGORIES_OFF);
+	});
+
+	it("should merge a user category over the defaults", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/oxlint-categories-merge",
+			categories: { nursery: "warn" },
+		});
+
+		expect(config.categories).toStrictEqual({ ...ALL_CATEGORIES_OFF, nursery: "warn" });
+	});
+
+	it("should let a user value win over a default of the same key", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/oxlint-categories-override",
+			categories: { correctness: "error" },
+		});
+
+		expect(config.categories).toStrictEqual({ ...ALL_CATEGORIES_OFF, correctness: "error" });
+	});
+});
+
 /**
  * Serialize an oxlint config for snapshotting, stripping machine-specific
  * values (absolute dictionary URLs).

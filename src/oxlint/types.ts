@@ -6,7 +6,7 @@
  * type modules would make `dist/index.d.mts` depend on `oxlint`, breaking
  * ESLint-only consumers who do not install it.
  */
-import type { DummyRuleMap, OxlintConfig, OxlintOverride } from "oxlint";
+import type { DummyRuleMap, OxlintConfig, OxlintOverride, RuleCategories } from "oxlint";
 
 import type { OptionsConfig } from "../eslint/types.ts";
 import type { OxlintRules } from "./typegen";
@@ -75,6 +75,16 @@ export type OxlintOptionsConfig = Omit<
 export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
 	OxlintOptionsConfig & {
 		/**
+		 * Rule categories to enable at the top level.
+		 *
+		 * The preset enables its rules explicitly and disables every category by
+		 * default, so oxlint's own category defaults do not fire on top of the
+		 * curated set. Values here are merged over that default, so enabling one
+		 * category leaves the rest off.
+		 */
+		categories?: RuleCategories;
+
+		/**
 		 * Top-level linter options emitted into the generated config
 		 * (`typeAware`, `typeCheck`, `maxWarnings`, ...).
 		 *
@@ -91,4 +101,10 @@ export type {
 	OxlintRuleOptions,
 	OxlintRules,
 } from "./typegen";
-export type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
+export type {
+	DummyRuleMap,
+	ExternalPluginEntry,
+	OxlintConfig,
+	OxlintOverride,
+	RuleCategories,
+} from "oxlint";

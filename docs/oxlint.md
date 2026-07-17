@@ -166,10 +166,10 @@ running the ESLint plugins as jsPlugins. Note the limitations above: JSON, YAML,
 TOML, Markdown, pnpm and the type-aware custom rules are only available through
 ESLint.
 
-## Linter options, env and globals
+## Categories, linter options, env and globals
 
-The factory passes oxlint's config-level `options`, `env` and `globals` through
-to the generated config:
+The factory passes oxlint's config-level `categories`, `options`, `env` and
+`globals` through to the generated config:
 
 ```ts
 // oxlint.config.ts
@@ -177,6 +177,7 @@ import { isentinel } from "@isentinel/eslint-config/oxlint";
 
 export default isentinel({
 	name: "project/options",
+	categories: { nursery: "warn" },
 	env: { browser: false },
 	globals: { $: "readonly", window: "off" },
 	options: { maxWarnings: 10 },
@@ -184,6 +185,14 @@ export default isentinel({
 });
 ```
 
+- **`categories`** — enables oxlint rule categories (`correctness`, `nursery`,
+  `pedantic`, `perf`, `restriction`, `style`, `suspicious`). The preset enables
+  every rule it wants explicitly, so all seven categories default to `"off"` —
+  otherwise oxlint's own defaults (notably `correctness: "warn"`) would fire on
+  top of the curated set and report rules the preset deliberately leaves out.
+  Values are merged over that default, so enabling one category leaves the rest
+  off. Useful for previewing rules the preset does not enable yet, but expect
+  reports the preset has not vetted.
 - **`options`** — top-level linter options (`typeAware`, `typeCheck`,
   `maxWarnings`, `denyWarnings`, `reportUnusedDisableDirectives`,
   `respectEslintDisableDirectives`). The factory emits `typeAware: true` by

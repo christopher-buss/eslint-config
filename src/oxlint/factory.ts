@@ -1,5 +1,11 @@
 import { isPackageExists } from "local-pkg";
-import type { DummyRuleMap, ExternalPluginEntry, OxlintConfig, OxlintOverride } from "oxlint";
+import type {
+	DummyRuleMap,
+	ExternalPluginEntry,
+	OxlintConfig,
+	OxlintOverride,
+	RuleCategories,
+} from "oxlint";
 import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
@@ -40,6 +46,21 @@ import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from
 import { createOxlintConfigs } from "./utils.ts";
 
 /**
+ * The preset enables its rules explicitly, so every category is disabled to
+ * stop oxlint's own defaults (notably `correctness: "warn"`) from firing on top
+ * of the curated set.
+ */
+const DEFAULT_CATEGORIES: RuleCategories = {
+	correctness: "off",
+	nursery: "off",
+	pedantic: "off",
+	perf: "off",
+	restriction: "off",
+	style: "off",
+	suspicious: "off",
+};
+
+/**
  * Generate an oxlint configuration based on the provided options.
  *
  * The returned value is a plain oxlint config object suitable for
@@ -57,6 +78,7 @@ export function isentinel(
 ): OxlintConfig {
 	const options = factoryOptions ?? { name: "isentinel" };
 	const {
+		categories,
 		componentExts: componentExtensions = [],
 		e18e: enableE18e = true,
 		env,
@@ -344,15 +366,7 @@ export function isentinel(
 	}
 
 	return defineConfig({
-		categories: {
-			correctness: "off",
-			nursery: "off",
-			pedantic: "off",
-			perf: "off",
-			restriction: "off",
-			style: "off",
-			suspicious: "off",
-		},
+		categories: { ...DEFAULT_CATEGORIES, ...categories },
 		...(env ? { env } : {}),
 		...(globals ? { globals } : {}),
 		ignorePatterns,
