@@ -46,12 +46,10 @@ export function javascriptRules({
 		"default-case-last": "error",
 		"dot-notation": ["error", { allowKeywords: true }],
 		"eqeqeq": "error",
-
 		"for-direction": "error",
 		"logical-assignment-operators": "error",
 		"max-classes-per-file": "error",
 		"max-depth": "error",
-
 		"new-cap": [
 			"error",
 			{
@@ -108,6 +106,7 @@ export function javascriptRules({
 		"no-iterator": "error",
 		"no-labels": ["error", { allowLoop: false, allowSwitch: false }],
 		"no-lonely-if": "error",
+		"no-loop-func": "error",
 		"no-loss-of-precision": "error",
 		"no-misleading-character-class": "error",
 		"no-new": "error",
