@@ -1,12 +1,29 @@
 /* oxlint-disable sonar/no-duplicate-string, max-lines-per-function -- Type-test fixtures repeat literal rule names and group many one-line assertions per describe by design. */
 import { describe, expectTypeOf, it } from "vitest";
 
+import type { VARIANT_KEYS } from "../scripts/typegen-defaults-shared.ts";
+import type { ValidatedOverrideKeys } from "../src/eslint/redundancy.ts";
+import type { OptionsConfig } from "../src/eslint/types.ts";
+import type { OxlintValidatedOverrideKeys } from "../src/oxlint/redundancy.ts";
+import type { OxlintOptionsConfig } from "../src/oxlint/types.ts";
 import type {
 	IsRedundantEntry,
 	RedundantRuleError,
 	ValidateRulesAgainst,
+	VariantKey,
 	VariantKeyOf,
 } from "../src/redundancy.ts";
+
+type HasOverrides<V> = V extends object ? ("overrides" extends keyof V ? true : never) : never;
+
+/**
+ * Options keys whose value union includes an object carrying `overrides`.
+ *
+ * @template O - The factory options type to scan.
+ */
+type OverrideBearingKeys<O> = {
+	[K in keyof O]-?: true extends HasOverrides<NonNullable<O[K]>> ? K : never;
+}[keyof O];
 
 interface MiniDefaults {
 	"dot-notation": { "*": ["error", { allowKeywords: true }] };
@@ -142,5 +159,25 @@ describe("ValidateRulesAgainst", () => {
 	it("preserves optionality", () => {
 		type Result = Validate<{ "max-depth"?: "warn" }>;
 		expectTypeOf<Result>().toEqualTypeOf<{ "max-depth"?: "warn" }>();
+	});
+});
+
+describe("wiring exhaustiveness", () => {
+	it("validates every override-bearing option of the ESLint factory", () => {
+		// Fails when a new sub-config with `overrides` is added to
+		// OptionsConfig without wiring it into ValidateOptionsWith.
+		expectTypeOf<
+			Exclude<OverrideBearingKeys<OptionsConfig>, ValidatedOverrideKeys>
+		>().toEqualTypeOf<never>();
+	});
+
+	it("validates every override-bearing option of the oxlint factory", () => {
+		expectTypeOf<
+			Exclude<OverrideBearingKeys<OxlintOptionsConfig>, OxlintValidatedOverrideKeys>
+		>().toEqualTypeOf<never>();
+	});
+
+	it("keeps the generator variant matrix in sync with VariantKey", () => {
+		expectTypeOf<(typeof VARIANT_KEYS)[number]>().toEqualTypeOf<VariantKey>();
 	});
 });

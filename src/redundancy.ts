@@ -15,10 +15,11 @@
  * Defaults are provided by the generated defaults maps (`pnpm gen`), keyed per
  * preset variant (`type` x `roblox`). Rules whose default is identical across
  * variants use the `"*"` key.
+ *
+ * The per-factory wiring (which override site validates against which chain of
+ * defaults maps) lives in `src/eslint/redundancy.ts` and
+ * `src/oxlint/redundancy.ts`; the factory-agnostic machinery lives here.
  */
-
-/** Any severity accepted by ESLint rule entries. */
-export type RuleSeverityInput = 0 | 1 | 2 | "error" | "off" | "warn";
 
 /**
  * Whether a user-written rule entry is redundant against the preset default
@@ -35,11 +36,9 @@ export type RuleSeverityInput = 0 | 1 | 2 | "error" | "off" | "warn";
  */
 export type IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions extends boolean = true> =
 	IsSeverityOnly<UserEntry> extends true
-		? RetainsOptions extends true
+		? (RetainsOptions extends true ? true : IsSeverityOnly<DefaultEntry>) extends true
 			? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
-			: IsSeverityOnly<DefaultEntry> extends true
-				? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
-				: false
+			: false
 		: Equal<NormalizeEntry<UserEntry>, NormalizeEntry<DefaultEntry>>;
 
 /**
@@ -58,12 +57,6 @@ export interface RedundantRuleError<Message extends string> {
  * whether `roblox` mode is enabled (`std` = roblox disabled).
  */
 export type VariantKey = "game_roblox" | "game_std" | "package_roblox" | "package_std";
-
-/**
- * Per-rule defaults record in the generated maps: either invariant (`"*"`) or
- * keyed by the variants where the values differ.
- */
-export type DefaultVariants = Partial<Record<VariantKey, unknown>> & { "*"?: unknown };
 
 /**
  * Resolve the variant key(s) selected by the factory options. Non-literal
@@ -91,7 +84,121 @@ export type ValidateRulesAgainst<
 	VK extends VariantKey,
 	RetainsOptions extends boolean = true,
 > = {
-	[K in keyof R]: ValidateEntry<K & string, R[K], LookupVariants<K, Chain>, VK, RetainsOptions>;
+	[K in keyof R]: ValidateEntry<
+		K & string,
+		R[K],
+		ResolveDefault<LookupVariants<K, Chain>, VK>,
+		RetainsOptions
+	>;
+};
+
+/**
+ * Validate one rules-bearing property (`rules`, `overrides`,
+ * `overridesTypeAware`) of an options object against a defaults chain.
+ *
+ * @template Site - The object that may carry the property.
+ * @template Key - The property name to validate.
+ * @template Chain - Ordered defaults maps, most specific scope first.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateSite<
+	Site,
+	Key extends string,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> =
+	Site extends Record<Key, infer R>
+		? Partial<Record<Key, ValidateRulesAgainst<R, Chain, VK, RetainsOptions>>>
+		: unknown;
+
+/**
+ * Validate the `overrides` and `overridesTypeAware` sites of one sub-config
+ * object.
+ *
+ * @template Sub - The sub-config object.
+ * @template Chain - Ordered defaults maps, most specific scope first.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateSub<
+	Sub,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = ValidateSite<Sub, "overrides", Chain, VK, RetainsOptions> &
+	ValidateSite<Sub, "overridesTypeAware", Chain, VK, RetainsOptions>;
+
+/**
+ * Validate the sub-config stored under `Key` of the options object, when
+ * present.
+ *
+ * @template O - The factory options type.
+ * @template Key - The sub-config option name.
+ * @template Chain - Ordered defaults maps, most specific scope first.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateSubOption<
+	O,
+	Key extends string,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> =
+	O extends Record<Key, infer Sub>
+		? Partial<Record<Key, ValidateSub<Sub, Chain, VK, RetainsOptions>>>
+		: unknown;
+
+/**
+ * Validate the `test` option, including its nested `jest` and `vitest`
+ * sub-configs, against the test-scope defaults chain.
+ *
+ * @template O - The factory options type.
+ * @template Chain - Ordered test-scope defaults maps.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateTestOption<
+	O,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = O extends { test: infer T }
+	? {
+			test?: (T extends { jest: infer J }
+				? { jest?: ValidateSub<J, Chain, VK, RetainsOptions> }
+				: unknown) &
+				(T extends { vitest: infer V }
+					? { vitest?: ValidateSub<V, Chain, VK, RetainsOptions> }
+					: unknown) &
+				ValidateSub<T, Chain, VK, RetainsOptions>;
+		}
+	: unknown;
+
+/**
+ * Validate rest-argument user configs against the main-scope defaults chain.
+ * Promises, composers and `files`-scoped items pass through unchecked — glob
+ * scoping cannot be reasoned about at the type level.
+ *
+ * @template C - The literal user-config tuple.
+ * @template Chain - Ordered main-scope defaults maps.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateUserConfigsAgainst<
+	C extends ReadonlyArray<unknown>,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = {
+	[I in keyof C]: C[I] extends ReadonlyArray<unknown>
+		? {
+				[J in keyof C[I]]: C[I][J] &
+					ValidateUserConfigItem<C[I][J], Chain, VK, RetainsOptions>;
+			}
+		: C[I] & ValidateUserConfigItem<C[I], Chain, VK, RetainsOptions>;
 };
 
 type NormalizeSeverity<S> = S extends 2 | "error"
@@ -115,6 +222,9 @@ type NormalizeEntry<E> = E extends readonly [infer S, ...infer O]
 type SeverityOf<E> = E extends readonly [infer S, ...ReadonlyArray<unknown>]
 	? NormalizeSeverity<S>
 	: NormalizeSeverity<E>;
+
+/** Any severity accepted by ESLint rule entries. */
+type RuleSeverityInput = 0 | 1 | 2 | "error" | "off" | "warn";
 
 type IsSeverityOnly<E> = E extends RuleSeverityInput
 	? true
@@ -158,16 +268,21 @@ type ResolveDefault<D, VK extends VariantKey> = D extends { "*": infer E }
 		? D[VK]
 		: never;
 
-type ValidateEntry<
-	K extends string,
-	UserEntry,
-	D,
+type ValidateEntry<K extends string, UserEntry, DefaultEntry, RetainsOptions extends boolean> = [
+	DefaultEntry,
+] extends [never]
+	? UserEntry
+	: IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions> extends true
+		? RedundantRuleError<`'${K}' already defaults to this value in the preset; remove the override, or set \`redundancyCheck: false\` to disable this check`>
+		: UserEntry;
+
+type ValidateUserConfigItem<
+	Item,
+	Chain extends ReadonlyArray<unknown>,
 	VK extends VariantKey,
-	RetainsOptions extends boolean = true,
-> = [ResolveDefault<D, VK>] extends [infer DefaultEntry]
-	? [DefaultEntry] extends [never]
-		? UserEntry
-		: IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions> extends true
-			? RedundantRuleError<`'${K}' already defaults to this value in the preset; remove the override, or set \`redundancyCheck: false\` to disable this check`>
-			: UserEntry
-	: never;
+	RetainsOptions extends boolean,
+> = Item extends { files: unknown }
+	? unknown
+	: Item extends { rules: infer R }
+		? { rules?: ValidateRulesAgainst<R, Chain, VK, RetainsOptions> }
+		: unknown;
