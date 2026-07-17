@@ -94,6 +94,7 @@ const validTitleMatchType = `mustMatch?: string | [string] | [string, string] | 
 
 dts = dts.replace(
 	/(\n\/\/ ----- (?:jest|vitest)\/valid-title -----\ntype \w+ValidTitle = \[\]\|\[\{[^}]*?)\[k: string\]: \(string \| \[string\]\|\[string, string\] \| \{\n\s+\[k: string\]: \(string \| \[string\]\|\[string, string\]\) \| undefined\n\s+\}\)\n(\}\])/g,
+	// eslint-disable-next-line unicorn/no-unsafe-string-replacement -- `validTitleMatchType` is a static constant with no `$` sequences; `$1`/`$2` are intentional capture references.
 	`$1${validTitleMatchType}\n$2`,
 );
 
