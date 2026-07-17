@@ -108,7 +108,7 @@ catalogs:
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.4
     toml-eslint-parser: 1.0.3
-    yaml-eslint-parser: 2.0.0
+    yaml-eslint-parser: 2.1.0
     yargs: 18.0.0
 
 allowBuilds:
