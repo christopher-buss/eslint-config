@@ -64,7 +64,7 @@ catalogs:
     eslint-plugin-n: 18.2.1
     eslint-plugin-react-jsx: 5.10.0
     eslint-plugin-react-naming-convention: 5.10.0
-    eslint-plugin-react-x: 5.10.0
+    eslint-plugin-react-x: 5.14.10
     oxlint: 1.74.0
     oxlint-tsgolint: 0.25.0
   prod:
