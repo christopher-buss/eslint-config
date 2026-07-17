@@ -6,6 +6,6 @@ experimental = true
 lockfile = true
 
 [tools]
-hk = { version = "1.50.0", postinstall = 'if [ -z "$CI" ]; then hk install --mise; fi' }
+hk = { version = "1.51.0", postinstall = 'if [ -z "$CI" ]; then hk install --mise; fi' }
 node = { version = "lts", postinstall = "corepack enable" }
 pkl = "latest"
