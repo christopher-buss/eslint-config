@@ -83,6 +83,7 @@ _fixtures
 src/typegen.d.ts
 src/typegen-defaults.d.ts
 src/oxlint/typegen.d.ts
+src/oxlint/typegen-defaults.d.ts
 .eslint-config-inspector
 
 # cspell

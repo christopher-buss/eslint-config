@@ -43,6 +43,7 @@ import { oxlintStylistic } from "./configs/stylistic.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
+import type { ValidateOxlintOptions, ValidateOxlintUserConfigs } from "./redundancy.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
 import { createOxlintConfigs } from "./utils.ts";
 
@@ -67,6 +68,26 @@ const DEFAULT_CATEGORIES: RuleCategories = {
  * The returned value is a plain oxlint config object suitable for
  * `oxlint.config.ts` (via `defineConfig`) or serialization to
  * `.oxlintrc.json`.
+ *
+ * @template O - The literal options type, used by the redundant-override
+ *   check.
+ * @template C - The literal fragment tuple, used by the redundant-override
+ *   check.
+ * @param factoryOptions - The options for generating the oxlint configuration.
+ * @param userConfigs - Additional oxlint config fragments (merged as
+ *   overrides).
+ * @returns The oxlint configuration.
+ */
+export function isentinel<
+	const O extends OxlintFactoryOptions,
+	const C extends Array<TypedOxlintConfigItem>,
+>(
+	factoryOptions?: O & ValidateOxlintOptions<O>,
+	...userConfigs: C & ValidateOxlintUserConfigs<C, O>
+): OxlintConfig;
+/**
+ * Implementation signature; the public overload above carries the
+ * redundant-override validation generics.
  *
  * @param factoryOptions - The options for generating the oxlint configuration.
  * @param userConfigs - Additional oxlint config fragments (merged as

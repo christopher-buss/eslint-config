@@ -24,12 +24,22 @@ export type RuleSeverityInput = 0 | 1 | 2 | "error" | "off" | "warn";
  * Whether a user-written rule entry is redundant against the preset default
  * entry for the same rule.
  *
+ * `RetainsOptions` mirrors the linter's merge semantics for bare-severity
+ * entries: ESLint keeps the previous entry's options (`true`), so a matching
+ * severity alone is redundant; oxlint replaces the whole entry (`false`), so a
+ * bare severity is only redundant against a default that also has no options.
+ *
  * @template UserEntry - The user-written rule entry.
  * @template DefaultEntry - The preset default entry.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
  */
-export type IsRedundantEntry<UserEntry, DefaultEntry> =
+export type IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions extends boolean = true> =
 	IsSeverityOnly<UserEntry> extends true
-		? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
+		? RetainsOptions extends true
+			? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
+			: IsSeverityOnly<DefaultEntry> extends true
+				? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
+				: false
 		: Equal<NormalizeEntry<UserEntry>, NormalizeEntry<DefaultEntry>>;
 
 /**
@@ -73,9 +83,15 @@ export type VariantKeyOf<O> = `${TypeAxis<O>}_${RobloxAxis<O>}` & VariantKey;
  * @template R - The user-written rules record.
  * @template Chain - Ordered defaults maps, most specific scope first.
  * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
  */
-export type ValidateRulesAgainst<R, Chain extends ReadonlyArray<unknown>, VK extends VariantKey> = {
-	[K in keyof R]: ValidateEntry<K & string, R[K], LookupVariants<K, Chain>, VK>;
+export type ValidateRulesAgainst<
+	R,
+	Chain extends ReadonlyArray<unknown>,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = {
+	[K in keyof R]: ValidateEntry<K & string, R[K], LookupVariants<K, Chain>, VK, RetainsOptions>;
 };
 
 type NormalizeSeverity<S> = S extends 2 | "error"
@@ -142,12 +158,16 @@ type ResolveDefault<D, VK extends VariantKey> = D extends { "*": infer E }
 		? D[VK]
 		: never;
 
-type ValidateEntry<K extends string, UserEntry, D, VK extends VariantKey> = [
-	ResolveDefault<D, VK>,
-] extends [infer DefaultEntry]
+type ValidateEntry<
+	K extends string,
+	UserEntry,
+	D,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = [ResolveDefault<D, VK>] extends [infer DefaultEntry]
 	? [DefaultEntry] extends [never]
 		? UserEntry
-		: IsRedundantEntry<UserEntry, DefaultEntry> extends true
+		: IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions> extends true
 			? RedundantRuleError<`'${K}' already defaults to this value in the preset; remove the override, or set \`redundancyCheck: false\` to disable this check`>
 			: UserEntry
 	: never;
