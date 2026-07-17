@@ -40,12 +40,12 @@ describe("oxlint redundancyCheck: variants", () => {
 			name: "x",
 			// @ts-expect-error - roblox-only rule is on by default in the
 			// default variant
-			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
+			rules: { "small-rules/no-array-constructor-elements": "error" },
 		});
 		void isentinel({
 			name: "x",
 			roblox: false,
-			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
+			rules: { "small-rules/no-array-constructor-elements": "error" },
 		});
 	});
 });

@@ -30,10 +30,10 @@ describe("redundancyCheck: variants", () => {
 	it("selects defaults for the active type/roblox variant", () => {
 		// @ts-expect-error - roblox-only rule is on by default in the default
 		// variant
-		void isentinel({ rules: { "cease-nonsense/no-array-constructor-elements": "error" } });
+		void isentinel({ rules: { "small-rules/no-array-constructor-elements": "error" } });
 		void isentinel({
 			roblox: false,
-			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
+			rules: { "small-rules/no-array-constructor-elements": "error" },
 		});
 	});
 
@@ -41,7 +41,7 @@ describe("redundancyCheck: variants", () => {
 		const flag = Math.random() > 0.5;
 		void isentinel({
 			roblox: flag,
-			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
+			rules: { "small-rules/no-array-constructor-elements": "error" },
 		});
 	});
 });
