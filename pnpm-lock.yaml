@@ -189,8 +189,8 @@ catalogs:
       specifier: 3.2.0
       version: 3.2.0
     eslint-plugin-oxfmt:
-      specifier: 0.12.1
-      version: 0.12.1
+      specifier: 0.13.0
+      version: 0.13.0
     eslint-plugin-package-json:
       specifier: 1.5.0
       version: 1.5.0
@@ -354,7 +354,7 @@ importers:
         version: 3.2.0(eslint@10.7.0(jiti@2.7.0))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
-        version: 0.12.1(eslint@10.7.0(jiti@2.7.0))(oxfmt@0.57.0)
+        version: 0.13.0(eslint@10.7.0(jiti@2.7.0))(oxfmt@0.57.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
         version: 1.5.0(@types/estree@1.0.9)(eslint@10.7.0(jiti@2.7.0))
@@ -2438,12 +2438,12 @@ packages:
       typescript:
         optional: true
 
-  eslint-plugin-oxfmt@0.12.1:
-    resolution: {integrity: sha512-1lB10UpYU6z5Sac7oT/jEhZTqr/Tbmm6uc0dif5vZS1YD1fxXyoMMSOpvYFsauL9mEWiGHQpvPN6z1ugh2f7SQ==}
+  eslint-plugin-oxfmt@0.13.0:
+    resolution: {integrity: sha512-PMuer+UXZfNm0a+VIowwdQ2l7ILv4P+HdUUj6R2WvH2BZNbHs9eby0joQHCeaRIXdAgA26P+/NfptrHVS1kxvQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       eslint: ^9.5.0 || ^10.0.0
-      oxfmt: '>=0.57.0'
+      oxfmt: '>=0.58.0'
       svelte: '*'
     peerDependenciesMeta:
       svelte:
@@ -2945,10 +2945,10 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
-  load-oxfmt-config@0.13.0:
-    resolution: {integrity: sha512-Cy31GG1zx+jIc6s8peaoIDi/slXyX9QCobdvfbj7sJb5A72eP+GFBcaRkzgj6jz9lbLZ0oUBFcoY88ek/MydIQ==}
+  load-oxfmt-config@0.14.0:
+    resolution: {integrity: sha512-d6nqnd/lmaNiuTkuebHYRubGNGA2M8rZZ/UCEIp2C0SwfOP3kCM3801V+b5Vq032a/kVTXAF3ys+tgaq3Yai+w==}
     peerDependencies:
-      oxfmt: '>=0.57.0'
+      oxfmt: '>=0.58.0'
 
   local-pkg@1.2.1:
     resolution: {integrity: sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==}
@@ -5487,12 +5487,12 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  eslint-plugin-oxfmt@0.12.1(eslint@10.7.0(jiti@2.7.0))(oxfmt@0.57.0):
+  eslint-plugin-oxfmt@0.13.0(eslint@10.7.0(jiti@2.7.0))(oxfmt@0.57.0):
     dependencies:
       eslint: 10.7.0(jiti@2.7.0)
       generate-differences: 0.1.1
       ignore: 7.0.5
-      load-oxfmt-config: 0.13.0(oxfmt@0.57.0)
+      load-oxfmt-config: 0.14.0(oxfmt@0.57.0)
       oxfmt: 0.57.0
       picomatch: 4.0.5
       synckit: 0.11.13
@@ -5998,7 +5998,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.32.0
       lightningcss-win32-x64-msvc: 1.32.0
 
-  load-oxfmt-config@0.13.0(oxfmt@0.57.0):
+  load-oxfmt-config@0.14.0(oxfmt@0.57.0):
     dependencies:
       '@ntnyq/utils': 0.16.0
       editorconfig: 3.0.2
