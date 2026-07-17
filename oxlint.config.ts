@@ -16,6 +16,9 @@ export default isentinel(
 		rules: {
 			"max-lines": "off",
 			"max-lines-per-function": "off",
+			// This package deliberately exposes its public API through barrel
+			// index files.
+			"oxc/no-barrel-file": "off",
 			"sonar/cognitive-complexity": "off",
 			"typescript/no-inferrable-types": "off",
 

@@ -56,7 +56,7 @@ export function spellingRules({
 						},
 					],
 					language,
-					words: ["isentinel"],
+					words: ["isentinel", "uninvoked"],
 				},
 				generateSuggestions: isInEditor,
 				numSuggestions: isInEditor ? 8 : 0,

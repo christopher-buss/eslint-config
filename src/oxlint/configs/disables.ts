@@ -50,11 +50,16 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 		...createOxlintConfigs({
 			name: "isentinel/disables/dts",
 			files: [GLOB_DTS],
+			// Preserve the native-only oxc disable below, which is unmapped and
+			// would otherwise be dropped.
+			keepUnmappedOff: true,
 			rules: {
 				"cease-nonsense/prefer-class-properties": "off",
 				"max-lines": "off",
 				"no-duplicate-imports": "off",
 				"no-restricted-syntax": "off",
+				// Declaration files have no runtime module-loading cost.
+				"oxc/no-barrel-file": "off",
 				"roblox/no-namespace-merging": "off",
 				"sonar/no-duplicate-string": "off",
 				"unused-imports/no-unused-vars": "off",

@@ -31,6 +31,7 @@ import { oxlintImports } from "./configs/imports.ts";
 import { oxlintJavascript } from "./configs/javascript.ts";
 import { oxlintJsdoc } from "./configs/jsdoc.ts";
 import { oxlintNode } from "./configs/node.ts";
+import { oxlintOxc } from "./configs/oxc.ts";
 import { oxlintOxfmt } from "./configs/oxfmt.ts";
 import { oxlintPerfectionist } from "./configs/perfectionist.ts";
 import { oxlintPromise } from "./configs/promise.ts";
@@ -90,6 +91,7 @@ export function isentinel(
 		jsdoc: enableJsdoc = true,
 		jsx: enableJsx = true,
 		options: linterOptions,
+		oxc: enableOxc = true,
 		react: enableReact = false,
 		root: customRootGlobs,
 		rules = {},
@@ -258,6 +260,10 @@ export function isentinel(
 				...getOverrides(options, "eslintPlugin"),
 			}),
 		);
+	}
+
+	if (enableOxc) {
+		configs.push(oxlintOxc({ roblox: enableRoblox }));
 	}
 
 	configs.push(

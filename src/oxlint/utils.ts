@@ -83,24 +83,44 @@ export function splitOxlintRules(
 		const severity = Array.isArray(value) ? value[0] : value;
 		const isOff = severity === "off" || severity === 0;
 		const translated = translateRuleToOxlint(rule);
-		if (!covered && isOff) {
-			// Preserve an explicit user disable, but only when the plugin is
-			// installed: oxlint errors the whole config build both on an
+
+		const slashIndex = translated.indexOf("/");
+		const prefix = slashIndex === -1 ? "eslint" : translated.slice(0, slashIndex);
+		// Unmapped rules whose translated prefix is a native oxlint plugin (for
+		// example oxc/*, which has no ESLint equivalent to map) run natively:
+		// they need no jsPlugin specifier and must not be routed as jsPlugin
+		// rules, which would throw on the missing specifier.
+		const isNativePrefix = NATIVE_PLUGINS.has(prefix as OxlintPlugin);
+
+		if (!covered && isOff && keepUnmappedOff) {
+			// Preserve an explicit disable. A native-prefix disable is kept and
+			// registers its (always-available) native plugin, which lets a
+			// config disable an unmapped native-only rule such as oxc/* for
+			// specific files. A jsPlugin disable is kept only when the plugin is
+			// installed, since oxlint errors the whole config build both on an
 			// unregistered plugin and on a registered-but-unresolvable one.
-			const prefix = translated.slice(0, translated.indexOf("/"));
-			const specifier = oxlintJsPlugins[prefix];
-			if (keepUnmappedOff && specifier !== undefined && isPackageExists(specifier)) {
-				jsPluginRules[translated] = value;
-				jsPluginPrefixes.add(prefix);
+			if (isNativePrefix) {
+				nativeRules[translated] = value;
+				nativePlugins.add(prefix as OxlintPlugin);
+			} else {
+				const specifier = oxlintJsPlugins[prefix];
+				if (specifier !== undefined && isPackageExists(specifier)) {
+					jsPluginRules[translated] = value;
+					jsPluginPrefixes.add(prefix);
+				}
 			}
 
 			continue;
 		}
 
-		const target = covered ? mappedTarget(rule) : "js-plugin";
+		if (!covered && isOff) {
+			continue;
+		}
+
+		const uncoveredTarget = isNativePrefix ? "native" : "js-plugin";
+		const target = covered ? mappedTarget(rule) : uncoveredTarget;
 
 		if (target === "js-plugin") {
-			const prefix = translated.slice(0, translated.indexOf("/"));
 			jsPluginRules[translated] = value;
 			jsPluginPrefixes.add(prefix);
 			continue;
@@ -113,10 +133,8 @@ export function splitOxlintRules(
 			nativeRules[translated] = value;
 		}
 
-		const slashIndex = translated.indexOf("/");
-		const nativePrefix = slashIndex === -1 ? "eslint" : translated.slice(0, slashIndex);
-		if (NATIVE_PLUGINS.has(nativePrefix as OxlintPlugin)) {
-			nativePlugins.add(nativePrefix as OxlintPlugin);
+		if (isNativePrefix) {
+			nativePlugins.add(prefix as OxlintPlugin);
 		}
 	}
 
