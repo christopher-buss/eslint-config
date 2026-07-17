@@ -3,7 +3,6 @@ import { builtinRules } from "eslint/use-at-your-own-risk";
 import fs from "node:fs/promises";
 
 import {
-	ceaseNonsense,
 	comments,
 	e18e,
 	eslintPlugin,
@@ -24,6 +23,7 @@ import {
 	promise,
 	react,
 	roblox,
+	smallRules,
 	sonarjs,
 	spelling,
 	stylistic,
@@ -44,7 +44,6 @@ const configs = await combine(
 			},
 		},
 	},
-	ceaseNonsense(),
 	comments(),
 	e18e(),
 	eslintPlugin(),
@@ -65,6 +64,7 @@ const configs = await combine(
 	promise(),
 	react(),
 	roblox(),
+	smallRules(),
 	sonarjs({ isInEditor: false }),
 	spelling(),
 	stylistic(),

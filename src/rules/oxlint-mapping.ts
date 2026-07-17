@@ -23,12 +23,12 @@ export type OxlintTarget =
  * with the reason why.
  */
 export const staysInEslint: Readonly<Record<string, string>> = {
-	"cease-nonsense/prefer-read-only-props":
-		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
 		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
+	"flawless/prefer-read-only-props":
+		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"format-lua/*": "Oxlint cannot lint Lua files",
 	"jest/* (type-aware)":
 		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
@@ -557,17 +557,17 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// Part: Comment length (run via jsPlugin)
 	"comment-length/limit-single-line-comments": "js-plugin",
 
-	// Part: Cease-nonsense (run via jsPlugin; prefer-read-only-props is
-	// type-aware and stays in ESLint)
-	"cease-nonsense/no-array-constructor-elements": "js-plugin",
-	"cease-nonsense/no-array-size-assignment": "js-plugin",
-	"cease-nonsense/no-commented-code": "js-plugin",
-	"cease-nonsense/prefer-class-properties": "js-plugin",
-	"cease-nonsense/prefer-early-return": "js-plugin",
-	"cease-nonsense/prefer-module-scope-constants": "js-plugin",
-	"cease-nonsense/prefer-singular-enums": "js-plugin",
-	"cease-nonsense/react-hooks-strict-return": "js-plugin",
-	"cease-nonsense/strict-component-boundaries": "js-plugin",
+	// Part: Small-rules (run via jsPlugin; the type-aware read-only-props rule
+	// lives in eslint-plugin-flawless and stays in ESLint)
+	"small-rules/no-array-constructor-elements": "js-plugin",
+	"small-rules/no-array-size-assignment": "js-plugin",
+	"small-rules/no-commented-code": "js-plugin",
+	"small-rules/prefer-class-properties": "js-plugin",
+	"small-rules/prefer-early-return": "js-plugin",
+	"small-rules/prefer-module-scope-constants": "js-plugin",
+	"small-rules/prefer-singular-enums": "js-plugin",
+	"small-rules/react-hooks-strict-return": "js-plugin",
+	"small-rules/strict-component-boundaries": "js-plugin",
 
 	// Part: Flawless react syntax rules (run via jsPlugin); the type-aware
 	// flawless rules stay in ESLint
@@ -930,7 +930,6 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"antfu": "eslint-plugin-antfu",
 	"arrow-style": "eslint-plugin-arrow-return-style-x",
 	"better-max-params": "eslint-plugin-better-max-params",
-	"cease-nonsense": "@pobammer-ts/eslint-cease-nonsense-rules",
 	"comment-length": "eslint-plugin-comment-length",
 	"de-morgan": "eslint-plugin-de-morgan",
 	"e18e": "@e18e/eslint-plugin",
@@ -952,6 +951,7 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"react-x": "eslint-plugin-react-x",
 	"roblox": "eslint-plugin-roblox-ts",
 	"sentinel": "eslint-plugin-sentinel",
+	"small-rules": "@pobammer-ts/small-rules",
 	"sonar": "eslint-plugin-sonarjs",
 	"style": "@stylistic/eslint-plugin",
 	"ts": "@typescript-eslint/eslint-plugin",

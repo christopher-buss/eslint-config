@@ -1,12 +1,32 @@
-import { GLOB_TS } from "../../globs.ts";
+import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { flawlessRules } from "../../rules/flawless.ts";
-import { interopDefault } from "../../utils.ts";
-import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import { getTsConfig, interopDefault } from "../../utils.ts";
+import type {
+	OptionsOverridesTypeAware,
+	OptionsStylistic,
+	OptionsTypeScriptParserOptions,
+	OptionsTypeScriptWithTypes,
+	TypedFlatConfigItem,
+} from "../types.ts";
 
-export async function flawless({ stylistic = true }: OptionsStylistic = {}): Promise<
-	Array<TypedFlatConfigItem>
-> {
+export async function flawless(
+	options: OptionsOverridesTypeAware &
+		OptionsStylistic &
+		OptionsTypeScriptParserOptions &
+		OptionsTypeScriptWithTypes = {},
+): Promise<Array<TypedFlatConfigItem>> {
+	const { overridesTypeAware = {}, stylistic = true, typeAware = true } = options;
+
 	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+
+	const filesTypeAware = [GLOB_TS, GLOB_TSX];
+	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`, GLOB_DTS];
+	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
+	const isTypeAware = tsconfigPath !== undefined;
+
+	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"flawless/prefer-read-only-props": "error",
+	};
 
 	return [
 		{
@@ -20,5 +40,18 @@ export async function flawless({ stylistic = true }: OptionsStylistic = {}): Pro
 			files: [GLOB_TS],
 			rules: flawlessRules({ stylistic }),
 		},
+		...(isTypeAware
+			? [
+					{
+						name: "isentinel/flawless/rules-type-aware",
+						files: filesTypeAware,
+						ignores: ignoresTypeAware,
+						rules: {
+							...typeAwareRules,
+							...overridesTypeAware,
+						},
+					},
+				]
+			: []),
 	];
 }

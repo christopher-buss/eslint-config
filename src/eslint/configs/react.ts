@@ -12,6 +12,7 @@ import type {
 	ReactConfig,
 	TypedFlatConfigItem,
 } from "../types.ts";
+import { loadSmallRulesPlugin } from "./small-rules.ts";
 
 export async function react(
 	options: OptionsComponentExtensions &
@@ -48,7 +49,7 @@ export async function react(
 		pluginTs,
 		pluginUnicorn,
 		pluginUnusedImports,
-		pluginCeaseNonsense,
+		pluginSmallRules,
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
 		interopDefault(import("eslint-plugin-react-jsx")),
@@ -57,7 +58,7 @@ export async function react(
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-unicorn")),
 		interopDefault(import("eslint-plugin-unused-imports")),
-		interopDefault(import("@pobammer-ts/eslint-cease-nonsense-rules")),
+		loadSmallRulesPlugin(),
 	] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
@@ -80,10 +81,10 @@ export async function react(
 		{
 			name: "isentinel/react/setup",
 			plugins: {
-				"cease-nonsense": pluginCeaseNonsense,
 				"flawless": pluginFlawless,
 				"react": pluginReactCore,
 				"react-jsx": pluginReactJsx,
+				"small-rules": pluginSmallRules,
 				"style": pluginStylistic,
 				"ts": pluginTs,
 				"unicorn": pluginUnicorn,

@@ -99,7 +99,7 @@ function jsxDeMorgan(a: boolean, b: boolean): boolean {
  * JSX with unsorted props (perfectionist/sort-jsx-props).
  * @param props
  */
-function MyButton(props: ButtonProps): ReactNode {
+function MyButton(props: Readonly<ButtonProps>): ReactNode {
 	return <button className={props.className} disabled={props.disabled} id={props.id} name={props.name} onClick={props.onClick}>{props.children}</button>;
 }
 

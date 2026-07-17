@@ -20,11 +20,11 @@ export function reactRules({
 	stylistic = true,
 }: ReactRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
-		"cease-nonsense/react-hooks-strict-return": "error",
-
 		"flawless/no-unnecessary-use-callback": "error",
+
 		"flawless/no-unnecessary-use-memo": "error",
 		"flawless/purity": "error",
+		"small-rules/react-hooks-strict-return": "error",
 
 		...(reactCompiler
 			? {

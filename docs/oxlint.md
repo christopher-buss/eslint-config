@@ -113,7 +113,7 @@ keeps running in ESLint, notably:
   and `vitest/prefer-vi-mocked` (no native port) which run via
   `@vitest/eslint-plugin` as a jsPlugin.
 - **Type-aware custom rules** — `roblox/*` type-aware rules,
-  `sentinel/explicit-size-check`, `cease-nonsense/prefer-read-only-props`,
+  `sentinel/explicit-size-check`, `flawless/prefer-read-only-props`,
   `flawless/naming-convention` and `naming`; oxlint jsPlugins have no type
   information.
 - **Type-aware React rules** — `react/no-implicit-children`,

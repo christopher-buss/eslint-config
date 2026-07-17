@@ -10,6 +10,7 @@ import type {
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
 } from "../types.ts";
+import { loadSmallRulesPlugin } from "./small-rules.ts";
 
 export async function roblox(
 	options: OptionsComponentExtensions &
@@ -29,11 +30,11 @@ export async function roblox(
 		typeAware = true,
 	} = options;
 
-	const [parserTs, pluginRobloxTs, pluginSentinel, pluginCeaseNonsense] = await Promise.all([
+	const [parserTs, pluginRobloxTs, pluginSentinel, pluginSmallRules] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
 		interopDefault(import("eslint-plugin-roblox-ts")),
 		interopDefault(import("eslint-plugin-sentinel")),
-		interopDefault(import("@pobammer-ts/eslint-cease-nonsense-rules")),
+		loadSmallRulesPlugin(),
 	] as const);
 
 	const files = options.files ?? [
@@ -80,9 +81,9 @@ export async function roblox(
 		{
 			name: "isentinel/roblox/setup",
 			plugins: {
-				"cease-nonsense": pluginCeaseNonsense,
 				"roblox": pluginRobloxTs,
 				"sentinel": pluginSentinel,
+				"small-rules": pluginSmallRules,
 			},
 		},
 		// assign type-aware parser for type-aware files and type-unaware

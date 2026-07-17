@@ -3,7 +3,7 @@ cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAgeExclude:
-  - eslint-plugin-flawless@0.1.10
+  - eslint-plugin-flawless@0.1.11
 
 saveExact: true
 shellEmulator: true
@@ -68,7 +68,8 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
-    "@pobammer-ts/eslint-cease-nonsense-rules": 1.38.0
+    "@oxlint/plugins": 1.73.0
+    "@pobammer-ts/small-rules": 2.7.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.62.1
     "@typescript-eslint/parser": 8.62.1
@@ -82,7 +83,7 @@ catalogs:
     eslint-plugin-better-max-params: 1.0.0
     eslint-plugin-comment-length: 2.3.1
     eslint-plugin-de-morgan: 2.1.2
-    eslint-plugin-flawless: 0.1.10
+    eslint-plugin-flawless: 0.1.11
     eslint-plugin-format-lua: 2.0.0
     eslint-plugin-import-lite: 0.6.0
     eslint-plugin-jsdoc: 63.0.10

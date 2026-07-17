@@ -3,9 +3,9 @@
 exports[`config snapshots > should match default roblox game config 1`] = `
 [
   {
-    "name": "isentinel/cease-nonsense/setup",
+    "name": "isentinel/small-rules/setup",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
   },
   {
@@ -13,30 +13,17 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "**/*.{,c,m}ts",
       "**/*.{,c,m}tsx",
     ],
-    "name": "isentinel/cease-nonsense",
+    "name": "isentinel/small-rules",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
     "rules": [
-      "cease-nonsense/no-commented-code",
-      "cease-nonsense/prefer-class-properties",
-      "cease-nonsense/prefer-early-return",
-      "cease-nonsense/prefer-module-scope-constants",
-      "cease-nonsense/prefer-singular-enums",
-      "cease-nonsense/strict-component-boundaries",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}ts",
-      "**/*.{,c,m}tsx",
-    ],
-    "ignores": [
-      "**/*.md/**",
-    ],
-    "name": "isentinel/typescript/rules-type-aware",
-    "rules": [
-      "cease-nonsense/prefer-read-only-props",
+      "small-rules/no-commented-code",
+      "small-rules/prefer-class-properties",
+      "small-rules/prefer-early-return",
+      "small-rules/prefer-module-scope-constants",
+      "small-rules/prefer-singular-enums",
+      "small-rules/strict-component-boundaries",
     ],
   },
   {
@@ -82,6 +69,20 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     "name": "isentinel/flawless/rules",
     "rules": [
       "flawless/prefer-parameter-destructuring",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.d.{,c,m}ts",
+    ],
+    "name": "isentinel/flawless/rules-type-aware",
+    "rules": [
+      "flawless/prefer-read-only-props",
     ],
   },
   {
@@ -862,9 +863,9 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   {
     "name": "isentinel/roblox/setup",
     "plugins": [
-      "cease-nonsense",
       "roblox",
       "sentinel",
+      "small-rules",
     ],
   },
   {
@@ -912,8 +913,6 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     ],
     "name": "isentinel/roblox",
     "rules": [
-      "cease-nonsense/no-array-constructor-elements",
-      "cease-nonsense/no-array-size-assignment",
       "roblox/no-any",
       "roblox/no-enum-merging",
       "roblox/no-export-assignment-let",
@@ -931,6 +930,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "roblox/prefer-get-players",
       "roblox/prefer-task-library",
       "sentinel/prefer-math-min-max",
+      "small-rules/no-array-constructor-elements",
+      "small-rules/no-array-size-assignment",
     ],
   },
   {
@@ -1480,13 +1481,13 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     ],
     "name": "isentinel/disables/dts",
     "rules": [
-      "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
       "-max-lines",
       "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
+      "-small-rules/prefer-class-properties",
       "-sonar/no-duplicate-string",
       "-unused-imports/no-unused-vars",
     ],
@@ -2406,9 +2407,9 @@ exports[`config snapshots > should match default roblox game config 1`] = `
 exports[`config snapshots > should match minimal config 1`] = `
 [
   {
-    "name": "isentinel/cease-nonsense/setup",
+    "name": "isentinel/small-rules/setup",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
   },
   {
@@ -2416,28 +2417,15 @@ exports[`config snapshots > should match minimal config 1`] = `
       "**/*.{,c,m}ts",
       "**/*.{,c,m}tsx",
     ],
-    "name": "isentinel/cease-nonsense",
+    "name": "isentinel/small-rules",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
     "rules": [
-      "cease-nonsense/no-commented-code",
-      "cease-nonsense/prefer-class-properties",
-      "cease-nonsense/prefer-early-return",
-      "cease-nonsense/strict-component-boundaries",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}ts",
-      "**/*.{,c,m}tsx",
-    ],
-    "ignores": [
-      "**/*.md/**",
-    ],
-    "name": "isentinel/typescript/rules-type-aware",
-    "rules": [
-      "cease-nonsense/prefer-read-only-props",
+      "small-rules/no-commented-code",
+      "small-rules/prefer-class-properties",
+      "small-rules/prefer-early-return",
+      "small-rules/strict-component-boundaries",
     ],
   },
   {
@@ -2471,6 +2459,20 @@ exports[`config snapshots > should match minimal config 1`] = `
     ],
     "name": "isentinel/flawless/rules",
     "rules": [],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.d.{,c,m}ts",
+    ],
+    "name": "isentinel/flawless/rules-type-aware",
+    "rules": [
+      "flawless/prefer-read-only-props",
+    ],
   },
   {
     "ignores": [
@@ -3220,9 +3222,9 @@ exports[`config snapshots > should match minimal config 1`] = `
   {
     "name": "isentinel/roblox/setup",
     "plugins": [
-      "cease-nonsense",
       "roblox",
       "sentinel",
+      "small-rules",
     ],
   },
   {
@@ -3270,7 +3272,6 @@ exports[`config snapshots > should match minimal config 1`] = `
     ],
     "name": "isentinel/roblox",
     "rules": [
-      "cease-nonsense/no-array-size-assignment",
       "roblox/no-any",
       "roblox/no-enum-merging",
       "roblox/no-export-assignment-let",
@@ -3287,6 +3288,7 @@ exports[`config snapshots > should match minimal config 1`] = `
       "roblox/no-value-typeof",
       "roblox/prefer-get-players",
       "roblox/prefer-task-library",
+      "small-rules/no-array-size-assignment",
     ],
   },
   {
@@ -3565,13 +3567,13 @@ exports[`config snapshots > should match minimal config 1`] = `
     ],
     "name": "isentinel/disables/dts",
     "rules": [
-      "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
       "-max-lines",
       "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
+      "-small-rules/prefer-class-properties",
       "-sonar/no-duplicate-string",
       "-unused-imports/no-unused-vars",
     ],
@@ -3657,9 +3659,9 @@ exports[`config snapshots > should match minimal config 1`] = `
 exports[`config snapshots > should match package mode config 1`] = `
 [
   {
-    "name": "isentinel/cease-nonsense/setup",
+    "name": "isentinel/small-rules/setup",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
   },
   {
@@ -3667,30 +3669,17 @@ exports[`config snapshots > should match package mode config 1`] = `
       "**/*.{,c,m}ts",
       "**/*.{,c,m}tsx",
     ],
-    "name": "isentinel/cease-nonsense",
+    "name": "isentinel/small-rules",
     "plugins": [
-      "cease-nonsense",
+      "small-rules",
     ],
     "rules": [
-      "cease-nonsense/no-commented-code",
-      "cease-nonsense/prefer-class-properties",
-      "cease-nonsense/prefer-early-return",
-      "cease-nonsense/prefer-module-scope-constants",
-      "cease-nonsense/prefer-singular-enums",
-      "cease-nonsense/strict-component-boundaries",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}ts",
-      "**/*.{,c,m}tsx",
-    ],
-    "ignores": [
-      "**/*.md/**",
-    ],
-    "name": "isentinel/typescript/rules-type-aware",
-    "rules": [
-      "cease-nonsense/prefer-read-only-props",
+      "small-rules/no-commented-code",
+      "small-rules/prefer-class-properties",
+      "small-rules/prefer-early-return",
+      "small-rules/prefer-module-scope-constants",
+      "small-rules/prefer-singular-enums",
+      "small-rules/strict-component-boundaries",
     ],
   },
   {
@@ -3736,6 +3725,20 @@ exports[`config snapshots > should match package mode config 1`] = `
     "name": "isentinel/flawless/rules",
     "rules": [
       "flawless/prefer-parameter-destructuring",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}ts",
+      "**/*.{,c,m}tsx",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.d.{,c,m}ts",
+    ],
+    "name": "isentinel/flawless/rules-type-aware",
+    "rules": [
+      "flawless/prefer-read-only-props",
     ],
   },
   {
@@ -5105,13 +5108,13 @@ exports[`config snapshots > should match package mode config 1`] = `
     ],
     "name": "isentinel/disables/dts",
     "rules": [
-      "-cease-nonsense/prefer-class-properties",
       "-eslint-comments/no-unlimited-disable",
       "-import/no-default-export",
       "-max-lines",
       "-no-duplicate-imports",
       "-no-restricted-syntax",
       "-roblox/no-namespace-merging",
+      "-small-rules/prefer-class-properties",
       "-sonar/no-duplicate-string",
       "-unused-imports/no-unused-vars",
     ],

@@ -17,7 +17,6 @@ import {
 } from "../utils.ts";
 import type { PrettierOptions } from "./configs/index.ts";
 import {
-	ceaseNonsense,
 	comments,
 	disables,
 	e18e,
@@ -38,6 +37,7 @@ import {
 	promise,
 	react,
 	roblox,
+	smallRules,
 	sonarjs,
 	sortCspell,
 	sortGithubAction,
@@ -229,7 +229,7 @@ export async function isentinel(
 
 	// Base configs
 	configs.push(
-		ceaseNonsense({ isInEditor, stylistic: stylisticOptions }),
+		smallRules({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		flawless({ stylistic: stylisticOptions }),
 		ignores(options.ignores),

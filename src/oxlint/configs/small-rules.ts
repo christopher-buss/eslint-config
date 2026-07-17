@@ -1,5 +1,5 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { ceaseNonsenseRules } from "../../rules/cease-nonsense.ts";
+import { smallRulesRules } from "../../rules/small-rules.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -9,7 +9,7 @@ import type {
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
-export function oxlintCeaseNonsense(
+export function oxlintSmallRules(
 	options: OptionsComponentExtensions & OptionsFiles & OptionsIsInEditor & OptionsStylistic = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
@@ -25,8 +25,8 @@ export function oxlintCeaseNonsense(
 	];
 
 	return createOxlintConfigs({
-		name: "isentinel/cease-nonsense",
+		name: "isentinel/small-rules",
 		files,
-		rules: ceaseNonsenseRules({ isInEditor, stylistic }),
+		rules: smallRulesRules({ isInEditor, stylistic }),
 	});
 }

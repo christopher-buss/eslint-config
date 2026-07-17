@@ -20,7 +20,6 @@ import {
 	resolveOxfmtConfigOptionsSync,
 	resolveSubOptions,
 } from "../utils.ts";
-import { oxlintCeaseNonsense } from "./configs/cease-nonsense.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
 import { oxlintE18e } from "./configs/e18e.ts";
@@ -37,6 +36,7 @@ import { oxlintPerfectionist } from "./configs/perfectionist.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
 import { oxlintRoblox } from "./configs/roblox.ts";
+import { oxlintSmallRules } from "./configs/small-rules.ts";
 import { oxlintSonarjs } from "./configs/sonarjs.ts";
 import { oxlintSpelling } from "./configs/spelling.ts";
 import { oxlintStylistic } from "./configs/stylistic.ts";
@@ -267,7 +267,7 @@ export function isentinel(
 	}
 
 	configs.push(
-		oxlintCeaseNonsense({
+		oxlintSmallRules({
 			componentExts: componentExtensions,
 			isInEditor,
 			stylistic: stylisticOptions,

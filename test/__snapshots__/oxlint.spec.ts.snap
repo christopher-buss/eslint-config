@@ -87,12 +87,12 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "specifier": "eslint-plugin-jsdoc",
     },
     {
-      "name": "cease-nonsense",
-      "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
-    },
-    {
       "name": "roblox",
       "specifier": "eslint-plugin-roblox-ts",
+    },
+    {
+      "name": "small-rules",
+      "specifier": "@pobammer-ts/small-rules",
     },
     {
       "name": "sentinel",
@@ -2442,12 +2442,12 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       ],
       "jsPlugins": [
         {
-          "name": "cease-nonsense",
-          "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
-        },
-        {
           "name": "roblox",
           "specifier": "eslint-plugin-roblox-ts",
+        },
+        {
+          "name": "small-rules",
+          "specifier": "@pobammer-ts/small-rules",
         },
         {
           "name": "sentinel",
@@ -2455,8 +2455,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         },
       ],
       "rules": {
-        "cease-nonsense/no-array-constructor-elements": "error",
-        "cease-nonsense/no-array-size-assignment": "error",
         "roblox/no-any": "error",
         "roblox/no-enum-merging": "error",
         "roblox/no-export-assignment-let": "error",
@@ -2474,6 +2472,8 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "roblox/prefer-get-players": "error",
         "roblox/prefer-task-library": "error",
         "sentinel/prefer-math-min-max": "error",
+        "small-rules/no-array-constructor-elements": "error",
+        "small-rules/no-array-size-assignment": "error",
       },
     },
     {
@@ -3020,22 +3020,22 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       ],
       "jsPlugins": [
         {
-          "name": "cease-nonsense",
-          "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
+          "name": "small-rules",
+          "specifier": "@pobammer-ts/small-rules",
         },
       ],
       "rules": {
-        "cease-nonsense/no-commented-code": "error",
-        "cease-nonsense/prefer-class-properties": "error",
-        "cease-nonsense/prefer-early-return": [
+        "small-rules/no-commented-code": "error",
+        "small-rules/prefer-class-properties": "error",
+        "small-rules/prefer-early-return": [
           "error",
           {
             "maximumStatements": 1,
           },
         ],
-        "cease-nonsense/prefer-module-scope-constants": "error",
-        "cease-nonsense/prefer-singular-enums": "error",
-        "cease-nonsense/strict-component-boundaries": "error",
+        "small-rules/prefer-module-scope-constants": "error",
+        "small-rules/prefer-singular-enums": "error",
+        "small-rules/strict-component-boundaries": "error",
       },
     },
     {
@@ -3253,16 +3253,16 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       ],
       "jsPlugins": [
         {
-          "name": "cease-nonsense",
-          "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
-        },
-        {
           "name": "eslint-js",
           "specifier": "oxlint-plugin-eslint",
         },
         {
           "name": "roblox",
           "specifier": "eslint-plugin-roblox-ts",
+        },
+        {
+          "name": "small-rules",
+          "specifier": "@pobammer-ts/small-rules",
         },
         {
           "name": "sonar",
@@ -3274,9 +3274,9 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         },
       ],
       "rules": {
-        "cease-nonsense/prefer-class-properties": "off",
         "eslint-js/no-restricted-syntax": "off",
         "roblox/no-namespace-merging": "off",
+        "small-rules/prefer-class-properties": "off",
         "sonar/no-duplicate-string": "off",
         "unused-imports/no-unused-vars": "off",
       },
@@ -3855,8 +3855,8 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "specifier": "@cspell/eslint-plugin",
     },
     {
-      "name": "cease-nonsense",
-      "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
+      "name": "small-rules",
+      "specifier": "@pobammer-ts/small-rules",
     },
     {
       "name": "flawless",
@@ -6941,22 +6941,22 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       ],
       "jsPlugins": [
         {
-          "name": "cease-nonsense",
-          "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
+          "name": "small-rules",
+          "specifier": "@pobammer-ts/small-rules",
         },
       ],
       "rules": {
-        "cease-nonsense/no-commented-code": "error",
-        "cease-nonsense/prefer-class-properties": "error",
-        "cease-nonsense/prefer-early-return": [
+        "small-rules/no-commented-code": "error",
+        "small-rules/prefer-class-properties": "error",
+        "small-rules/prefer-early-return": [
           "error",
           {
             "maximumStatements": 1,
           },
         ],
-        "cease-nonsense/prefer-module-scope-constants": "error",
-        "cease-nonsense/prefer-singular-enums": "error",
-        "cease-nonsense/strict-component-boundaries": "error",
+        "small-rules/prefer-module-scope-constants": "error",
+        "small-rules/prefer-singular-enums": "error",
+        "small-rules/strict-component-boundaries": "error",
       },
     },
     {
@@ -7174,16 +7174,16 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       ],
       "jsPlugins": [
         {
-          "name": "cease-nonsense",
-          "specifier": "@pobammer-ts/eslint-cease-nonsense-rules",
-        },
-        {
           "name": "eslint-js",
           "specifier": "oxlint-plugin-eslint",
         },
         {
           "name": "roblox",
           "specifier": "eslint-plugin-roblox-ts",
+        },
+        {
+          "name": "small-rules",
+          "specifier": "@pobammer-ts/small-rules",
         },
         {
           "name": "sonar",
@@ -7195,9 +7195,9 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         },
       ],
       "rules": {
-        "cease-nonsense/prefer-class-properties": "off",
         "eslint-js/no-restricted-syntax": "off",
         "roblox/no-namespace-merging": "off",
+        "small-rules/prefer-class-properties": "off",
         "sonar/no-duplicate-string": "off",
         "unused-imports/no-unused-vars": "off",
       },

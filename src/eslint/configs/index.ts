@@ -1,4 +1,3 @@
-export * from "./cease-nonsense.ts";
 export * from "./comments.ts";
 export * from "./disables.ts";
 export * from "./e18e.ts";
@@ -20,6 +19,7 @@ export * from "./pnpm.ts";
 export * from "./promise.ts";
 export * from "./react.ts";
 export * from "./roblox.ts";
+export * from "./small-rules.ts";
 export * from "./sonarjs.ts";
 export * from "./sort.ts";
 export * from "./spelling.ts";

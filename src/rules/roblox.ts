@@ -13,9 +13,8 @@ export function robloxRules({
 	stylistic = true,
 }: OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
 	return {
-		"cease-nonsense/no-array-size-assignment": "error",
-
 		"roblox/no-any": "error",
+
 		"roblox/no-enum-merging": "error",
 		"roblox/no-export-assignment-let": "error",
 		"roblox/no-for-in": "error",
@@ -31,11 +30,12 @@ export function robloxRules({
 		"roblox/no-value-typeof": "error",
 		"roblox/prefer-get-players": "error",
 		"roblox/prefer-task-library": "error",
+		"small-rules/no-array-size-assignment": "error",
 
 		...(stylistic !== false
 			? {
-					"cease-nonsense/no-array-constructor-elements": "error",
 					"sentinel/prefer-math-min-max": "error",
+					"small-rules/no-array-constructor-elements": "error",
 				}
 			: {}),
 	};

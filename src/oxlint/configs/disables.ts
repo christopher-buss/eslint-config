@@ -54,13 +54,13 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			// would otherwise be dropped.
 			keepUnmappedOff: true,
 			rules: {
-				"cease-nonsense/prefer-class-properties": "off",
 				"max-lines": "off",
 				"no-duplicate-imports": "off",
 				"no-restricted-syntax": "off",
 				// Declaration files have no runtime module-loading cost.
 				"oxc/no-barrel-file": "off",
 				"roblox/no-namespace-merging": "off",
+				"small-rules/prefer-class-properties": "off",
 				"sonar/no-duplicate-string": "off",
 				"unused-imports/no-unused-vars": "off",
 			},

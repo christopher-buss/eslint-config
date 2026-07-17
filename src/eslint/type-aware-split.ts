@@ -9,7 +9,7 @@ import type { TypedFlatConfigItem } from "./types.ts";
  */
 const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
-	"cease-nonsense/prefer-read-only-props",
+	"flawless/prefer-read-only-props",
 ]);
 
 /** The type-aware split mode; see the factory's `typeAware` option. */
