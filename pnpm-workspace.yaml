@@ -62,7 +62,7 @@ catalogs:
     eslint-plugin-jest: 29.15.4
     eslint-plugin-jest-extended: 3.0.1
     eslint-plugin-n: 18.2.1
-    eslint-plugin-react-jsx: 5.10.0
+    eslint-plugin-react-jsx: 5.14.10
     eslint-plugin-react-naming-convention: 5.10.0
     eslint-plugin-react-x: 5.10.0
     oxlint: 1.74.0
