@@ -93,6 +93,15 @@ export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
 		 * CLI flags take precedence over these values.
 		 */
 		options?: OxlintLinterOptions;
+
+		/**
+		 * Enable oxlint's native `oxc/*` rules (correctness and performance
+		 * checks with no ESLint equivalent). Defaults to `true`.
+		 *
+		 * These rules are oxlint-only, so consumers linting solely with ESLint
+		 * see no effect from this option.
+		 */
+		oxc?: boolean;
 	};
 
 export type {

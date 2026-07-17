@@ -334,6 +334,169 @@ describe("oxlint categories", () => {
 	});
 });
 
+const OXC_GLOBAL_RULES = [
+	"oxc/approx-constant",
+	"oxc/bad-array-method-on-arguments",
+	"oxc/bad-char-at-comparison",
+	"oxc/bad-comparison-sequence",
+	"oxc/bad-min-max-func",
+	"oxc/bad-object-literal-comparison",
+	"oxc/bad-replace-all-arg",
+	"oxc/branches-sharing-code",
+	"oxc/const-comparisons",
+	"oxc/double-comparisons",
+	"oxc/erasing-op",
+	"oxc/misrefactored-assign-op",
+	"oxc/missing-throw",
+	"oxc/no-accumulating-spread",
+	"oxc/no-barrel-file",
+	"oxc/no-map-spread",
+	"oxc/no-this-in-exported-function",
+	"oxc/number-arg-out-of-range",
+	"oxc/only-used-in-recursion",
+	"oxc/uninvoked-array-callback",
+];
+
+const OXC_NON_ROBLOX_RULES = ["oxc/bad-bitwise-operator", "oxc/no-const-enum"];
+
+/**
+ * Collect the enabled `oxc/*` rules from a generated oxlint config, sorted.
+ *
+ * @param config - The generated oxlint config.
+ * @returns The enabled oxc rule names.
+ */
+function enabledOxcRules(config: OxlintConfig): Array<string> {
+	return [...enabledOxlintRules(config)].filter((rule) => rule.startsWith("oxc/")).toSorted();
+}
+
+describe("oxc rules", () => {
+	it("should enable the global oxc set for a roblox game config", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({ name: "test/oxc-game", ...baseOptions });
+
+		expect(enabledOxcRules(config)).toStrictEqual(OXC_GLOBAL_RULES.toSorted());
+	});
+
+	it("should add the non-roblox oxc rules for a package config", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			...baseOptions,
+			name: "test/oxc-package",
+			roblox: false,
+			type: "package",
+		});
+
+		expect(enabledOxcRules(config)).toStrictEqual(
+			[...OXC_GLOBAL_RULES, ...OXC_NON_ROBLOX_RULES].toSorted(),
+		);
+	});
+
+	it("should register the oxc native plugin when enabled", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({ name: "test/oxc-plugin", ...baseOptions });
+
+		expect(config.plugins).toContain("oxc");
+	});
+
+	it("should omit every oxc rule when oxc is disabled", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({ ...baseOptions, name: "test/oxc-off", oxc: false });
+
+		expect(enabledOxcRules(config)).toStrictEqual([]);
+	});
+
+	it("should route a user oxc rule override to the native side", ({ expect }) => {
+		expect.hasAssertions();
+
+		function build(): OxlintConfig {
+			return oxlintIsentinel({
+				...baseOptions,
+				name: "test/oxc-user-override",
+				rules: { "oxc/no-const-enum": "error" },
+			});
+		}
+
+		expect(build).not.toThrow();
+
+		const config = build();
+		const emitted = (config.overrides ?? []).some(
+			(override) => override.rules?.["oxc/no-const-enum"] === "error",
+		);
+
+		expect(config.plugins).toContain("oxc");
+		expect(emitted).toBe(true);
+	});
+
+	it("should disable oxc/no-barrel-file for declaration files", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({ name: "test/oxc-dts", ...baseOptions });
+
+		const overrides = config.overrides ?? [];
+		let disabled = false;
+		for (const override of overrides) {
+			const isDts = override.files.some((glob) => String(glob).includes(".d."));
+			if (isDts && override.rules?.["oxc/no-barrel-file"] === "off") {
+				disabled = true;
+				break;
+			}
+		}
+
+		expect(disabled).toBe(true);
+	});
+
+	it("should preserve a user oxc rule disable", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			...baseOptions,
+			name: "test/oxc-user-disable",
+			rules: { "oxc/no-barrel-file": "off" },
+		});
+
+		const disabled = (config.overrides ?? []).some(
+			(override) => override.rules?.["oxc/no-barrel-file"] === "off",
+		);
+
+		expect(disabled).toBe(true);
+	});
+
+	it("should treat rules covered by a native oxc rule as oxlint-covered", ({ expect }) => {
+		expect.hasAssertions();
+
+		expect(isOxlintCovered("sonar/no-all-duplicated-branches")).toBe(true);
+		expect(isOxlintCovered("unicorn/no-accidental-bitwise-operator")).toBe(true);
+		expect(translateRuleToOxlint("sonar/no-all-duplicated-branches")).toBe(
+			"oxc/branches-sharing-code",
+		);
+		expect(translateRuleToOxlint("unicorn/no-accidental-bitwise-operator")).toBe(
+			"oxc/bad-bitwise-operator",
+		);
+	});
+
+	it("should drop an oxc-covered rule from ESLint in hybrid mode but keep it otherwise", async ({
+		expect,
+	}) => {
+		expect.hasAssertions();
+
+		const options = { ...baseOptions, roblox: false, type: "package" } as const;
+		const eslintOnly = await isentinel({ name: "test/oxc-cover-eslint", ...options });
+		const hybrid = await isentinel({ name: "test/oxc-cover-hybrid", ...options, oxlint: true });
+
+		const before = enabledEslintRules([...eslintOnly]);
+		const after = enabledEslintRules([...hybrid]);
+
+		// Enabled in ESLint-only (oxlint does not run), dropped in hybrid (the
+		// native oxc/branches-sharing-code rule covers it on the oxlint side).
+		expect(before.has("sonar/no-all-duplicated-branches")).toBe(true);
+		expect(after.has("sonar/no-all-duplicated-branches")).toBe(false);
+	});
+});
+
 /**
  * Serialize an oxlint config for snapshotting, stripping machine-specific
  * values (absolute dictionary URLs).

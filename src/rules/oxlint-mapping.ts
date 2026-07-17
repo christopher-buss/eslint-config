@@ -310,7 +310,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/consistent-tuple-labels": "js-plugin",
 	"unicorn/isolated-functions": "js-plugin",
 	"unicorn/name-replacements": "js-plugin",
-	"unicorn/no-accidental-bitwise-operator": "js-plugin",
 	"unicorn/no-array-concat-in-loop": "js-plugin",
 	"unicorn/no-array-sort-for-min-max": "js-plugin",
 	"unicorn/no-async-promise-finally": "js-plugin",
@@ -455,7 +454,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"sonar/fixme-tag": "js-plugin",
 	"sonar/max-switch-cases": "js-plugin",
 	"sonar/misplaced-loop-counter": "js-plugin",
-	"sonar/no-all-duplicated-branches": "js-plugin",
 	"sonar/no-async-constructor": "js-plugin",
 	"sonar/no-collapsible-if": "js-plugin",
 	"sonar/no-dead-store": "js-plugin",
@@ -864,11 +862,29 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Rules that must not run inside oxlint at all (even in standalone mode)
- * because they misbehave under oxlint's jsPlugin runtime. See
- * {@link staysInEslint} for the reasons.
+ * ESLint rules covered on the oxlint side by a differently-named native oxc
+ * rule (rather than by translating the rule itself). They are treated as
+ * oxlint-covered, so hybrid mode drops them from ESLint and lets the oxc rule
+ * run instead; {@link translateRuleToOxlint} resolves them to the oxc rule so
+ * the coverage checks compare against the rule that actually runs. In
+ * ESLint-only mode oxlint does not run, so they stay enabled in ESLint.
+ *
+ * Their canonical ESLint versions must not also run inside oxlint as jsPlugins
+ * (they are in {@link excludedFromOxlint}), which would double-report.
+ */
+export const oxcCoveredRules: Readonly<Record<string, string>> = {
+	"sonar/no-all-duplicated-branches": "oxc/branches-sharing-code",
+	"unicorn/no-accidental-bitwise-operator": "oxc/bad-bitwise-operator",
+};
+
+/**
+ * Rules that must not run inside oxlint at all (even in standalone mode),
+ * either because they misbehave under oxlint's jsPlugin runtime or because a
+ * native oxc rule already covers the oxlint side. See {@link staysInEslint}
+ * and {@link oxcCoveredRules} for the reasons.
  */
 export const excludedFromOxlint: ReadonlySet<string> = new Set([
+	...Object.keys(oxcCoveredRules),
 	"unicorn/no-unsafe-string-replacement",
 	...typeAwareJsPluginRules,
 ]);
@@ -952,7 +968,7 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
  * @returns Whether oxlint covers the rule.
  */
 export function isOxlintCovered(rule: string): boolean {
-	return rule in oxlintRuleMapping;
+	return rule in oxlintRuleMapping || rule in oxcCoveredRules;
 }
 
 /**
@@ -973,6 +989,11 @@ export function isTsgolintRule(rule: string): boolean {
  * @returns The rule name to use in an oxlint configuration.
  */
 export function translateRuleToOxlint(rule: string): string {
+	const oxcCovered = oxcCoveredRules[rule];
+	if (oxcCovered !== undefined) {
+		return oxcCovered;
+	}
+
 	const target = oxlintRuleMapping[rule];
 	const { name, prefix } = splitRuleName(rule);
 
