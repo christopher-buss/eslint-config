@@ -93,7 +93,7 @@ const validTitleMatchType = `mustMatch?: string | [string] | [string, string] | 
   }`;
 
 dts = dts.replace(
-	/(\n\/\/ ----- (?:test|vitest)\/valid-title -----\ntype \w+ValidTitle = \[\]\|\[\{[^}]*?)\[k: string\]: \(string \| \[string\]\|\[string, string\] \| \{\n\s+\[k: string\]: \(string \| \[string\]\|\[string, string\]\) \| undefined\n\s+\}\)\n(\}\])/g,
+	/(\n\/\/ ----- (?:jest|vitest)\/valid-title -----\ntype \w+ValidTitle = \[\]\|\[\{[^}]*?)\[k: string\]: \(string \| \[string\]\|\[string, string\] \| \{\n\s+\[k: string\]: \(string \| \[string\]\|\[string, string\]\) \| undefined\n\s+\}\)\n(\}\])/g,
 	`$1${validTitleMatchType}\n$2`,
 );
 

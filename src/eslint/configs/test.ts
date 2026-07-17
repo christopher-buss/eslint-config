@@ -19,7 +19,7 @@ import type {
 } from "../types.ts";
 
 // Hold the references so we don't redeclare the plugins on each call
-let pluginTest: typeof PluginJest | undefined;
+let pluginJest: typeof PluginJest | undefined;
 let pluginJestExtended: any;
 let pluginVitest: typeof PluginVitest | undefined;
 
@@ -50,7 +50,7 @@ export async function test({
 
 	if (enableJest) {
 		await ensurePackages(["eslint-plugin-jest"]);
-		const pluginJest = await interopDefault(import("eslint-plugin-jest"));
+		const jestPlugin = await interopDefault(import("eslint-plugin-jest"));
 
 		const useJestExtended = jestOptions.extended === true;
 
@@ -65,8 +65,8 @@ export async function test({
 			return interopDefault(import("eslint-plugin-jest-extended"));
 		})();
 
-		pluginTest ??= {
-			...pluginJest,
+		pluginJest ??= {
+			...jestPlugin,
 		};
 
 		pluginJestExtended ??= {
@@ -77,7 +77,7 @@ export async function test({
 			{
 				name: "isentinel/test/jest/setup",
 				plugins: {
-					test: pluginTest,
+					jest: pluginJest,
 					...(useJestExtended ? { "jest-extended": pluginJestExtended } : {}),
 				},
 			},

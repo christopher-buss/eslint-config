@@ -30,6 +30,8 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"flawless/naming-convention":
 		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
 	"format-lua/*": "Oxlint cannot lint Lua files",
+	"jest/* (type-aware)":
+		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
 	"jsonc/yaml/toml/markdown/package-json/pnpm/sort-*":
 		"Oxlint only lints JS/TS files; JSON, YAML, TOML and Markdown stay in ESLint",
 	"react/* (type-aware)":
@@ -38,10 +40,8 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"Type-aware custom rules (lua-truthiness etc.); oxlint jsPlugins have no type information",
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
-	"test/* (type-aware)":
-		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin, which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-redundant-optional, sonar/no-try-promise, unicorn/no-non-function-verb-prefix, arrow-style/no-export-default-arrow, eslint-plugin/no-property-in-node, test/no-error-equal, test/no-unnecessary-assertion, test/unbound-method, test/valid-expect-with-promise",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-redundant-optional, sonar/no-try-promise, unicorn/no-non-function-verb-prefix, arrow-style/no-export-default-arrow, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 };
@@ -643,55 +643,56 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"react-naming-convention/context-name": "js-plugin",
 	"react-naming-convention/ref-name": "js-plugin",
 
-	// Part: Jest (eslint-plugin-jest via jsPlugin; honors
-	// settings.jest.globalPackage = @rbxts/jest-globals, scoped to test files.
-	// The four type-aware jest rules stay in ESLint, see typeAwareJsPluginRules)
-	"test/consistent-test-it": "js-plugin",
-	"test/expect-expect": "js-plugin",
-	"test/max-expects": "js-plugin",
-	"test/max-nested-describe": "js-plugin",
-	"test/no-alias-methods": "js-plugin",
-	"test/no-commented-out-tests": "js-plugin",
-	"test/no-conditional-expect": "js-plugin",
-	"test/no-conditional-in-test": "js-plugin",
-	"test/no-disabled-tests": "js-plugin",
-	"test/no-done-callback": "js-plugin",
-	"test/no-duplicate-hooks": "js-plugin",
-	"test/no-export": "js-plugin",
-	"test/no-focused-tests": "js-plugin",
-	"test/no-hooks": "js-plugin",
-	"test/no-identical-title": "js-plugin",
-	"test/no-standalone-expect": "js-plugin",
-	"test/no-test-prefixes": "js-plugin",
-	"test/no-test-return-statement": "js-plugin",
-	"test/no-unneeded-async-expect-function": "js-plugin",
-	"test/no-untyped-mock-factory": "js-plugin",
-	"test/padding-around-all": "js-plugin",
-	"test/prefer-called-with": "js-plugin",
-	"test/prefer-comparison-matcher": "js-plugin",
-	"test/prefer-each": "js-plugin",
-	"test/prefer-ending-with-an-expect": "js-plugin",
-	"test/prefer-equality-matcher": "js-plugin",
-	"test/prefer-expect-assertions": "js-plugin",
-	"test/prefer-hooks-in-order": "js-plugin",
-	"test/prefer-lowercase-title": "js-plugin",
-	"test/prefer-mock-promise-shorthand": "js-plugin",
-	"test/prefer-mock-return-shorthand": "js-plugin",
-	"test/prefer-spy-on": "js-plugin",
-	"test/prefer-strict-equal": "js-plugin",
-	"test/prefer-to-be": "js-plugin",
-	"test/prefer-to-contain": "js-plugin",
-	"test/prefer-to-have-been-called": "js-plugin",
-	"test/prefer-to-have-been-called-times": "js-plugin",
-	"test/prefer-to-have-length": "js-plugin",
-	"test/prefer-todo": "js-plugin",
-	"test/require-hook": "js-plugin",
-	"test/require-to-throw-message": "js-plugin",
-	"test/require-top-level-describe": "js-plugin",
-	"test/valid-describe-callback": "js-plugin",
-	"test/valid-expect": "js-plugin",
-	"test/valid-expect-in-promise": "js-plugin",
-	"test/valid-title": "js-plugin",
+	// Part: Jest (eslint-plugin-jest via jsPlugin, renamed jest-js since oxlint
+	// reserves the native jest prefix; honors settings.jest.globalPackage =
+	// @rbxts/jest-globals, scoped to test files. The four type-aware jest rules
+	// stay in ESLint, see typeAwareJsPluginRules)
+	"jest/consistent-test-it": "js-plugin",
+	"jest/expect-expect": "js-plugin",
+	"jest/max-expects": "js-plugin",
+	"jest/max-nested-describe": "js-plugin",
+	"jest/no-alias-methods": "js-plugin",
+	"jest/no-commented-out-tests": "js-plugin",
+	"jest/no-conditional-expect": "js-plugin",
+	"jest/no-conditional-in-test": "js-plugin",
+	"jest/no-disabled-tests": "js-plugin",
+	"jest/no-done-callback": "js-plugin",
+	"jest/no-duplicate-hooks": "js-plugin",
+	"jest/no-export": "js-plugin",
+	"jest/no-focused-tests": "js-plugin",
+	"jest/no-hooks": "js-plugin",
+	"jest/no-identical-title": "js-plugin",
+	"jest/no-standalone-expect": "js-plugin",
+	"jest/no-test-prefixes": "js-plugin",
+	"jest/no-test-return-statement": "js-plugin",
+	"jest/no-unneeded-async-expect-function": "js-plugin",
+	"jest/no-untyped-mock-factory": "js-plugin",
+	"jest/padding-around-all": "js-plugin",
+	"jest/prefer-called-with": "js-plugin",
+	"jest/prefer-comparison-matcher": "js-plugin",
+	"jest/prefer-each": "js-plugin",
+	"jest/prefer-ending-with-an-expect": "js-plugin",
+	"jest/prefer-equality-matcher": "js-plugin",
+	"jest/prefer-expect-assertions": "js-plugin",
+	"jest/prefer-hooks-in-order": "js-plugin",
+	"jest/prefer-lowercase-title": "js-plugin",
+	"jest/prefer-mock-promise-shorthand": "js-plugin",
+	"jest/prefer-mock-return-shorthand": "js-plugin",
+	"jest/prefer-spy-on": "js-plugin",
+	"jest/prefer-strict-equal": "js-plugin",
+	"jest/prefer-to-be": "js-plugin",
+	"jest/prefer-to-contain": "js-plugin",
+	"jest/prefer-to-have-been-called": "js-plugin",
+	"jest/prefer-to-have-been-called-times": "js-plugin",
+	"jest/prefer-to-have-length": "js-plugin",
+	"jest/prefer-todo": "js-plugin",
+	"jest/require-hook": "js-plugin",
+	"jest/require-to-throw-message": "js-plugin",
+	"jest/require-top-level-describe": "js-plugin",
+	"jest/valid-describe-callback": "js-plugin",
+	"jest/valid-expect": "js-plugin",
+	"jest/valid-expect-in-promise": "js-plugin",
+	"jest/valid-title": "js-plugin",
 
 	// Part: Jest extended (run via jsPlugin)
 	"jest-extended/prefer-to-be-array": "js-plugin",
@@ -844,6 +845,10 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"arrow-style/no-export-default-arrow",
 	"eslint-plugin/no-property-in-node",
+	"jest/no-error-equal",
+	"jest/no-unnecessary-assertion",
+	"jest/unbound-method",
+	"jest/valid-expect-with-promise",
 	// The @eslint-react type-aware rules do NOT declare
 	// meta.docs.requiresTypeChecking, so the metadata-based parity test cannot
 	// catch them; they are listed manually.
@@ -855,10 +860,6 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"sonar/no-ignored-return",
 	"sonar/no-redundant-optional",
 	"sonar/no-try-promise",
-	"test/no-error-equal",
-	"test/no-unnecessary-assertion",
-	"test/unbound-method",
-	"test/valid-expect-with-promise",
 	"unicorn/no-non-function-verb-prefix",
 ]);
 
@@ -898,6 +899,7 @@ const UNICORN_NATIVE_RENAMES: Readonly<Record<string, string>> = {
 export const oxlintJsPluginPrefixRenames: Readonly<Record<string, string>> = {
 	"": "eslint-js",
 	"import": "import-js",
+	"jest": "jest-js",
 	"jsdoc": "jsdoc-js",
 	"node": "node-js",
 	"promise": "promise-js",
@@ -922,6 +924,7 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"flawless": "eslint-plugin-flawless",
 	"import-js": "eslint-plugin-import-lite",
 	"jest-extended": "eslint-plugin-jest-extended",
+	"jest-js": "eslint-plugin-jest",
 	"jsdoc-js": "eslint-plugin-jsdoc",
 	"node-js": "eslint-plugin-n",
 	"oxfmt": "eslint-plugin-oxfmt",
@@ -935,7 +938,6 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"sentinel": "eslint-plugin-sentinel",
 	"sonar": "eslint-plugin-sonarjs",
 	"style": "@stylistic/eslint-plugin",
-	"test": "eslint-plugin-jest",
 	"ts": "@typescript-eslint/eslint-plugin",
 	"unicorn-js": "eslint-plugin-unicorn",
 	"unused-imports": "eslint-plugin-unused-imports",

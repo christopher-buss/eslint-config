@@ -101,16 +101,16 @@ keeps running in ESLint, notably:
   is true (`sonar/no-ignored-return`, `sonar/no-redundant-optional`,
   `sonar/no-try-promise`, `unicorn/no-non-function-verb-prefix`,
   `arrow-style/no-export-default-arrow`, `eslint-plugin/no-property-in-node`,
-  four `test/*` jest rules). The oxlint factory refuses to emit them as
-  jsPlugins because they crash or silently no-op without type information; a
-  test enforces this against the plugins' runtime metadata.
+  four `jest/*` rules). The oxlint factory refuses to emit them as jsPlugins
+  because they crash or silently no-op without type information; a test enforces
+  this against the plugins' runtime metadata.
 - **Functionally type-aware rules** — the type-aware React rules below do not
   declare `requiresTypeChecking` but still need type information, so they are
   excluded manually. The jest family runs in oxlint via its real ESLint plugin
-  as a jsPlugin (jest honors
-  `settings.jest.globalPackage = @rbxts/jest-globals`); the vitest family runs
-  as native oxlint rules, except `vitest/padding-around-all` and
-  `vitest/prefer-vi-mocked` (no native port) which run via
+  as a jsPlugin under the `jest-js` prefix (oxlint reserves the native `jest`
+  prefix; jest honors `settings.jest.globalPackage = @rbxts/jest-globals`); the
+  vitest family runs as native oxlint rules, except `vitest/padding-around-all`
+  and `vitest/prefer-vi-mocked` (no native port) which run via
   `@vitest/eslint-plugin` as a jsPlugin.
 - **Type-aware custom rules** — `roblox/*` type-aware rules,
   `sentinel/explicit-size-check`, `cease-nonsense/prefer-read-only-props`,
