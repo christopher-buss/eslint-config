@@ -251,6 +251,7 @@ export async function isentinel(
 		}),
 		unicorn({
 			...resolveSubOptions(options, "unicorn"),
+			roblox: enableRoblox,
 			root: rootGlobs,
 			stylistic: stylisticOptions,
 		}),
