@@ -240,8 +240,8 @@ catalogs:
       specifier: 0.57.0
       version: 0.57.0
     oxlint-plugin-eslint:
-      specifier: 1.73.0
-      version: 1.73.0
+      specifier: 1.74.0
+      version: 1.74.0
     oxlint-plugin-oxlint-comments:
       specifier: 0.1.0
       version: 0.1.0
@@ -405,7 +405,7 @@ importers:
         version: 0.57.0
       oxlint-plugin-eslint:
         specifier: catalog:prod
-        version: 1.73.0
+        version: 1.74.0
       oxlint-plugin-oxlint-comments:
         specifier: catalog:prod
         version: 0.1.0(oxlint-tsgolint@0.24.0)
@@ -3193,8 +3193,8 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-plugin-eslint@1.73.0:
-    resolution: {integrity: sha512-ZHGk1YDMwxnz2OSxHPysJwgXE7oVIDGWmhlVFeQuvfBDY5AlMfcUlYvixJkjc0sGYNhegYN8we10ZU5UydFLvQ==}
+  oxlint-plugin-eslint@1.74.0:
+    resolution: {integrity: sha512-AtZ4w3owo4xoY5fe/Juy9hmzEnekVPd/DDiPlOVGfR2linDTp/XVu0xK7ODNK4CCLvnnfCob/UeWN6kSiqm2CQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   oxlint-plugin-oxlint-comments@0.1.0:
@@ -6529,7 +6529,7 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.57.0
       '@oxfmt/binding-win32-x64-msvc': 0.57.0
 
-  oxlint-plugin-eslint@1.73.0: {}
+  oxlint-plugin-eslint@1.74.0: {}
 
   oxlint-plugin-oxlint-comments@0.1.0(oxlint-tsgolint@0.24.0):
     dependencies:
