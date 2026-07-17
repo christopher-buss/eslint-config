@@ -57,6 +57,7 @@ import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
 import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
+import type { ValidateOptions, ValidateUserConfigs } from "./redundancy.ts";
 import { applyTypeAwareSplit } from "./type-aware-split.ts";
 import type { TypeAwareSplitMode } from "./type-aware-split.ts";
 import type {
@@ -87,30 +88,52 @@ export { defaultPluginRenaming } from "./plugin-renaming.ts";
  * Generates an array of user configuration items based on the provided options
  * and user configs.
  *
- * @template NamedConfigs - When `true`, requires all config items to have a
- *   name.
+ * @template O - The literal options type, used by the redundant-override
+ *   check.
+ * @template C - The literal user-config tuple, used by the redundant-override
+ *   check.
  * @param options - The options for generating the user configuration items.
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
  * @rejects Will throw an error if configuration generation fails.
  */
-export function isentinel(
-	options: Omit<OptionsConfig, "namedConfigs"> & TypedFlatConfigItem & { namedConfigs?: false },
-	...userConfigs: Array<
-		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
-	>
-): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-export function isentinel(
-	options: NamedOptionsConfig,
+export function isentinel<const O extends NamedOptionsConfig>(
+	options: O & ValidateOptions<O>,
 	...userConfigs: Array<Awaitable<FlatConfigComposer<any, any>>>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-export function isentinel(
-	options: NamedOptionsConfig,
-	...userConfigs: Array<Awaitable<Array<NamedFlatConfigItem>>>
+export function isentinel<
+	const O extends NamedOptionsConfig,
+	const C extends Array<Awaitable<Array<NamedFlatConfigItem>>>,
+>(
+	options: O & ValidateOptions<O>,
+	...userConfigs: C & ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-export function isentinel(
-	options: NamedOptionsConfig,
-	...userConfigs: Array<Awaitable<NamedFlatConfigItem>>
+export function isentinel<
+	const O extends NamedOptionsConfig,
+	const C extends Array<Awaitable<NamedFlatConfigItem>>,
+>(
+	options: O & ValidateOptions<O>,
+	...userConfigs: C & ValidateUserConfigs<C, O>
+): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
+/**
+ * The plain (non-named) overload stays last: when every overload fails,
+ * TypeScript reports the final candidate, and this is the one whose failure
+ * carries the RedundantRuleError message.
+ *
+ * @template O - The literal options type, used by the redundant-override
+ *   check.
+ * @template C - The literal user-config tuple, used by the redundant-override
+ *   check.
+ */
+export function isentinel<
+	const O extends Omit<OptionsConfig, "namedConfigs"> &
+		TypedFlatConfigItem & { namedConfigs?: false },
+	const C extends Array<
+		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
+	>,
+>(
+	options: O & ValidateOptions<O>,
+	...userConfigs: C & ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export async function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem & { namedConfigs?: boolean },
