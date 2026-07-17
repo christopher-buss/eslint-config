@@ -19,6 +19,14 @@ describe("oxlint redundancyCheck: top-level rules", () => {
 		void isentinel({ name: "x", rules: { "no-console": "error" } });
 	});
 
+	it("does not flag a bare severity over an env-dependent-options default", () => {
+		// The real default carries prettier-derived options that the generator
+		// records as a dropped-options marker; writing the bare severity
+		// strips them, so it is meaningful.
+		void isentinel({ name: "x", rules: { "arrow-style/arrow-return-style": "error" } });
+		void isentinel({ name: "x", rules: { "@cspell/spellchecker": "warn" } });
+	});
+
 	it("allows meaningful overrides", () => {
 		void isentinel({ name: "x", rules: { "no-alert": "off" } });
 		void isentinel({ name: "x", rules: { "no-console": ["error", { allow: ["warn"] }] } });

@@ -1,3 +1,4 @@
+/* oxlint-disable sonar/no-duplicate-string -- Type-test fixtures repeat literal rule and config names by design. */
 import { describe, it } from "vitest";
 
 import { isentinel } from "../src/eslint/index.ts";
@@ -35,6 +36,27 @@ describe("redundancyCheck: variants", () => {
 			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
 		});
 	});
+
+	it("skips variant-specific rules when roblox is not a literal", () => {
+		const flag = Math.random() > 0.5;
+		void isentinel({
+			roblox: flag,
+			rules: { "cease-nonsense/no-array-constructor-elements": "error" },
+		});
+	});
+});
+
+describe("redundancyCheck: dropped-options markers", () => {
+	it("still flags a bare severity for env-dependent rules (options retained)", () => {
+		// @ts-expect-error - severity matches; ESLint keeps the default options
+		void isentinel({ rules: { "@cspell/spellchecker": "warn" } });
+	});
+
+	it("never flags option tuples for env-dependent rules", () => {
+		void isentinel({
+			rules: { "comment-length/limit-single-line-comments": ["error", { maxLength: 120 }] },
+		});
+	});
 });
 
 describe("redundancyCheck: opt-out", () => {
@@ -44,6 +66,36 @@ describe("redundancyCheck: opt-out", () => {
 			redundancyCheck: false,
 			typescript: { overrides: { "ts/no-explicit-any": "off" } },
 		});
+	});
+
+	it("also disables rest-argument config validation", () => {
+		void isentinel({ redundancyCheck: false }, { rules: { "no-alert": "error" } });
+	});
+});
+
+describe("redundancyCheck: named configs", () => {
+	it("flags redundant overrides for namedConfigs callers", () => {
+		void isentinel(
+			{
+				name: "project/options",
+				namedConfigs: true,
+				// @ts-expect-error - redundant override under namedConfigs
+				rules: { "no-alert": "error" },
+			},
+			{ name: "local/extra", rules: {} },
+		);
+	});
+
+	it("keeps requiring names on rest configs when namedConfigs is on", () => {
+		void isentinel(
+			{ name: "project/options", namedConfigs: true },
+			// @ts-expect-error - unnamed config item under namedConfigs: true
+			{ rules: { "no-alert": "off" } },
+		);
+		void isentinel(
+			{ name: "project/options", namedConfigs: true },
+			{ name: "local/extra", rules: { "no-alert": "off" } },
+		);
 	});
 });
 

@@ -70,6 +70,20 @@ import type {
 	TypedFlatConfigItem,
 } from "./types.ts";
 
+/**
+ * Keeps the named-configs contract on the catch-all overload: with
+ * `namedConfigs: true`, every rest config item must carry a `name`.
+ *
+ * @template O - The literal options type.
+ */
+type RequireNamedItems<O> = O extends { namedConfigs: true }
+	? Array<
+			Awaitable<
+				Array<NamedFlatConfigItem> | FlatConfigComposer<any, any> | NamedFlatConfigItem
+			>
+		>
+	: unknown;
+
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",
 	"files",
@@ -116,9 +130,11 @@ export function isentinel<
 	...userConfigs: C & ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 /**
- * The plain (non-named) overload stays last: when every overload fails,
- * TypeScript reports the final candidate, and this is the one whose failure
- * carries the RedundantRuleError message.
+ * The catch-all overload stays last: when every overload fails, TypeScript
+ * reports the final candidate, so this is the one whose failure carries the
+ * RedundantRuleError message — for named-configs callers too, which is why it
+ * accepts `namedConfigs: true` and re-imposes the named-item requirement via
+ * the conditional rest constraint instead of rejecting named options outright.
  *
  * @template O - The literal options type, used by the redundant-override
  *   check.
@@ -127,13 +143,13 @@ export function isentinel<
  */
 export function isentinel<
 	const O extends Omit<OptionsConfig, "namedConfigs"> &
-		TypedFlatConfigItem & { namedConfigs?: false },
+		TypedFlatConfigItem & { namedConfigs?: boolean },
 	const C extends Array<
 		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
 	>,
 >(
 	options: O & ValidateOptions<O>,
-	...userConfigs: C & ValidateUserConfigs<C, O>
+	...userConfigs: C & RequireNamedItems<O> & ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export async function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem & { namedConfigs?: boolean },

@@ -9,8 +9,12 @@ import fs from "node:fs/promises";
 
 import type { VariantKey } from "../src/redundancy.ts";
 
-/** A normalized default entry: bare severity or `[severity, ...options]`. */
-export type RuleEntryJson = Array<unknown> | string;
+/**
+ * A normalized default entry: bare severity, `[severity, ...options]`, or the
+ * dropped-options marker for entries whose options are environment-dependent
+ * or unserializable (see `DroppedOptionsDefault` in `src/redundancy.ts`).
+ */
+export type RuleEntryJson = Array<unknown> | string | { severityOnly: string };
 
 /** Effective entries for one scope in one variant. */
 export type ScopeRules = Record<string, RuleEntryJson>;
@@ -128,7 +132,9 @@ export function combineProbes(
 				continue;
 			}
 
-			rules[name] = severityOf(normalized.entry);
+			// The real default carries options that could not be captured;
+			// the marker keeps that distinct from a truly bare severity.
+			rules[name] = { severityOnly: severityOf(normalized.entry) };
 			continue;
 		}
 
@@ -156,6 +162,38 @@ export function deltaAgainst(scope: ScopeRules, chain: ReadonlyArray<ScopeRules>
 	}
 
 	return delta;
+}
+
+/**
+ * Fail generation loudly when an extraction looks broken — an empty scope or
+ * a missing anchor rule means a factory return shape or a representative
+ * file's globs drifted, which would otherwise silently emit defaults maps
+ * that no-op the whole redundancy check.
+ *
+ * @template S - The scope names of this generator.
+ * @param label - Generator + variant label for error messages.
+ * @param scopes - The extracted scope rules.
+ * @param mainScope - The scope that must contain `anchorRule`.
+ * @param anchorRule - A rule the preset always enables in the main scope.
+ */
+export function assertExtractionSane<S extends string>(
+	label: string,
+	scopes: Record<S, ScopeRules>,
+	mainScope: S,
+	anchorRule: string,
+): void {
+	for (const scope of Object.keys(scopes) as Array<S>) {
+		if (Object.keys(scopes[scope]).length === 0) {
+			throw new Error(`[typegen-defaults] ${label}: scope "${scope}" extracted no rules`);
+		}
+	}
+
+	const mainRules = scopes[mainScope];
+	if (!(anchorRule in mainRules) || Object.keys(mainRules).length < 100) {
+		throw new Error(
+			`[typegen-defaults] ${label}: main scope looks broken (${Object.keys(mainRules).length} rules, anchor "${anchorRule}" ${anchorRule in mainRules ? "present" : "missing"})`,
+		);
+	}
 }
 
 /**
@@ -226,7 +264,11 @@ function serializeOptions(options: Array<unknown>): string | undefined {
 }
 
 function severityOf(entry: RuleEntryJson): string {
-	return Array.isArray(entry) ? (entry[0] as string) : entry;
+	if (typeof entry === "string") {
+		return entry;
+	}
+
+	return Array.isArray(entry) ? (entry[0] as string) : entry.severityOnly;
 }
 
 function emitScopeInterface(name: string, perVariant: Record<VariantKey, ScopeRules>): string {

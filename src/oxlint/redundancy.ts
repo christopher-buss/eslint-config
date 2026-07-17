@@ -5,12 +5,15 @@
  * one semantic difference: oxlint replaces rule entries wholesale, so a bare
  * severity is only redundant against a default that also carries no options
  * (`RetainsOptions = false`). Disabled entirely via `redundancyCheck: false`.
+ *
+ * Rest-argument fragments are not validated at all: `OxlintOverride.files` is
+ * required, so every fragment is files-scoped and glob scoping cannot be
+ * reasoned about at the type level.
  */
 import type {
 	ValidateSite,
-	ValidateSubOption,
+	ValidateSubOptionsFromTable,
 	ValidateTestOption,
-	ValidateUserConfigsAgainst,
 	VariantKey,
 	VariantKeyOf,
 } from "../redundancy.ts";
@@ -22,18 +25,10 @@ import type {
 } from "./typegen-defaults.d.ts";
 
 /**
- * The options keys whose override sites are validated. Exported so a type test
- * can assert it stays exhaustive over the override-bearing keys of
- * `OxlintOptionsConfig`.
+ * The options keys whose override sites are validated, derived from the chain
+ * table so the exhaustiveness type test also guards the wiring itself.
  */
-export type OxlintValidatedOverrideKeys =
-	| "e18e"
-	| "eslintPlugin"
-	| "javascript"
-	| "react"
-	| "roblox"
-	| "test"
-	| "typescript";
+export type OxlintValidatedOverrideKeys = "test" | keyof OverrideSiteChains;
 
 /**
  * Redundant-override validation for the oxlint factory options object.
@@ -46,19 +41,6 @@ export type ValidateOxlintOptions<O> = O extends { redundancyCheck: false }
 	? unknown
 	: ValidateOptionsWith<O, VariantKeyOf<O>>;
 
-/**
- * Validate the rest-argument oxlint config fragments against the main-scope
- * defaults. Fragments always carry `files` globs, so in practice they pass
- * through unchecked — glob scoping cannot be reasoned about at the type level.
- *
- * @template C - The literal fragment tuple.
- * @template O - The factory options type (selects the defaults variant).
- */
-export type ValidateOxlintUserConfigs<
-	C extends ReadonlyArray<unknown>,
-	O,
-> = ValidateUserConfigsAgainst<C, MainChain, VariantKeyOf<O>, false>;
-
 type MainChain = [OxlintMainRuleDefaults];
 
 /** Scope for opt-in features that extend the main TS scope. */
@@ -70,6 +52,16 @@ type ReactChain = [
 	OxlintMainRuleDefaults,
 ];
 
+/** Single source of truth: which sub-config validates against which chain. */
+interface OverrideSiteChains {
+	e18e: MainChain;
+	eslintPlugin: FeatureChain;
+	javascript: MainChain;
+	react: ReactChain;
+	roblox: MainChain;
+	typescript: MainChain;
+}
+
 type TestChain = [OxlintTestRuleDefaults, OxlintSourceFeatureRuleDefaults, OxlintMainRuleDefaults];
 
 type ValidateOptionsWith<O, VK extends VariantKey> = ValidateSite<
@@ -79,10 +71,5 @@ type ValidateOptionsWith<O, VK extends VariantKey> = ValidateSite<
 	VK,
 	false
 > &
-	ValidateSubOption<O, "e18e", MainChain, VK, false> &
-	ValidateSubOption<O, "eslintPlugin", FeatureChain, VK, false> &
-	ValidateSubOption<O, "javascript", MainChain, VK, false> &
-	ValidateSubOption<O, "react", ReactChain, VK, false> &
-	ValidateSubOption<O, "roblox", MainChain, VK, false> &
-	ValidateSubOption<O, "typescript", MainChain, VK, false> &
+	ValidateSubOptionsFromTable<O, OverrideSiteChains, VK, false> &
 	ValidateTestOption<O, TestChain, VK, false>;

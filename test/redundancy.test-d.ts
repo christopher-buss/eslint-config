@@ -111,6 +111,33 @@ describe("VariantKeyOf", () => {
 			"game_roblox" | "package_roblox"
 		>();
 	});
+
+	it("widens both axes when roblox is not a literal", () => {
+		expectTypeOf<VariantKeyOf<{ roblox: boolean }>>().toEqualTypeOf<VariantKey>();
+		expectTypeOf<VariantKeyOf<{ roblox: boolean; type: "package" }>>().toEqualTypeOf<
+			"package_roblox" | "package_std"
+		>();
+	});
+});
+
+describe("IsRedundantEntry with dropped-options markers", () => {
+	interface Marker {
+		severityOnly: "error";
+	}
+
+	it("treats a marker like the severity when options are retained (ESLint)", () => {
+		expectTypeOf<IsRedundantEntry<"error", Marker>>().toEqualTypeOf<true>();
+		expectTypeOf<IsRedundantEntry<"warn", Marker>>().toEqualTypeOf<false>();
+	});
+
+	it("never flags against a marker when entries are replaced wholesale (oxlint)", () => {
+		expectTypeOf<IsRedundantEntry<"error", Marker, false>>().toEqualTypeOf<false>();
+	});
+
+	it("never flags option tuples against a marker", () => {
+		expectTypeOf<IsRedundantEntry<["error", { x: 1 }], Marker>>().toEqualTypeOf<false>();
+		expectTypeOf<IsRedundantEntry<["error", { x: 1 }], Marker, false>>().toEqualTypeOf<false>();
+	});
 });
 
 describe("ValidateRulesAgainst", () => {
@@ -159,6 +186,49 @@ describe("ValidateRulesAgainst", () => {
 	it("preserves optionality", () => {
 		type Result = Validate<{ "max-depth"?: "warn" }>;
 		expectTypeOf<Result>().toEqualTypeOf<{ "max-depth"?: "warn" }>();
+	});
+});
+
+describe("ValidateRulesAgainst chain resolution", () => {
+	interface DeltaMap {
+		"max-depth": { game_roblox: "off" };
+	}
+	interface BaseMap {
+		"max-depth": { "*": "error" };
+	}
+	type Chain = [DeltaMap, BaseMap];
+
+	it("falls through to the base map for variants the delta does not cover", () => {
+		type Result = ValidateRulesAgainst<{ "max-depth": "error" }, Chain, "package_roblox">;
+		expectTypeOf<Result["max-depth"]>().toExtend<RedundantRuleError<string>>();
+	});
+
+	it("uses the delta value for variants it covers", () => {
+		type Flagged = ValidateRulesAgainst<{ "max-depth": "off" }, Chain, "game_roblox">;
+		type Allowed = ValidateRulesAgainst<{ "max-depth": "error" }, Chain, "game_roblox">;
+		expectTypeOf<Flagged["max-depth"]>().toExtend<RedundantRuleError<string>>();
+		expectTypeOf<Allowed["max-depth"]>().toEqualTypeOf<"error">();
+	});
+
+	it("skips when a union variant has no default in any map", () => {
+		interface PartialBase {
+			"max-depth": { game_roblox: "error" };
+		}
+		type Result = ValidateRulesAgainst<
+			{ "max-depth": "error" },
+			[PartialBase],
+			"game_roblox" | "game_std"
+		>;
+		expectTypeOf<Result["max-depth"]>().toEqualTypeOf<"error">();
+	});
+
+	it("flags when every union variant resolves to the written value", () => {
+		type Result = ValidateRulesAgainst<
+			{ "max-depth": "error" },
+			[BaseMap],
+			"game_roblox" | "game_std"
+		>;
+		expectTypeOf<Result["max-depth"]>().toExtend<RedundantRuleError<string>>();
 	});
 });
 

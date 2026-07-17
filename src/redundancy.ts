@@ -36,10 +36,27 @@
  */
 export type IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions extends boolean = true> =
 	IsSeverityOnly<UserEntry> extends true
-		? (RetainsOptions extends true ? true : IsSeverityOnly<DefaultEntry>) extends true
+		? RetainsOptions extends true
 			? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
-			: false
-		: Equal<NormalizeEntry<UserEntry>, NormalizeEntry<DefaultEntry>>;
+			: IsSeverityOnly<DefaultEntry> extends true
+				? Equal<SeverityOf<UserEntry>, SeverityOf<DefaultEntry>>
+				: false
+		: DefaultEntry extends { severityOnly: unknown }
+			? false
+			: Equal<NormalizeEntry<UserEntry>, NormalizeEntry<DefaultEntry>>;
+
+/**
+ * Generated-map marker for a default whose real entry carries options that
+ * could not be captured (environment-dependent or unserializable). Distinct
+ * from a truly bare severity: under wholesale-replacement semantics
+ * (`RetainsOptions = false`) a bare user severity over such a default strips
+ * real options and is therefore never redundant.
+ *
+ * @template S - The default's severity.
+ */
+export interface DroppedOptionsDefault<S extends string> {
+	severityOnly: S;
+}
 
 /**
  * Brand carried by redundant rule entries. Being an object type, it never
@@ -84,12 +101,7 @@ export type ValidateRulesAgainst<
 	VK extends VariantKey,
 	RetainsOptions extends boolean = true,
 > = {
-	[K in keyof R]: ValidateEntry<
-		K & string,
-		R[K],
-		ResolveDefault<LookupVariants<K, Chain>, VK>,
-		RetainsOptions
-	>;
+	[K in keyof R]: ValidateEntry<K & string, R[K], ChainDefault<K, Chain, VK>, RetainsOptions>;
 };
 
 /**
@@ -150,6 +162,36 @@ export type ValidateSubOption<
 	O extends Record<Key, infer Sub>
 		? Partial<Record<Key, ValidateSub<Sub, Chain, VK, RetainsOptions>>>
 		: unknown;
+
+/**
+ * Build the intersection of {@link ValidateSubOption} for every key of a
+ * chain table (`option name → defaults chain`), so the validated key set and
+ * the wiring derive from one source.
+ *
+ * @template O - The factory options type.
+ * @template Table - Record mapping sub-config option names to their chains.
+ * @template VK - The variant key(s) selected by the factory options.
+ * @template RetainsOptions - Whether a bare severity keeps previous options.
+ */
+export type ValidateSubOptionsFromTable<
+	O,
+	Table,
+	VK extends VariantKey,
+	RetainsOptions extends boolean = true,
+> = UnionToIntersection<
+	{
+		// The `object &` keeps absent-key members (`unknown`) from absorbing
+		// the branded members when the mapped values form a union below.
+		[K in keyof Table]: object &
+			ValidateSubOption<
+				O,
+				K & string,
+				Extract<Table[K], ReadonlyArray<unknown>>,
+				VK,
+				RetainsOptions
+			>;
+	}[keyof Table]
+>;
 
 /**
  * Validate the `test` option, including its nested `jest` and `vitest`
@@ -219,9 +261,11 @@ type NormalizeEntry<E> = E extends readonly [infer S, ...infer O]
 	? [NormalizeSeverity<S>, ...DeepWritable<O>]
 	: [NormalizeSeverity<E>];
 
-type SeverityOf<E> = E extends readonly [infer S, ...ReadonlyArray<unknown>]
+type SeverityOf<E> = E extends { severityOnly: infer S }
 	? NormalizeSeverity<S>
-	: NormalizeSeverity<E>;
+	: E extends readonly [infer S, ...ReadonlyArray<unknown>]
+		? NormalizeSeverity<S>
+		: NormalizeSeverity<E>;
 
 /** Any severity accepted by ESLint rule entries. */
 type RuleSeverityInput = 0 | 1 | 2 | "error" | "off" | "warn";
@@ -237,7 +281,20 @@ type Equal<A, B> =
 	(<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 /* oxlint-enable typescript/no-unnecessary-type-parameters */
 
-type RobloxAxis<O> = O extends { roblox: false } ? "std" : "roblox";
+type RobloxAxis<O> = O extends { roblox: infer R }
+	? [R] extends [false]
+		? "std"
+		: [false] extends [R]
+			? "roblox" | "std"
+			: "roblox"
+	: "roblox";
+
+/**
+ * Distributes over a widened axis so an unknown `roblox` widens `type` too.
+ *
+ * @template A - The resolved roblox axis (possibly a union).
+ */
+type DefaultTypeAxis<A> = A extends "std" ? "package" : "game";
 
 type TypeAxis<O> = O extends { type: infer T }
 	? T extends "package"
@@ -245,36 +302,71 @@ type TypeAxis<O> = O extends { type: infer T }
 		: T extends "app" | "game"
 			? "game"
 			: "game" | "package"
-	: RobloxAxis<O> extends "std"
-		? "package"
-		: "game";
+	: DefaultTypeAxis<RobloxAxis<O>>;
+
+/** Sentinel: this variant has no preset default for the rule. */
+interface NoDefault {
+	"no default": true;
+}
+
+type ResolveVariant<D, VK extends VariantKey> = D extends { "*": infer E }
+	? E
+	: VK extends keyof D
+		? D[keyof D & VK]
+		: never;
 
 /**
- * Find a rule's variants record in an ordered chain of scope maps (delta maps
- * first, base map last). `never` when no map knows the rule.
+ * Resolve one variant's effective default through the chain (delta maps first,
+ * base map last). A delta map that knows the rule but not this variant falls
+ * through — delta entries only record variants whose value differs from the
+ * base.
  *
  * @template K - The rule name.
  * @template Chain - Ordered defaults maps, most specific scope first.
+ * @template VK - A single variant key.
  */
-type LookupVariants<K, Chain> = Chain extends readonly [infer Head, ...infer Rest]
+type ResolveOne<K, Chain, VK extends VariantKey> = Chain extends readonly [
+	infer Head,
+	...infer Rest,
+]
 	? K extends keyof Head
-		? Head[K]
-		: LookupVariants<K, Rest>
+		? [ResolveVariant<Head[K], VK>] extends [never]
+			? ResolveOne<K, Rest, VK>
+			: ResolveVariant<Head[K], VK>
+		: ResolveOne<K, Rest, VK>
 	: never;
 
-type ResolveDefault<D, VK extends VariantKey> = D extends { "*": infer E }
-	? E
-	: [VK] extends [keyof D]
-		? D[VK]
-		: never;
+/**
+ * The effective default(s) for a rule across the selected variant key(s).
+ * Distributes over a union `VK`: variants without a default contribute the
+ * {@link NoDefault} sentinel, so a rule is only flagged when every possible
+ * variant resolves to the same value the user wrote.
+ *
+ * @template K - The rule name.
+ * @template Chain - Ordered defaults maps, most specific scope first.
+ * @template VK - The variant key(s) selected by the factory options.
+ */
+type ChainDefault<K, Chain, VK extends VariantKey> = VK extends VariantKey
+	? [ResolveOne<K, Chain, VK>] extends [never]
+		? NoDefault
+		: ResolveOne<K, Chain, VK>
+	: never;
 
 type ValidateEntry<K extends string, UserEntry, DefaultEntry, RetainsOptions extends boolean> = [
 	DefaultEntry,
 ] extends [never]
 	? UserEntry
-	: IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions> extends true
-		? RedundantRuleError<`'${K}' already defaults to this value in the preset; remove the override, or set \`redundancyCheck: false\` to disable this check`>
+	: [Extract<DefaultEntry, NoDefault>] extends [never]
+		? IsRedundantEntry<UserEntry, DefaultEntry, RetainsOptions> extends true
+			? RedundantRuleError<`'${K}' already defaults to this value in the preset; remove the override, or set \`redundancyCheck: false\` to disable this check`>
+			: UserEntry
 		: UserEntry;
+
+type UnionToIntersection<U> = (U extends unknown ? (member: U) => void : never) extends (
+	member: infer I,
+) => void
+	? I
+	: never;
 
 type ValidateUserConfigItem<
 	Item,
