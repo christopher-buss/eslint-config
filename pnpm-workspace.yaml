@@ -119,7 +119,7 @@ catalogs:
     prettier: 3.9.4
     semver: 7.8.5
     toml-eslint-parser: 1.0.3
-    yaml-eslint-parser: 2.0.0
+    yaml-eslint-parser: 2.1.0
     yargs: 18.0.0
 
 allowBuilds:
