@@ -12,14 +12,19 @@ renaming, spell checking (CSpell), and Prettier integration.
 
 ## Environment
 
-- Node.js >= 24.12.0 (see `engines` in `package.json`)
-- pnpm 10.24.0 (auto-managed via `packageManager` field)
+Read the required versions from `package.json` rather than duplicating them
+here:
+
+- Node.js — the `engines.node` range
+- pnpm — the `packageManager` field (auto-managed by corepack)
 
 ## Commands
 
 ```bash
 pnpm build      # Build (runs typegen first)
-pnpm lint       # Run ESLint
+pnpm lint       # Run oxlint and ESLint concurrently
+pnpm test       # Run tests (runs typegen first)
+pnpm test:watch # Tests in watch mode
 pnpm typecheck  # Type checking
 pnpm gen        # Generate types (src/typegen.d.ts)
 pnpm watch      # Watch mode
@@ -30,8 +35,8 @@ pnpm release    # Bump version and publish (uses bumpp)
 ## Workflow
 
 - **After modifying configs**: Always run `pnpm gen` to update type definitions
-- **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, and
-  typecheck
+- **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, typecheck
+  and tests
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
 
 ## Architecture
