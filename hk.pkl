@@ -42,12 +42,19 @@ local test = new Step {
     shell = bash
 }
 
+local renovateConfig = new Step {
+    glob = List("renovate.json")
+    check = "pnpm dlx --package renovate renovate-config-validator --strict"
+    shell = bash
+}
+
 hooks {
     ["pre-commit"] {
         fix = true
         stash = "none"
         steps {
             ...sharedGuards
+            ["renovate-config"] = renovateConfig
             ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
@@ -79,6 +86,7 @@ hooks {
     ["check"] {
         steps {
             ...sharedGuards
+            ["renovate-config"] = renovateConfig
             ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck

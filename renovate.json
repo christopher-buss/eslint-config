@@ -17,6 +17,16 @@
 			"groupSlug": "patch"
 		},
 		{
+			"matchPackageNames": [
+				"@eslint-react/**",
+				"eslint-plugin-react-jsx",
+				"eslint-plugin-react-naming-convention",
+				"eslint-plugin-react-x"
+			],
+			"groupName": "eslint-react",
+			"groupSlug": "eslint-react"
+		},
+		{
 			"matchPackageNames": ["/@types/node/"],
 			"enabled": false
 		}
