@@ -27,6 +27,9 @@ catalogs:
     '@types/picomatch':
       specifier: 4.0.3
       version: 4.0.3
+    '@types/semver':
+      specifier: 7.7.1
+      version: 7.7.1
     '@types/yargs':
       specifier: 17.0.35
       version: 17.0.35
@@ -254,6 +257,9 @@ catalogs:
     prettier:
       specifier: 3.9.4
       version: 3.9.4
+    semver:
+      specifier: 7.8.5
+      version: 7.8.5
     toml-eslint-parser:
       specifier: 1.0.3
       version: 1.0.3
@@ -421,6 +427,9 @@ importers:
       prettier:
         specifier: catalog:prod
         version: 3.9.4
+      semver:
+        specifier: catalog:prod
+        version: 7.8.5
       toml-eslint-parser:
         specifier: catalog:prod
         version: 1.0.3
@@ -455,6 +464,9 @@ importers:
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.3
+      '@types/semver':
+        specifier: catalog:dev
+        version: 7.7.1
       '@types/yargs':
         specifier: catalog:dev
         version: 17.0.35
@@ -1871,6 +1883,9 @@ packages:
 
   '@types/picomatch@4.0.3':
     resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
+
+  '@types/semver@7.7.1':
+    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
@@ -4938,6 +4953,8 @@ snapshots:
       undici-types: 7.8.0
 
   '@types/picomatch@4.0.3': {}
+
+  '@types/semver@7.7.1': {}
 
   '@types/unist@3.0.3': {}
 

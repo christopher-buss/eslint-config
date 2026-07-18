@@ -130,10 +130,12 @@ function toJsdoc(meta: RuleMeta | undefined): Array<string> {
 	return lines;
 }
 
+const collator = new Intl.Collator();
+
 const renamedEntries: Array<string> = [];
 let renamedFallbacks = 0;
 const renamedPrefixPairs = Object.entries(oxlintJsPluginPrefixRenames);
-renamedPrefixPairs.sort(([, a], [, b]) => a.localeCompare(b));
+renamedPrefixPairs.sort(([, a], [, b]) => collator.compare(a, b));
 
 for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
 	const specifier = oxlintJsPlugins[oxlintPrefix];

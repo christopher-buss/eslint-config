@@ -17,6 +17,7 @@ import {
 	isInEditorEnvironment,
 	mergeGlobs,
 	overrideRuleSeverity,
+	resolveNodeMajor,
 	resolveOxfmtConfigOptionsSync,
 	resolveSubOptions,
 } from "../utils.ts";
@@ -250,6 +251,7 @@ export function isentinel(
 			oxlintE18e({
 				excludeFiles: robloxScopedFiles,
 				isInEditor,
+				nodeMajor: resolveNodeMajor(options.settings),
 				type: projectType,
 				...(enableE18e === true ? {} : enableE18e),
 			}),

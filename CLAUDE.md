@@ -12,7 +12,7 @@ renaming, spell checking (CSpell), and Prettier integration.
 
 ## Environment
 
-- Node.js >= 22.16.0
+- Node.js >= 24.12.0 (see `engines` in `package.json`)
 - pnpm 10.24.0 (auto-managed via `packageManager` field)
 
 ## Commands

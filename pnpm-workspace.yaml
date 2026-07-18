@@ -39,6 +39,7 @@ catalogs:
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 24.1.0
     "@types/picomatch": 4.0.3
+    "@types/semver": 7.7.1
     "@types/yargs": 17.0.35
     bumpp: 11.1.0
     concurrently: 10.0.3
@@ -116,6 +117,7 @@ catalogs:
     oxlint-plugin-eslint: 1.74.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.4
+    semver: 7.8.5
     toml-eslint-parser: 1.0.3
     yaml-eslint-parser: 2.0.0
     yargs: 18.0.0

@@ -10,6 +10,7 @@ import {
 	isInEditorEnvironment,
 	mergeGlobs,
 	overrideRuleSeverity,
+	resolveNodeMajor,
 	resolveOxfmtConfigOptions,
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
@@ -335,6 +336,7 @@ export async function isentinel(
 			e18e({
 				ignores: robloxScopedFiles,
 				isInEditor,
+				nodeMajor: resolveNodeMajor(options.settings),
 				type: projectType,
 				...(enableE18e === true ? {} : enableE18e),
 			}),

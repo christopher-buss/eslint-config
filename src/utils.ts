@@ -1,6 +1,7 @@
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
+import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -8,6 +9,7 @@ import path from "node:path";
 import process from "node:process";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import prettier from "prettier";
+import { minVersion } from "semver";
 
 import type { PrettierOptions } from "./eslint/configs/index.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
@@ -16,7 +18,17 @@ import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
+interface DevelopmentEngineRuntime {
+	name?: string;
+	version?: string;
+}
+
 type ModuleImport<T> = Promise<T | { default: T }>;
+
+interface PackageJsonEngines {
+	devEngines?: { runtime?: Array<DevelopmentEngineRuntime> | DevelopmentEngineRuntime };
+	engines?: { node?: string };
+}
 
 type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
@@ -164,6 +176,62 @@ export function resolveWithDefaults<T>(value: boolean | T | undefined, defaults:
 	}
 
 	return value;
+}
+
+/**
+ * Finds the Node major version the linted project targets.
+ *
+ * The shared `settings.n.version` / `settings.node.version` values win, so the
+ * setting `eslint-plugin-n` already reads doubles as the override for every
+ * version-gated rule in the preset. Failing that, this walks up from `cwd` for
+ * the nearest `package.json` that declares a version — leaf manifests in a
+ * workspace frequently omit the field and leave it to the root, so a manifest
+ * without it is skipped rather than treated as an answer.
+ *
+ * A range that cannot be parsed resolves to `undefined`, which leaves
+ * version-gated rules off rather than enabling them for a runtime that cannot
+ * support them.
+ *
+ * @param settings - Shared ESLint/oxlint settings to read the override from.
+ * @param cwd - Directory to start searching from.
+ * @returns The targeted Node major, or `undefined` when nothing declares one.
+ */
+export function resolveNodeMajor(
+	settings?: Readonly<Record<string, unknown>>,
+	cwd: string = process.cwd(),
+): number | undefined {
+	const configured = readSettingsNodeVersion(settings);
+	if (configured !== undefined) {
+		return parseNodeMajor(configured);
+	}
+
+	let searchFrom = cwd;
+
+	while (true) {
+		const manifestPath = findUpSync("package.json", { cwd: searchFrom });
+		if (manifestPath === undefined) {
+			return undefined;
+		}
+
+		let manifest: PackageJsonEngines = {};
+		try {
+			manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as PackageJsonEngines;
+		} catch {
+			// An unreadable or malformed manifest tells us nothing; keep walking.
+		}
+
+		const range = readNodeRange(manifest);
+		if (range !== undefined) {
+			return parseNodeMajor(range);
+		}
+
+		const parent = path.dirname(path.dirname(manifestPath));
+		if (parent === searchFrom) {
+			return undefined;
+		}
+
+		searchFrom = parent;
+	}
 }
 
 export function resolveSubOptions<K extends keyof OptionsConfig>(
@@ -549,4 +617,57 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+/**
+ * Resolves the lowest Node major version a semver range can match.
+ *
+ * @param range - A semver range such as `>=24.12.0` or `^24 || ^26`.
+ * @returns The lowest major version, or `undefined` for an invalid range.
+ */
+function parseNodeMajor(range: string): number | undefined {
+	try {
+		return minVersion(range)?.major;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Reads the Node version range from the shared settings, checking both keys
+ * `eslint-plugin-n` accepts so a project configuring it for that plugin gets
+ * the preset's version-gated rules lined up for free.
+ *
+ * @param settings - The shared settings object, if any.
+ * @returns The configured range, or `undefined` when unset.
+ */
+function readSettingsNodeVersion(settings?: Readonly<Record<string, unknown>>): string | undefined {
+	for (const key of ["n", "node"]) {
+		const version = (settings?.[key] as undefined | { version?: unknown })?.version;
+		if (typeof version === "string") {
+			return version;
+		}
+	}
+
+	return undefined;
+}
+
+/**
+ * Reads the declared Node version range from a manifest, preferring
+ * `engines.node` and falling back to the `devEngines.runtime` entry named
+ * `node`, matching how `eslint-plugin-n` resolves the same question.
+ *
+ * @param manifest - The parsed manifest.
+ * @returns The declared range, or `undefined` when the manifest declares none.
+ */
+function readNodeRange(manifest: PackageJsonEngines): string | undefined {
+	const enginesNode = manifest.engines?.node;
+	if (enginesNode !== undefined) {
+		return enginesNode;
+	}
+
+	const { runtime } = manifest.devEngines ?? {};
+	const runtimes = Array.isArray(runtime) ? runtime : [runtime];
+
+	return runtimes.find((entry) => entry?.name === "node")?.version;
 }

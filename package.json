@@ -111,6 +111,7 @@
 		"oxlint-plugin-eslint": "catalog:prod",
 		"oxlint-plugin-oxlint-comments": "catalog:prod",
 		"prettier": "catalog:prod",
+		"semver": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
 		"yargs": "catalog:prod"
@@ -124,6 +125,7 @@
 		"@stylistic/eslint-plugin-migrate": "catalog:dev",
 		"@types/node": "catalog:dev",
 		"@types/picomatch": "catalog:dev",
+		"@types/semver": "catalog:dev",
 		"@types/yargs": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",

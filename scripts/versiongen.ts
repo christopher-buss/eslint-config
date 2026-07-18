@@ -3,6 +3,8 @@ import { parsePnpmWorkspaceYaml } from "pnpm-workspace-yaml";
 
 import { dependenciesMap } from "../src/cli/constants.ts";
 
+const collator = new Intl.Collator();
+
 const names = new Set(["eslint", ...Object.values(dependenciesMap).flat()]);
 
 const yaml = parsePnpmWorkspaceYaml(
@@ -21,7 +23,7 @@ const versions = Object.fromEntries(
 		}
 
 		return [name, version] as const;
-	}).sort((a, b) => a[0].localeCompare(b[0])),
+	}).sort((a, b) => collator.compare(a[0], b[0])),
 );
 
 await fs.writeFile(

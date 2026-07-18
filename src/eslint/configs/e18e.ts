@@ -1,6 +1,6 @@
 import { GLOB_PACKAGE_JSON, GLOB_SRC } from "../../globs.ts";
 import { e18eRules } from "../../rules/e18e.ts";
-import { interopDefault } from "../../utils.ts";
+import { interopDefault, resolveNodeMajor } from "../../utils.ts";
 import type {
 	OptionsE18e,
 	OptionsFiles,
@@ -16,12 +16,16 @@ export async function e18e({
 	modernization = true,
 	type = "game",
 	moduleReplacements = type === "package" && isInEditor,
+	nodeMajor = resolveNodeMajor(),
 	overrides = {},
 	performanceImprovements = true,
 }: OptionsE18e &
 	OptionsFiles &
 	OptionsIsInEditor &
-	OptionsProjectType & { ignores?: Array<string> } = {}): Promise<Array<TypedFlatConfigItem>> {
+	OptionsProjectType & {
+		ignores?: Array<string>;
+		nodeMajor?: number;
+	} = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [jsoncEslintParser, pluginE18e] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
 		interopDefault(import("@e18e/eslint-plugin")),
@@ -36,7 +40,7 @@ export async function e18e({
 				e18e: pluginE18e,
 			},
 			rules: {
-				...e18eRules({ modernization, performanceImprovements }),
+				...e18eRules({ modernization, nodeMajor, performanceImprovements }),
 
 				...overrides,
 			},
