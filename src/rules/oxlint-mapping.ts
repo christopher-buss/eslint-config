@@ -23,6 +23,8 @@ export type OxlintTarget =
  * with the reason why.
  */
 export const staysInEslint: Readonly<Record<string, string>> = {
+	"e18e/* (optionally type-aware)":
+		"Four e18e rules (prefer-array-at, prefer-array-to-reversed, prefer-array-to-sorted, prefer-spread-syntax) run without type information but detect more with it, so they stay in ESLint (see optionallyTypeAwareRules); the rest run in oxlint as a jsPlugin",
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
@@ -522,21 +524,18 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unused-imports/no-unused-imports": "js-plugin",
 	"unused-imports/no-unused-vars": "js-plugin",
 
-	// Part: e18e (run via jsPlugin; non-roblox projects only)
+	// Part: e18e (run via jsPlugin; non-roblox projects only. The optionally
+	// type-aware rules stay in ESLint, see optionallyTypeAwareRules)
 	"e18e/ban-dependencies": "js-plugin",
-	"e18e/prefer-array-at": "js-plugin",
 	"e18e/prefer-array-fill": "js-plugin",
 	"e18e/prefer-array-from-map": "js-plugin",
 	"e18e/prefer-array-some": "js-plugin",
-	"e18e/prefer-array-to-reversed": "js-plugin",
-	"e18e/prefer-array-to-sorted": "js-plugin",
 	"e18e/prefer-array-to-spliced": "js-plugin",
 	"e18e/prefer-date-now": "js-plugin",
 	"e18e/prefer-includes": "js-plugin",
 	"e18e/prefer-nullish-coalescing": "js-plugin",
 	"e18e/prefer-object-has-own": "js-plugin",
 	"e18e/prefer-regex-test": "js-plugin",
-	"e18e/prefer-spread-syntax": "js-plugin",
 	"e18e/prefer-static-regex": "js-plugin",
 	"e18e/prefer-string-fromcharcode": "js-plugin",
 	"e18e/prefer-timer-args": "js-plugin",
@@ -862,6 +861,25 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Rules that run without type information but produce better results with it:
+ * they widen their detection (or avoid false negatives) when the TypeScript
+ * parser services are available, and silently fall back to a syntax-only
+ * heuristic otherwise. Oxlint jsPlugins have no type information, so these
+ * rules would run in their degraded form there; they stay in ESLint, where the
+ * type-aware pass gives them a program.
+ *
+ * Unlike {@link typeAwareJsPluginRules} these do not declare
+ * `meta.docs.requiresTypeChecking`, so the metadata-based parity test cannot
+ * catch them; they are listed manually.
+ */
+export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
+	"e18e/prefer-array-at",
+	"e18e/prefer-array-to-reversed",
+	"e18e/prefer-array-to-sorted",
+	"e18e/prefer-spread-syntax",
+]);
+
+/**
  * ESLint rules covered on the oxlint side by a differently-named native oxc
  * rule (rather than by translating the rule itself). They are treated as
  * oxlint-covered, so hybrid mode drops them from ESLint and lets the oxc rule
@@ -887,6 +905,7 @@ export const excludedFromOxlint: ReadonlySet<string> = new Set([
 	...Object.keys(oxcCoveredRules),
 	"unicorn/no-unsafe-string-replacement",
 	...typeAwareJsPluginRules,
+	...optionallyTypeAwareRules,
 ]);
 
 /**

@@ -1,5 +1,5 @@
 import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
-import { typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
+import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 /**
@@ -9,6 +9,7 @@ import type { TypedFlatConfigItem } from "./types.ts";
  */
 const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
+	...optionallyTypeAwareRules,
 	"flawless/prefer-read-only-props",
 ]);
 
