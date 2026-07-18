@@ -64,7 +64,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 						argumentTemplate.length > 0 &&
 						argumentTemplate.every((template) => frameworks.includes(template));
 
-					if (results.uncommittedConfirmed !== true || isArgumentTemplateValid === true) {
+					if (isArgumentTemplateValid === true || results.uncommittedConfirmed !== true) {
 						return;
 					}
 

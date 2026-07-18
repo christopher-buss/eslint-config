@@ -71,6 +71,8 @@ export async function markdown({
 
 				"style/indent": "off",
 
+				"unicorn/no-missing-local-resource": "error",
+
 				// Package-specific stricter rules
 				...(type === "package"
 					? {

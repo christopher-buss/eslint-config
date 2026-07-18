@@ -85,6 +85,70 @@ type RequireNamedItems<O> = O extends { namedConfigs: true }
 		>
 	: unknown;
 
+/** A single accepted rest-argument shape. */
+type UserConfigElement = Awaitable<
+	Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem
+>;
+
+/** The named-configs counterpart of {@linkcode UserConfigElement}. */
+type NamedUserConfigElement = Awaitable<
+	Array<NamedFlatConfigItem> | FlatConfigComposer<any, any> | NamedFlatConfigItem
+>;
+
+/**
+ * The contextual anchor for a single rest argument.
+ *
+ * The anchor has to be a lone object type: a union (or a bare `C`) leaves rule
+ * literals with nothing to hover, so array and composer arguments are widened
+ * back to the permissive element type and only plain config objects — the case
+ * that carries `rules` — get pinned to `Item`.
+ *
+ * @template T - The inferred type of this argument.
+ * @template Element - The permissive fallback for non-object arguments.
+ * @template Item - The concrete config-object type to anchor against.
+ */
+type ContextualItem<T, Element, Item> =
+	T extends ReadonlyArray<unknown>
+		? { [J in keyof T]: Item }
+		: T extends FlatConfigComposer<any, any> | Promise<unknown>
+			? Element
+			: Item;
+
+/**
+ * Restores editor intellisense on the rest arguments.
+ *
+ * A `const` type parameter suppresses contextual typing, so a bare `C`
+ * parameter leaves rule literals with no declaration to hover — no JSDoc, no
+ * `@see` link. Mapping over `keyof C` re-supplies a contextual anchor while
+ * still inferring `C` literally, which the redundancy check depends on.
+ *
+ * @template C - The literal user-config tuple.
+ * @template Element - The permissive fallback for non-object arguments.
+ * @template Item - The concrete config-object type to anchor against.
+ */
+type ContextualItems<C, Element, Item> = {
+	[I in keyof C]: ContextualItem<C[I], Element, Item>;
+};
+
+/** The options shape the catch-all overload accepts. */
+type CatchAllOptions = Omit<OptionsConfig, "namedConfigs"> &
+	TypedFlatConfigItem & { namedConfigs?: boolean };
+
+/**
+ * The options argument, anchored to a concrete type so `rules` keeps its
+ * intellisense under the `const O` inference.
+ *
+ * @template O - The literal options type.
+ */
+type NamedOptionsArgument<O> = NamedOptionsConfig & O & ValidateOptions<O>;
+
+/**
+ * The catch-all counterpart of {@linkcode NamedOptionsArgument}.
+ *
+ * @template O - The literal options type.
+ */
+type CatchAllOptionsArgument<O> = CatchAllOptions & O & ValidateOptions<O>;
+
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",
 	"files",
@@ -113,22 +177,26 @@ export { defaultPluginRenaming } from "./plugin-renaming.ts";
  * @rejects Will throw an error if configuration generation fails.
  */
 export function isentinel<const O extends NamedOptionsConfig>(
-	options: O & ValidateOptions<O>,
+	options: NamedOptionsArgument<O>,
 	...userConfigs: Array<Awaitable<FlatConfigComposer<any, any>>>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export function isentinel<
 	const O extends NamedOptionsConfig,
 	const C extends Array<Awaitable<Array<NamedFlatConfigItem>>>,
 >(
-	options: O & ValidateOptions<O>,
-	...userConfigs: C & ValidateUserConfigs<C, O>
+	options: NamedOptionsArgument<O>,
+	...userConfigs: C &
+		ContextualItems<C, NamedUserConfigElement, NamedFlatConfigItem> &
+		ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export function isentinel<
 	const O extends NamedOptionsConfig,
 	const C extends Array<Awaitable<NamedFlatConfigItem>>,
 >(
-	options: O & ValidateOptions<O>,
-	...userConfigs: C & ValidateUserConfigs<C, O>
+	options: NamedOptionsArgument<O>,
+	...userConfigs: C &
+		ContextualItems<C, NamedUserConfigElement, NamedFlatConfigItem> &
+		ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 /**
  * The catch-all overload stays last: when every overload fails, TypeScript
@@ -149,8 +217,11 @@ export function isentinel<
 		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
 	>,
 >(
-	options: O & ValidateOptions<O>,
-	...userConfigs: C & RequireNamedItems<O> & ValidateUserConfigs<C, O>
+	options: CatchAllOptionsArgument<O>,
+	...userConfigs: C &
+		ContextualItems<C, UserConfigElement, TypedFlatConfigItem> &
+		RequireNamedItems<O> &
+		ValidateUserConfigs<C, O>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export async function isentinel(
 	options: OptionsConfig & TypedFlatConfigItem & { namedConfigs?: boolean },
@@ -166,12 +237,16 @@ export async function isentinel(
 		formatters,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
+		jsonc: enableJsonc = true,
 		jsx: enableJsx = true,
+		markdown: enableMarkdown = true,
 		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
 		react: enableReact = false,
 		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
+		toml: enableToml = true,
+		yaml: enableYaml = true,
 	} = options;
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
@@ -406,7 +481,7 @@ export async function isentinel(
 		);
 	}
 
-	if (options.jsonc !== false && !typeAwareOnly) {
+	if (enableJsonc !== false && !typeAwareOnly) {
 		configs.push(
 			jsonc({
 				...getOverrides(options, "jsonc"),
@@ -423,7 +498,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.yaml !== false && !typeAwareOnly) {
+	if (enableYaml !== false && !typeAwareOnly) {
 		configs.push(
 			yaml({
 				...getOverrides(options, "yaml"),
@@ -449,7 +524,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.toml !== false && !typeAwareOnly) {
+	if (enableToml !== false && !typeAwareOnly) {
 		configs.push(
 			toml({
 				...getOverrides(options, "toml"),
@@ -462,7 +537,7 @@ export async function isentinel(
 		}
 	}
 
-	if (options.markdown !== false && !typeAwareOnly) {
+	if (enableMarkdown !== false && !typeAwareOnly) {
 		configs.push(
 			markdown({
 				...getOverrides(options, "markdown"),
@@ -481,7 +556,7 @@ export async function isentinel(
 			}),
 		);
 
-		if (stylisticOptions !== false && options.yaml !== false) {
+		if (stylisticOptions !== false && enableYaml !== false) {
 			configs.push(sortCspell());
 		}
 	}

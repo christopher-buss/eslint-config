@@ -343,6 +343,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/no-subtraction-comparison": "js-plugin",
 	"unicorn/no-unnecessary-fetch-options": "js-plugin",
 	"unicorn/no-unnecessary-global-this": "js-plugin",
+	"unicorn/no-unnecessary-string-trim": "js-plugin",
 	"unicorn/no-unreadable-for-of-expression": "js-plugin",
 	"unicorn/no-unreadable-new-expression": "js-plugin",
 	"unicorn/no-unsafe-property-key": "js-plugin",
@@ -352,6 +353,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/no-useless-concat": "js-plugin",
 	"unicorn/no-useless-delete-check": "js-plugin",
 	"unicorn/no-useless-logical-operand": "js-plugin",
+	"unicorn/no-useless-re-export": "js-plugin",
 	"unicorn/no-useless-recursion": "js-plugin",
 	"unicorn/no-xor-as-exponentiation": "js-plugin",
 	"unicorn/operator-assignment": "js-plugin",
@@ -379,6 +381,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/prefer-string-pad-start-end": "js-plugin",
 	"unicorn/prefer-string-repeat": "js-plugin",
 	"unicorn/prefer-switch": "js-plugin",
+	"unicorn/prefer-then-catch": "js-plugin",
 	"unicorn/prefer-unary-minus": "js-plugin",
 	"unicorn/require-passive-events": "js-plugin",
 

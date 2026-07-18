@@ -127,7 +127,7 @@ export function combineProbes(
 		}
 
 		const matches = JSON.stringify(other.entry) === JSON.stringify(normalized.entry);
-		if (normalized.severityOnly || other.severityOnly || !matches) {
+		if (!matches || normalized.severityOnly || other.severityOnly) {
 			if (severityOf(normalized.entry) !== severityOf(other.entry)) {
 				continue;
 			}

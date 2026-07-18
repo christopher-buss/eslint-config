@@ -139,6 +139,7 @@ export function unicornRules(
 		"unicorn/no-useless-delete-check": "error",
 		"unicorn/no-useless-logical-operand": "error",
 		"unicorn/no-useless-promise-resolve-reject": "error",
+		"unicorn/no-useless-re-export": "error",
 		"unicorn/no-useless-recursion": "error",
 		"unicorn/no-useless-spread": "off",
 		"unicorn/no-useless-undefined": ["error", { checkArguments: false }],
@@ -162,6 +163,7 @@ export function unicornRules(
 		"unicorn/prefer-single-call": "error",
 		"unicorn/prefer-switch": "error",
 		"unicorn/prefer-ternary": ["error", "only-single-line"],
+		"unicorn/prefer-then-catch": "error",
 		"unicorn/prefer-unary-minus": "error",
 
 		...(stylistic !== false
@@ -186,6 +188,7 @@ export function unicornRules(
 					"unicorn/no-object-methods-with-collections": "error",
 					"unicorn/no-unnecessary-fetch-options": "error",
 					"unicorn/no-unnecessary-global-this": "error",
+					"unicorn/no-unnecessary-string-trim": "error",
 					"unicorn/no-unsafe-string-replacement": "error",
 					"unicorn/no-useless-coercion": "error",
 					"unicorn/no-useless-iterator-to-array": "error",
