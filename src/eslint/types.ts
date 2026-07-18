@@ -44,7 +44,7 @@ export * from "../types.ts";
 export type NamedFlatConfigItem = SetRequired<TypedFlatConfigItem, "name">;
 
 export interface OptionsOverridesTypeAware extends OptionsOverrides {
-	overridesTypeAware?: TypedFlatConfigItem["rules"];
+	overridesTypeAware?: NonNullable<TypedFlatConfigItem["rules"]>;
 }
 
 export interface OptionsTypeScriptParserOptions {

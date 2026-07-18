@@ -372,7 +372,7 @@ export async function isentinel(
 			stylistic: stylisticOptions,
 		}),
 		promise(),
-		sonarjs({ isInEditor }),
+		sonarjs({ isInEditor, roblox: enableRoblox }),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),

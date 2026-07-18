@@ -254,9 +254,9 @@ export function getOverrides(
 	options: OptionsConfig,
 	key: keyof OptionsConfig,
 ): {
-	files?: TypedFlatConfigItem["files"];
-	filesTypeAware?: TypedFlatConfigItem["files"];
-	ignoresTypeAware?: TypedFlatConfigItem["ignores"];
+	files?: NonNullable<TypedFlatConfigItem["files"]>;
+	filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
+	ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
 	overrides: TypedFlatConfigItem["rules"];
 	overridesTypeAware: TypedFlatConfigItem["rules"];
 } {

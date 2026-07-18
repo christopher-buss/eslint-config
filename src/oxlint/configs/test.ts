@@ -1,4 +1,5 @@
 import { GLOB_TESTS } from "../../globs.ts";
+import { sonarjsTestRules } from "../../rules/sonarjs.ts";
 import { jestRules, vitestRules } from "../../rules/test.ts";
 import type {
 	OptionsFiles,
@@ -65,6 +66,7 @@ export function oxlintTest({
 						roblox: isRoblox,
 						stylistic,
 					}),
+					...sonarjsTestRules({ jest: true }),
 					...overrides,
 					...jestOptions.overrides,
 				},
@@ -89,6 +91,7 @@ export function oxlintTest({
 						isInEditor,
 						stylistic,
 					}),
+					...sonarjsTestRules(),
 					...overrides,
 					...vitestOptions.overrides,
 				},

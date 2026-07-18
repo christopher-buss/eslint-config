@@ -42,10 +42,10 @@ export interface OxlintConfigFragmentOptions {
 	name: string;
 	excludeFiles?: Array<string>;
 	files: Array<string>;
-	globals?: TypedOxlintConfigItem["globals"];
+	globals?: NonNullable<TypedOxlintConfigItem["globals"]>;
 	keepUnmappedOff?: boolean;
 	rules: Rules | undefined;
-	settings?: TypedOxlintConfigItem["settings"];
+	settings?: NonNullable<TypedOxlintConfigItem["settings"]>;
 }
 
 /**

@@ -1,10 +1,11 @@
 import { sonarjsRules } from "../../rules/sonarjs.ts";
 import { interopDefault } from "../../utils.ts";
-import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
+import type { OptionsHasRoblox, OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
 
 export async function sonarjs({
 	isInEditor,
-}: Required<OptionsIsInEditor>): Promise<Array<TypedFlatConfigItem>> {
+	roblox,
+}: OptionsHasRoblox & Required<OptionsIsInEditor>): Promise<Array<TypedFlatConfigItem>> {
 	const pluginSonar = await interopDefault(import("eslint-plugin-sonarjs"));
 
 	return [
@@ -13,7 +14,7 @@ export async function sonarjs({
 			plugins: {
 				sonar: pluginSonar,
 			},
-			rules: sonarjsRules({ isInEditor }),
+			rules: sonarjsRules({ isInEditor, roblox }),
 		},
 	];
 }

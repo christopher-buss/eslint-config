@@ -3,6 +3,7 @@ import type PluginVitest from "@vitest/eslint-plugin";
 import type PluginJest from "eslint-plugin-jest";
 
 import { GLOB_TESTS } from "../../globs.ts";
+import { sonarjsTestRules } from "../../rules/sonarjs.ts";
 import { jestRules, vitestRules } from "../../rules/test.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
 import type {
@@ -92,6 +93,7 @@ export async function test({
 						roblox: isRoblox,
 						stylistic,
 					}),
+					...sonarjsTestRules({ jest: true }),
 
 					...overrides,
 					...jestOptions.overrides,
@@ -149,6 +151,7 @@ export async function test({
 						isInEditor,
 						stylistic,
 					}),
+					...sonarjsTestRules(),
 
 					...overrides,
 					...vitestOptions.overrides,

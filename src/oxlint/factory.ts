@@ -190,7 +190,7 @@ export function isentinel(
 		}),
 		oxlintImports({ stylistic: stylisticOptions, type: projectType }),
 		oxlintPromise(),
-		oxlintSonarjs({ isInEditor }),
+		oxlintSonarjs({ isInEditor, roblox: enableRoblox }),
 		oxlintTypescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),

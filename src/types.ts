@@ -127,7 +127,7 @@ export interface OptionsFormatters {
 }
 
 export interface OptionsOverrides extends OptionsFiles {
-	overrides?: TypedFlatConfigItem["rules"];
+	overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
 }
 
 export interface OptionsPnpm {
@@ -173,7 +173,7 @@ export interface OptionsJest {
 	 *
 	 * Takes precedence over the shared `test.overrides`.
 	 */
-	overrides?: TypedFlatConfigItem["rules"];
+	overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
 }
 
 export interface OptionsVitest {
@@ -202,7 +202,7 @@ export interface OptionsVitest {
 	 *
 	 * Takes precedence over the shared `test.overrides`.
 	 */
-	overrides?: TypedFlatConfigItem["rules"];
+	overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
 	/**
 	 * Enable typecheck rules for Vitest.
 	 *

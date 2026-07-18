@@ -1,4 +1,4 @@
-import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
+import type { OptionsHasRoblox, OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
 
 /**
  * SonarJS rules shared between the ESLint and oxlint factories.
@@ -8,7 +8,8 @@ import type { OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
  */
 export function sonarjsRules({
 	isInEditor,
-}: Required<OptionsIsInEditor>): TypedFlatConfigItem["rules"] {
+	roblox = true,
+}: OptionsHasRoblox & Required<OptionsIsInEditor>): TypedFlatConfigItem["rules"] {
 	return {
 		"sonar/bool-param-default": "error",
 		"sonar/cognitive-complexity": "warn",
@@ -33,6 +34,7 @@ export function sonarjsRules({
 		"sonar/no-duplicated-branches": "error",
 		"sonar/no-element-overwrite": "error",
 		"sonar/no-empty-collection": "error",
+		"sonar/no-floating-point-equality": "error",
 		"sonar/no-gratuitous-expressions": "off",
 		"sonar/no-identical-conditions": "error",
 		"sonar/no-identical-expressions": "error",
@@ -62,5 +64,36 @@ export function sonarjsRules({
 		"sonar/public-static-readonly": "error",
 		"sonar/todo-tag": isInEditor ? "warn" : "off",
 		"sonar/use-type-alias": "error",
+		...(!roblox
+			? {
+					"sonar/no-default-utility-imports": "error",
+					"sonar/super-linear-regex": "error",
+				}
+			: {}),
+	};
+}
+
+/**
+ * SonarJS rules that only apply to test files.
+ *
+ * `no-mixed-completion-style` and `synchronous-suite-callback` are jest-only:
+ * both exclude vitest by design, since vitest awaits the suite callback and
+ * does not support the `done` callback, so neither reports in a vitest file.
+ *
+ * @param options - Which test framework the rules are being enabled for.
+ * @returns The rule map.
+ */
+export function sonarjsTestRules({
+	jest = false,
+}: { jest?: boolean } = {}): TypedFlatConfigItem["rules"] {
+	return {
+		"sonar/no-incompatible-assertion-types": "error",
+		"sonar/no-trivial-assertions": "error",
+		...(jest
+			? {
+					"sonar/no-mixed-completion-style": "error",
+					"sonar/synchronous-suite-callback": "error",
+				}
+			: {}),
 	};
 }
