@@ -34,6 +34,14 @@ local typecheck = new Step {
     shell = bash
 }
 
+// Runs `vitest` directly rather than the `test` script, which prefixes `nr
+// gen` and would rewrite tracked typegen files mid-commit.
+local test = new Step {
+    glob = List("*.ts", "*.tsx")
+    check = "pnpm exec vitest run"
+    shell = bash
+}
+
 hooks {
     ["pre-commit"] {
         fix = true
@@ -43,6 +51,7 @@ hooks {
             ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
+            ["test"] = test
         }
     }
     ["pre-push"] {
