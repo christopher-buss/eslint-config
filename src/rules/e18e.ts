@@ -2,21 +2,23 @@ import type { TypedFlatConfigItem } from "../types.ts";
 
 export interface E18eRuleOptions {
 	modernization?: boolean;
-	moduleReplacements?: boolean;
 	performanceImprovements?: boolean;
 }
 
 /**
- * The e18e rules shared between the ESLint and oxlint factories. Mirrors the
- * `modernization`, `moduleReplacements` and `performanceImprovements` presets
- * of `@e18e/eslint-plugin`; all rules are syntax-only (no type information).
+ * The e18e source rules shared between the ESLint and oxlint factories. Mirrors
+ * the `modernization` and `performanceImprovements` presets of
+ * `@e18e/eslint-plugin`; all rules are syntax-only (no type information).
+ *
+ * The `moduleReplacements` preset is not included here: its only rule,
+ * `ban-dependencies`, has JSON-only visitors and so is applied separately
+ * against `package.json` by the ESLint factory.
  *
  * @param options - Which preset groups to enable.
  * @returns The rule map.
  */
 export function e18eRules({
 	modernization = true,
-	moduleReplacements = false,
 	performanceImprovements = true,
 }: E18eRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
@@ -34,8 +36,6 @@ export function e18eRules({
 					"e18e/prefer-url-canparse": "error",
 				}
 			: {}),
-
-		...(moduleReplacements ? { "e18e/ban-dependencies": "error" } : {}),
 
 		...(performanceImprovements
 			? {

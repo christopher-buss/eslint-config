@@ -187,7 +187,8 @@ export interface OptionsE18e extends OptionsOverrides {
 	 */
 	modernization?: boolean;
 	/**
-	 * Include module replacements rules.
+	 * Include module replacements rules. These are linted against
+	 * `package.json`.
 	 *
 	 * @see https://github.com/e18e/eslint-plugin#module-replacements
 	 * @default options.isInEditor

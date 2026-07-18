@@ -13,10 +13,7 @@ import { createOxlintConfigs } from "../utils.ts";
 export function oxlintE18e({
 	excludeFiles,
 	files = [GLOB_SRC],
-	isInEditor = false,
 	modernization = true,
-	type = "game",
-	moduleReplacements = type === "package" && isInEditor,
 	overrides = {},
 	performanceImprovements = true,
 }: E18eRuleOptions &
@@ -30,7 +27,7 @@ export function oxlintE18e({
 			...(excludeFiles ? { excludeFiles } : {}),
 			files: files.flat(),
 			rules: {
-				...e18eRules({ modernization, moduleReplacements, performanceImprovements }),
+				...e18eRules({ modernization, performanceImprovements }),
 				...overrides,
 			},
 		}),

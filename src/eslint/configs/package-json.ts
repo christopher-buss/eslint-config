@@ -2,6 +2,7 @@ import { findUp } from "find-up-simple";
 import path from "node:path";
 import process from "node:process";
 
+import { GLOB_PACKAGE_JSON, GLOB_PACKAGE_JSON_ROOT } from "../../globs.ts";
 import { interopDefault } from "../../utils.ts";
 import type {
 	OptionsHasRoblox,
@@ -25,7 +26,7 @@ export async function packageJson({
 
 	const rootOverride: TypedFlatConfigItem = {
 		name: "isentinel/package-json/root",
-		files: ["package.json"],
+		files: [GLOB_PACKAGE_JSON_ROOT],
 		languageOptions: {
 			parser: jsoncEslintParser,
 		},
@@ -43,7 +44,7 @@ export async function packageJson({
 		},
 		{
 			name: "isentinel/package-json",
-			files: ["**/package.json"],
+			files: [GLOB_PACKAGE_JSON],
 			languageOptions: {
 				parser: jsoncEslintParser,
 			},

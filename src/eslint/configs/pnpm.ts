@@ -1,6 +1,7 @@
 import { findUp } from "find-up-simple";
 import fs from "node:fs/promises";
 
+import { GLOB_PACKAGE_JSON } from "../../globs.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
 import type { OptionsIsInEditor, OptionsPnpm, TypedFlatConfigItem } from "../types.ts";
 
@@ -26,7 +27,7 @@ export async function pnpm(
 		},
 		{
 			name: "isentinel/pnpm/package-json",
-			files: ["package.json", "**/package.json"],
+			files: [GLOB_PACKAGE_JSON],
 			languageOptions: {
 				parser: jsoncParser,
 			},
