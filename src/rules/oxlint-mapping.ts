@@ -554,6 +554,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"style/spaced-comment": "js-plugin",
 
 	// Part: Comment length (run via jsPlugin)
+	"comment-length/limit-multi-line-comments": "js-plugin",
 	"comment-length/limit-single-line-comments": "js-plugin",
 
 	// Part: Small-rules (run via jsPlugin; the type-aware read-only-props rule
