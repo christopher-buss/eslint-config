@@ -1,4 +1,5 @@
 import { ESLint } from "eslint";
+import type { Linter } from "eslint";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, it } from "vitest";
@@ -45,6 +46,17 @@ const variants: Array<MarkdownVariant> = [
 	},
 ];
 
+/**
+ * Whether a lint message is fatal: a parse failure, a missing plugin or a
+ * crashed rule. Those carry a null ruleId.
+ *
+ * @param message - The lint message to classify.
+ * @returns Whether the message is fatal.
+ */
+function isFatalMessage(message: Linter.LintMessage): boolean {
+	return message.fatal === true || message.ruleId === null;
+}
+
 describe("oxlint hybrid markdown linting", () => {
 	describe.for(variants)("$name", (variant: MarkdownVariant) => {
 		it("should lint markdown files (and their fences) without fatal errors", async ({
@@ -72,9 +84,7 @@ describe("oxlint hybrid markdown linting", () => {
 			// Fatal messages (parse failures, "could not find plugin",
 			// crashed rules) have a null ruleId.
 			const fatal = results.flatMap((result) => {
-				return result.messages
-					.filter((message) => message.fatal === true || message.ruleId === null)
-					.map((message) => message.message);
+				return result.messages.filter(isFatalMessage).map((message) => message.message);
 			});
 
 			expect(fatal).toStrictEqual([]);

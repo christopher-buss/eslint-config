@@ -89,6 +89,17 @@ async function buildSplitConfigs(options: Record<string, unknown>): Promise<{
  * @param slow - Effective severities of the type-aware-only pass.
  * @returns Human-readable problems.
  */
+/**
+ * Whether a config item targets something other than plain JS or TS, meaning
+ * it carries a processor or declares its own language.
+ *
+ * @param config - The resolved flat config item.
+ * @returns Whether the config item is for a non-JS/TS language.
+ */
+function hasNonJsLanguage(config: TypedFlatConfigItem): boolean {
+	return config.processor !== undefined || "language" in config;
+}
+
 function findPartitionProblems(
 	filePath: string,
 	full: Map<string, Severity>,
@@ -241,9 +252,7 @@ describe("type-aware split", () => {
 
 			const { slow } = await buildSplitConfigs(variant.options);
 
-			const withOtherLanguages = slow.filter(
-				(config) => config.processor !== undefined || "language" in config,
-			);
+			const withOtherLanguages = slow.filter(hasNonJsLanguage);
 
 			expect(withOtherLanguages).toStrictEqual([]);
 

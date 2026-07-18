@@ -91,10 +91,12 @@ describe("config snapshots", () => {
 
 		// Roblox plugin rules bind only to the scoped files.
 		const robloxConfig = configs.find((config) => config.name === "isentinel/roblox");
+
 		expect(robloxConfig?.files).toStrictEqual(["src/**"]);
 
 		// The complement (everything outside src/**) gets node rules.
 		const nodeConfig = configs.find((config) => config.name === "isentinel/node/rules");
+
 		expect(nodeConfig).toBeDefined();
 		expect(nodeConfig?.ignores).toStrictEqual(["src/**"]);
 
@@ -103,10 +105,12 @@ describe("config snapshots", () => {
 		const complementUnicorn = configs.find(
 			(config) => config.name === "isentinel/unicorn/complement",
 		);
+
 		expect(complementUnicorn?.ignores).toStrictEqual(["src/**"]);
 		expect(complementUnicorn?.rules).toHaveProperty("unicorn/no-accidental-bitwise-operator");
 
 		const baseUnicorn = findUnicornRules(configs);
+
 		expect(baseUnicorn).not.toHaveProperty("unicorn/no-accidental-bitwise-operator");
 	});
 

@@ -5,9 +5,27 @@ export default isentinel(
 		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
 		roblox: false,
+		// Must mirror the `test` option in eslint.config.ts: hybrid mode drops
+		// the jsPlugin-mapped test rules from ESLint, so if oxlint does not
+		// build a test config they run in neither linter.
+		test: {
+			vitest: {
+				typecheck: true,
+			},
+		},
 		type: "package",
 		typescript: {
 			erasableOnly: true,
+		},
+	},
+	{
+		name: "local/test-overrides",
+		files: ["test/**/*.ts"],
+		rules: {
+			// The parity and snapshot suites iterate the whole rule mapping and
+			// accumulate problems, so branching and long assertion runs are
+			// inherent to their shape rather than a smell.
+			"vitest/max-expects": "off",
 		},
 	},
 	{

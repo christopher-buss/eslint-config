@@ -31,6 +31,16 @@ interface ParityVariant {
  * @param oxlintEffective - Effective oxlint severities.
  * @returns Human-readable problems.
  */
+/**
+ * Resolve the registered name of a jsPlugin entry.
+ *
+ * @param plugin - The plugin entry, either a bare specifier or a named object.
+ * @returns The name under which the plugin is registered.
+ */
+function jsPluginName(plugin: string | { name: string }): string {
+	return typeof plugin === "string" ? plugin : plugin.name;
+}
+
 function findMissingCoverage(
 	filePath: string,
 	eslintEffective: Map<string, Severity>,
@@ -348,9 +358,7 @@ describe("oxlint options-level rules", () => {
 
 		const translated = translateRuleToOxlint("no-restricted-syntax");
 		const effective = effectiveOxlintRules(config, "src/index.ts");
-		const registered = (config.jsPlugins ?? []).map((plugin) => {
-			return typeof plugin === "string" ? plugin : plugin.name;
-		});
+		const registered = config.jsPlugins!.map(jsPluginName);
 
 		expect(effective.get(translated)).toBe("off");
 		expect(registered).toContain("eslint-js");
@@ -430,7 +438,7 @@ describe("oxlint env and globals", () => {
 			isInEditor: false,
 		});
 
-		const overrides = config.overrides ?? [];
+		const overrides = config.overrides!;
 		const withWindow = overrides
 			.map((override, index) => ({ index, value: override.globals?.["window"] }))
 			.filter((entry) => entry.value !== undefined);
@@ -534,6 +542,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 			const config = oxlintIsentinel({ name: "test/js-plugin-prefixes", ...options });
 
 			const registered = registeredJsPlugins(config);
+
 			expect(registered.size).toBeGreaterThan(0);
 
 			for (const [prefix, specifier] of registered) {
@@ -542,9 +551,10 @@ describe("oxlint jsPlugin type-awareness", () => {
 			}
 
 			const knownPrefixes = new Set<string>([
-				...((config.plugins ?? []) as Array<string>),
+				...(config.plugins! as Array<string>),
 				...registered.keys(),
 			]);
+
 			expect(unresolvedPrefixedRules(config, knownPrefixes)).toStrictEqual([]);
 		}
 	});

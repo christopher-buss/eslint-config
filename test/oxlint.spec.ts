@@ -51,6 +51,53 @@ function getOxlintNativeRules(): Map<string, OxlintRuleInfo> {
 }
 
 /**
+ * Check one non-jsPlugin mapping entry against oxlint's native rule list.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @param target - Where the mapping says the rule runs.
+ * @param nativeRules - Native rule metadata keyed by `scope/rule`.
+ * @returns The problems found, empty when the mapping is correct.
+ */
+function nativeMappingProblems(
+	rule: string,
+	target: string,
+	nativeRules: Map<string, OxlintRuleInfo>,
+): Array<string> {
+	const translated = translateRuleToOxlint(rule);
+	const lookup = translated.includes("/") ? translated : `eslint/${translated}`;
+	const info = nativeRules.get(lookup);
+
+	if (info === undefined) {
+		return [`${rule} -> ${translated} does not exist in oxlint`];
+	}
+
+	if (target === "tsgolint" && !info.type_aware) {
+		return [`${rule} is mapped to tsgolint but is not type-aware`];
+	}
+
+	if (target === "native" && info.type_aware) {
+		return [`${rule} is mapped to native but requires type information`];
+	}
+
+	return [];
+}
+
+/**
+ * Whether an override turns off `oxc/no-barrel-file` for declaration files.
+ *
+ * @param override - The oxlint config override to inspect.
+ * @returns Whether the override disables the rule for `.d.ts` files.
+ */
+function disablesBarrelFileForDts(
+	override: NonNullable<OxlintConfig["overrides"]>[number],
+): boolean {
+	return (
+		override.files.some((glob) => String(glob).includes(".d.")) &&
+		override.rules?.["oxc/no-barrel-file"] === "off"
+	);
+}
+
+/**
  * Add every enabled rule from a rule map to the given set.
  *
  * @param rules - The rule map to scan.
@@ -232,30 +279,9 @@ describe("oxlint hybrid coverage", () => {
 		expect.hasAssertions();
 
 		const nativeRules = getOxlintNativeRules();
-		const problems: Array<string> = [];
-
-		for (const [rule, target] of Object.entries(oxlintRuleMapping)) {
-			if (target === "js-plugin") {
-				continue;
-			}
-
-			const translated = translateRuleToOxlint(rule);
-			const lookup = translated.includes("/") ? translated : `eslint/${translated}`;
-			const info = nativeRules.get(lookup);
-
-			if (info === undefined) {
-				problems.push(`${rule} -> ${translated} does not exist in oxlint`);
-				continue;
-			}
-
-			if (target === "tsgolint" && !info.type_aware) {
-				problems.push(`${rule} is mapped to tsgolint but is not type-aware`);
-			}
-
-			if (target === "native" && info.type_aware) {
-				problems.push(`${rule} is mapped to native but requires type information`);
-			}
-		}
+		const problems = Object.entries(oxlintRuleMapping)
+			.filter(([, target]) => target !== "js-plugin")
+			.flatMap(([rule, target]) => nativeMappingProblems(rule, target, nativeRules));
 
 		expect(problems).toStrictEqual([]);
 	});
@@ -423,7 +449,7 @@ describe("oxc rules", () => {
 		expect(build).not.toThrow();
 
 		const config = build();
-		const emitted = (config.overrides ?? []).some(
+		const emitted = config.overrides!.some(
 			(override) => override.rules?.["oxc/no-const-enum"] === "error",
 		);
 
@@ -436,15 +462,7 @@ describe("oxc rules", () => {
 
 		const config = oxlintIsentinel({ name: "test/oxc-dts", ...baseOptions });
 
-		const overrides = config.overrides ?? [];
-		let disabled = false;
-		for (const override of overrides) {
-			const isDts = override.files.some((glob) => String(glob).includes(".d."));
-			if (isDts && override.rules?.["oxc/no-barrel-file"] === "off") {
-				disabled = true;
-				break;
-			}
-		}
+		const disabled = config.overrides!.some(disablesBarrelFileForDts);
 
 		expect(disabled).toBe(true);
 	});
@@ -458,7 +476,7 @@ describe("oxc rules", () => {
 			rules: { "oxc/no-barrel-file": "off" },
 		});
 
-		const disabled = (config.overrides ?? []).some(
+		const disabled = config.overrides!.some(
 			(override) => override.rules?.["oxc/no-barrel-file"] === "off",
 		);
 
@@ -505,6 +523,8 @@ describe("scoped roblox complement", () => {
 	}
 
 	it("applies node rules to the complement with the roblox scope excluded", ({ expect }) => {
+		expect.hasAssertions();
+
 		const config = oxlintIsentinel({
 			name: "test/scoped-roblox",
 			gitignore: false,
@@ -513,13 +533,17 @@ describe("scoped roblox complement", () => {
 		});
 
 		const overrides = nodeOverrides(config);
+
 		expect(overrides.length).toBeGreaterThan(0);
+
 		for (const override of overrides) {
 			expect(override.excludeFiles).toStrictEqual(["src/**"]);
 		}
 	});
 
 	it("adds no node rules to the default roblox config", ({ expect }) => {
+		expect.hasAssertions();
+
 		const config = oxlintIsentinel({
 			name: "test/default-roblox",
 			gitignore: false,
