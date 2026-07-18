@@ -4009,7 +4009,7 @@ export interface RuleOptions {
    */
   'react/globals'?: Linter.RuleEntry<[]>
   /**
-   * Validates against mutating props, state, and other values that are immutable.
+   * Validates against passing functions that mutate captured local variables into frozen contexts such as JSX props, hook arguments, and hook return values.
    * @see https://eslint-react.xyz/docs/rules/immutability
    */
   'react/immutability'?: Linter.RuleEntry<[]>
