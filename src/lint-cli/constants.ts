@@ -5,6 +5,14 @@ import type { TypeAwareMode } from "./types.ts";
 export const DEFAULT_FILES_PER_WORKER = 350;
 
 /**
+ * Default files-per-worker for the fast (`--type-aware=off`) pass. A syntactic
+ * lint costs ~15ms/file against a fixed ~3s config-load per worker, so the
+ * break-even against spinning up another worker sits far higher than the
+ * type-aware pass — roughly 800 files. Overridable via `FAST_FILES_PER_WORKER`.
+ */
+export const DEFAULT_FAST_FILES_PER_WORKER = 800;
+
+/**
  * When the TS builder flags more than this many affected files, surgical
  * removal stops paying off: the runner deletes the mode's cache file wholesale
  * and treats every file as dirty. Overridable via
@@ -56,6 +64,22 @@ export const LINTABLE_EXTENSIONS = [
 	"toml",
 	"md",
 	"lua",
+] as const;
+
+/**
+ * The TS/JS-family extensions the type-aware (`--type-aware=only`) config
+ * lints. Only these files ever enter the type-aware cache, so the typed pass
+ * sizes its worker count from just this subset of the dirty set.
+ */
+export const TYPE_AWARE_EXTENSIONS = [
+	"ts",
+	"tsx",
+	"mts",
+	"cts",
+	"js",
+	"jsx",
+	"mjs",
+	"cjs",
 ] as const;
 
 /**

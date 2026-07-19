@@ -1,8 +1,22 @@
-/** Which type-aware linting mode ESLint should run in. */
+/**
+ * Which type-aware ESLint cache/builder a pass targets. `"off"` is the
+ * syntactic-only fast pass, `"only"` the type-aware pass; the full config
+ * (env unset) is represented by `undefined`.
+ */
 export type TypeAwareMode = "off" | "only";
 
-/** Logical identifier for each linter the runner drives. */
-export type ToolLabel = "eslint" | "oxc";
+/**
+ * User-selectable `--type-aware` value. `"full"` forces today's single
+ * full-config pass (the escape hatch); omitting the flag selects the default
+ * concurrent two-pass mode.
+ */
+export type TypeAwareOption = "full" | "off" | "only";
+
+/**
+ * Logical identifier for each linter child the runner drives. `"fast"` and
+ * `"typed"` are the two ESLint passes of the default concurrent mode.
+ */
+export type ToolLabel = "eslint" | "fast" | "oxc" | "typed";
 
 /** Logical binary name resolved from the consumer's `node_modules`. */
 export type ToolBin = "eslint" | "oxlint";
@@ -34,8 +48,11 @@ export interface LintCliOptions {
 	paths: Array<string>;
 	/** Print the composed command lines instead of running them. */
 	print: boolean;
-	/** ESLint type-aware mode; sets `ESLINT_TYPE_AWARE` for the child. */
-	typeAware: TypeAwareMode | undefined;
+	/**
+	 * Explicit `--type-aware` selection. `undefined` means the default
+	 * concurrent two-pass mode (fast + typed).
+	 */
+	typeAware: TypeAwareOption | undefined;
 }
 
 /** A single linter child process, described independently of the shell. */
@@ -54,16 +71,23 @@ export interface ChildCommand {
 export interface ComposeContext {
 	/** Absolute path to the agent ESLint formatter (resolved lazily). */
 	agentsFormatterPath: string;
-	/** ESLint cache file for the active type-aware mode. */
+	/** ESLint cache file for this pass. */
 	cacheLocation: string;
 	/** Whether the process is running in CI (`process.env.CI`). */
 	ci: boolean;
 	/** Concurrency value passed to ESLint's `--concurrency`. */
 	concurrency: "off" | number;
+	/** Label for the composed ESLint child (`eslint`, `fast` or `typed`). */
+	eslintLabel: ToolLabel;
 	/** Whether oxlint should receive `--type-aware`. */
 	oxlintTypeAware: boolean;
 	/** Target paths to lint. */
 	paths: Array<string>;
+	/**
+	 * Value for the ESLint child's `ESLINT_TYPE_AWARE`. `undefined` leaves it
+	 * unset (the full config).
+	 */
+	typeAwareEnv: TypeAwareMode | undefined;
 }
 
 /**

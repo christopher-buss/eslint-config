@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import picomatch from "picomatch";
 
-import { CACHE_BUST_PATTERNS, LINTABLE_EXTENSIONS } from "./constants.ts";
+import { CACHE_BUST_PATTERNS, LINTABLE_EXTENSIONS, TYPE_AWARE_EXTENSIONS } from "./constants.ts";
 
 const IGNORED_WALK_DIRECTORIES = new Set([
 	".git",
@@ -19,6 +19,10 @@ const IGNORED_WALK_DIRECTORIES = new Set([
 
 const LINTABLE_EXTENSION_SET = new Set<string>(
 	LINTABLE_EXTENSIONS.map((extension) => `.${extension}`),
+);
+
+const TYPE_AWARE_EXTENSION_SET = new Set<string>(
+	TYPE_AWARE_EXTENSIONS.map((extension) => `.${extension}`),
 );
 
 /**
@@ -48,6 +52,18 @@ export function collectCacheBustFiles(cwd: string): Array<string> {
 	return listFiles(cwd, ["."])
 		.filter((relative) => isMatch(relative))
 		.map((relative) => path.resolve(cwd, relative));
+}
+
+/**
+ * Whether a file is a TS/JS-family file, meaning it is linted by the type-aware
+ * (`--type-aware=only`) config. Used to size the typed pass from just the files
+ * that can actually enter its cache.
+ *
+ * @param filePath - The file path to test.
+ * @returns Whether the file is in the TS/JS family.
+ */
+export function isTypeAwareFile(filePath: string): boolean {
+	return TYPE_AWARE_EXTENSION_SET.has(path.extname(filePath).toLowerCase());
 }
 
 function hasLintableExtension(filePath: string): boolean {

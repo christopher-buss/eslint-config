@@ -14,11 +14,22 @@ import {
 	formatCommandLine,
 	splitArgs,
 } from "../src/lint-cli/command.ts";
-import { computeWorkerCount, resolveWorkerLimits } from "../src/lint-cli/concurrency.ts";
-import { ALL_CACHE_FILES, cacheFileForMode } from "../src/lint-cli/constants.ts";
+import {
+	computeWorkerCount,
+	resolveFastFilesPerWorker,
+	resolveWorkerLimits,
+} from "../src/lint-cli/concurrency.ts";
+import {
+	ALL_CACHE_FILES,
+	CACHE_FILE_FAST,
+	CACHE_FILE_TYPE_AWARE,
+	cacheFileForMode,
+} from "../src/lint-cli/constants.ts";
 import { collectLintableFiles } from "../src/lint-cli/files.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import type { ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
+import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
+import { composeCommands, runConcurrent } from "../src/lint-cli/run.ts";
+import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
@@ -27,8 +38,10 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		cacheLocation: ".eslintcache",
 		ci: false,
 		concurrency: "off",
+		eslintLabel: "eslint",
 		oxlintTypeAware: false,
 		paths: ["."],
+		typeAwareEnv: undefined,
 		...overrides,
 	};
 }
@@ -83,6 +96,12 @@ function withTemporaryDirectory(run: (directory: string) => void): void {
 
 function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
 	return computeWorkerCount({ dirtyCount: dirty, filesPerWorker: perWorker, maxWorkers: max });
+}
+
+function concurrencyArgument(commands: Array<ChildCommand>, label: string): string {
+	const command = commands.find((entry) => entry.label === label);
+	const index = command?.args.indexOf("--concurrency") ?? -1;
+	return command?.args[index + 1] ?? "";
 }
 
 describe("parseArguments", () => {
@@ -403,8 +422,14 @@ describe("command composition", () => {
 		expect.hasAssertions();
 
 		const command = composeEslintCommand(
-			options({ typeAware: "off" }),
-			baseContext({ cacheLocation: ".eslintcache-fast", concurrency: 4, paths: ["src"] }),
+			options(),
+			baseContext({
+				cacheLocation: ".eslintcache-fast",
+				concurrency: 4,
+				eslintLabel: "fast",
+				paths: ["src"],
+				typeAwareEnv: "off",
+			}),
 		);
 
 		expect(command.args).toStrictEqual([
@@ -417,6 +442,7 @@ describe("command composition", () => {
 			"src",
 		]);
 		expect(command.env).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
+		expect(command.label).toBe("fast");
 	});
 
 	it("adds the content cache strategy in CI", () => {
@@ -456,8 +482,13 @@ describe("formatCommandLine", () => {
 		expect.hasAssertions();
 
 		const command = composeEslintCommand(
-			options({ typeAware: "off" }),
-			baseContext({ cacheLocation: ".eslintcache-fast", ci: true, concurrency: 4 }),
+			options(),
+			baseContext({
+				cacheLocation: ".eslintcache-fast",
+				ci: true,
+				concurrency: 4,
+				typeAwareEnv: "off",
+			}),
 		);
 
 		expect(formatCommandLine(command)).toBe(
@@ -489,4 +520,270 @@ describe("buildShellCommand", () => {
 			'node "C:/a b/eslint.js" .',
 		);
 	});
+});
+
+function printLines(
+	argv: Array<string>,
+	directory: string,
+	environment: NodeJS.ProcessEnv = {},
+): Array<string> {
+	return withoutGitEnvironment(() => {
+		const { commands } = composeCommands(parseArguments(argv), {
+			cwd: directory,
+			dryRun: true,
+			environment,
+		});
+		return commands.map((command) => formatCommandLine(command));
+	});
+}
+
+describe("composeCommands --print", () => {
+	it("composes the default concurrent two-pass mode plus oxlint", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines([], directory)).toStrictEqual([
+				"oxlint --type-aware .",
+				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+					"--no-warn-ignored --concurrency off .",
+				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+					"--no-warn-ignored --concurrency off .",
+			]);
+		});
+	});
+
+	it("composes only the fast pass for --type-aware=off", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
+				"oxlint .",
+				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+					"--no-warn-ignored --concurrency off .",
+			]);
+		});
+	});
+
+	it("composes only the typed pass for --type-aware=only", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
+				"oxlint --type-aware .",
+				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+					"--no-warn-ignored --concurrency off .",
+			]);
+		});
+	});
+
+	it("composes the full config for the --type-aware=full escape hatch", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
+				"oxlint --type-aware .",
+				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off .",
+			]);
+		});
+	});
+
+	it("composes a single full pass with the content cache strategy in CI", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines([], directory, { CI: "true" })).toStrictEqual([
+				"oxlint --type-aware .",
+				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off " +
+					"--cache-strategy content .",
+			]);
+		});
+	});
+
+	it("composes the sequential full-config fix pass", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--fix"], directory)).toStrictEqual([
+				"oxlint --type-aware --fix .",
+				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off " +
+					"--fix .",
+			]);
+		});
+	});
+});
+
+describe("fast pass sizing", () => {
+	it("sizes the fast pass from FAST_FILES_PER_WORKER and the typed pass from 350", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			for (const name of ["a.ts", "b.ts", "c.ts"]) {
+				fs.writeFileSync(path.join(directory, name), "export const x = 1;\n");
+			}
+
+			const { commands } = withoutGitEnvironment(() => {
+				return composeCommands(parseArguments([]), {
+					cwd: directory,
+					dryRun: true,
+					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
+				});
+			});
+
+			// Three dirty files: FAST_FILES_PER_WORKER=1 => 3 fast workers; the
+			// typed pass keeps the 350-file default => a single worker (off).
+			expect(concurrencyArgument(commands, "fast")).toBe("3");
+			expect(concurrencyArgument(commands, "typed")).toBe("off");
+		});
+	});
+});
+
+describe("resolveFastFilesPerWorker", () => {
+	it("defaults to 800 and honours FAST_FILES_PER_WORKER", () => {
+		expect.hasAssertions();
+
+		expect(resolveFastFilesPerWorker({})).toBe(800);
+		expect(resolveFastFilesPerWorker({ FAST_FILES_PER_WORKER: "200" })).toBe(200);
+		expect(resolveFastFilesPerWorker({ FAST_FILES_PER_WORKER: "0" })).toBe(800);
+	});
+});
+
+describe("applyPackageJsonBust", () => {
+	function writePackageJson(directory: string, value: Record<string, unknown>): void {
+		fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify(value));
+	}
+
+	function seedCaches(directory: string): void {
+		for (const name of ALL_CACHE_FILES) {
+			fs.writeFileSync(path.join(directory, name), "{}");
+		}
+	}
+
+	it("stores the hash without busting on the first run", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			writePackageJson(directory, { exports: "./index.js" });
+			seedCaches(directory);
+
+			const outcome = applyPackageJsonBust(directory);
+
+			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+
+			for (const name of ALL_CACHE_FILES) {
+				expect(fs.existsSync(path.join(directory, name))).toBe(true);
+			}
+		});
+	});
+
+	it("deletes the type-aware caches but keeps the fast cache when exports change", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			writePackageJson(directory, { exports: "./index.js" });
+			applyPackageJsonBust(directory);
+			seedCaches(directory);
+
+			writePackageJson(directory, { exports: "./other.js" });
+			const outcome = applyPackageJsonBust(directory);
+
+			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+			expect(fs.existsSync(path.join(directory, CACHE_FILE_TYPE_AWARE))).toBe(false);
+			expect(fs.existsSync(path.join(directory, ".eslintcache"))).toBe(false);
+			expect(fs.existsSync(path.join(directory, CACHE_FILE_FAST))).toBe(true);
+		});
+	});
+
+	it("does not bust when only unrelated fields change", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			writePackageJson(directory, { exports: "./index.js", scripts: { build: "tsc" } });
+			applyPackageJsonBust(directory);
+			seedCaches(directory);
+
+			writePackageJson(directory, {
+				exports: "./index.js",
+				scripts: { build: "tsc --noEmit" },
+				version: "9.9.9",
+			});
+			const outcome = applyPackageJsonBust(directory);
+
+			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+
+			for (const name of ALL_CACHE_FILES) {
+				expect(fs.existsSync(path.join(directory, name))).toBe(true);
+			}
+		});
+	});
+
+	it("hashes resolution fields independent of key order", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const dependencies = { a: "1", b: "2" };
+			writePackageJson(directory, { dependencies, exports: "./index.js" });
+			const first = computePackageJsonHash(directory);
+
+			// Reverse the insertion order programmatically so the hash, not the
+			// literal, is what proves order-independence.
+			const reversed = Object.fromEntries(Object.entries(dependencies).reverse());
+			writePackageJson(directory, { dependencies: reversed, exports: "./index.js" });
+			const second = computePackageJsonHash(directory);
+
+			expect(first).toBe(second);
+		});
+	});
+});
+
+describe("runConcurrent", () => {
+	function writeFakeBin(directory: string, name: string, body: string): void {
+		const packageDirectory = path.join(directory, "node_modules", name);
+		fs.mkdirSync(packageDirectory, { recursive: true });
+		fs.writeFileSync(
+			path.join(packageDirectory, "package.json"),
+			JSON.stringify({ name, bin: { [name]: "bin.js" }, version: "0.0.0" }),
+		);
+		fs.writeFileSync(path.join(packageDirectory, "bin.js"), body);
+	}
+
+	it("runs every child to completion and aggregates a non-zero exit", async () => {
+		expect.hasAssertions();
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-run-"));
+		try {
+			const oxcMarker = path.join(directory, "oxc-ran");
+			const eslintMarker = path.join(directory, "eslint-ran");
+
+			// oxlint succeeds but only after a delay; eslint fails immediately. A
+			// kill-on-failure would kill oxlint before it writes its marker.
+			writeFakeBin(
+				directory,
+				"oxlint",
+				`const fs=require("node:fs");setTimeout(()=>{fs.writeFileSync(${JSON.stringify(
+					oxcMarker,
+				)},"ran");process.exit(0);},250);`,
+			);
+			writeFakeBin(
+				directory,
+				"eslint",
+				`const fs=require("node:fs");fs.writeFileSync(${JSON.stringify(
+					eslintMarker,
+				)},"ran");process.exit(1);`,
+			);
+
+			const code = await runConcurrent(
+				[
+					{ args: [], bin: "oxlint", env: {}, label: "oxc" },
+					{ args: [], bin: "eslint", env: {}, label: "eslint" },
+				],
+				directory,
+			);
+
+			expect(code).toBe(1);
+			expect(fs.existsSync(eslintMarker)).toBe(true);
+			expect(fs.existsSync(oxcMarker)).toBe(true);
+		} finally {
+			fs.rmSync(directory, { force: true, recursive: true });
+		}
+	}, 15_000);
 });
