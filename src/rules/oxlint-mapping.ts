@@ -174,6 +174,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// type parameters (https://github.com/oxc-project/oxc/issues/19617)
 	"id-length": "js-plugin",
 	"no-dupe-args": "js-plugin",
+	"no-loop-func": "js-plugin",
 	"no-octal": "js-plugin",
 	"no-octal-escape": "js-plugin",
 	"no-restricted-syntax": "js-plugin",
