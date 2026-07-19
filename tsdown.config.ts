@@ -61,6 +61,12 @@ export default defineConfig([
 	},
 	{
 		...sharedOptions,
+		// Shipped at dist/formatter-agents.mjs; the isentinel-lint CLI resolves
+		// this exact path to pass it to `eslint --format`.
+		entry: { "formatter-agents": "src/formatter-agents.ts" },
+	},
+	{
+		...sharedOptions,
 		deps: {
 			neverBundle: [
 				/^@typescript-eslint\//,
