@@ -41,6 +41,11 @@ const TYPED_SKIP_NOTICE =
 	"isentinel-lint: skipping the type-aware ESLint pass; no type-relevant files " +
 	"changed since the last run.\n";
 
+/** The stderr notice emitted when a lint target resolves outside the cwd. */
+const OUTSIDE_CWD_NOTICE =
+	"isentinel-lint: a lint target resolves outside the working directory; sizing " +
+	"conservatively and not auto-skipping the type-aware pass.\n";
+
 /** Where a run looks, and whether it may mutate (planning `dryRun` inverse). */
 export interface SizingContext {
 	/** The working directory. */
@@ -86,6 +91,11 @@ export interface RunPlan {
 	oxlintTypeAware: boolean;
 	/** The ESLint passes, in run order (empty for oxlint-only runs). */
 	passes: Array<PassPlan>;
+	/**
+	 * Whether a lint target resolved outside the cwd, so the passes were sized
+	 * conservatively and the typed-pass auto-skip was disabled. Emits a notice.
+	 */
+	targetsOutsideCwd: boolean;
 }
 
 /** A composed run: the child commands plus an optional stderr notice. */
@@ -101,6 +111,12 @@ export interface CommandPlan {
 
 /** Shared inputs threaded into {@link sizePass}. */
 interface SizePassContext {
+	/**
+	 * Whether every ESLint cache was already cleared up front (an mtime bust
+	 * affecting some selected pass). When true, every file counts as dirty and
+	 * the builder is skipped — everything re-lints regardless.
+	 */
+	cachesCleared: boolean;
 	cwd: string;
 	environment: NodeJS.ProcessEnv;
 	files: RepoFiles;
@@ -145,6 +161,7 @@ export function plan(
 			oxlintReason: undefined,
 			oxlintTypeAware,
 			passes: [],
+			targetsOutsideCwd: false,
 		};
 	}
 
@@ -159,18 +176,31 @@ export function plan(
 	// `--fix` never runs oxlint's fixes against a non-hybrid config.
 	const oxlintDecision = resolveOxlintRun({ cwd, files, mutate, runEslint, runOxlint });
 
-	// The one mutation gate: bust the type-aware caches when the root
-	// package.json resolution surface changed. Per-pass cache clearing and
-	// builder invalidation follow inside `sizePass`, also gated by `mutate`.
-	// Only meaningful with caching on; `--no-cache` never touches cache state.
+	// Evaluate every bust up front, before sizing any pass, then clear once. This
+	// ordering is load-bearing: a per-pass staleness check that cleared caches
+	// mid-loop could delete a cache an earlier pass was already sized against,
+	// under-provisioning that pass's workers. Only meaningful with caching on;
+	// `--no-cache` never touches cache state, and `--print` (mutate=false) never
+	// mutates.
+	//
+	// The package.json bust runs first and deletes only the type-aware caches (a
+	// syntactic lint is immune to resolution changes), so it does NOT set
+	// `cachesCleared` — the fast cache survives it. The mtime bust below is the
+	// wholesale one.
+	const canMutateCaches = mutate && options.cache;
 	const hasTypeAwarePass = descriptors.some((descriptor) => descriptor.invalidation !== "none");
-	if (mutate && hasTypeAwarePass && options.cache) {
+	if (canMutateCaches && hasTypeAwarePass) {
 		applyPackageJsonBust(cwd);
 	}
+
+	const cachesCleared = canMutateCaches
+		? clearStaleCaches(descriptors, cwd, newestBustMtime)
+		: false;
 
 	const multiPass = descriptors.length > 1;
 	const passes = descriptors.map((descriptor) => {
 		return sizePass(descriptor, {
+			cachesCleared,
 			cwd,
 			environment,
 			files,
@@ -189,6 +219,7 @@ export function plan(
 		oxlintReason: oxlintDecision.reason,
 		oxlintTypeAware,
 		passes,
+		targetsOutsideCwd: files.targetsOutsideCwd,
 	};
 }
 
@@ -206,6 +237,10 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 
 	if (runPlan.oxlintReason !== undefined) {
 		notices.push(runPlan.oxlintReason);
+	}
+
+	if (runPlan.targetsOutsideCwd) {
+		notices.push(OUTSIDE_CWD_NOTICE);
 	}
 
 	if (runPlan.oxlint) {
@@ -300,22 +335,17 @@ export async function runConcurrent(commands: Array<ChildCommand>, cwd: string):
  * Parse, validate, compose and run the hybrid oxlint + ESLint invocation.
  *
  * @param argv - The argument slice (without the node/bin prefix).
+ * @param cwd - The working directory (defaults to `process.cwd()`; injected in tests).
+ * @param environment - The process environment (defaults to `process.env`).
  * @returns The process exit code.
  * @rejects {CliError} When the arguments are invalid or a tool is missing.
  */
-export async function runLint(argv: Array<string>): Promise<number> {
+export async function runLint(
+	argv: Array<string>,
+	cwd: string = process.cwd(),
+	environment: NodeJS.ProcessEnv = process.env,
+): Promise<number> {
 	const options = parseArguments(argv);
-	const cwd = process.cwd();
-	const environment = process.env;
-
-	const runOxlint = !options.eslint;
-	const oxlintTypeAware = resolveOxlintTypeAware(options);
-	if (runOxlint && oxlintTypeAware && !isPackageExists("oxlint-tsgolint", { paths: [cwd] })) {
-		throw new CliError(
-			"oxlint-tsgolint is not installed, so oxlint cannot run type-aware rules. " +
-				"Install oxlint-tsgolint, or pass --no-oxlint-type-aware to skip type-aware linting.",
-		);
-	}
 
 	const { commands, notice } = compose(plan(options, cwd, environment, !options.print), options);
 
@@ -325,6 +355,22 @@ export async function runLint(argv: Array<string>): Promise<number> {
 		}
 
 		return 0;
+	}
+
+	// Only require oxlint-tsgolint when an oxlint child that actually carries
+	// `--type-aware` survived composition. The hybrid gate may have dropped
+	// oxlint (non-hybrid config), in which case the run degrades to ESLint-only
+	// rather than hard-erroring; `--print` returned above and never errors.
+	// Explicit `--oxlint` bypasses the gate but still composes the child, so the
+	// check still applies to it.
+	const needsTsgolint = commands.some(
+		(command) => command.bin === "oxlint" && command.args.includes("--type-aware"),
+	);
+	if (needsTsgolint && !isPackageExists("oxlint-tsgolint", { paths: [cwd] })) {
+		throw new CliError(
+			"oxlint-tsgolint is not installed, so oxlint cannot run type-aware rules. " +
+				"Install oxlint-tsgolint, or pass --no-oxlint-type-aware to skip type-aware linting.",
+		);
 	}
 
 	if (notice !== undefined) {
@@ -353,14 +399,40 @@ function resolveOxlintTypeAware(options: LintCliOptions): boolean {
  * @param context - The shared sizing inputs.
  * @returns The number of dirty files.
  */
+/**
+ * Evaluate the mtime bust for every selected pass's cache file and, if any is
+ * stale, clear all managed caches exactly once. Returns whether the wholesale
+ * clear happened so sizing can treat every file as dirty without re-checking.
+ *
+ * @param descriptors - The selected pass descriptors.
+ * @param cwd - The working directory.
+ * @param newestBustMtime - The newest cache-bust mtime (see {@link maxMtimeMs}).
+ * @returns True when the caches were cleared.
+ */
+function clearStaleCaches(
+	descriptors: Array<PassDescriptor>,
+	cwd: string,
+	newestBustMtime: number | undefined,
+): boolean {
+	const stale = descriptors.some((descriptor) => {
+		return isCacheStale(path.resolve(cwd, descriptor.cacheFile), newestBustMtime);
+	});
+	if (stale) {
+		clearAllCaches(cwd);
+	}
+
+	return stale;
+}
+
 function mutatingDirtyCount(
 	descriptor: PassDescriptor,
 	cacheLocation: string,
 	targetFiles: Array<string>,
-	{ cwd, environment, newestBustMtime }: SizePassContext,
+	{ cachesCleared, cwd, environment }: SizePassContext,
 ): number {
-	if (isCacheStale(cacheLocation, newestBustMtime)) {
-		clearAllCaches(cwd);
+	if (cachesCleared) {
+		// A bust already cleared every cache up front (see `plan`), so every file
+		// is dirty and the builder would be pure waste — everything re-lints.
 		return targetFiles.length;
 	}
 
@@ -446,16 +518,31 @@ function passDirtyCount(descriptor: PassDescriptor, context: SizePassContext): n
  */
 function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPlan {
 	const dirtyCount = passDirtyCount(descriptor, context);
+	const conservative = context.files.targetsOutsideCwd;
+	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.environment);
+
+	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
+	// count under-counts them — size for the worker cap instead (maxWorkers *
+	// filesPerWorker ceils back to exactly maxWorkers).
+	const sizingDirtyCount = conservative ? context.limits.maxWorkers * filesPerWorker : dirtyCount;
 
 	const concurrency =
 		context.options.concurrency ??
 		computeWorkerCount({
-			dirtyCount,
-			filesPerWorker: descriptor.filesPerWorker(context.limits, context.environment),
+			dirtyCount: sizingDirtyCount,
+			filesPerWorker,
 			maxWorkers: context.limits.maxWorkers,
 		});
 
-	const canSkip = context.mutate && context.multiPass && descriptor === TYPED_PASS;
+	// The typed pass may only auto-skip when the dirty count is trustworthy; an
+	// outside-cwd target makes it unknowable, so never skip in that case.
+	//
+	// Known limitation: a skipped pass never runs, so ESLint's own per-entry
+	// config hash cannot catch a config change that arrived through a module the
+	// `eslint.config.*` imports (only the config file's own mtime busts here).
+	// Touch the config, or run with `--no-cache`, after editing such a module.
+	const canSkip =
+		context.mutate && context.multiPass && descriptor === TYPED_PASS && !conservative;
 	if (canSkip && dirtyCount === 0) {
 		return { concurrency, descriptor, shouldRun: false, skipReason: TYPED_SKIP_NOTICE };
 	}

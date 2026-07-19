@@ -340,6 +340,36 @@ contents rather than timestamps, which are unreliable across fresh checkouts.
 `@isentinel/eslint-config/formatter-agents`, which the runner resolves and
 passes to `eslint --format` for you.
 
+### Known limitations
+
+The incremental machinery favours speed, and a few edges are deliberately left
+to self-heal or need a one-off nudge:
+
+- **Config changes reached through an imported module are invisible to a
+  _skipped_ typed pass.** The runner busts caches on the mtime of your
+  `eslint.config.*`, tsconfigs and lockfiles, but not on files those configs
+  `import`. ESLint's own per-entry config hash would still catch such a change
+  once the pass runs — but if the typed pass was auto-skipped (nothing
+  type-relevant looked dirty), it never runs to notice. Touch your
+  `eslint.config.*` (or run once with `--no-cache`) after editing a module it
+  imports.
+- **mtime granularity.** Cache freshness is compared by modification time, so
+  the usual coarse-filesystem-timestamp race that affects ESLint's own cache
+  applies here too (edits within the same clock tick as the last run can be
+  missed). CI uses `--cache-strategy content` to sidestep it; locally, a second
+  run settles it.
+- **Solution-style / project-reference tsconfigs.** The TypeScript builder used
+  to find type-affected files does not follow project references, so in a
+  solution-style setup builder invalidation silently becomes a no-op and the
+  runner falls back to plain mtime dirtiness. Type-aware results stay correct
+  (ESLint still lints the dirty files); only the cross-file "an imported type
+  changed" invalidation is skipped.
+- **Hybrid status tracks `eslint.config.*` mtimes only.** If you toggle hybrid
+  mode (`oxlint: true`) from a module the config _imports_ rather than the
+  config file itself, the runner trusts its cached hybrid decision for one more
+  run before the factory's passive write corrects it — it self-heals on the next
+  invocation.
+
 ## Customization
 
 Normally you only need to import the `isentinel` preset:

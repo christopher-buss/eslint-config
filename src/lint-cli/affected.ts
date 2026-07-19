@@ -172,6 +172,11 @@ function runBuilder(
 	}
 
 	const basePath = path.dirname(configPath);
+	// Known limitation: `parseJsonConfigFileContent` does not follow project
+	// references, so a solution-style/project-reference tsconfig yields an empty
+	// `fileNames`. Builder invalidation then becomes a silent no-op and the
+	// runner falls back to plain mtime dirtiness — lint results stay correct,
+	// only cross-file type invalidation is skipped.
 	const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, basePath);
 	if (parsed.fileNames.length === 0) {
 		return { affected: new Set(), firstRun: false };

@@ -77,25 +77,29 @@ export function applyTypeAwareInvalidation({
 		return { busted: false, firstRun: true, invalidated: [], skipped: false };
 	}
 
-	const threshold = resolveAffectedBustThreshold(environment);
-	if (result.affected.size > threshold) {
-		fs.rmSync(cacheLocation, { force: true });
-		return { busted: true, firstRun: false, invalidated: [], skipped: false };
-	}
-
 	const targets = new Set<string>();
 	for (const file of targetFiles) {
 		targets.add(normalizePath(file));
 	}
 
-	const invalidated: Array<string> = [];
+	// Only affected files that are lint targets ever get surgically removed, so
+	// gauge the escape valve against that intersection rather than the whole
+	// in-project affected set (which counts files this run will never touch).
+	const affectedTargets: Array<string> = [];
 	for (const affected of result.affected) {
 		const key = normalizePath(affected);
-		if (targets.has(key) && !alreadyDirty.has(key)) {
-			invalidated.push(key);
+		if (targets.has(key)) {
+			affectedTargets.push(key);
 		}
 	}
 
+	const threshold = resolveAffectedBustThreshold(environment);
+	if (affectedTargets.length > threshold) {
+		fs.rmSync(cacheLocation, { force: true });
+		return { busted: true, firstRun: false, invalidated: [], skipped: false };
+	}
+
+	const invalidated = affectedTargets.filter((key) => !alreadyDirty.has(key));
 	if (cache !== undefined) {
 		cache.removeEntries(invalidated);
 	} else {

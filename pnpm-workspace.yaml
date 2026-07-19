@@ -34,7 +34,7 @@ catalogs:
   dev:
     "@antfu/ni": 30.2.0
     "@eslint-react/shared": 5.16.1
-    "@eslint/config-inspector": 3.0.4
+    "@eslint/config-inspector": 3.1.0
     "@isentinel/tsconfig": 1.2.0
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@types/node": 24.1.0

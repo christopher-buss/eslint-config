@@ -4,6 +4,7 @@ import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../lint-cli/hybrid-status.ts";
+import { resolvePrettierSettings } from "../prettier-config.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
 	getOverrides,
@@ -13,7 +14,6 @@ import {
 	overrideRuleSeverity,
 	resolveNodeMajor,
 	resolveOxfmtConfigOptions,
-	resolvePrettierConfigOptions,
 	resolveSubOptions,
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
@@ -336,23 +336,13 @@ export async function isentinel(
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
 
-	const prettierOptions = formatterOptions.prettierOptions ?? {};
-	const editorConfigOptions = await resolvePrettierConfigOptions();
 	const oxfmtConfigOptions = formatters !== false ? await resolveOxfmtConfigOptions() : {};
 
-	const prettierSettings: PrettierOptions = Object.assign(
-		{
-			arrowParens: "always",
-			printWidth: 100,
-			quoteProps: "consistent",
-			semi: true,
-			singleQuote: false,
-			tabWidth: 4,
-			trailingComma: "all",
-			useTabs: true,
-		} satisfies PrettierOptions,
-		editorConfigOptions,
-		prettierOptions,
+	// Shared with the oxlint factory: these settings feed rule options (for
+	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
+	// resolve them identically or their fixes disagree.
+	const prettierSettings: PrettierOptions = resolvePrettierSettings(
+		formatterOptions.prettierOptions,
 	);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];

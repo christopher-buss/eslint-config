@@ -9,6 +9,7 @@ import type {
 import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
+import { resolvePrettierSettings } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import type { Rules } from "../types.ts";
 import {
@@ -169,17 +170,12 @@ export function isentinel(
 	}
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
-	const prettierSettings: Record<string, unknown> = {
-		arrowParens: "always",
-		printWidth: 100,
-		quoteProps: "consistent",
-		semi: true,
-		singleQuote: false,
-		tabWidth: 4,
-		trailingComma: "all",
-		useTabs: true,
-		...formatterOptions.prettierOptions,
-	};
+	// Shared with the ESLint factory: these settings feed rule options (for
+	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
+	// resolve them identically or their fixes disagree.
+	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
+		formatterOptions.prettierOptions,
+	);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({

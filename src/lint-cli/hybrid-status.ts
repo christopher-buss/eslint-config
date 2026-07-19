@@ -64,6 +64,13 @@ export function writeHybridStatus(cwd: string, oxlint: boolean): void {
 		}
 
 		if (existing === content) {
+			// Content is unchanged, but refresh the mtime so the CLI freshness
+			// check (status mtime >= config mtime) keeps passing after the config
+			// is touched. Without this the mtime freezes at first write and every
+			// later lint needlessly re-runs the ~3s probe. The passive factory
+			// write thus keeps the status perpetually fresh.
+			const now = Date.now() / 1000;
+			fs.utimesSync(filePath, now, now);
 			return;
 		}
 

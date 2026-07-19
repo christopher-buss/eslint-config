@@ -4,8 +4,12 @@ import type {
 	LintCliOptions,
 	OxlintComposeContext,
 } from "./types.ts";
+import { CliError } from "./types.ts";
 
-const SAFE_TOKEN = /^[\w@%+=:,./-]+$/;
+// `%` is deliberately excluded: cmd.exe expands `%VAR%` even inside double
+// quotes, so a `%` token cannot be made safe by quoting on the Windows shell
+// path (see `buildShellCommand`).
+const SAFE_TOKEN = /^[\w@+=:,./-]+$/;
 
 /**
  * Split a raw argument string into tokens, honouring single and double quotes
@@ -118,8 +122,14 @@ export function composeEslintCommand(
 
 	args.push(...options.eslintArgs, ...context.paths);
 
-	const environment: Record<string, string> =
-		context.typeAwareEnv !== undefined ? { ESLINT_TYPE_AWARE: context.typeAwareEnv } : {};
+	// Always control ESLINT_TYPE_AWARE explicitly: set it for the fast/typed
+	// passes, and set it to `undefined` for the full pass so an inherited value
+	// (a user-exported ESLINT_TYPE_AWARE) is REMOVED rather than leaked — a leak
+	// would make the factory split the full config (e.g. --fix applying only
+	// type-aware fixes).
+	const environment: Record<string, string | undefined> = {
+		ESLINT_TYPE_AWARE: context.typeAwareEnv,
+	};
 
 	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
 }
@@ -133,8 +143,10 @@ export function composeEslintCommand(
  * @returns The shell-equivalent command line.
  */
 export function formatCommandLine(command: ChildCommand): string {
+	// `undefined` values mean "unset this variable" (see ChildCommand.env); they
+	// carry no shell-prefix representation, so they are omitted from the line.
 	const environmentPrefix = Object.entries(command.env)
-		.map(([key, value]) => `${key}=${quotePosix(value)}`)
+		.flatMap(([key, value]) => (value === undefined ? [] : [`${key}=${quotePosix(value)}`]))
 		.join(" ");
 	const body = [command.bin, ...command.args].map(quotePosix).join(" ");
 	return environmentPrefix.length > 0 ? `${environmentPrefix} ${body}` : body;
@@ -156,8 +168,22 @@ export function buildShellCommand(
 	args: Array<string>,
 	platform: NodeJS.Platform,
 ): string {
+	const tokens = [nodePath, binJsPath, ...args];
+	if (platform === "win32") {
+		// concurrently shells through cmd.exe, which expands `%VAR%` even inside
+		// double quotes — no quoting can escape it, so refuse rather than
+		// silently corrupt the argument.
+		const offending = tokens.find((token) => token.includes("%"));
+		if (offending !== undefined) {
+			throw new CliError(
+				`Cannot safely pass "${offending}" to cmd.exe: "%" triggers environment-` +
+					"variable expansion even inside quotes. Remove it, or run the tool directly.",
+			);
+		}
+	}
+
 	const quote = platform === "win32" ? quoteWindows : quotePosix;
-	return [nodePath, binJsPath, ...args].map(quote).join(" ");
+	return tokens.map(quote).join(" ");
 }
 
 function quotePosix(token: string): string {
