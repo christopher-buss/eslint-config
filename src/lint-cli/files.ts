@@ -1,4 +1,4 @@
-// cspell:words lintable
+// cspell:words lintable pathspec
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -30,43 +30,102 @@ const TYPE_AWARE_EXTENSION_SET = new Set<string>(
 );
 
 /**
- * Collect the absolute paths of lintable TS/JS files under `targets`,
- * honouring `.gitignore` (via `git ls-files`) when inside a git repository.
+ * The repository file lists a run needs, all derived from one `git ls-files`.
+ */
+export interface RepoFiles {
+	/** Absolute paths of every cache-busting file (whole project). */
+	bustFiles: Array<string>;
+	/** Absolute paths of the lintable files within the lint targets. */
+	lintable: Array<string>;
+	/** The type-aware (TS/JS-family) subset of {@link RepoFiles.lintable}. */
+	typeAware: Array<string>;
+}
+
+/**
+ * Collect every file list a run needs from a single whole-project
+ * `git ls-files` (honouring `.gitignore`), rather than re-spawning git for each
+ * pass. The one scan feeds three filters: the cache-bust set (config files,
+ * tsconfigs, lockfiles — always whole-project), the lintable files restricted
+ * to `targets`, and their type-aware subset.
+ *
+ * @param cwd - The project root to scan.
+ * @param targets - The lint target paths that restrict the lintable set.
+ * @returns The cache-bust, lintable and type-aware file lists.
+ */
+export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles {
+	const relatives = listFiles(cwd, ["."]);
+	const isBustFile = picomatch([...CACHE_BUST_PATTERNS], { dot: true });
+	const isWithinTargets = matchTargets(targets);
+
+	const bustFiles: Array<string> = [];
+	const lintable: Array<string> = [];
+	const typeAware: Array<string> = [];
+	for (const relative of relatives) {
+		if (isBustFile(relative)) {
+			bustFiles.push(path.resolve(cwd, relative));
+		}
+
+		if (isWithinTargets(relative) && hasLintableExtension(relative)) {
+			const absolute = path.resolve(cwd, relative);
+			lintable.push(absolute);
+			if (isTypeAwareFile(relative)) {
+				typeAware.push(absolute);
+			}
+		}
+	}
+
+	return { bustFiles, lintable, typeAware };
+}
+
+/**
+ * Collect the absolute paths of lintable files under `targets`, honouring
+ * `.gitignore` (via `git ls-files`) when inside a git repository. Thin wrapper
+ * over {@link collectRepoFiles}.
  *
  * @param cwd - The working directory to resolve targets against.
  * @param targets - The target paths to scan.
  * @returns The absolute paths of lintable files.
  */
 export function collectLintableFiles(cwd: string, targets: Array<string>): Array<string> {
-	return listFiles(cwd, targets)
-		.filter(hasLintableExtension)
-		.map((relative) => path.resolve(cwd, relative));
+	return collectRepoFiles(cwd, targets).lintable;
+}
+
+function normalizeTarget(target: string): string {
+	let value = toPosix(target);
+	if (value.startsWith("./")) {
+		value = value.slice(2);
+	}
+
+	while (value.endsWith("/")) {
+		value = value.slice(0, -1);
+	}
+
+	return value;
 }
 
 /**
- * Collect the absolute paths of every file whose modification busts the ESLint
- * cache (config files, tsconfigs, lockfiles). Always scans the whole project,
- * independent of the lint targets.
+ * Build a predicate for git-pathspec-style target membership: `.` matches
+ * everything, otherwise a relative path matches when it equals a target or sits
+ * beneath one. Faithful to `git ls-files -- <target>` for the plain directory
+ * and file targets consumers pass.
  *
- * @param cwd - The project root to scan.
- * @returns The absolute paths of cache-busting files.
+ * @param targets - The lint target paths.
+ * @returns A predicate testing whether a relative posix path is a target.
  */
-export function collectCacheBustFiles(cwd: string): Array<string> {
-	const isMatch = picomatch([...CACHE_BUST_PATTERNS], { dot: true });
-	return listFiles(cwd, ["."])
-		.filter((relative) => isMatch(relative))
-		.map((relative) => path.resolve(cwd, relative));
+function matchTargets(targets: Array<string>): (relative: string) => boolean {
+	const normalized = targets.map((target) => normalizeTarget(target));
+	if (normalized.some((target) => target === "" || target === ".")) {
+		return () => true;
+	}
+
+	return (relative) => {
+		return normalized.some(
+			(target) => relative === target || relative.startsWith(`${target}/`),
+		);
+	};
 }
 
-/**
- * Whether a file is a TS/JS-family file, meaning it is linted by the type-aware
- * (`--type-aware=only`) config. Used to size the typed pass from just the files
- * that can actually enter its cache.
- *
- * @param filePath - The file path to test.
- * @returns Whether the file is in the TS/JS family.
- */
-export function isTypeAwareFile(filePath: string): boolean {
+function isTypeAwareFile(filePath: string): boolean {
 	return TYPE_AWARE_EXTENSION_SET.has(path.extname(filePath).toLowerCase());
 }
 

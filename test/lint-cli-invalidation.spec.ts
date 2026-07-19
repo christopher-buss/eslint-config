@@ -11,7 +11,7 @@ import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
 import { CACHE_FILE_TYPE_AWARE } from "../src/lint-cli/constants.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import { composeCommands } from "../src/lint-cli/run.ts";
+import { composeCommands, plan } from "../src/lint-cli/run.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 const TSCONFIG = JSON.stringify({
@@ -414,6 +414,68 @@ describe("composeCommands typed-pass skip", () => {
 
 				expect(commands.map((command) => command.label)).toContain("typed");
 				expect(notice).toBeUndefined();
+			},
+		);
+	});
+});
+
+describe("plan mutation", () => {
+	const buildInfo = "node_modules/.cache/isentinel-lint/tsbuildinfo-typeaware";
+
+	it("performs no I/O mutation in read-only (print) mode", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, CACHE_FILE_TYPE_AWARE);
+				const fileA = path.join(directory, "src/a.ts");
+				seedCache(cacheFile, [fileA]);
+
+				const runPlan = withoutGitEnvironment(() => {
+					return plan(parseArguments([]), directory, {}, false);
+				});
+
+				expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+					"fast",
+					"typed",
+				]);
+				// Read-only planning never runs the builder or deletes caches.
+				expect(fs.existsSync(path.join(directory, buildInfo))).toBe(false);
+				expect(fs.existsSync(cacheFile)).toBe(true);
+
+				// The mutating plan, by contrast, runs the builder.
+				withoutGitEnvironment(() => plan(parseArguments([]), directory, {}, true));
+
+				expect(fs.existsSync(path.join(directory, buildInfo))).toBe(true);
+			},
+		);
+	});
+
+	it("marks the typed pass skipped in the plan when nothing type-relevant changed", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, CACHE_FILE_TYPE_AWARE);
+				const fileA = path.join(directory, "src/a.ts");
+				computeAffectedFiles(directory, "only");
+				seedCache(cacheFile, [fileA]);
+
+				const runPlan = withoutGitEnvironment(() => {
+					return plan(parseArguments([]), directory, {}, true);
+				});
+				const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+
+				expect(typed?.shouldRun).toBe(false);
+				expect(typed?.skipReason).toMatch(/skipping the type-aware/);
 			},
 		);
 	});

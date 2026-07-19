@@ -2,6 +2,7 @@
 import fs from "node:fs";
 
 import { computeAffectedFiles } from "./affected.ts";
+import type { DirtyCache } from "./cache.ts";
 import { normalizePath, removeCacheEntries } from "./cache.ts";
 import { resolveAffectedBustThreshold } from "./constants.ts";
 import type { TypeAwareMode } from "./types.ts";
@@ -10,6 +11,11 @@ import type { TypeAwareMode } from "./types.ts";
 export interface InvalidationRequest {
 	/** Normalised paths already dirty by mtime/checksum. */
 	alreadyDirty: ReadonlySet<string>;
+	/**
+	 * The already-loaded cache to remove entries from, reusing the handle the
+	 * caller opened for the dirty query. When omitted, opened afresh.
+	 */
+	cache?: DirtyCache;
 	/** Absolute path to the mode's ESLint cache file. */
 	cacheLocation: string;
 	/** The consumer project root. */
@@ -55,6 +61,7 @@ export interface InvalidationOutcome {
  */
 export function applyTypeAwareInvalidation({
 	alreadyDirty,
+	cache,
 	cacheLocation,
 	cwd,
 	environment,
@@ -89,6 +96,11 @@ export function applyTypeAwareInvalidation({
 		}
 	}
 
-	removeCacheEntries(cacheLocation, invalidated);
+	if (cache !== undefined) {
+		cache.removeEntries(invalidated);
+	} else {
+		removeCacheEntries(cacheLocation, invalidated);
+	}
+
 	return { busted: false, firstRun: false, invalidated, skipped: false };
 }

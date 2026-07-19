@@ -26,7 +26,7 @@ import {
 import { collectLintableFiles } from "../src/lint-cli/files.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
-import { composeCommands, runConcurrent } from "../src/lint-cli/run.ts";
+import { composeCommands, plan, runConcurrent } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
@@ -38,7 +38,6 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		ci: false,
 		concurrency: "off",
 		eslintLabel: "eslint",
-		oxlintTypeAware: false,
 		paths: ["."],
 		typeAwareEnv: undefined,
 		...overrides,
@@ -372,10 +371,10 @@ describe("command composition", () => {
 	it("composes the oxlint command with type-aware, agents and fix", () => {
 		expect.hasAssertions();
 
-		const command = composeOxlintCommand(
-			options({ agents: true, fix: true }),
-			baseContext({ oxlintTypeAware: true, paths: ["src"] }),
-		);
+		const command = composeOxlintCommand(options({ agents: true, fix: true }), {
+			oxlintTypeAware: true,
+			paths: ["src"],
+		});
 
 		expect(command.args).toStrictEqual(["--format", "agent", "--type-aware", "--fix", "src"]);
 		expect(command.env).toStrictEqual({});
@@ -384,7 +383,7 @@ describe("command composition", () => {
 	it("omits --type-aware from oxlint when disabled", () => {
 		expect.hasAssertions();
 
-		const command = composeOxlintCommand(options(), baseContext({ oxlintTypeAware: false }));
+		const command = composeOxlintCommand(options(), { oxlintTypeAware: false, paths: ["."] });
 
 		expect(command.args).not.toContain("--type-aware");
 	});
@@ -471,7 +470,7 @@ describe("formatCommandLine", () => {
 	it("renders oxlint without an env prefix", () => {
 		expect.hasAssertions();
 
-		const command = composeOxlintCommand(options(), baseContext({ oxlintTypeAware: true }));
+		const command = composeOxlintCommand(options(), { oxlintTypeAware: true, paths: ["."] });
 
 		expect(formatCommandLine(command)).toBe("oxlint --type-aware .");
 	});
@@ -579,6 +578,56 @@ describe("composeCommands --print", () => {
 				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off " +
 					"--fix .",
 			]);
+		});
+	});
+});
+
+describe("plan", () => {
+	it("returns the default fast + typed passes as data", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const runPlan = withoutGitEnvironment(() => {
+				return plan(parseArguments([]), directory, {}, false);
+			});
+
+			expect(runPlan.oxlint).toBe(true);
+			expect(runPlan.oxlintTypeAware).toBe(true);
+			expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+				"fast",
+				"typed",
+			]);
+			// A read-only plan never auto-skips the typed pass.
+			expect(runPlan.passes.every((pass) => pass.shouldRun)).toBe(true);
+		});
+	});
+
+	it("plans no ESLint passes for an oxlint-only run", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const runPlan = withoutGitEnvironment(() => {
+				return plan(parseArguments(["--oxlint"]), directory, {}, false);
+			});
+
+			expect(runPlan.oxlint).toBe(true);
+			expect(runPlan.passes).toStrictEqual([]);
+		});
+	});
+
+	it("collapses to a single pass for the explicit modes", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const fast = withoutGitEnvironment(() => {
+				return plan(parseArguments(["--type-aware=off"]), directory, {}, false);
+			});
+			const full = withoutGitEnvironment(() => {
+				return plan(parseArguments([]), directory, { CI: "true" }, false);
+			});
+
+			expect(fast.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
+			expect(full.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
 		});
 	});
 });

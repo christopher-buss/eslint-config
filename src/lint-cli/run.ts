@@ -7,25 +7,24 @@ import path from "node:path";
 import process from "node:process";
 
 import { isCi } from "../utils.ts";
-import { clearAllCaches, isCacheBusted, listDirtyFiles, normalizePath } from "./cache.ts";
+import type { DirtyCache } from "./cache.ts";
+import { clearAllCaches, isCacheStale, maxMtimeMs, normalizePath, openCache } from "./cache.ts";
 import {
 	buildShellCommand,
 	composeEslintCommand,
 	composeOxlintCommand,
 	formatCommandLine,
 } from "./command.ts";
-import {
-	computeWorkerCount,
-	resolveFastFilesPerWorker,
-	resolveWorkerLimits,
-} from "./concurrency.ts";
-import { CACHE_FILE_DEFAULT, CACHE_FILE_FAST, CACHE_FILE_TYPE_AWARE } from "./constants.ts";
-import { collectCacheBustFiles, collectLintableFiles, isTypeAwareFile } from "./files.ts";
+import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
+import { collectRepoFiles } from "./files.ts";
+import type { RepoFiles } from "./files.ts";
 import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
 import { applyPackageJsonBust } from "./package-hash.ts";
+import { selectPasses, TYPED_PASS } from "./passes.ts";
+import type { PassDescriptor } from "./passes.ts";
 import { resolveAgentsFormatter, resolveLocalBin } from "./resolve.ts";
-import type { ChildCommand, ComposeContext, LintCliOptions, ToolLabel } from "./types.ts";
+import type { ChildCommand, LintCliOptions, ToolLabel } from "./types.ts";
 import { CliError } from "./types.ts";
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
@@ -35,6 +34,53 @@ const PREFIX_COLOR: Record<ToolLabel, string> = {
 	oxc: "magenta",
 	typed: "cyan",
 };
+
+/** The stderr notice emitted when the type-aware pass is skipped. */
+const TYPED_SKIP_NOTICE =
+	"isentinel-lint: skipping the type-aware ESLint pass; no type-relevant files " +
+	"changed since the last run.\n";
+
+/** Where a run looks, and whether it may mutate (planning `dryRun` inverse). */
+export interface SizingContext {
+	/** The working directory. */
+	cwd: string;
+	/** When true, never run the builder or delete cache files (`--print`). */
+	dryRun: boolean;
+	/** The process environment. */
+	environment: NodeJS.ProcessEnv;
+}
+
+/** One planned ESLint pass: its descriptor, sizing and run/skip decision. */
+export interface PassPlan {
+	/** The concurrency resolved for the pass. */
+	concurrency: "off" | number;
+	/** The pass descriptor (cache file, label, type-aware env, sizing). */
+	descriptor: PassDescriptor;
+	/** Whether the pass runs; false when auto-skipped. */
+	shouldRun: boolean;
+	/** The stderr notice to emit when skipped, else undefined. */
+	skipReason: string | undefined;
+}
+
+/**
+ * A composed run as plain data: all I/O and mutation happen once in
+ * {@link plan} to build it, then {@link compose} turns it into child commands
+ * with no further I/O.
+ */
+export interface RunPlan {
+	/**
+	 * Absolute path to the agent ESLint formatter (empty unless `--agents`).
+	 */
+	agentsFormatterPath: string;
+	/** Whether the run is in CI. */
+	ci: boolean;
+	/** Whether the oxlint child runs. */
+	oxlint: boolean;
+	/** Whether oxlint receives `--type-aware`. */
+	oxlintTypeAware: boolean;
+	/** The ESLint passes, in run order (empty for oxlint-only runs). */
+	passes: Array<PassPlan>;
+}
 
 /** A composed run: the child commands plus an optional stderr notice. */
 export interface CommandPlan {
@@ -47,129 +93,132 @@ export interface CommandPlan {
 	notice: string | undefined;
 }
 
-/** Shared inputs for sizing a pass: where to look and whether to mutate. */
-interface SizingContext {
-	/** The working directory. */
+/** Shared inputs threaded into {@link sizePass}. */
+interface SizePassContext {
 	cwd: string;
-	/** When true, never run the builder or delete cache files (`--print`). */
-	dryRun: boolean;
-	/** The process environment. */
 	environment: NodeJS.ProcessEnv;
-}
-
-/** Builds an ESLint child command from a partial pass context. */
-type EslintCommandBuilder = (context: Partial<ComposeContext>) => ChildCommand;
-
-/** Inputs to the per-pass dirty-count computation. */
-interface CountDirtyRequest {
-	/** The cache file for this pass. */
-	cacheFileName: string;
-	/** The sizing context (cwd, environment, dry-run flag). */
-	context: SizingContext;
-	/**
-	 * The type-aware invalidation to fold in. `"none"` skips the builder and
-	 * the package.json bust (the fast pass); `"only"`/`"full"` run them.
-	 */
-	invalidation: "full" | "none" | "only";
-	/** When true, size from TS/JS-family files only (the typed pass). */
-	typeAwareOnly: boolean;
+	files: RepoFiles;
+	limits: ReturnType<typeof resolveWorkerLimits>;
+	multiPass: boolean;
+	mutate: boolean;
+	newestBustMtime: number | undefined;
+	options: LintCliOptions;
 }
 
 /**
- * Compose the child commands for the selected mode. Pure with respect to
- * `context.dryRun`: when set it never runs the TS builder, deletes caches or
- * skips the typed pass, keeping `--print` side-effect-free.
+ * Plan the run: collect the repo file list once, apply the package.json and
+ * mtime busts and TypeScript builder invalidation, size each pass and decide
+ * which run. All I/O and mutation happen here, exactly once. When `mutate` is
+ * false (`--print`) the whole mutation step is skipped — no builder, no cache
+ * deletion, no state writes and no auto-skip — while still sizing from the
+ * on-disk caches. The returned value is plain data.
  *
- * The default local mode (no `--type-aware`, no `--fix`, not CI) runs three
- * children concurrently: oxlint, a fast syntactic ESLint pass and a type-aware
- * ESLint pass. The type-aware pass is skipped when nothing type-relevant is
- * dirty (see {@link sizeTypedPass}). Explicit `--type-aware`, `--fix` and CI
- * runs collapse to their single ESLint pass.
+ * @param options - The parsed CLI options.
+ * @param cwd - The working directory.
+ * @param environment - The process environment.
+ * @param mutate - Whether the plan may mutate (false for `--print`).
+ * @returns The run plan.
+ */
+export function plan(
+	options: LintCliOptions,
+	cwd: string,
+	environment: NodeJS.ProcessEnv,
+	mutate: boolean,
+): RunPlan {
+	const ci = isCi(environment);
+	const runOxlint = !options.eslint;
+	const runEslint = !options.oxlint;
+	const oxlintTypeAware = resolveOxlintTypeAware(options);
+	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
+
+	if (!runEslint) {
+		return { agentsFormatterPath, ci, oxlint: runOxlint, oxlintTypeAware, passes: [] };
+	}
+
+	const descriptors = selectPasses(options, ci);
+	const files = collectRepoFiles(cwd, options.paths);
+	const newestBustMtime = maxMtimeMs(files.bustFiles);
+	const limits = resolveWorkerLimits(environment, availableParallelism());
+
+	// The one mutation gate: bust the type-aware caches when the root
+	// package.json resolution surface changed. Per-pass cache clearing and
+	// builder invalidation follow inside `sizePass`, also gated by `mutate`.
+	// Only meaningful with caching on; `--no-cache` never touches cache state.
+	const hasTypeAwarePass = descriptors.some((descriptor) => descriptor.invalidation !== "none");
+	if (mutate && hasTypeAwarePass && options.cache) {
+		applyPackageJsonBust(cwd);
+	}
+
+	const multiPass = descriptors.length > 1;
+	const passes = descriptors.map((descriptor) => {
+		return sizePass(descriptor, {
+			cwd,
+			environment,
+			files,
+			limits,
+			multiPass,
+			mutate,
+			newestBustMtime,
+			options,
+		});
+	});
+
+	return { agentsFormatterPath, ci, oxlint: runOxlint, oxlintTypeAware, passes };
+}
+
+/**
+ * Turn a {@link RunPlan} into child commands. Pure: no I/O and no mutation, so
+ * it is safe to run for `--print`.
+ *
+ * @param runPlan - The planned run.
+ * @param options - The parsed CLI options (paths and per-tool args).
+ * @returns The composed command plan.
+ */
+export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan {
+	const commands: Array<ChildCommand> = [];
+	let notice: string | undefined;
+
+	if (runPlan.oxlint) {
+		commands.push(
+			composeOxlintCommand(options, {
+				oxlintTypeAware: runPlan.oxlintTypeAware,
+				paths: options.paths,
+			}),
+		);
+	}
+
+	for (const pass of runPlan.passes) {
+		if (!pass.shouldRun) {
+			notice = pass.skipReason;
+			continue;
+		}
+
+		commands.push(
+			composeEslintCommand(options, {
+				agentsFormatterPath: runPlan.agentsFormatterPath,
+				cacheLocation: pass.descriptor.cacheFile,
+				ci: runPlan.ci,
+				concurrency: pass.concurrency,
+				eslintLabel: pass.descriptor.label,
+				paths: options.paths,
+				typeAwareEnv: pass.descriptor.typeAwareEnv,
+			}),
+		);
+	}
+
+	return { commands, notice };
+}
+
+/**
+ * Compose the child commands for the selected mode. Compatibility wrapper over
+ * {@link plan} + {@link compose}; `context.dryRun` maps to a non-mutating plan.
  *
  * @param options - The parsed CLI options.
  * @param context - The sizing context (cwd, environment, dry-run flag).
  * @returns The composed command plan.
  */
 export function composeCommands(options: LintCliOptions, context: SizingContext): CommandPlan {
-	const runEslint = !options.oxlint;
-	const runOxlint = !options.eslint;
-	const ci = isCi(context.environment);
-	const oxlintTypeAware = runOxlint && options.oxlintTypeAware && options.typeAware !== "off";
-	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
-
-	const commands: Array<ChildCommand> = [];
-	let notice: string | undefined;
-
-	if (runOxlint) {
-		commands.push(
-			composeOxlintCommand(options, {
-				agentsFormatterPath,
-				cacheLocation: "",
-				ci,
-				concurrency: "off",
-				eslintLabel: "eslint",
-				oxlintTypeAware,
-				paths: options.paths,
-				typeAwareEnv: undefined,
-			}),
-		);
-	}
-
-	if (!runEslint) {
-		return { commands, notice };
-	}
-
-	function build(overrides: Partial<ComposeContext>): ChildCommand {
-		return composeEslintCommand(options, {
-			agentsFormatterPath,
-			cacheLocation: CACHE_FILE_DEFAULT,
-			ci,
-			concurrency: "off",
-			eslintLabel: "eslint",
-			oxlintTypeAware,
-			paths: options.paths,
-			typeAwareEnv: undefined,
-			...overrides,
-		});
-	}
-
-	if (ci || options.fix || options.typeAware === "full") {
-		// The full config (env unset, `.eslintcache`): --fix writers, CI (needs
-		// unused-disable reporting), and the explicit `full` escape hatch.
-		commands.push(
-			build({
-				cacheLocation: CACHE_FILE_DEFAULT,
-				concurrency: sizeFullPass(options, context),
-			}),
-		);
-		return { commands, notice };
-	}
-
-	if (options.typeAware === "off") {
-		commands.push(fastPassCommand(build, options, context));
-		return { commands, notice };
-	}
-
-	if (options.typeAware === "only") {
-		const { concurrency } = sizeTypedPass(options, context);
-		commands.push(typedPassCommand(build, concurrency));
-		return { commands, notice };
-	}
-
-	// Default: fast pass ∥ typed pass, skipping the typed pass when nothing
-	// type-relevant changed.
-	commands.push(fastPassCommand(build, options, context));
-
-	const { concurrency, dirtyCount } = sizeTypedPass(options, context);
-	if (dirtyCount === 0 && !context.dryRun) {
-		notice =
-			"isentinel-lint: skipping the type-aware ESLint pass; no type-relevant files " +
-			"changed since the last run.\n";
-	} else {
-		commands.push(typedPassCommand(build, concurrency));
-	}
-
-	return { commands, notice };
+	return compose(plan(options, context.cwd, context.environment, !context.dryRun), options);
 }
 
 /**
@@ -227,8 +276,7 @@ export async function runLint(argv: Array<string>): Promise<number> {
 	const environment = process.env;
 
 	const runOxlint = !options.eslint;
-	const oxlintTypeAware = runOxlint && options.oxlintTypeAware && options.typeAware !== "off";
-
+	const oxlintTypeAware = resolveOxlintTypeAware(options);
 	if (runOxlint && oxlintTypeAware && !isPackageExists("oxlint-tsgolint", { paths: [cwd] })) {
 		throw new CliError(
 			"oxlint-tsgolint is not installed, so oxlint cannot run type-aware rules. " +
@@ -236,11 +284,7 @@ export async function runLint(argv: Array<string>): Promise<number> {
 		);
 	}
 
-	const { commands, notice } = composeCommands(options, {
-		cwd,
-		dryRun: options.print,
-		environment,
-	});
+	const { commands, notice } = compose(plan(options, cwd, environment, !options.print), options);
 
 	if (options.print) {
 		for (const command of commands) {
@@ -261,70 +305,49 @@ export async function runLint(argv: Array<string>): Promise<number> {
 	return runConcurrent(commands, cwd);
 }
 
+function resolveOxlintTypeAware(options: LintCliOptions): boolean {
+	return !options.eslint && options.oxlintTypeAware && options.typeAware !== "off";
+}
+
 /**
- * Count the files a pass will re-lint: the union of the mtime/checksum-dirty
- * files and the TypeScript builder's affected set (for type-aware passes),
- * restricted to the pass's own cache and extension family.
+ * Dirty count for a real run: clear the cache wholesale when stale, then fold
+ * TS builder invalidation in, reusing a single loaded cache for the dirty query
+ * and the surgical entry removal.
  *
- * For type-aware passes it first busts the type-aware caches when the root
- * package.json resolution surface changed, then runs the builder. A resolved
- * `.json` edit still propagates: the builder reads its file set from tsconfig
- * (not `targetFiles`), so a `resolveJsonModule` import flags its `.ts`
- * importers as affected even though the `.json` file itself is filtered out of
- * `targetFiles` here — the `.json` never enters the type-aware cache, so
- * removing it would be a no-op.
- *
- * @param options - The parsed CLI options.
- * @param request - The per-pass count request.
+ * @param descriptor - The pass being sized.
+ * @param cacheLocation - The resolved cache file path.
+ * @param targetFiles - The candidate files for this pass.
+ * @param context - The shared sizing inputs.
  * @returns The number of dirty files.
  */
-function countDirty(
-	options: LintCliOptions,
-	{ cacheFileName, context, invalidation, typeAwareOnly }: CountDirtyRequest,
+function mutatingDirtyCount(
+	descriptor: PassDescriptor,
+	cacheLocation: string,
+	targetFiles: Array<string>,
+	{ cwd, environment, newestBustMtime }: SizePassContext,
 ): number {
-	const { cwd, dryRun, environment } = context;
-	const all = collectLintableFiles(cwd, options.paths);
-	const files = typeAwareOnly ? all.filter(isTypeAwareFile) : all;
-	if (!options.cache) {
-		return files.length;
+	if (isCacheStale(cacheLocation, newestBustMtime)) {
+		clearAllCaches(cwd);
+		return targetFiles.length;
 	}
 
-	const cacheLocation = path.resolve(cwd, cacheFileName);
-	const typeAware = invalidation !== "none";
+	const cache: DirtyCache | undefined = openCache(cacheLocation, isCi(environment));
+	const dirty = new Set(
+		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
+	);
 
-	// Bust the type-aware caches (never `.eslintcache-fast`) when the root
-	// package.json resolution surface changed; a missing cache below then reads
-	// as fully dirty.
-	if (typeAware && !dryRun) {
-		applyPackageJsonBust(cwd);
-	}
-
-	const bustFiles = collectCacheBustFiles(cwd);
-	if (isCacheBusted(cacheLocation, bustFiles)) {
-		if (!dryRun) {
-			clearAllCaches(cwd);
-		}
-
-		return files.length;
-	}
-
-	const dirty = new Set<string>();
-	const dirtyFiles = listDirtyFiles(cacheLocation, files, isCi(environment));
-	for (const file of dirtyFiles) {
-		dirty.add(normalizePath(file));
-	}
-
-	if (typeAware && !dryRun) {
+	if (descriptor.invalidation !== "none") {
 		const outcome = applyTypeAwareInvalidation({
 			alreadyDirty: dirty,
+			cache,
 			cacheLocation,
 			cwd,
 			environment,
-			mode: invalidation === "only" ? "only" : undefined,
-			targetFiles: files,
+			mode: descriptor.invalidation === "only" ? "only" : undefined,
+			targetFiles,
 		});
 		if (outcome.busted) {
-			return files.length;
+			return targetFiles.length;
 		}
 
 		for (const file of outcome.invalidated) {
@@ -336,129 +359,75 @@ function countDirty(
 }
 
 /**
- * Size the fast pass from its own dirty count against `.eslintcache-fast` over
- * every lintable extension. The fast pass lints in isolation, so it never runs
- * the TS builder and uses the higher {@link resolveFastFilesPerWorker}
- * break-even.
+ * Dirty count for `--print`: reflect cache staleness but never delete it, and
+ * never run the builder. Only the mtime/checksum-dirty files count.
  *
- * @param options - The parsed CLI options.
- * @param context - The sizing context.
- * @returns The resolved concurrency value.
+ * @param cacheLocation - The resolved cache file path.
+ * @param targetFiles - The candidate files for this pass.
+ * @param context - The shared sizing inputs.
+ * @returns The number of dirty files.
  */
-function sizeFastPass(options: LintCliOptions, context: SizingContext): "off" | number {
-	if (options.concurrency !== undefined) {
-		return options.concurrency;
+function readOnlyDirtyCount(
+	cacheLocation: string,
+	targetFiles: Array<string>,
+	{ environment, newestBustMtime }: SizePassContext,
+): number {
+	if (isCacheStale(cacheLocation, newestBustMtime)) {
+		return targetFiles.length;
 	}
 
-	const dirtyCount = countDirty(options, {
-		cacheFileName: CACHE_FILE_FAST,
-		context,
-		invalidation: "none",
-		typeAwareOnly: false,
-	});
-	const { maxWorkers } = resolveWorkerLimits(context.environment, availableParallelism());
-	return computeWorkerCount({
-		dirtyCount,
-		filesPerWorker: resolveFastFilesPerWorker(context.environment),
-		maxWorkers,
-	});
+	const cache = openCache(cacheLocation, isCi(environment));
+	return (cache?.getUpdatedFiles(targetFiles) ?? targetFiles).length;
 }
 
 /**
- * Build the fast (syntactic, `ESLINT_TYPE_AWARE=off`) ESLint pass command.
+ * Count the files a pass will re-lint. Routes on `mutate`: the mutating path
+ * clears stale caches and folds builder invalidation into the count (reusing
+ * one loaded cache for the dirty query and the surgical removal); the read-only
+ * path only reports the mtime/checksum-dirty files.
  *
- * @param build - The pass-context command builder.
- * @param options - The parsed CLI options.
- * @param context - The sizing context.
- * @returns The fast-pass child command.
+ * @param descriptor - The pass being sized.
+ * @param context - The shared sizing inputs.
+ * @returns The number of dirty files.
  */
-function fastPassCommand(
-	build: EslintCommandBuilder,
-	options: LintCliOptions,
-	context: SizingContext,
-): ChildCommand {
-	return build({
-		cacheLocation: CACHE_FILE_FAST,
-		concurrency: sizeFastPass(options, context),
-		eslintLabel: "fast",
-		typeAwareEnv: "off",
-	});
-}
-
-/**
- * Build the type-aware (`ESLINT_TYPE_AWARE=only`) ESLint pass command.
- *
- * @param build - The pass-context command builder.
- * @param concurrency - The resolved concurrency for the pass.
- * @returns The typed-pass child command.
- */
-function typedPassCommand(build: EslintCommandBuilder, concurrency: "off" | number): ChildCommand {
-	return build({
-		cacheLocation: CACHE_FILE_TYPE_AWARE,
-		concurrency,
-		eslintLabel: "typed",
-		typeAwareEnv: "only",
-	});
-}
-
-/**
- * Size the type-aware pass from its own dirty count against
- * `.eslintcache-typeaware`, restricted to TS/JS-family files and computed after
- * builder invalidation runs. Returns the dirty count so the caller can skip the
- * pass when nothing type-relevant changed.
- *
- * @param options - The parsed CLI options.
- * @param context - The sizing context.
- * @returns The resolved concurrency and the (post-invalidation) dirty count.
- */
-function sizeTypedPass(
-	options: LintCliOptions,
-	context: SizingContext,
-): { concurrency: "off" | number; dirtyCount: number } {
-	const dirtyCount = countDirty(options, {
-		cacheFileName: CACHE_FILE_TYPE_AWARE,
-		context,
-		invalidation: "only",
-		typeAwareOnly: true,
-	});
-	if (options.concurrency !== undefined) {
-		return { concurrency: options.concurrency, dirtyCount };
+function passDirtyCount(descriptor: PassDescriptor, context: SizePassContext): number {
+	const targetFiles = descriptor.typeAwareOnly ? context.files.typeAware : context.files.lintable;
+	if (!context.options.cache) {
+		return targetFiles.length;
 	}
 
-	const { filesPerWorker, maxWorkers } = resolveWorkerLimits(
-		context.environment,
-		availableParallelism(),
-	);
-	return {
-		concurrency: computeWorkerCount({ dirtyCount, filesPerWorker, maxWorkers }),
-		dirtyCount,
-	};
+	const cacheLocation = path.resolve(context.cwd, descriptor.cacheFile);
+	return context.mutate
+		? mutatingDirtyCount(descriptor, cacheLocation, targetFiles, context)
+		: readOnlyDirtyCount(cacheLocation, targetFiles, context);
 }
 
 /**
- * Size the full-config pass from every dirty lintable file against
- * `.eslintcache`, running builder invalidation for the full type-aware config.
+ * Size one pass: count its dirty files, resolve concurrency and decide whether
+ * it runs. The default-mode type-aware pass is skipped when nothing
+ * type-relevant is dirty; an explicit single-pass mode never skips.
  *
- * @param options - The parsed CLI options.
- * @param context - The sizing context.
- * @returns The resolved concurrency value.
+ * @param descriptor - The pass being sized.
+ * @param context - The shared sizing inputs.
+ * @returns The planned pass.
  */
-function sizeFullPass(options: LintCliOptions, context: SizingContext): "off" | number {
-	if (options.concurrency !== undefined) {
-		return options.concurrency;
+function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPlan {
+	const dirtyCount = passDirtyCount(descriptor, context);
+
+	const concurrency =
+		context.options.concurrency ??
+		computeWorkerCount({
+			dirtyCount,
+			filesPerWorker: descriptor.filesPerWorker(context.limits, context.environment),
+			maxWorkers: context.limits.maxWorkers,
+		});
+
+	const canSkip = context.mutate && context.multiPass && descriptor === TYPED_PASS;
+	if (canSkip && dirtyCount === 0) {
+		return { concurrency, descriptor, shouldRun: false, skipReason: TYPED_SKIP_NOTICE };
 	}
 
-	const dirtyCount = countDirty(options, {
-		cacheFileName: CACHE_FILE_DEFAULT,
-		context,
-		invalidation: "full",
-		typeAwareOnly: false,
-	});
-	const { filesPerWorker, maxWorkers } = resolveWorkerLimits(
-		context.environment,
-		availableParallelism(),
-	);
-	return computeWorkerCount({ dirtyCount, filesPerWorker, maxWorkers });
+	return { concurrency, descriptor, shouldRun: true, skipReason: undefined };
 }
 
 async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
