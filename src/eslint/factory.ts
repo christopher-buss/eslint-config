@@ -3,6 +3,7 @@ import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
+import { writeHybridStatusForCwd } from "../lint-cli/hybrid-status.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
 	getOverrides,
@@ -568,6 +569,22 @@ export async function isentinel(
 		if (stylisticOptions !== false && enableYaml !== false) {
 			configs.push(sortCspell());
 		}
+	}
+
+	// Passively record the hybrid status so `isentinel-lint` can tell, without
+	// re-running the config, whether oxlint would double-lint every mapped rule.
+	// Best-effort and swallowed; config evaluation must never throw for this.
+	writeHybridStatusForCwd(enableOxlint);
+
+	// Stamp a marker observable from outside via `eslint --print-config`: the CLI
+	// probes for `settings["isentinel/oxlint"]` when the cached status is stale.
+	if (enableOxlint) {
+		configs.push([
+			{
+				name: "isentinel/oxlint-marker",
+				settings: { "isentinel/oxlint": true },
+			},
+		]);
 	}
 
 	configs.push(disables({ root: rootGlobs }));

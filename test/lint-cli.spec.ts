@@ -24,6 +24,18 @@ import {
 	CACHE_FILE_TYPE_AWARE,
 } from "../src/lint-cli/constants.ts";
 import { collectLintableFiles } from "../src/lint-cli/files.ts";
+import type { RepoFiles } from "../src/lint-cli/files.ts";
+import {
+	hybridStatusPath,
+	readHybridStatus,
+	writeHybridStatus,
+} from "../src/lint-cli/hybrid-status.ts";
+import type { HybridStatus } from "../src/lint-cli/hybrid-status.ts";
+import {
+	HYBRID_UNKNOWN_WARNING,
+	NON_HYBRID_WARNING,
+	resolveOxlintRun,
+} from "../src/lint-cli/hybrid.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
 import { composeCommands, plan, runConcurrent } from "../src/lint-cli/run.ts";
@@ -806,4 +818,311 @@ describe("runConcurrent", () => {
 			fs.rmSync(directory, { force: true, recursive: true });
 		}
 	}, 15_000);
+});
+
+function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
+	return { bustFiles: [], lintable: [], typeAware: [], ...overrides };
+}
+
+function setMtimeInPast(filePath: string): void {
+	const past = Date.now() / 1000 - 60;
+	fs.utimesSync(filePath, past, past);
+}
+
+function setMtimeInFuture(filePath: string): void {
+	const future = Date.now() / 1000 + 60;
+	fs.utimesSync(filePath, future, future);
+}
+
+describe("hybrid status file", () => {
+	it("only writes when node_modules exists", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			writeHybridStatus(directory, true);
+
+			expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
+
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			writeHybridStatus(directory, true);
+
+			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
+		});
+	});
+
+	it("skips rewriting identical content but rewrites on change", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			writeHybridStatus(directory, false);
+			setMtimeInPast(hybridStatusPath(directory));
+			const before = fs.statSync(hybridStatusPath(directory)).mtimeMs;
+
+			// Identical content: the file must not be rewritten.
+			writeHybridStatus(directory, false);
+
+			expect(fs.statSync(hybridStatusPath(directory)).mtimeMs).toBe(before);
+
+			// Changed content: the file is rewritten.
+			writeHybridStatus(directory, true);
+
+			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
+		});
+	});
+
+	it("swallows write failures", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			// `.cache` as a file makes creating the isentinel-lint subdir throw.
+			fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
+
+			expect(() => {
+				writeHybridStatus(directory, true);
+			}).not.toThrow();
+			expect(readHybridStatus(directory)).toBeUndefined();
+		});
+	});
+
+	it("returns undefined for malformed status content", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const statusPath = hybridStatusPath(directory);
+			fs.mkdirSync(path.dirname(statusPath), { recursive: true });
+			fs.writeFileSync(statusPath, "not json");
+
+			expect(readHybridStatus(directory)).toBeUndefined();
+		});
+	});
+});
+
+describe("resolveOxlintRun", () => {
+	function freshConfig(directory: string): string {
+		const config = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(config, "export default []");
+		setMtimeInPast(config);
+		return config;
+	}
+
+	it("drops oxlint with a warning when a fresh status is non-hybrid", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			const config = freshConfig(directory);
+			writeHybridStatus(directory, false);
+
+			let probeCalls = 0;
+			function probe(): HybridStatus {
+				probeCalls += 1;
+				return { oxlint: false };
+			}
+
+			const decision = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles({ bustFiles: [config] }),
+					mutate: true,
+					runEslint: true,
+					runOxlint: true,
+				},
+				probe,
+			);
+
+			expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
+			expect(probeCalls).toBe(0);
+		});
+	});
+
+	it("runs both engines when a fresh status is hybrid, without probing", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			const config = freshConfig(directory);
+			writeHybridStatus(directory, true);
+
+			let probeCalls = 0;
+			function probe(): HybridStatus {
+				probeCalls += 1;
+				return { oxlint: false };
+			}
+
+			const decision = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles({ bustFiles: [config] }),
+					mutate: true,
+					runEslint: true,
+					runOxlint: true,
+				},
+				probe,
+			);
+
+			expect(decision).toStrictEqual({ reason: undefined, run: true });
+			expect(probeCalls).toBe(0);
+		});
+	});
+
+	it("probes when the status is stale and persists the probe result", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			// Status first (older), then a newer config makes it stale.
+			writeHybridStatus(directory, true);
+			const config = path.join(directory, "eslint.config.ts");
+			fs.writeFileSync(config, "export default []");
+			setMtimeInFuture(config);
+
+			let probeCalls = 0;
+			function probe(): HybridStatus {
+				probeCalls += 1;
+				return { oxlint: false };
+			}
+
+			const decision = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles({
+						bustFiles: [config],
+						typeAware: [path.join(directory, "a.ts")],
+					}),
+					mutate: true,
+					runEslint: true,
+					runOxlint: true,
+				},
+				probe,
+			);
+
+			expect(probeCalls).toBe(1);
+			expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
+			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
+		});
+	});
+
+	it("fails open when the probe cannot determine the status", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+
+			const decision = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles({ typeAware: [path.join(directory, "a.ts")] }),
+					mutate: true,
+					runEslint: true,
+					runOxlint: true,
+				},
+				() => {},
+			);
+
+			expect(decision).toStrictEqual({ reason: HYBRID_UNKNOWN_WARNING, run: true });
+		});
+	});
+
+	it("skips the check for explicit single-tool runs", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			let probeCalls = 0;
+			function probe(): HybridStatus {
+				probeCalls += 1;
+				return { oxlint: false };
+			}
+
+			// --oxlint leaves runEslint false; --eslint leaves runOxlint false.
+			const oxlintOnly = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles(),
+					mutate: true,
+					runEslint: false,
+					runOxlint: true,
+				},
+				probe,
+			);
+			const eslintOnly = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles(),
+					mutate: true,
+					runEslint: true,
+					runOxlint: false,
+				},
+				probe,
+			);
+
+			expect(oxlintOnly).toStrictEqual({ reason: undefined, run: true });
+			expect(eslintOnly).toStrictEqual({ reason: undefined, run: false });
+			expect(probeCalls).toBe(0);
+		});
+	});
+
+	it("never probes or writes for a read-only (--print) plan", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			const config = path.join(directory, "eslint.config.ts");
+			fs.writeFileSync(config, "export default []");
+			setMtimeInFuture(config);
+
+			let probeCalls = 0;
+			function probe(): HybridStatus {
+				probeCalls += 1;
+				return { oxlint: false };
+			}
+
+			const decision = resolveOxlintRun(
+				{
+					cwd: directory,
+					files: repoFiles({
+						bustFiles: [config],
+						typeAware: [path.join(directory, "a.ts")],
+					}),
+					mutate: false,
+					runEslint: true,
+					runOxlint: true,
+				},
+				probe,
+			);
+
+			// Stale status, but --print never probes: assume hybrid, print
+			// unchanged.
+			expect(decision).toStrictEqual({ reason: undefined, run: true });
+			expect(probeCalls).toBe(0);
+			expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
+		});
+	});
+});
+
+describe("plan hybrid integration", () => {
+	it("drops the oxlint child for a fresh non-hybrid status", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			const config = path.join(directory, "eslint.config.ts");
+			fs.writeFileSync(config, "export default []");
+			fs.writeFileSync(path.join(directory, "a.ts"), "export const x = 1;\n");
+			setMtimeInPast(config);
+			writeHybridStatus(directory, false);
+
+			const { commands, notice } = withoutGitEnvironment(() => {
+				return composeCommands(parseArguments([]), {
+					cwd: directory,
+					dryRun: false,
+					environment: {},
+				});
+			});
+
+			expect(commands.some((command) => command.label === "oxc")).toBe(false);
+			expect(notice).toContain(NON_HYBRID_WARNING);
+		});
+	});
 });

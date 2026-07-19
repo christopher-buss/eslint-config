@@ -18,6 +18,7 @@ import {
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
 import { collectRepoFiles } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
+import { resolveOxlintRun } from "./hybrid.ts";
 import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
 import { applyPackageJsonBust } from "./package-hash.ts";
@@ -76,6 +77,11 @@ export interface RunPlan {
 	ci: boolean;
 	/** Whether the oxlint child runs. */
 	oxlint: boolean;
+	/**
+	 * A stderr warning about the oxlint decision (non-hybrid config drop or an
+	 * undeterminable hybrid status), or `undefined`.
+	 */
+	oxlintReason: string | undefined;
 	/** Whether oxlint receives `--type-aware`. */
 	oxlintTypeAware: boolean;
 	/** The ESLint passes, in run order (empty for oxlint-only runs). */
@@ -132,13 +138,26 @@ export function plan(
 	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
 
 	if (!runEslint) {
-		return { agentsFormatterPath, ci, oxlint: runOxlint, oxlintTypeAware, passes: [] };
+		return {
+			agentsFormatterPath,
+			ci,
+			oxlint: runOxlint,
+			oxlintReason: undefined,
+			oxlintTypeAware,
+			passes: [],
+		};
 	}
 
 	const descriptors = selectPasses(options, ci);
 	const files = collectRepoFiles(cwd, options.paths);
 	const newestBustMtime = maxMtimeMs(files.bustFiles);
 	const limits = resolveWorkerLimits(environment, availableParallelism());
+
+	// Hybrid gate: when both engines would run, oxlint only runs if the resolved
+	// ESLint config is hybrid (`oxlint: true`); otherwise the two engines would
+	// double-lint every mapped rule. Decided here (before any child spawns) so
+	// `--fix` never runs oxlint's fixes against a non-hybrid config.
+	const oxlintDecision = resolveOxlintRun({ cwd, files, mutate, runEslint, runOxlint });
 
 	// The one mutation gate: bust the type-aware caches when the root
 	// package.json resolution surface changed. Per-pass cache clearing and
@@ -163,7 +182,14 @@ export function plan(
 		});
 	});
 
-	return { agentsFormatterPath, ci, oxlint: runOxlint, oxlintTypeAware, passes };
+	return {
+		agentsFormatterPath,
+		ci,
+		oxlint: oxlintDecision.run,
+		oxlintReason: oxlintDecision.reason,
+		oxlintTypeAware,
+		passes,
+	};
 }
 
 /**
@@ -176,7 +202,11 @@ export function plan(
  */
 export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan {
 	const commands: Array<ChildCommand> = [];
-	let notice: string | undefined;
+	const notices: Array<string> = [];
+
+	if (runPlan.oxlintReason !== undefined) {
+		notices.push(runPlan.oxlintReason);
+	}
 
 	if (runPlan.oxlint) {
 		commands.push(
@@ -189,7 +219,10 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 
 	for (const pass of runPlan.passes) {
 		if (!pass.shouldRun) {
-			notice = pass.skipReason;
+			if (pass.skipReason !== undefined) {
+				notices.push(pass.skipReason);
+			}
+
 			continue;
 		}
 
@@ -206,7 +239,7 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 		);
 	}
 
-	return { commands, notice };
+	return { commands, notice: notices.length > 0 ? notices.join("") : undefined };
 }
 
 /**

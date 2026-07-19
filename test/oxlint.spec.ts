@@ -287,6 +287,33 @@ describe("oxlint hybrid coverage", () => {
 	});
 });
 
+/**
+ * Whether any resolved config carries the hybrid marker the lint CLI probes
+ * for.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns Whether `settings["isentinel/oxlint"]` is stamped anywhere.
+ */
+function hasOxlintMarker(configs: Array<TypedFlatConfigItem>): boolean {
+	return configs.some((config) => config.settings?.["isentinel/oxlint"] === true);
+}
+
+describe("hybrid marker", () => {
+	it("stamps the oxlint marker only when hybrid mode is enabled", async ({ expect }) => {
+		expect.hasAssertions();
+
+		const hybrid = await isentinel({
+			name: "test/marker-hybrid",
+			...baseOptions,
+			oxlint: true,
+		});
+		const plain = await isentinel({ name: "test/marker-plain", ...baseOptions });
+
+		expect(hasOxlintMarker([...hybrid])).toBe(true);
+		expect(hasOxlintMarker([...plain])).toBe(false);
+	});
+});
+
 describe("oxlint config snapshots", () => {
 	it("should match the default roblox game config", ({ expect }) => {
 		expect.hasAssertions();
