@@ -283,7 +283,7 @@ export function isentinel(
 				...resolveSubOptions(options, "perfectionist"),
 				type: projectType,
 			}),
-			oxlintStylistic(stylisticOptions, prettierSettings),
+			oxlintStylistic(stylisticOptions),
 		);
 	}
 
@@ -328,7 +328,7 @@ export function isentinel(
 			isInEditor,
 			stylistic: stylisticOptions,
 		}),
-		oxlintFlawless({ stylistic: stylisticOptions }),
+		oxlintFlawless({ stylistic: stylisticOptions }, prettierSettings),
 		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		oxlintDisables({ root: rootGlobs }),
 	);

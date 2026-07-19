@@ -1,10 +1,7 @@
-import type { Linter } from "eslint";
-
-import { GLOB_JS, GLOB_JSX, GLOB_MARKDOWN_CODE, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { arrowStyleRules, stylisticRules } from "../../rules/stylistic.ts";
+import { GLOB_SRC } from "../../globs.ts";
+import { stylisticRules } from "../../rules/stylistic.ts";
 import { interopDefault } from "../../utils.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
-import type { PrettierOptions } from "./oxfmt.ts";
 
 export const StylisticConfigDefaults: StylisticConfig = {
 	indent: "tab",
@@ -15,15 +12,13 @@ export const StylisticConfigDefaults: StylisticConfig = {
 
 export async function stylistic(
 	options: StylisticConfig = {},
-	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { arrowLength, indent, jsx, quotes, semi } = {
+	const { indent, jsx, quotes, semi } = {
 		...StylisticConfigDefaults,
 		...options,
 	};
 
-	const [pluginArrowReturnStyle, pluginStylistic, pluginAntfu] = await Promise.all([
-		interopDefault(import("eslint-plugin-arrow-return-style-x")),
+	const [pluginStylistic, pluginAntfu] = await Promise.all([
 		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("eslint-plugin-antfu")),
 	]);
@@ -36,25 +31,12 @@ export async function stylistic(
 		semi,
 	});
 
-	function createArrowStyleRule(_: string, maxLength?: number): Linter.RulesRecord {
-		return arrowStyleRules({
-			arrowLength,
-			maxLength,
-			printWidth:
-				typeof prettierOptions.printWidth === "number"
-					? prettierOptions.printWidth
-					: undefined,
-			usePrettier: prettierOptions,
-		}) as Linter.RulesRecord;
-	}
-
 	return [
 		{
 			name: "isentinel/stylistic/setup",
 			plugins: {
-				"antfu": pluginAntfu,
-				"arrow-style": pluginArrowReturnStyle,
-				"style": pluginStylistic,
+				antfu: pluginAntfu,
+				style: pluginStylistic,
 			},
 		},
 		{
@@ -64,27 +46,6 @@ export async function stylistic(
 				...config.rules,
 
 				...stylisticRules({ indent, jsx, quotes, semi }),
-			},
-		},
-		{
-			name: "isentinel/stylistic/ts",
-			files: [GLOB_TS, GLOB_TSX],
-			rules: {
-				...createArrowStyleRule("oxc-ts"),
-			},
-		},
-		{
-			name: "isentinel/stylistic/js",
-			files: [GLOB_JS, GLOB_JSX],
-			rules: {
-				...createArrowStyleRule("oxc"),
-			},
-		},
-		{
-			name: "isentinel/stylistic/markdown-code",
-			files: [GLOB_MARKDOWN_CODE],
-			rules: {
-				...createArrowStyleRule("oxc", Number(prettierOptions["jsdocPrintWidth"]) || 80),
 			},
 		},
 	];

@@ -107,10 +107,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "specifier": "<pkg>:@stylistic/eslint-plugin",
     },
     {
-      "name": "arrow-style",
-      "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
-    },
-    {
       "name": "@cspell",
       "specifier": "<pkg>:@cspell/eslint-plugin",
     },
@@ -2879,74 +2875,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "jsPlugins": [
-        {
-          "name": "arrow-style",
-          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
-        },
-      ],
-      "rules": {
-        "arrow-style/arrow-return-style": [
-          "error",
-          {
-            "jsxAlwaysUseExplicitReturn": true,
-            "maxLen": 100,
-            "maxObjectProperties": 2,
-            "namedExportsAlwaysUseExplicitReturn": true,
-            "objectReturnStyle": "complex-explicit",
-            "usePrettier": {
-              "arrowParens": "always",
-              "printWidth": 100,
-              "quoteProps": "consistent",
-              "semi": true,
-              "singleQuote": false,
-              "tabWidth": 4,
-              "trailingComma": "all",
-              "useTabs": true,
-            },
-          },
-        ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}js",
-        "**/*.{,c,m}jsx",
-      ],
-      "jsPlugins": [
-        {
-          "name": "arrow-style",
-          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
-        },
-      ],
-      "rules": {
-        "arrow-style/arrow-return-style": [
-          "error",
-          {
-            "jsxAlwaysUseExplicitReturn": true,
-            "maxLen": 100,
-            "maxObjectProperties": 2,
-            "namedExportsAlwaysUseExplicitReturn": true,
-            "objectReturnStyle": "complex-explicit",
-            "usePrettier": {
-              "arrowParens": "always",
-              "printWidth": 100,
-              "quoteProps": "consistent",
-              "semi": true,
-              "singleQuote": false,
-              "tabWidth": 4,
-              "trailingComma": "all",
-              "useTabs": true,
-            },
-          },
-        ],
-      },
-    },
-    {
-      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
@@ -3042,7 +2970,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "**/*.{,c,m}ts",
+        "**/*.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -3051,6 +2979,21 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         },
       ],
       "rules": {
+        "flawless/arrow-return-style": [
+          "error",
+          {
+            "jsxAlwaysUseExplicitReturn": true,
+            "maxLen": 100,
+            "maxObjectProperties": 2,
+            "namedExportsAlwaysUseExplicitReturn": true,
+            "objectReturnStyle": "complex-explicit",
+            "tabWidth": 4,
+            "useOxfmt": {
+              "printWidth": 100,
+            },
+          },
+        ],
+        "flawless/no-export-default-arrow": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
     },
@@ -3859,10 +3802,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     {
       "name": "style",
       "specifier": "<pkg>:@stylistic/eslint-plugin",
-    },
-    {
-      "name": "arrow-style",
-      "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
     },
     {
       "name": "@cspell",
@@ -6821,74 +6760,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     },
     {
       "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "jsPlugins": [
-        {
-          "name": "arrow-style",
-          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
-        },
-      ],
-      "rules": {
-        "arrow-style/arrow-return-style": [
-          "error",
-          {
-            "jsxAlwaysUseExplicitReturn": true,
-            "maxLen": 100,
-            "maxObjectProperties": 2,
-            "namedExportsAlwaysUseExplicitReturn": true,
-            "objectReturnStyle": "complex-explicit",
-            "usePrettier": {
-              "arrowParens": "always",
-              "printWidth": 100,
-              "quoteProps": "consistent",
-              "semi": true,
-              "singleQuote": false,
-              "tabWidth": 4,
-              "trailingComma": "all",
-              "useTabs": true,
-            },
-          },
-        ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}js",
-        "**/*.{,c,m}jsx",
-      ],
-      "jsPlugins": [
-        {
-          "name": "arrow-style",
-          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
-        },
-      ],
-      "rules": {
-        "arrow-style/arrow-return-style": [
-          "error",
-          {
-            "jsxAlwaysUseExplicitReturn": true,
-            "maxLen": 100,
-            "maxObjectProperties": 2,
-            "namedExportsAlwaysUseExplicitReturn": true,
-            "objectReturnStyle": "complex-explicit",
-            "usePrettier": {
-              "arrowParens": "always",
-              "printWidth": 100,
-              "quoteProps": "consistent",
-              "semi": true,
-              "singleQuote": false,
-              "tabWidth": 4,
-              "trailingComma": "all",
-              "useTabs": true,
-            },
-          },
-        ],
-      },
-    },
-    {
-      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
@@ -6986,7 +6857,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     },
     {
       "files": [
-        "**/*.{,c,m}ts",
+        "**/*.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -6995,6 +6866,21 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         },
       ],
       "rules": {
+        "flawless/arrow-return-style": [
+          "error",
+          {
+            "jsxAlwaysUseExplicitReturn": true,
+            "maxLen": 100,
+            "maxObjectProperties": 2,
+            "namedExportsAlwaysUseExplicitReturn": true,
+            "objectReturnStyle": "complex-explicit",
+            "tabWidth": 4,
+            "useOxfmt": {
+              "printWidth": 100,
+            },
+          },
+        ],
+        "flawless/no-export-default-arrow": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
     },

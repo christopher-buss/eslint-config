@@ -65,11 +65,22 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
-      "**/*.{,c,m}ts",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [
+      "flawless/arrow-return-style",
+      "flawless/no-export-default-arrow",
       "flawless/prefer-parameter-destructuring",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/flawless/markdown-code",
+    "rules": [
+      "flawless/arrow-return-style",
     ],
   },
   {
@@ -982,7 +993,6 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     "name": "isentinel/stylistic/setup",
     "plugins": [
       "antfu",
-      "arrow-style",
       "style",
     ],
   },
@@ -996,7 +1006,6 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "-antfu/if-newline",
       "-style/no-tabs",
       "antfu/top-level-function",
-      "arrow-style/no-export-default-arrow",
       "curly",
       "style/array-bracket-spacing",
       "style/arrow-parens",
@@ -1064,35 +1073,6 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "style/type-named-tuple-spacing",
       "style/wrap-iife",
       "style/yield-star-spacing",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}ts",
-      "**/*.{,c,m}tsx",
-    ],
-    "name": "isentinel/stylistic/ts",
-    "rules": [
-      "arrow-style/arrow-return-style",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}js",
-      "**/*.{,c,m}jsx",
-    ],
-    "name": "isentinel/stylistic/js",
-    "rules": [
-      "arrow-style/arrow-return-style",
-    ],
-  },
-  {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/stylistic/markdown-code",
-    "rules": [
-      "arrow-style/arrow-return-style",
     ],
   },
   {
@@ -2460,7 +2440,7 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
-      "**/*.{,c,m}ts",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [],
@@ -3730,11 +3710,22 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
-      "**/*.{,c,m}ts",
+      "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/flawless/rules",
     "rules": [
+      "flawless/arrow-return-style",
+      "flawless/no-export-default-arrow",
       "flawless/prefer-parameter-destructuring",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/flawless/markdown-code",
+    "rules": [
+      "flawless/arrow-return-style",
     ],
   },
   {
@@ -4630,7 +4621,6 @@ exports[`config snapshots > should match package mode config 1`] = `
     "name": "isentinel/stylistic/setup",
     "plugins": [
       "antfu",
-      "arrow-style",
       "style",
     ],
   },
@@ -4644,7 +4634,6 @@ exports[`config snapshots > should match package mode config 1`] = `
       "-antfu/if-newline",
       "-style/no-tabs",
       "antfu/top-level-function",
-      "arrow-style/no-export-default-arrow",
       "curly",
       "style/array-bracket-spacing",
       "style/arrow-parens",
@@ -4712,35 +4701,6 @@ exports[`config snapshots > should match package mode config 1`] = `
       "style/type-named-tuple-spacing",
       "style/wrap-iife",
       "style/yield-star-spacing",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}ts",
-      "**/*.{,c,m}tsx",
-    ],
-    "name": "isentinel/stylistic/ts",
-    "rules": [
-      "arrow-style/arrow-return-style",
-    ],
-  },
-  {
-    "files": [
-      "**/*.{,c,m}js",
-      "**/*.{,c,m}jsx",
-    ],
-    "name": "isentinel/stylistic/js",
-    "rules": [
-      "arrow-style/arrow-return-style",
-    ],
-  },
-  {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/stylistic/markdown-code",
-    "rules": [
-      "arrow-style/arrow-return-style",
     ],
   },
   {

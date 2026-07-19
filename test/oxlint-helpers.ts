@@ -112,9 +112,9 @@ export function effectiveOxlintRules(
 	const overrides = config.overrides ?? [];
 	for (const override of overrides) {
 		const matchesFiles = override.files.some((pattern) => matchesPattern(filePath, pattern));
-		const excluded = (override.excludeFiles ?? []).some((pattern) =>
-			matchesPattern(filePath, pattern),
-		);
+		const excluded = (override.excludeFiles ?? []).some((pattern) => {
+			return matchesPattern(filePath, pattern);
+		});
 
 		if (matchesFiles && !excluded) {
 			applyRules(override.rules, effective);

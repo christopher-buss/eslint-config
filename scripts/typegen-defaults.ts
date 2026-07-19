@@ -168,9 +168,7 @@ async function extractVariant(variant: Variant): Promise<VariantExtraction> {
 }
 
 const extractionEntries = await Promise.all(
-	VARIANT_KEYS.map(async (variant) => {
-		return [variant, await extractVariant(variant)] as const;
-	}),
+	VARIANT_KEYS.map(async (variant) => [variant, await extractVariant(variant)] as const),
 );
 const extractions = Object.fromEntries(extractionEntries) as Record<Variant, VariantExtraction>;
 for (const [variant, scopes] of extractionEntries) {

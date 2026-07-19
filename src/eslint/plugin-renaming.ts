@@ -5,7 +5,6 @@ export const defaultPluginRenaming = {
 	"@isentinel/eslint-plugin-comment-length": "comment-length",
 	"@stylistic": "style",
 	"@typescript-eslint": "ts",
-	"arrow-return-style-x": "arrow-style",
 	"n": "node",
 	"yml": "yaml",
 };

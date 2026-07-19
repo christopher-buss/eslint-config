@@ -113,7 +113,7 @@ export interface OptionsFormatters {
 	/**
 	 * Custom options for Prettier.
 	 *
-	 * Used for arrow-return-style-x and as a migration source for oxfmt
+	 * Used for flawless/arrow-return-style and as a migration source for oxfmt
 	 * options.
 	 */
 	prettierOptions?: PrettierOptions;
@@ -232,7 +232,7 @@ export interface OptionsTypeScriptErasableOnly {
 export type StylisticConfig = Pick<
 	StylisticCustomizeOptions,
 	"indent" | "jsx" | "quotes" | "semi"
-> & { arrowLength?: number };
+> & { maxLen?: number };
 
 export interface OptionsHasRoblox {
 	roblox?: boolean;

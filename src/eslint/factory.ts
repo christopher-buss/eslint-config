@@ -360,7 +360,7 @@ export async function isentinel(
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
-		flawless({ stylistic: stylisticOptions }),
+		flawless({ stylistic: stylisticOptions }, prettierSettings),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
 		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
@@ -454,7 +454,7 @@ export async function isentinel(
 
 	if (stylisticOptions !== false) {
 		configs.push(
-			stylistic(stylisticOptions, prettierSettings),
+			stylistic(stylisticOptions),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
 		);
 	}

@@ -100,10 +100,9 @@ keeps running in ESLint, notably:
 - **Type-aware plugin rules** — any rule whose `meta.docs.requiresTypeChecking`
   is true (`sonar/no-ignored-return`, `sonar/no-redundant-optional`,
   `sonar/no-try-promise`, `unicorn/no-non-function-verb-prefix`,
-  `arrow-style/no-export-default-arrow`, `eslint-plugin/no-property-in-node`,
-  four `jest/*` rules). The oxlint factory refuses to emit them as jsPlugins
-  because they crash or silently no-op without type information; a test enforces
-  this against the plugins' runtime metadata.
+  `eslint-plugin/no-property-in-node`, four `jest/*` rules). The oxlint factory
+  refuses to emit them as jsPlugins because they crash or silently no-op without
+  type information; a test enforces this against the plugins' runtime metadata.
 - **Functionally type-aware rules** — the type-aware React rules below do not
   declare `requiresTypeChecking` but still need type information, so they are
   excluded manually. The jest family runs in oxlint via its real ESLint plugin

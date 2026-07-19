@@ -1,13 +1,5 @@
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 
-export interface ArrowStyleRuleOptions {
-	arrowLength?: number;
-	maxLength?: number;
-	printWidth?: number;
-	/** Prettier options forwarded to the rule (ESLint side only). */
-	usePrettier?: Record<string, unknown>;
-}
-
 /**
  * Stylistic rules shared between the ESLint and oxlint factories.
  *
@@ -25,8 +17,6 @@ export function stylisticRules({
 		"antfu/consistent-list-newline": "off",
 		"antfu/if-newline": "off",
 		"antfu/top-level-function": "error",
-
-		"arrow-style/no-export-default-arrow": "error",
 
 		"curly": ["error", "all"],
 
@@ -74,32 +64,5 @@ export function stylisticRules({
 			},
 		],
 		"style/spaced-comment": ["error", "always", { markers: ["!native", "!optimize"] }],
-	};
-}
-
-/**
- * Arrow return style rule shared between the ESLint and oxlint factories.
- *
- * @param options - Shared rule options.
- * @returns The rule map.
- */
-export function arrowStyleRules({
-	arrowLength,
-	maxLength,
-	printWidth,
-	usePrettier,
-}: ArrowStyleRuleOptions = {}): TypedFlatConfigItem["rules"] {
-	return {
-		"arrow-style/arrow-return-style": [
-			"error",
-			{
-				jsxAlwaysUseExplicitReturn: true,
-				maxLen: maxLength ?? arrowLength ?? printWidth ?? 100,
-				maxObjectProperties: 2,
-				namedExportsAlwaysUseExplicitReturn: true,
-				objectReturnStyle: "complex-explicit" as const,
-				...(usePrettier ? { usePrettier } : {}),
-			},
-		],
 	};
 }

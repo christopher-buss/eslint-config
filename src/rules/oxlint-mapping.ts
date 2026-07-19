@@ -28,7 +28,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
-		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
+		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, no-export-default-arrow, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
 	"flawless/prefer-read-only-props":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"format-lua/*": "Oxlint cannot lint Lua files",
@@ -43,7 +43,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-async-constructor, sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, arrow-style/no-export-default-arrow, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-async-constructor, sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 };
@@ -554,7 +554,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"e18e/prefer-url-canparse": "js-plugin",
 
 	// Part: Stylistic (run via jsPlugin)
-	"arrow-style/arrow-return-style": "js-plugin",
 	"style/jsx-curly-brace-presence": "js-plugin",
 	"style/jsx-newline": "js-plugin",
 	"style/jsx-self-closing-comp": "js-plugin",
@@ -581,10 +580,12 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"small-rules/react-hooks-strict-return": "js-plugin",
 	"small-rules/strict-component-boundaries": "js-plugin",
 
-	// Part: Flawless react syntax rules (run via jsPlugin); the type-aware
-	// flawless rules stay in ESLint
+	// Part: Flawless syntax rules (run via jsPlugin); the type-aware flawless
+	// rules stay in ESLint
+	"flawless/arrow-return-style": "js-plugin",
 	"flawless/jsx-shorthand-boolean": "js-plugin",
 	"flawless/jsx-shorthand-fragment": "js-plugin",
+	"flawless/no-export-default-arrow": "js-plugin",
 	"flawless/no-unnecessary-use-callback": "js-plugin",
 	"flawless/no-unnecessary-use-memo": "js-plugin",
 	"flawless/prefer-destructuring-assignment": "js-plugin",
@@ -853,7 +854,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
  * emitted as a jsPlugin requires type checking.
  */
 export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
-	"arrow-style/no-export-default-arrow",
 	"eslint-plugin/no-property-in-node",
 	"jest/no-error-equal",
 	"jest/no-unnecessary-assertion",
@@ -963,7 +963,6 @@ export const oxlintJsPluginPrefixRenames: Readonly<Record<string, string>> = {
 export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"@cspell": "@cspell/eslint-plugin",
 	"antfu": "eslint-plugin-antfu",
-	"arrow-style": "eslint-plugin-arrow-return-style-x",
 	"better-max-params": "eslint-plugin-better-max-params",
 	"comment-length": "eslint-plugin-comment-length",
 	"de-morgan": "eslint-plugin-de-morgan",
