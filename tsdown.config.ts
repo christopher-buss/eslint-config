@@ -51,13 +51,19 @@ export default defineConfig([
 		entry: ["src/index.ts"],
 		unused: {
 			// Required for cli
-			ignore: ["ansis", "yargs"],
+			ignore: ["ansis", "yargs", "concurrently", "file-entry-cache"],
 			level: "warning",
 		},
 	},
 	{
 		...sharedOptions,
 		entry: ["src/cli.ts"],
+	},
+	{
+		...sharedOptions,
+		// The lint runner shells out to the consumer's local eslint/oxlint and
+		// resolves them at runtime, so its runtime deps stay external.
+		entry: { "lint-cli": "src/lint-cli/index.ts" },
 	},
 	{
 		...sharedOptions,

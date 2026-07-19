@@ -39,7 +39,10 @@
 	"main": "./dist/index.mjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
-	"bin": "./bin/index.js",
+	"bin": {
+		"eslint-config": "./bin/index.js",
+		"isentinel-lint": "./bin/lint.js"
+	},
 	"files": [
 		"bin",
 		"dist"
@@ -77,6 +80,7 @@
 		"@typescript-eslint/eslint-plugin": "catalog:prod",
 		"@typescript-eslint/parser": "catalog:prod",
 		"ansis": "catalog:prod",
+		"concurrently": "catalog:prod",
 		"eslint-config-flat-gitignore": "catalog:prod",
 		"eslint-config-prettier": "catalog:prod",
 		"eslint-flat-config-utils": "catalog:prod",
@@ -102,6 +106,7 @@
 		"eslint-plugin-unicorn": "catalog:prod",
 		"eslint-plugin-unused-imports": "catalog:prod",
 		"eslint-plugin-yml": "catalog:prod",
+		"file-entry-cache": "catalog:prod",
 		"find-up-simple": "catalog:prod",
 		"globals": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
@@ -128,7 +133,6 @@
 		"@types/yargs": "catalog:dev",
 		"@vitest/eslint-plugin": "catalog:peer",
 		"bumpp": "catalog:dev",
-		"concurrently": "catalog:dev",
 		"eslint": "catalog:peer",
 		"eslint-plugin-erasable-syntax-only": "catalog:peer",
 		"eslint-plugin-eslint-plugin": "catalog:peer",
