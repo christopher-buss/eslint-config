@@ -7,10 +7,22 @@ declare module "file-entry-cache" {
 		notFound?: boolean;
 	}
 
+	// The underlying `flat-cache` store. Exposed so the runner can remove
+	// individual entries and persist them without pruning the (unvisited)
+	// remainder of the cache.
+	interface FlatCache {
+		keys: () => Array<string>;
+		removeKey: (key: string) => void;
+		save: (noPrune?: boolean) => void;
+	}
+
 	interface FileEntryCache {
+		cache: FlatCache;
 		getFileDescriptor: (file: string) => FileDescriptor;
 		getUpdatedFiles: (files: Array<string>) => Array<string>;
 		hasFileChanged: (file: string) => boolean;
+		reconcile: (noPrune?: boolean) => void;
+		removeEntry: (entryName: string) => void;
 	}
 
 	interface FileEntryCacheModule {
