@@ -12,6 +12,7 @@ import prettier from "prettier";
 import { minVersion } from "semver";
 
 import type { PrettierOptions } from "./eslint/configs/index.ts";
+import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
@@ -360,6 +361,36 @@ export function isInEditorEnvironment(): boolean {
 		process.env["VIM"],
 		process.env["NVIM"],
 	].some(Boolean);
+}
+
+/**
+ * Read the `ESLINT_TYPE_AWARE` environment variable so a wrapper CLI can drive
+ * the factory's type-aware split without every consumer wiring the `typeAware`
+ * option themselves.
+ *
+ * Recognized values: `off` selects the non-type-aware pass (drop every
+ * type-aware rule and the TypeScript program); `only` selects the
+ * type-aware-only pass. `false` is a legacy alias for `off` — the canonical
+ * vocabulary is `off`/`only`. Any other value, or an unset variable, has no
+ * effect.
+ *
+ * An explicitly passed `typeAware` option always takes precedence: the factory
+ * only consults this variable when the option is left `undefined`.
+ *
+ * @returns The split mode requested by the environment, or `undefined` when the
+ *   variable is unset or holds an unrecognized value.
+ */
+export function typeAwareSplitFromEnvironment(): TypeAwareSplitMode | undefined {
+	const value = process.env["ESLINT_TYPE_AWARE"];
+	if (value === "off" || value === "false") {
+		return false;
+	}
+
+	if (value === "only") {
+		return "only";
+	}
+
+	return undefined;
 }
 
 /**
