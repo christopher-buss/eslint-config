@@ -8,7 +8,7 @@ import {
 	GLOB_TSX,
 } from "../../globs.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
-import { createOxlintConfigs } from "../utils.ts";
+import { createOxlintConfigs, resolveJsPluginSpecifier } from "../utils.ts";
 
 export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOxlintConfigItem> {
 	return [
@@ -68,7 +68,12 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 		{
 			name: "isentinel/disables/dts/directives",
 			files: [GLOB_DTS],
-			jsPlugins: [{ name: "oxlint-comments", specifier: "oxlint-plugin-oxlint-comments" }],
+			jsPlugins: [
+				{
+					name: "oxlint-comments",
+					specifier: resolveJsPluginSpecifier("oxlint-plugin-oxlint-comments"),
+				},
+			],
 			rules: {
 				"oxlint-comments/no-unlimited-disable": "off",
 			},

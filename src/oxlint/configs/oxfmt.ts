@@ -5,7 +5,7 @@ import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
-import { splitOxlintRules } from "../utils.ts";
+import { resolveJsPluginSpecifier, splitOxlintRules } from "../utils.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -61,10 +61,16 @@ export function oxlintOxfmt(
 		(plugin) => typeof plugin !== "string" && plugin.name === "style",
 	);
 	if (!hasStylePlugin) {
-		jsPlugins.push({ name: "style", specifier: "@stylistic/eslint-plugin" });
+		jsPlugins.push({
+			name: "style",
+			specifier: resolveJsPluginSpecifier("@stylistic/eslint-plugin"),
+		});
 	}
 
-	const oxfmtPlugin = { name: "oxfmt", specifier: "eslint-plugin-oxfmt" };
+	const oxfmtPlugin = {
+		name: "oxfmt",
+		specifier: resolveJsPluginSpecifier("eslint-plugin-oxfmt"),
+	};
 
 	const jsFiles = oxfmtFiles?.flat() ?? [GLOB_JS, GLOB_JSX];
 	const tsFiles = oxfmtFiles?.flat() ?? [

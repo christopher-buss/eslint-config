@@ -2,7 +2,7 @@ import { GLOB_SRC } from "../../globs.ts";
 import { commentLengthRules, commentsRules } from "../../rules/comments.ts";
 import type { OptionsStylistic } from "../../types.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
-import { createOxlintConfigs } from "../utils.ts";
+import { createOxlintConfigs, resolveJsPluginSpecifier } from "../utils.ts";
 
 export function oxlintComments({
 	prettierOptions = {},
@@ -14,7 +14,12 @@ export function oxlintComments({
 		{
 			name: "isentinel/comments/directives",
 			files: [GLOB_SRC],
-			jsPlugins: [{ name: "oxlint-comments", specifier: "oxlint-plugin-oxlint-comments" }],
+			jsPlugins: [
+				{
+					name: "oxlint-comments",
+					specifier: resolveJsPluginSpecifier("oxlint-plugin-oxlint-comments"),
+				},
+			],
 			rules: {
 				"oxlint-comments/disable-enable-pair": ["error", { allowWholeFile: true }],
 				"oxlint-comments/no-aggregating-enable": "error",

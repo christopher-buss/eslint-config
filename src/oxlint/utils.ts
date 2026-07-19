@@ -1,4 +1,5 @@
-import { isPackageExists } from "local-pkg";
+import process from "node:process";
+import { pathToFileURL } from "node:url";
 import type { ExternalPluginEntry } from "oxlint";
 
 import {
@@ -31,6 +32,14 @@ const NATIVE_PLUGINS = new Set<OxlintPlugin>([
 	"vue",
 ]);
 
+/**
+ * Anchor for resolving a plugin from the consumer project, used when a plugin
+ * is a peer dependency the consumer installs rather than one we depend on.
+ */
+const consumerAnchor = pathToFileURL(`${process.cwd()}/`).href;
+
+const specifierCache = new Map<string, string | undefined>();
+
 export interface SplitOxlintRules {
 	jsPluginRules: Rules;
 	jsPlugins: Array<ExternalPluginEntry>;
@@ -46,6 +55,25 @@ export interface OxlintConfigFragmentOptions {
 	keepUnmappedOff?: boolean;
 	rules: Rules | undefined;
 	settings?: NonNullable<TypedOxlintConfigItem["settings"]>;
+}
+
+/**
+ * Resolve a jsPlugin specifier, throwing when the package is not installed.
+ *
+ * @param specifier - The plugin package specifier.
+ * @returns The absolute `file://` specifier.
+ * @throws {Error} When the package cannot be resolved.
+ */
+export function resolveJsPluginSpecifier(specifier: string): string {
+	const resolved = tryResolveJsPlugin(specifier);
+	if (resolved === undefined) {
+		throw new Error(
+			`[@isentinel/eslint-config] Cannot resolve oxlint jsPlugin "${specifier}". ` +
+				"Install it in your project, or disable the rules that require it.",
+		);
+	}
+
+	return resolved;
 }
 
 /**
@@ -104,7 +132,7 @@ export function splitOxlintRules(
 				nativePlugins.add(prefix as OxlintPlugin);
 			} else {
 				const specifier = oxlintJsPlugins[prefix];
-				if (specifier !== undefined && isPackageExists(specifier)) {
+				if (specifier !== undefined && canResolveJsPlugin(specifier)) {
 					jsPluginRules[translated] = value;
 					jsPluginPrefixes.add(prefix);
 				}
@@ -145,7 +173,7 @@ export function splitOxlintRules(
 			throw new Error(`[@isentinel/eslint-config] Unknown oxlint jsPlugin prefix: ${prefix}`);
 		}
 
-		jsPlugins.push({ name: prefix, specifier });
+		jsPlugins.push({ name: prefix, specifier: resolveJsPluginSpecifier(specifier) });
 	}
 
 	return {
@@ -206,6 +234,55 @@ export function createOxlintConfigs({
 	}
 
 	return fragments;
+}
+
+/**
+ * Resolve a specifier against an optional anchor, swallowing resolution errors.
+ *
+ * @param specifier - The plugin package specifier.
+ * @param anchor - The URL to resolve against, or the current module by default.
+ * @returns The resolved URL, or `undefined` when it does not resolve.
+ */
+function resolveFrom(specifier: string, anchor?: string): string | undefined {
+	try {
+		return import.meta.resolve(specifier, anchor);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Resolve a jsPlugin package specifier to an absolute `file://` URL.
+ *
+ * Oxlint resolves bare `jsPlugins` specifiers relative to the consumer's config
+ * file, which fails under pnpm's isolated node_modules: our plugin dependencies
+ * only exist inside our own virtual store scope, never at the consumer's root.
+ * Resolving here (from our package first, then the consumer) and emitting an
+ * absolute specifier makes loading independent of the consumer's layout.
+ *
+ * @param specifier - The plugin package specifier.
+ * @returns The resolved specifier, or `undefined` when it resolves nowhere.
+ */
+function tryResolveJsPlugin(specifier: string): string | undefined {
+	const cached = specifierCache.get(specifier);
+	if (cached !== undefined || specifierCache.has(specifier)) {
+		return cached;
+	}
+
+	const resolved = resolveFrom(specifier) ?? resolveFrom(specifier, consumerAnchor);
+	specifierCache.set(specifier, resolved);
+	return resolved;
+}
+
+/**
+ * Whether a jsPlugin package can be resolved from either our package or the
+ * consumer project.
+ *
+ * @param specifier - The plugin package specifier.
+ * @returns Whether the plugin is resolvable.
+ */
+function canResolveJsPlugin(specifier: string): boolean {
+	return tryResolveJsPlugin(specifier) !== undefined;
 }
 
 function mappedTarget(rule: string): "js-plugin" | "native" {

@@ -56,79 +56,79 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
   "jsPlugins": [
     {
       "name": "antfu",
-      "specifier": "eslint-plugin-antfu",
+      "specifier": "<pkg>:eslint-plugin-antfu",
     },
     {
       "name": "better-max-params",
-      "specifier": "eslint-plugin-better-max-params",
+      "specifier": "<pkg>:eslint-plugin-better-max-params",
     },
     {
       "name": "de-morgan",
-      "specifier": "eslint-plugin-de-morgan",
+      "specifier": "<pkg>:eslint-plugin-de-morgan",
     },
     {
       "name": "eslint-js",
-      "specifier": "oxlint-plugin-eslint",
+      "specifier": "<pkg>:oxlint-plugin-eslint",
     },
     {
       "name": "unused-imports",
-      "specifier": "eslint-plugin-unused-imports",
+      "specifier": "<pkg>:eslint-plugin-unused-imports",
     },
     {
       "name": "sonar",
-      "specifier": "eslint-plugin-sonarjs",
+      "specifier": "<pkg>:eslint-plugin-sonarjs",
     },
     {
       "name": "unicorn-js",
-      "specifier": "eslint-plugin-unicorn",
+      "specifier": "<pkg>:eslint-plugin-unicorn",
     },
     {
       "name": "jsdoc-js",
-      "specifier": "eslint-plugin-jsdoc",
+      "specifier": "<pkg>:eslint-plugin-jsdoc",
     },
     {
       "name": "roblox",
-      "specifier": "eslint-plugin-roblox-ts",
+      "specifier": "<pkg>:eslint-plugin-roblox-ts",
     },
     {
       "name": "small-rules",
-      "specifier": "@pobammer-ts/small-rules",
+      "specifier": "<pkg>:@pobammer-ts/small-rules",
     },
     {
       "name": "sentinel",
-      "specifier": "eslint-plugin-sentinel",
+      "specifier": "<pkg>:eslint-plugin-sentinel",
     },
     {
       "name": "perfectionist",
-      "specifier": "eslint-plugin-perfectionist",
+      "specifier": "<pkg>:eslint-plugin-perfectionist",
     },
     {
       "name": "style",
-      "specifier": "@stylistic/eslint-plugin",
+      "specifier": "<pkg>:@stylistic/eslint-plugin",
     },
     {
       "name": "arrow-style",
-      "specifier": "eslint-plugin-arrow-return-style-x",
+      "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
     },
     {
       "name": "@cspell",
-      "specifier": "@cspell/eslint-plugin",
+      "specifier": "<pkg>:@cspell/eslint-plugin",
     },
     {
       "name": "flawless",
-      "specifier": "eslint-plugin-flawless",
+      "specifier": "<pkg>:eslint-plugin-flawless",
     },
     {
       "name": "oxlint-comments",
-      "specifier": "oxlint-plugin-oxlint-comments",
+      "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
     },
     {
       "name": "comment-length",
-      "specifier": "eslint-plugin-comment-length",
+      "specifier": "<pkg>:eslint-plugin-comment-length",
     },
     {
       "name": "oxfmt",
-      "specifier": "eslint-plugin-oxfmt",
+      "specifier": "<pkg>:eslint-plugin-oxfmt",
     },
   ],
   "options": {
@@ -1692,23 +1692,23 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "better-max-params",
-          "specifier": "eslint-plugin-better-max-params",
+          "specifier": "<pkg>:eslint-plugin-better-max-params",
         },
         {
           "name": "de-morgan",
-          "specifier": "eslint-plugin-de-morgan",
+          "specifier": "<pkg>:eslint-plugin-de-morgan",
         },
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
         {
           "name": "unused-imports",
-          "specifier": "eslint-plugin-unused-imports",
+          "specifier": "<pkg>:eslint-plugin-unused-imports",
         },
       ],
       "rules": {
@@ -1801,7 +1801,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -1817,7 +1817,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
       ],
       "rules": {
@@ -1863,7 +1863,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -2120,7 +2120,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
       ],
       "rules": {
@@ -2200,7 +2200,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "unicorn-js",
-          "specifier": "eslint-plugin-unicorn",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
         },
       ],
       "rules": {
@@ -2309,7 +2309,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "unicorn-js",
-          "specifier": "eslint-plugin-unicorn",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
         },
       ],
       "rules": {
@@ -2377,7 +2377,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "jsdoc-js",
-          "specifier": "eslint-plugin-jsdoc",
+          "specifier": "<pkg>:eslint-plugin-jsdoc",
         },
       ],
       "rules": {
@@ -2445,15 +2445,15 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "roblox",
-          "specifier": "eslint-plugin-roblox-ts",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
-          "specifier": "@pobammer-ts/small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
         {
           "name": "sentinel",
-          "specifier": "eslint-plugin-sentinel",
+          "specifier": "<pkg>:eslint-plugin-sentinel",
         },
       ],
       "rules": {
@@ -2485,7 +2485,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "perfectionist",
-          "specifier": "eslint-plugin-perfectionist",
+          "specifier": "<pkg>:eslint-plugin-perfectionist",
         },
       ],
       "rules": {
@@ -2660,7 +2660,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "perfectionist",
-          "specifier": "eslint-plugin-perfectionist",
+          "specifier": "<pkg>:eslint-plugin-perfectionist",
         },
       ],
       "rules": {
@@ -2785,11 +2785,11 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
       ],
       "rules": {
@@ -2885,7 +2885,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "arrow-style",
-          "specifier": "eslint-plugin-arrow-return-style-x",
+          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
         },
       ],
       "rules": {
@@ -2919,7 +2919,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "arrow-style",
-          "specifier": "eslint-plugin-arrow-return-style-x",
+          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
         },
       ],
       "rules": {
@@ -2952,7 +2952,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "@cspell",
-          "specifier": "@cspell/eslint-plugin",
+          "specifier": "<pkg>:@cspell/eslint-plugin",
         },
       ],
       "rules": {
@@ -2969,11 +2969,11 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
               "dictionaryDefinitions": [
                 {
                   "name": "roblox",
-                  "path": "<dict>/roblox.txt",
+                  "path": "<pkg>:@isentinel/dict-roblox",
                 },
                 {
                   "name": "rbxts",
-                  "path": "<dict>/rbxts.txt",
+                  "path": "<pkg>:@isentinel/dict-rbxts",
                 },
               ],
               "language": "en-US",
@@ -3023,7 +3023,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "small-rules",
-          "specifier": "@pobammer-ts/small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
@@ -3047,7 +3047,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "flawless",
-          "specifier": "eslint-plugin-flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
         },
       ],
       "rules": {
@@ -3061,7 +3061,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "oxlint-comments",
-          "specifier": "oxlint-plugin-oxlint-comments",
+          "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
         },
       ],
       "rules": {
@@ -3100,7 +3100,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
       ],
       "rules": {
@@ -3117,7 +3117,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "comment-length",
-          "specifier": "eslint-plugin-comment-length",
+          "specifier": "<pkg>:eslint-plugin-comment-length",
         },
       ],
       "rules": {
@@ -3162,7 +3162,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -3186,7 +3186,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -3227,7 +3227,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -3242,7 +3242,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -3268,23 +3268,23 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
         {
           "name": "roblox",
-          "specifier": "eslint-plugin-roblox-ts",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
-          "specifier": "@pobammer-ts/small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
         {
           "name": "unused-imports",
-          "specifier": "eslint-plugin-unused-imports",
+          "specifier": "<pkg>:eslint-plugin-unused-imports",
         },
       ],
       "rules": {
@@ -3302,7 +3302,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "oxlint-comments",
-          "specifier": "oxlint-plugin-oxlint-comments",
+          "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
         },
       ],
       "rules": {
@@ -3340,11 +3340,11 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -3388,7 +3388,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -3424,11 +3424,11 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
         {
           "name": "oxfmt",
-          "specifier": "eslint-plugin-oxfmt",
+          "specifier": "<pkg>:eslint-plugin-oxfmt",
         },
       ],
       "rules": {
@@ -3589,11 +3589,11 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
         {
           "name": "oxfmt",
-          "specifier": "eslint-plugin-oxfmt",
+          "specifier": "<pkg>:eslint-plugin-oxfmt",
         },
       ],
       "rules": {
@@ -3810,87 +3810,87 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
   "jsPlugins": [
     {
       "name": "antfu",
-      "specifier": "eslint-plugin-antfu",
+      "specifier": "<pkg>:eslint-plugin-antfu",
     },
     {
       "name": "better-max-params",
-      "specifier": "eslint-plugin-better-max-params",
+      "specifier": "<pkg>:eslint-plugin-better-max-params",
     },
     {
       "name": "de-morgan",
-      "specifier": "eslint-plugin-de-morgan",
+      "specifier": "<pkg>:eslint-plugin-de-morgan",
     },
     {
       "name": "eslint-js",
-      "specifier": "oxlint-plugin-eslint",
+      "specifier": "<pkg>:oxlint-plugin-eslint",
     },
     {
       "name": "unused-imports",
-      "specifier": "eslint-plugin-unused-imports",
+      "specifier": "<pkg>:eslint-plugin-unused-imports",
     },
     {
       "name": "sonar",
-      "specifier": "eslint-plugin-sonarjs",
+      "specifier": "<pkg>:eslint-plugin-sonarjs",
     },
     {
       "name": "unicorn-js",
-      "specifier": "eslint-plugin-unicorn",
+      "specifier": "<pkg>:eslint-plugin-unicorn",
     },
     {
       "name": "jsdoc-js",
-      "specifier": "eslint-plugin-jsdoc",
+      "specifier": "<pkg>:eslint-plugin-jsdoc",
     },
     {
       "name": "e18e",
-      "specifier": "@e18e/eslint-plugin",
+      "specifier": "<pkg>:@e18e/eslint-plugin",
     },
     {
       "name": "node-js",
-      "specifier": "eslint-plugin-n",
+      "specifier": "<pkg>:eslint-plugin-n",
     },
     {
       "name": "jest-js",
-      "specifier": "eslint-plugin-jest",
+      "specifier": "<pkg>:eslint-plugin-jest",
     },
     {
       "name": "perfectionist",
-      "specifier": "eslint-plugin-perfectionist",
+      "specifier": "<pkg>:eslint-plugin-perfectionist",
     },
     {
       "name": "style",
-      "specifier": "@stylistic/eslint-plugin",
+      "specifier": "<pkg>:@stylistic/eslint-plugin",
     },
     {
       "name": "arrow-style",
-      "specifier": "eslint-plugin-arrow-return-style-x",
+      "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
     },
     {
       "name": "@cspell",
-      "specifier": "@cspell/eslint-plugin",
+      "specifier": "<pkg>:@cspell/eslint-plugin",
     },
     {
       "name": "small-rules",
-      "specifier": "@pobammer-ts/small-rules",
+      "specifier": "<pkg>:@pobammer-ts/small-rules",
     },
     {
       "name": "flawless",
-      "specifier": "eslint-plugin-flawless",
+      "specifier": "<pkg>:eslint-plugin-flawless",
     },
     {
       "name": "oxlint-comments",
-      "specifier": "oxlint-plugin-oxlint-comments",
+      "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
     },
     {
       "name": "comment-length",
-      "specifier": "eslint-plugin-comment-length",
+      "specifier": "<pkg>:eslint-plugin-comment-length",
     },
     {
       "name": "roblox",
-      "specifier": "eslint-plugin-roblox-ts",
+      "specifier": "<pkg>:eslint-plugin-roblox-ts",
     },
     {
       "name": "oxfmt",
-      "specifier": "eslint-plugin-oxfmt",
+      "specifier": "<pkg>:eslint-plugin-oxfmt",
     },
   ],
   "options": {
@@ -5463,23 +5463,23 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "better-max-params",
-          "specifier": "eslint-plugin-better-max-params",
+          "specifier": "<pkg>:eslint-plugin-better-max-params",
         },
         {
           "name": "de-morgan",
-          "specifier": "eslint-plugin-de-morgan",
+          "specifier": "<pkg>:eslint-plugin-de-morgan",
         },
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
         {
           "name": "unused-imports",
-          "specifier": "eslint-plugin-unused-imports",
+          "specifier": "<pkg>:eslint-plugin-unused-imports",
         },
       ],
       "rules": {
@@ -5572,7 +5572,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -5614,7 +5614,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -5873,7 +5873,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
       ],
       "rules": {
@@ -5957,7 +5957,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "unicorn-js",
-          "specifier": "eslint-plugin-unicorn",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
         },
       ],
       "rules": {
@@ -6093,7 +6093,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "unicorn-js",
-          "specifier": "eslint-plugin-unicorn",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
         },
       ],
       "rules": {
@@ -6177,7 +6177,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "jsdoc-js",
-          "specifier": "eslint-plugin-jsdoc",
+          "specifier": "<pkg>:eslint-plugin-jsdoc",
         },
       ],
       "rules": {
@@ -6245,7 +6245,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "e18e",
-          "specifier": "@e18e/eslint-plugin",
+          "specifier": "<pkg>:@e18e/eslint-plugin",
         },
       ],
       "rules": {
@@ -6278,7 +6278,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "e18e",
-          "specifier": "@e18e/eslint-plugin",
+          "specifier": "<pkg>:@e18e/eslint-plugin",
         },
       ],
       "rules": {
@@ -6306,7 +6306,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "node-js",
-          "specifier": "eslint-plugin-n",
+          "specifier": "<pkg>:eslint-plugin-n",
         },
       ],
       "rules": {
@@ -6334,11 +6334,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "jest-js",
-          "specifier": "eslint-plugin-jest",
+          "specifier": "<pkg>:eslint-plugin-jest",
         },
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -6421,7 +6421,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "perfectionist",
-          "specifier": "eslint-plugin-perfectionist",
+          "specifier": "<pkg>:eslint-plugin-perfectionist",
         },
       ],
       "rules": {
@@ -6602,7 +6602,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "perfectionist",
-          "specifier": "eslint-plugin-perfectionist",
+          "specifier": "<pkg>:eslint-plugin-perfectionist",
         },
       ],
       "rules": {
@@ -6727,11 +6727,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
       ],
       "rules": {
@@ -6827,7 +6827,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "arrow-style",
-          "specifier": "eslint-plugin-arrow-return-style-x",
+          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
         },
       ],
       "rules": {
@@ -6861,7 +6861,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "arrow-style",
-          "specifier": "eslint-plugin-arrow-return-style-x",
+          "specifier": "<pkg>:eslint-plugin-arrow-return-style-x",
         },
       ],
       "rules": {
@@ -6894,7 +6894,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "@cspell",
-          "specifier": "@cspell/eslint-plugin",
+          "specifier": "<pkg>:@cspell/eslint-plugin",
         },
       ],
       "rules": {
@@ -6911,11 +6911,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
               "dictionaryDefinitions": [
                 {
                   "name": "roblox",
-                  "path": "<dict>/roblox.txt",
+                  "path": "<pkg>:@isentinel/dict-roblox",
                 },
                 {
                   "name": "rbxts",
-                  "path": "<dict>/rbxts.txt",
+                  "path": "<pkg>:@isentinel/dict-rbxts",
                 },
               ],
               "language": "en-US",
@@ -6967,7 +6967,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "small-rules",
-          "specifier": "@pobammer-ts/small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
@@ -6991,7 +6991,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "flawless",
-          "specifier": "eslint-plugin-flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
         },
       ],
       "rules": {
@@ -7005,7 +7005,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "oxlint-comments",
-          "specifier": "oxlint-plugin-oxlint-comments",
+          "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
         },
       ],
       "rules": {
@@ -7044,7 +7044,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
       ],
       "rules": {
@@ -7061,7 +7061,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "comment-length",
-          "specifier": "eslint-plugin-comment-length",
+          "specifier": "<pkg>:eslint-plugin-comment-length",
         },
       ],
       "rules": {
@@ -7106,7 +7106,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -7130,7 +7130,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -7171,7 +7171,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -7186,7 +7186,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
       ],
       "rules": {
@@ -7212,23 +7212,23 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "eslint-js",
-          "specifier": "oxlint-plugin-eslint",
+          "specifier": "<pkg>:oxlint-plugin-eslint",
         },
         {
           "name": "roblox",
-          "specifier": "eslint-plugin-roblox-ts",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
-          "specifier": "@pobammer-ts/small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
         {
           "name": "unused-imports",
-          "specifier": "eslint-plugin-unused-imports",
+          "specifier": "<pkg>:eslint-plugin-unused-imports",
         },
       ],
       "rules": {
@@ -7246,7 +7246,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "oxlint-comments",
-          "specifier": "oxlint-plugin-oxlint-comments",
+          "specifier": "<pkg>:oxlint-plugin-oxlint-comments",
         },
       ],
       "rules": {
@@ -7284,11 +7284,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "antfu",
-          "specifier": "eslint-plugin-antfu",
+          "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -7332,7 +7332,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "sonar",
-          "specifier": "eslint-plugin-sonarjs",
+          "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
@@ -7368,11 +7368,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
         {
           "name": "oxfmt",
-          "specifier": "eslint-plugin-oxfmt",
+          "specifier": "<pkg>:eslint-plugin-oxfmt",
         },
       ],
       "rules": {
@@ -7533,11 +7533,11 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "jsPlugins": [
         {
           "name": "style",
-          "specifier": "@stylistic/eslint-plugin",
+          "specifier": "<pkg>:@stylistic/eslint-plugin",
         },
         {
           "name": "oxfmt",
-          "specifier": "eslint-plugin-oxfmt",
+          "specifier": "<pkg>:eslint-plugin-oxfmt",
         },
       ],
       "rules": {

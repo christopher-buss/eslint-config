@@ -565,6 +565,19 @@ function serializeOxlintConfig(config: OxlintConfig): unknown {
 	return JSON.parse(
 		JSON.stringify(config, (_key, value: unknown) => {
 			if (typeof value === "string" && value.startsWith("file:///")) {
+				// jsPlugin specifiers are resolved to absolute URLs inside the
+				// installed tree; map them back to the package name so snapshots
+				// stay meaningful and machine-independent.
+				const index = value.lastIndexOf("/node_modules/");
+				if (index !== -1) {
+					const segments = value.slice(index + "/node_modules/".length).split("/");
+					const name =
+						segments[0]?.startsWith("@") === true
+							? `${segments[0]}/${segments[1]}`
+							: segments[0];
+					return `<pkg>:${name}`;
+				}
+
 				return `<dict>/${path.posix.basename(value)}`;
 			}
 

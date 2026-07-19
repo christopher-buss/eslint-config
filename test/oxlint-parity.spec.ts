@@ -546,8 +546,16 @@ describe("oxlint jsPlugin type-awareness", () => {
 			expect(registered.size).toBeGreaterThan(0);
 
 			for (const [prefix, specifier] of registered) {
-				expect(oxlintJsPlugins[prefix]).toBe(specifier);
-				expect(isPackageExists(specifier), `${specifier} should be installed`).toBe(true);
+				const packageName = oxlintJsPlugins[prefix]!;
+
+				expect(isPackageExists(packageName), `${packageName} should be installed`).toBe(
+					true,
+				);
+
+				// Specifiers resolve to absolute URLs so oxlint does not
+				// resolve them against the consumer's config file.
+				expect(specifier, `${prefix} should be absolute`).toMatch(/^file:\/\//);
+				expect(specifier).toContain(`/node_modules/${packageName}/`);
 			}
 
 			const knownPrefixes = new Set<string>([
