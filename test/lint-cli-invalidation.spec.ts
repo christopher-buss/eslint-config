@@ -4,11 +4,15 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
+import process from "node:process";
 import { describe, expect, it } from "vitest";
 
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
+import { CACHE_FILE_TYPE_AWARE } from "../src/lint-cli/constants.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
+import { parseArguments } from "../src/lint-cli/options.ts";
+import { composeCommands } from "../src/lint-cli/run.ts";
 
 const TSCONFIG = JSON.stringify({
 	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
@@ -336,6 +340,133 @@ describe("removeCacheEntries", () => {
 				expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
 				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 				expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
+			},
+		);
+	});
+});
+
+const JSON_TSCONFIG = JSON.stringify({
+	compilerOptions: {
+		esModuleInterop: true,
+		module: "commonjs",
+		resolveJsonModule: true,
+		strict: true,
+		target: "es2020",
+	},
+	include: ["src"],
+});
+
+function withoutGit<T>(run: () => T): T {
+	const keys = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"];
+	const saved = keys.map((key): [string, string | undefined] => [key, process.env[key]]);
+	for (const key of keys) {
+		delete process.env[key];
+	}
+
+	try {
+		return run();
+	} finally {
+		for (const [key, value] of saved) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+}
+
+describe("composeCommands typed-pass skip", () => {
+	it("skips the typed pass in default mode when nothing type-relevant changed", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, CACHE_FILE_TYPE_AWARE);
+				const fileA = path.join(directory, "src/a.ts");
+				// Establish builder state and seed the cache so a.ts is neither
+				// mtime-dirty nor builder-affected on the next run.
+				computeAffectedFiles(directory, "only");
+				seedCache(cacheFile, [fileA]);
+
+				const { commands, notice } = withoutGit(() => {
+					return composeCommands(parseArguments([]), {
+						cwd: directory,
+						dryRun: false,
+						environment: {},
+					});
+				});
+
+				const labels = commands.map((command) => command.label);
+
+				expect(labels).toContain("fast");
+				expect(labels).not.toContain("typed");
+				expect(notice).toMatch(/skipping the type-aware/);
+			},
+		);
+	});
+
+	it("never skips the typed pass when --type-aware=only is explicit", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, CACHE_FILE_TYPE_AWARE);
+				const fileA = path.join(directory, "src/a.ts");
+				computeAffectedFiles(directory, "only");
+				seedCache(cacheFile, [fileA]);
+
+				const { commands, notice } = withoutGit(() => {
+					return composeCommands(parseArguments(["--type-aware=only"]), {
+						cwd: directory,
+						dryRun: false,
+						environment: {},
+					});
+				});
+
+				expect(commands.map((command) => command.label)).toContain("typed");
+				expect(notice).toBeUndefined();
+			},
+		);
+	});
+});
+
+describe("resolveJsonModule invalidation", () => {
+	it("invalidates a .ts importer when an imported .json changes shape", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/b.ts":
+					"import data from './data.json';\nexport function b() { return data.value; }\n",
+				"src/data.json": '{ "value": 1 }\n',
+				"tsconfig.json": JSON_TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, ".eslintcache");
+				const fileB = path.join(directory, "src/b.ts");
+				const fileData = path.join(directory, "src/data.json");
+				computeAffectedFiles(directory, undefined);
+				seedCache(cacheFile, [fileB]);
+				fs.writeFileSync(fileData, '{ "value": "now a string" }\n');
+				touch(fileData);
+
+				const outcome = invalidate(
+					directory,
+					[fileData, fileB],
+					new Set([normalizePath(fileData)]),
+				);
+
+				expect(outcome.invalidated).toContain(normalizePath(fileB));
+				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 			},
 		);
 	});

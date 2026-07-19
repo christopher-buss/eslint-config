@@ -218,49 +218,80 @@ It resolves the `eslint` and `oxlint` binaries from your project's
 
 ### What it does
 
-- Runs `oxlint` and `eslint` in parallel via
-  [`concurrently`](https://www.npmjs.com/package/concurrently), grouping their
-  output and killing both on the first failure.
-- Sizes ESLint's `--concurrency` from how many files actually need re-linting
-  (the dirty count from the cache), rather than eagerly spinning up a worker per
-  CPU. Type-aware rules dominate wall time, so fewer, fuller workers win.
-- Keeps a separate ESLint cache per mode so the fast and type-aware passes never
-  invalidate one another: `.eslintcache` (default), `.eslintcache-fast`
-  (`--type-aware=off`), and `.eslintcache-typeaware` (`--type-aware=only`). A
-  change to an ESLint/oxlint/Prettier/tsconfig file or a lockfile clears all
-  three.
+By default (a local run, no `--type-aware`, no `--fix`) it runs **three**
+children concurrently via
+[`concurrently`](https://www.npmjs.com/package/concurrently), grouping their
+output:
+
+- **oxlint** — the full oxlint pass (including its type-aware rules).
+- **fast pass** — ESLint with only the syntactic (non-type-aware) rules, over
+  every lintable file (TS/JS, JSON, YAML, TOML, Markdown, Lua). This is where
+  non-TS files are linted.
+- **type-aware pass** — ESLint with only the type-aware rules, over the TS/JS
+  family. The preset's config splits exactly in two, so `fast ∪ type-aware`
+  reproduces the full config rule-for-rule.
+
+The type-aware pass is the expensive one (it builds a TypeScript program), so
+the runner **skips it entirely when nothing type-relevant changed** since the
+last run — it uses the TypeScript builder to find the files whose type-aware
+results could have changed, and if that set is empty it prints a short note to
+stderr and does not start the pass. The fast pass and oxlint always run.
+
+Other behaviours:
+
+- Sizes each ESLint pass's `--concurrency` from how many files it will actually
+  re-lint (its own dirty count), rather than eagerly spinning up a worker per
+  CPU. The fast pass is cheap per file, so it packs far more files per worker
+  (see `FAST_FILES_PER_WORKER`) than the type-aware pass.
+- Keeps a separate ESLint cache per pass so they never invalidate one another:
+  `.eslintcache-fast` (fast pass), `.eslintcache-typeaware` (type-aware pass),
+  and `.eslintcache` (the full single-pass config used by `--fix`, CI and
+  `--type-aware=full`). A change to an ESLint/oxlint/Prettier/tsconfig file or a
+  lockfile clears all three; a change to the root `package.json` resolution
+  surface (`exports`, `imports`, `main`, `module`, `types`, `typesVersions`,
+  `dependencies`, `devDependencies`, `peerDependencies`) clears only the
+  type-aware caches (a syntactic lint cannot be affected by resolution).
 - Runs `--fix` sequentially (`oxlint --fix`, then `eslint --fix`) so two writers
   never race on the same files.
+- Lets every child run to completion and returns non-zero if any failed — an
+  ordinary lint error in one tool no longer kills the others mid-run.
+
+> **Unused eslint-disable directives.** The default two-pass mode does **not**
+> report unused `eslint-disable` directives: a directive naming a rule that
+> lives in the _other_ pass would look unused to the pass that runs it and
+> produce a false positive. `--fix`, CI and `--type-aware=full` runs use the
+> single full config and still report unused directives.
 
 Any trailing positional arguments are treated as paths to lint (default `.`).
 
 ### Flags
 
-| Flag                     | Description                                                              |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `--eslint`               | Run only ESLint.                                                         |
-| `--oxlint`               | Run only oxlint.                                                         |
-| `--fix`                  | Apply fixes: `oxlint --fix` then `eslint --fix` (sequential).            |
-| `--agents`               | Emit agent-friendly output from both linters.                            |
-| `--type-aware=off\|only` | ESLint type-aware mode. `off` is the fast pass; cannot mix with `--fix`. |
-| `--no-oxlint-type-aware` | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).            |
-| `--no-cache`             | Disable ESLint's on-disk cache.                                          |
-| `--concurrency <n\|off>` | Override the concurrency heuristic with a fixed worker count.            |
-| `--eslint-args "<args>"` | Extra arguments forwarded verbatim to ESLint.                            |
-| `--oxlint-args "<args>"` | Extra arguments forwarded verbatim to oxlint.                            |
-| `--print`                | Print the composed commands without running them.                        |
-| `-- <args>`              | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).  |
-| `-h`, `--help`           | Show help.                                                               |
-| `-v`, `--version`        | Show the version.                                                        |
+| Flag                           | Description                                                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `--eslint`                     | Run only ESLint.                                                                                                                   |
+| `--oxlint`                     | Run only oxlint.                                                                                                                   |
+| `--fix`                        | Apply fixes: `oxlint --fix` then `eslint --fix` (sequential).                                                                      |
+| `--agents`                     | Emit agent-friendly output from both linters.                                                                                      |
+| `--type-aware=off\|only\|full` | Force a single ESLint pass: `off` fast-only, `only` type-aware-only, `full` the whole config in one pass. Cannot mix with `--fix`. |
+| `--no-oxlint-type-aware`       | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).                                                                      |
+| `--no-cache`                   | Disable ESLint's on-disk cache.                                                                                                    |
+| `--concurrency <n\|off>`       | Override the concurrency heuristic with a fixed worker count.                                                                      |
+| `--eslint-args "<args>"`       | Extra arguments forwarded verbatim to ESLint.                                                                                      |
+| `--oxlint-args "<args>"`       | Extra arguments forwarded verbatim to oxlint.                                                                                      |
+| `--print`                      | Print the composed commands without running them.                                                                                  |
+| `-- <args>`                    | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).                                                            |
+| `-h`, `--help`                 | Show help.                                                                                                                         |
+| `-v`, `--version`              | Show the version.                                                                                                                  |
 
 ### Environment
 
-| Variable            | Effect                                                                                                               |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `FILES_PER_WORKER`  | Target files a single ESLint worker handles before adding another (default `350`).                                   |
-| `LINT_MAX_WORKERS`  | Upper bound on ESLint workers (default a quarter of available CPUs).                                                 |
-| `ESLINT_TYPE_AWARE` | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
-| `CI`                | When set, ESLint uses `--cache-strategy content` (see below).                                                        |
+| Variable                | Effect                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `FILES_PER_WORKER`      | Target files a single type-aware ESLint worker handles before adding another (default `350`).                        |
+| `FAST_FILES_PER_WORKER` | Same, for the fast (syntactic) pass, which packs far more files per worker (default `800`).                          |
+| `LINT_MAX_WORKERS`      | Upper bound on ESLint workers (default a quarter of available CPUs).                                                 |
+| `ESLINT_TYPE_AWARE`     | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
+| `CI`                    | When set, the runner uses the single full pass with `--cache-strategy content` (see below).                          |
 
 ### Type-aware oxlint and tsgolint
 
@@ -278,9 +309,12 @@ skips type-aware linting entirely.
 
 ### CI
 
-When a `CI` environment variable is set, ESLint switches to
-`--cache-strategy content` so caches key on file contents rather than
-timestamps, which are unreliable across fresh checkouts.
+When a `CI` environment variable is set the runner skips the two-pass split and
+runs a single full-config ESLint pass (alongside oxlint). CI cores are few, so
+the two-pass parallelism does not pay off, and the full config is the only one
+that reports unused `eslint-disable` directives — which you want enforced in CI.
+The pass also switches to `--cache-strategy content` so caches key on file
+contents rather than timestamps, which are unreliable across fresh checkouts.
 
 ### Agent output
 

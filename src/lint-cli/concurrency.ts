@@ -1,4 +1,4 @@
-import { DEFAULT_FILES_PER_WORKER } from "./constants.ts";
+import { DEFAULT_FAST_FILES_PER_WORKER, DEFAULT_FILES_PER_WORKER } from "./constants.ts";
 
 /** Inputs to the (pure) worker-count heuristic. */
 export interface WorkerHeuristicInput {
@@ -39,6 +39,21 @@ export function resolveWorkerLimits(
 		Math.floor(availableParallelism / 4);
 
 	return { filesPerWorker, maxWorkers };
+}
+
+/**
+ * Resolve the fast pass's files-per-worker, honouring the
+ * `FAST_FILES_PER_WORKER` override. The fast pass lints each file syntactically
+ * in isolation, so its break-even worker size is far higher than the type-aware
+ * pass (see {@link DEFAULT_FAST_FILES_PER_WORKER}).
+ *
+ * @param environment - The environment variables to read the override from.
+ * @returns The resolved fast-pass files-per-worker.
+ */
+export function resolveFastFilesPerWorker(environment: NodeJS.ProcessEnv): number {
+	return (
+		parsePositiveInteger(environment["FAST_FILES_PER_WORKER"]) ?? DEFAULT_FAST_FILES_PER_WORKER
+	);
 }
 
 /**

@@ -45,7 +45,7 @@ export function parseArguments(argv: Array<string>): LintCliOptions {
 			type: "boolean",
 		})
 		.option("type-aware", {
-			choices: ["off", "only"] as const,
+			choices: ["off", "only", "full"] as const,
 			description: "ESLint type-aware mode.",
 			type: "string",
 		})

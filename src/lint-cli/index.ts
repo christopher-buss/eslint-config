@@ -14,7 +14,9 @@ Flags:
   --oxlint                 Run only oxlint.
   --fix                    Apply fixes: oxlint --fix then eslint --fix.
   --agents                 Emit agent-friendly output.
-  --type-aware=off|only    ESLint type-aware mode (off is fast, cache-split).
+  --type-aware=off|only|full
+                           Force a single ESLint pass. Default runs the fast and
+                           type-aware passes concurrently; full is the escape hatch.
   --no-oxlint-type-aware   Skip oxlint's type-aware rules (no tsgolint needed).
   --no-cache               Disable ESLint's cache.
   --concurrency <n|off>    Override the concurrency heuristic.

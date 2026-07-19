@@ -114,9 +114,9 @@ export function composeEslintCommand(
 	args.push(...options.eslintArgs, ...context.paths);
 
 	const environment: Record<string, string> =
-		options.typeAware !== undefined ? { ESLINT_TYPE_AWARE: options.typeAware } : {};
+		context.typeAwareEnv !== undefined ? { ESLINT_TYPE_AWARE: context.typeAwareEnv } : {};
 
-	return { args, bin: "eslint", env: environment, label: "eslint" };
+	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
 }
 
 /**
