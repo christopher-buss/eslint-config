@@ -4,17 +4,27 @@ import { fileURLToPath } from "node:url";
 
 import { CliError } from "./types.ts";
 
+/** Memoised {@link resolveLocalBin} results, keyed by `cwd\0name`. */
+const localBinCache = new Map<string, string>();
+
 /**
  * Resolve the JavaScript entry of a locally installed CLI (eslint / oxlint)
  * from the consumer's `node_modules`, walking up from `cwd`. Returning the JS
  * file lets the caller spawn it with `process.execPath` and no shell, avoiding
- * Windows `.cmd`/`.ps1` quoting hazards.
+ * Windows `.cmd`/`.ps1` quoting hazards. Memoised so the two ESLint passes
+ * resolve the same bin once.
  *
  * @param name - The package name to resolve (for example `eslint`).
  * @param cwd - The directory to resolve from.
  * @returns The absolute path to the package's JavaScript entry.
  */
 export function resolveLocalBin(name: string, cwd: string): string {
+	const cacheKey = `${cwd}\0${name}`;
+	const cached = localBinCache.get(cacheKey);
+	if (cached !== undefined) {
+		return cached;
+	}
+
 	const info = getPackageInfoSync(name, { paths: [cwd] });
 	if (info === undefined) {
 		throw new CliError(
@@ -28,7 +38,9 @@ export function resolveLocalBin(name: string, cwd: string): string {
 		throw new CliError(`Package "${name}" does not declare a "${name}" bin entry.`);
 	}
 
-	return path.resolve(info.rootPath, relative);
+	const resolved = path.resolve(info.rootPath, relative);
+	localBinCache.set(cacheKey, resolved);
+	return resolved;
 }
 
 /**

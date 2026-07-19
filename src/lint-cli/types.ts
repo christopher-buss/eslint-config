@@ -67,7 +67,11 @@ export interface ChildCommand {
 	label: ToolLabel;
 }
 
-/** Resolved inputs shared by both command composers. */
+/**
+ * Resolved inputs for composing the ESLint child. The `cacheLocation`,
+ * `eslintLabel` and `typeAwareEnv` triple comes from the pass descriptor, so it
+ * is set once per pass rather than restated across the mode branches.
+ */
 export interface ComposeContext {
 	/** Absolute path to the agent ESLint formatter (resolved lazily). */
 	agentsFormatterPath: string;
@@ -79,8 +83,6 @@ export interface ComposeContext {
 	concurrency: "off" | number;
 	/** Label for the composed ESLint child (`eslint`, `fast` or `typed`). */
 	eslintLabel: ToolLabel;
-	/** Whether oxlint should receive `--type-aware`. */
-	oxlintTypeAware: boolean;
 	/** Target paths to lint. */
 	paths: Array<string>;
 	/**
@@ -88,6 +90,14 @@ export interface ComposeContext {
 	 * unset (the full config).
 	 */
 	typeAwareEnv: TypeAwareMode | undefined;
+}
+
+/** Resolved inputs for composing the oxlint child. */
+export interface OxlintComposeContext {
+	/** Whether oxlint should receive `--type-aware`. */
+	oxlintTypeAware: boolean;
+	/** Target paths to lint. */
+	paths: Array<string>;
 }
 
 /**

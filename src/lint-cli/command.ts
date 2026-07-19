@@ -1,4 +1,9 @@
-import type { ChildCommand, ComposeContext, LintCliOptions } from "./types.ts";
+import type {
+	ChildCommand,
+	ComposeContext,
+	LintCliOptions,
+	OxlintComposeContext,
+} from "./types.ts";
 
 const SAFE_TOKEN = /^[\w@%+=:,./-]+$/;
 
@@ -62,7 +67,7 @@ export function splitArgs(input: string): Array<string> {
  */
 export function composeOxlintCommand(
 	options: LintCliOptions,
-	context: ComposeContext,
+	context: OxlintComposeContext,
 ): ChildCommand {
 	const args: Array<string> = [];
 	if (options.agents) {
