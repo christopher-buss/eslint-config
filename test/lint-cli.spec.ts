@@ -1,8 +1,9 @@
-// cspell:words typeaware
+// cspell:words typeaware lintable
 import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import process from "node:process";
 import { describe, expect, it } from "vitest";
 
 import { clearAllCaches, countDirtyFiles, isCacheBusted } from "../src/lint-cli/cache.ts";
@@ -15,6 +16,7 @@ import {
 } from "../src/lint-cli/command.ts";
 import { computeWorkerCount, resolveWorkerLimits } from "../src/lint-cli/concurrency.ts";
 import { ALL_CACHE_FILES, cacheFileForMode } from "../src/lint-cli/constants.ts";
+import { collectLintableFiles } from "../src/lint-cli/files.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import type { ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
@@ -47,6 +49,26 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 		typeAware: undefined,
 		...overrides,
 	};
+}
+
+function withoutGitEnvironment<T>(run: () => T): T {
+	const keys = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"];
+	const saved = keys.map((key): [string, string | undefined] => [key, process.env[key]]);
+	for (const key of keys) {
+		delete process.env[key];
+	}
+
+	try {
+		return run();
+	} finally {
+		for (const [key, value] of saved) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
 }
 
 function withTemporaryDirectory(run: (directory: string) => void): void {
@@ -308,6 +330,37 @@ describe("cache helpers", () => {
 			fs.utimesSync(fileA, future, future);
 
 			expect(countDirtyFiles(cacheFile, [fileA, fileB], false)).toBe(2);
+		});
+	});
+});
+
+describe("collectLintableFiles", () => {
+	it("collects the TS/JS family plus JSONC, YAML, TOML, Markdown and Lua", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const lintable = [
+				"a.ts",
+				"b.tsx",
+				"c.js",
+				"config.json",
+				"tsconfig.jsonc",
+				"data.json5",
+				"ci.yaml",
+				"pnpm-workspace.yml",
+				"Cargo.toml",
+				"README.md",
+				"init.lua",
+			];
+			const excluded = ["notes.txt", "styles.css"];
+			for (const name of [...lintable, ...excluded]) {
+				fs.writeFileSync(path.join(directory, name), "");
+			}
+
+			const files = withoutGitEnvironment(() => collectLintableFiles(directory, ["."]));
+			const collected = files.map((file) => path.basename(file));
+
+			expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
 		});
 	});
 });

@@ -5,7 +5,7 @@ import { availableParallelism } from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-import { clearAllCaches, countDirtyFiles, isCacheBusted } from "./cache.ts";
+import { clearAllCaches, isCacheBusted, listDirtyFiles, normalizePath } from "./cache.ts";
 import {
 	buildShellCommand,
 	composeEslintCommand,
@@ -15,6 +15,7 @@ import {
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
 import { cacheFileForMode } from "./constants.ts";
 import { collectCacheBustFiles, collectLintableFiles } from "./files.ts";
+import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
 import { resolveAgentsFormatter, resolveLocalBin } from "./resolve.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "./types.ts";
@@ -90,12 +91,18 @@ export async function runLint(argv: Array<string>): Promise<number> {
 }
 
 /**
- * Count the files ESLint will re-lint under the target paths. Busts the cache
- * (unless `dryRun`) when a config change is detected, treating all as dirty.
+ * Count the files ESLint will re-lint under the target paths, sizing the dirty
+ * set as the union of the mtime/checksum-dirty files and the TypeScript builder
+ * affected set. Busts the cache (unless `dryRun`) when a config change is
+ * detected, treating all as dirty.
+ *
+ * The builder pass is side-effecting (it removes stale cache entries and
+ * persists incremental state), so it is skipped entirely when `dryRun` is set
+ * — this keeps `--print` free of side effects.
  *
  * @param options - The parsed CLI options.
  * @param cwd - The working directory.
- * @param dryRun - When true, never delete cache files.
+ * @param dryRun - When true, never delete cache files or run the builder.
  * @returns The number of dirty files.
  */
 function countDirty(options: LintCliOptions, cwd: string, dryRun: boolean): number {
@@ -114,7 +121,33 @@ function countDirty(options: LintCliOptions, cwd: string, dryRun: boolean): numb
 		return files.length;
 	}
 
-	return countDirtyFiles(cacheLocation, files, isCi(process.env));
+	const dirtyFiles = listDirtyFiles(cacheLocation, files, isCi(process.env));
+	const dirty = new Set<string>();
+	for (const file of dirtyFiles) {
+		dirty.add(normalizePath(file));
+	}
+
+	// A `--type-aware=off` pass lints each file in isolation, so cross-file type
+	// flow can't change its result and builder invalidation is unnecessary.
+	if (!dryRun && options.typeAware !== "off") {
+		const outcome = applyTypeAwareInvalidation({
+			alreadyDirty: dirty,
+			cacheLocation,
+			cwd,
+			environment: process.env,
+			mode: options.typeAware,
+			targetFiles: files,
+		});
+		if (outcome.busted) {
+			return files.length;
+		}
+
+		for (const file of outcome.invalidated) {
+			dirty.add(file);
+		}
+	}
+
+	return dirty.size;
 }
 
 /**
