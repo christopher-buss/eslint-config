@@ -104,12 +104,12 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 		}
 	}
 
-	await updatePackageJson(result);
+	await updatePackageJson(result, argumentSkipPrompt === true);
 	await updateEslintFiles(result);
 	await updateVscodeSettings(result);
 
 	log.success(ansis.green("Setup completed"));
 	outro(
-		`Now you can update the dependencies by running ${ansis.blue("pnpm install")} and run ${ansis.blue("eslint --fix")}\n`,
+		`Now you can update the dependencies by running ${ansis.blue("pnpm install")} and lint by running ${ansis.blue("pnpm lint")} (or ${ansis.blue("pnpm lint:fix")})\n`,
 	);
 }

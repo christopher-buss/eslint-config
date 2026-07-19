@@ -57,7 +57,11 @@ export default defineConfig([
 	},
 	{
 		...sharedOptions,
-		entry: ["src/cli.ts"],
+		// Source the CLI entry directly from the file that runs the yargs
+		// instance. A barrel (`src/cli.ts`) would tree-shake the top-level
+		// `void instance.argv` side effect away, emitting an empty
+		// `dist/cli.mjs`.
+		entry: { cli: "src/cli/index.ts" },
 	},
 	{
 		...sharedOptions,
