@@ -30,6 +30,7 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cli": "./dist/cli.mjs",
+		"./formatter-agents": "./dist/formatter-agents.mjs",
 		"./oxlint": {
 			"types": "./dist/oxlint.d.mts",
 			"default": "./dist/oxlint.mjs"
