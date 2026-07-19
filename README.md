@@ -262,6 +262,23 @@ Other behaviours:
 > produce a false positive. `--fix`, CI and `--type-aware=full` runs use the
 > single full config and still report unused directives.
 
+### Hybrid detection
+
+Running both engines only makes sense when the ESLint config is in **hybrid
+mode** (`oxlint: true`), which drops every oxlint-covered rule from the ESLint
+side so the two engines never overlap. A config that omits `oxlint: true` runs
+every mapped rule in _both_ engines — duplicate diagnostics, and under `--fix` a
+tug-of-war as each rewrites toward its own option resolution. So whenever both
+engines would run (default mode or `--fix`), the runner checks whether the
+resolved config is hybrid; if it is not, it **runs ESLint only, skips oxlint,
+and prints one stderr warning** (enable hybrid mode, or pass `--oxlint` to run
+oxlint explicitly). The check is cheap: the factory records the hybrid status in
+`node_modules/.cache/isentinel-lint/` on every config evaluation, and the runner
+trusts that cache unless your ESLint config is newer, in which case it probes
+`eslint --print-config` once and caches the result. If the status cannot be
+determined it fails open and runs both engines as before. Explicit `--eslint` /
+`--oxlint` runs skip the check entirely.
+
 Any trailing positional arguments are treated as paths to lint (default `.`).
 
 ### Flags

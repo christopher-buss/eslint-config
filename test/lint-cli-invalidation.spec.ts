@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
 import { CACHE_FILE_TYPE_AWARE } from "../src/lint-cli/constants.ts";
+import { writeHybridStatus } from "../src/lint-cli/hybrid-status.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { composeCommands, plan } from "../src/lint-cli/run.ts";
@@ -47,6 +48,13 @@ function withFixture(files: Record<string, string>, run: (directory: string) => 
 			fs.mkdirSync(path.dirname(absolute), { recursive: true });
 			fs.writeFileSync(absolute, content);
 		}
+
+		// Seed a fresh hybrid status so the CLI's hybrid check trusts it rather
+		// than probing a (here absent) ESLint binary. These fixtures ship no
+		// eslint config file, so the status is always fresh; the seed keeps the
+		// runner's oxlint/notice behaviour identical to a real hybrid project.
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+		writeHybridStatus(directory, true);
 
 		run(directory);
 	} finally {
