@@ -1,3 +1,4 @@
+// cspell:words cjsx lintable
 export const GLOB_ROOT = [
 	"*",
 	"packages/*/*",
@@ -19,6 +20,34 @@ export const GLOB_ROOT_SRC = [
 
 export const GLOB_SRC_EXT = "{,c,m}[jt]s{,x}";
 export const GLOB_SRC = "**/*.{,c,m}[jt]s{,x}";
+
+/**
+ * The real TS/JS-family file extensions {@link GLOB_SRC_EXT} encodes (the glob
+ * additionally matches non-existent combinations such as `cjsx`). Kept next to
+ * the glob so the two are maintained together; consumed by the lint CLI to size
+ * its type-aware pass.
+ */
+export const GLOB_SRC_EXTENSIONS = ["ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs"] as const;
+
+/**
+ * Every file extension the preset lints by default: the TS/JS family
+ * ({@link GLOB_SRC_EXTENSIONS} / {@link GLOB_SRC}) plus the other languages the
+ * config enables — JSONC ({@link GLOB_ALL_JSON}), YAML ({@link GLOB_YAML}),
+ * TOML ({@link GLOB_TOML}), Markdown ({@link GLOB_MARKDOWN}) and Lua
+ * ({@link GLOB_LUA}). Each group is bound to its glob so the list stays in step
+ * with the patterns.
+ */
+export const GLOB_LINTABLE_EXTENSIONS = [
+	...GLOB_SRC_EXTENSIONS,
+	"json",
+	"jsonc",
+	"json5",
+	"yaml",
+	"yml",
+	"toml",
+	"md",
+	"lua",
+] as const;
 
 export const GLOB_LUA = "**/*.lua{,u}";
 
