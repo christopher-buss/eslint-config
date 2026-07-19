@@ -3379,6 +3379,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
           "error",
           {
             "arrowParens": "always",
+            "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
             "semi": true,
@@ -3544,6 +3545,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
           "error",
           {
             "arrowParens": "always",
+            "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
             "semi": true,
@@ -7266,6 +7268,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           "error",
           {
             "arrowParens": "always",
+            "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
             "semi": true,
@@ -7431,6 +7434,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           "error",
           {
             "arrowParens": "always",
+            "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
             "semi": true,
