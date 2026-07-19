@@ -91,16 +91,19 @@ export default isentinel(
 
 ### Add script for package.json
 
-For example:
+The package ships an `isentinel-lint` bin that runs oxlint and ESLint together.
+The starter wizard adds these for you; to wire them up manually:
 
 ```json
 {
 	"scripts": {
-		"lint": "eslint",
-		"lint:fix": "eslint --fix"
+		"lint": "isentinel-lint",
+		"lint:fix": "isentinel-lint --fix"
 	}
 }
 ```
+
+See [`isentinel-lint`](#isentinel-lint) for what it does and every flag.
 
 ## Recommended Settings
 
@@ -193,6 +196,98 @@ Add the following settings to your `.vscode/settings.json`:
 	]
 }
 ```
+
+## isentinel-lint
+
+The package ships a second bin, `isentinel-lint`, a hybrid runner that drives
+[oxlint](https://oxc.rs/docs/guide/usage/linter/) and ESLint together. Point
+your `lint` script at it and forget the wiring (the starter wizard does this for
+you):
+
+```json
+{
+	"scripts": {
+		"lint": "isentinel-lint",
+		"lint:fix": "isentinel-lint --fix"
+	}
+}
+```
+
+It resolves the `eslint` and `oxlint` binaries from your project's
+`node_modules`, so both must be installed locally.
+
+### What it does
+
+- Runs `oxlint` and `eslint` in parallel via
+  [`concurrently`](https://www.npmjs.com/package/concurrently), grouping their
+  output and killing both on the first failure.
+- Sizes ESLint's `--concurrency` from how many files actually need re-linting
+  (the dirty count from the cache), rather than eagerly spinning up a worker per
+  CPU. Type-aware rules dominate wall time, so fewer, fuller workers win.
+- Keeps a separate ESLint cache per mode so the fast and type-aware passes never
+  invalidate one another: `.eslintcache` (default), `.eslintcache-fast`
+  (`--type-aware=off`), and `.eslintcache-typeaware` (`--type-aware=only`). A
+  change to an ESLint/oxlint/Prettier/tsconfig file or a lockfile clears all
+  three.
+- Runs `--fix` sequentially (`oxlint --fix`, then `eslint --fix`) so two writers
+  never race on the same files.
+
+Any trailing positional arguments are treated as paths to lint (default `.`).
+
+### Flags
+
+| Flag                     | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `--eslint`               | Run only ESLint.                                                         |
+| `--oxlint`               | Run only oxlint.                                                         |
+| `--fix`                  | Apply fixes: `oxlint --fix` then `eslint --fix` (sequential).            |
+| `--agents`               | Emit agent-friendly output from both linters.                            |
+| `--type-aware=off\|only` | ESLint type-aware mode. `off` is the fast pass; cannot mix with `--fix`. |
+| `--no-oxlint-type-aware` | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).            |
+| `--no-cache`             | Disable ESLint's on-disk cache.                                          |
+| `--concurrency <n\|off>` | Override the concurrency heuristic with a fixed worker count.            |
+| `--eslint-args "<args>"` | Extra arguments forwarded verbatim to ESLint.                            |
+| `--oxlint-args "<args>"` | Extra arguments forwarded verbatim to oxlint.                            |
+| `--print`                | Print the composed commands without running them.                        |
+| `-- <args>`              | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).  |
+| `-h`, `--help`           | Show help.                                                               |
+| `-v`, `--version`        | Show the version.                                                        |
+
+### Environment
+
+| Variable            | Effect                                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `FILES_PER_WORKER`  | Target files a single ESLint worker handles before adding another (default `350`).                                   |
+| `LINT_MAX_WORKERS`  | Upper bound on ESLint workers (default a quarter of available CPUs).                                                 |
+| `ESLINT_TYPE_AWARE` | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
+| `CI`                | When set, ESLint uses `--cache-strategy content` (see below).                                                        |
+
+### Type-aware oxlint and tsgolint
+
+By default the runner passes `--type-aware` to oxlint, which needs
+[`oxlint-tsgolint`](https://www.npmjs.com/package/oxlint-tsgolint). If it is not
+installed the runner errors out rather than silently skipping type-aware rules.
+Install it, or pass `--no-oxlint-type-aware` to run oxlint without them:
+
+```bash
+pnpm i -D oxlint oxlint-tsgolint
+```
+
+`--type-aware=off` also drops oxlint's type-aware pass, since the fast mode
+skips type-aware linting entirely.
+
+### CI
+
+When a `CI` environment variable is set, ESLint switches to
+`--cache-strategy content` so caches key on file contents rather than
+timestamps, which are unreliable across fresh checkouts.
+
+### Agent output
+
+`--agents` emits machine-readable output for AI agents: oxlint runs with
+`--format agent`, and ESLint uses the formatter shipped at
+`@isentinel/eslint-config/formatter-agents`, which the runner resolves and
+passes to `eslint --format` for you.
 
 ## Customization
 
