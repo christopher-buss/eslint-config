@@ -15,6 +15,7 @@ import {
 	resolvePrettierConfigOptions,
 	resolveSubOptions,
 	shouldEnableFeature,
+	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
 import type { PrettierOptions } from "./configs/index.ts";
 import {
@@ -266,8 +267,16 @@ export async function isentinel(
 	const hasComplement = !enableRoblox || robloxScopedFiles !== undefined;
 	const needsComplementOverlay = enableRoblox && robloxScopedFiles !== undefined;
 
-	const typeAwareMode: TypeAwareSplitMode | undefined =
-		options.typeAware === false || options.typeAware === "only" ? options.typeAware : undefined;
+	// An explicit `typeAware` option always wins; the `ESLINT_TYPE_AWARE` env var
+	// only applies when the option is left undefined (any non-split value such as
+	// `true` still counts as explicit and disables the split).
+	let typeAwareMode: TypeAwareSplitMode | undefined;
+	if (options.typeAware === false || options.typeAware === "only") {
+		typeAwareMode = options.typeAware;
+	} else if (options.typeAware === undefined) {
+		typeAwareMode = typeAwareSplitFromEnvironment();
+	}
+
 	const typeAwareOnly = typeAwareMode === "only";
 	const typescriptOptions = resolveSubOptions(options, "typescript");
 	if (

@@ -36,9 +36,6 @@ catalogs:
     bumpp:
       specifier: 11.1.0
       version: 11.1.0
-    concurrently:
-      specifier: 10.0.3
-      version: 10.0.3
     eslint-typegen:
       specifier: 2.3.1
       version: 2.3.1
@@ -155,6 +152,9 @@ catalogs:
     ansis:
       specifier: 4.3.1
       version: 4.3.1
+    concurrently:
+      specifier: 10.0.3
+      version: 10.0.3
     eslint-config-flat-gitignore:
       specifier: 2.3.0
       version: 2.3.0
@@ -230,6 +230,9 @@ catalogs:
     eslint-plugin-yml:
       specifier: 3.5.0
       version: 3.5.0
+    file-entry-cache:
+      specifier: 8.0.0
+      version: 8.0.0
     find-up-simple:
       specifier: 1.0.1
       version: 1.0.1
@@ -322,6 +325,9 @@ importers:
       ansis:
         specifier: catalog:prod
         version: 4.3.1
+      concurrently:
+        specifier: catalog:prod
+        version: 10.0.3
       eslint-config-flat-gitignore:
         specifier: catalog:prod
         version: 2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.7.0(jiti@2.7.0))
@@ -397,6 +403,9 @@ importers:
       eslint-plugin-yml:
         specifier: catalog:prod
         version: 3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.7.0(jiti@2.7.0))
+      file-entry-cache:
+        specifier: catalog:prod
+        version: 8.0.0
       find-up-simple:
         specifier: catalog:prod
         version: 1.0.1
@@ -470,9 +479,6 @@ importers:
       bumpp:
         specifier: catalog:dev
         version: 11.1.0
-      concurrently:
-        specifier: catalog:dev
-        version: 10.0.3
       eslint:
         specifier: catalog:peer
         version: 10.7.0(jiti@2.7.0)

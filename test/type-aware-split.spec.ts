@@ -1,3 +1,4 @@
+import process from "node:process";
 import { describe, it } from "vitest";
 
 import { isentinel } from "../src";
@@ -310,4 +311,94 @@ describe("type-aware split", () => {
 			}),
 		).rejects.toThrow('typeAware: "only"');
 	});
+});
+
+type SplitOutcome = "full" | "off" | "only";
+
+interface EnvironmentCase {
+	env: string | undefined;
+	expected: SplitOutcome;
+	option: "only" | boolean | undefined;
+}
+
+/**
+ * Classify a resolved config by which type-aware split (if any) was applied.
+ * The split appends a `type-aware-split/disables` config, and the `"only"` pass
+ * additionally appends a `type-aware-split/ignores` config.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The observed split outcome.
+ */
+function classifySplit(configs: Array<TypedFlatConfigItem>): SplitOutcome {
+	const names = new Set(configs.map((config) => config.name));
+	if (!names.has("isentinel/type-aware-split/disables")) {
+		return "full";
+	}
+
+	return names.has("isentinel/type-aware-split/ignores") ? "only" : "off";
+}
+
+/**
+ * Build a config with `ESLINT_TYPE_AWARE` set to the given value (restoring it
+ * afterwards) and report which split it produced.
+ *
+ * @param environmentValue - The value to assign the env var, or `undefined` to
+ *   leave it unset.
+ * @param option - The `typeAware` factory option, or `undefined` to omit it.
+ * @returns The observed split outcome.
+ */
+async function resolveSplitOutcome(
+	environmentValue: string | undefined,
+	option: "only" | boolean | undefined,
+): Promise<SplitOutcome> {
+	const previous = process.env["ESLINT_TYPE_AWARE"];
+	if (environmentValue === undefined) {
+		delete process.env["ESLINT_TYPE_AWARE"];
+	} else {
+		process.env["ESLINT_TYPE_AWARE"] = environmentValue;
+	}
+
+	const optionOverride = option === undefined ? {} : { typeAware: option };
+
+	try {
+		const config = await isentinel({
+			name: "test/env-type-aware",
+			...baseOptions,
+			...optionOverride,
+		});
+		return classifySplit([...config]);
+	} finally {
+		if (previous === undefined) {
+			delete process.env["ESLINT_TYPE_AWARE"];
+		} else {
+			process.env["ESLINT_TYPE_AWARE"] = previous;
+		}
+	}
+}
+
+// Precedence matrix: env off/false/only/garbage/unset crossed with the
+// `typeAware` option undefined/false/"only"/true. An explicit option always
+// wins; the env var only applies when the option is undefined.
+const environmentCases: Array<EnvironmentCase> = [
+	{ env: "off", expected: "off", option: undefined },
+	{ env: "false", expected: "off", option: undefined },
+	{ env: "only", expected: "only", option: undefined },
+	{ env: "garbage", expected: "full", option: undefined },
+	{ env: undefined, expected: "full", option: undefined },
+	{ env: "only", expected: "off", option: false },
+	{ env: "off", expected: "only", option: "only" },
+	{ env: "garbage", expected: "off", option: false },
+	{ env: undefined, expected: "only", option: "only" },
+	{ env: "off", expected: "full", option: true },
+];
+
+describe("eslint_type_aware environment variable", () => {
+	it.for(environmentCases)(
+		"env=$env option=$option -> $expected",
+		async ({ env, expected, option }, { expect }) => {
+			expect.hasAssertions();
+
+			expect(await resolveSplitOutcome(env, option)).toBe(expected);
+		},
+	);
 });

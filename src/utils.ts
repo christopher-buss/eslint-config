@@ -12,6 +12,7 @@ import prettier from "prettier";
 import { minVersion } from "semver";
 
 import type { PrettierOptions } from "./eslint/configs/index.ts";
+import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
@@ -33,6 +34,19 @@ interface PackageJsonEngines {
 type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
 export const require = createRequire(import.meta.url);
+
+/**
+ * Whether the environment signals a CI run. Treats an unset, empty, `"false"`
+ * or `"0"` `CI` value as not-CI, so a deliberately falsy `CI=false` is honoured
+ * rather than read as truthy.
+ *
+ * @param environment - The environment variables to inspect.
+ * @returns Whether CI is active.
+ */
+export function isCi(environment: NodeJS.ProcessEnv = process.env): boolean {
+	const value = environment["CI"];
+	return value !== undefined && value !== "" && value !== "false" && value !== "0";
+}
 
 export const parserPlain = {
 	meta: {
@@ -135,7 +149,7 @@ export function createTsParser({
 }
 
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
-	if ((process.env["CI"] ?? "") || !process.stdout.isTTY) {
+	if (isCi() || !process.stdout.isTTY) {
 		return;
 	}
 
@@ -345,7 +359,7 @@ export function isInEditorEnvironment(): boolean {
 		return explicitValue === "true" || explicitValue === "1";
 	}
 
-	if (process.env["CI"] ?? "") {
+	if (isCi()) {
 		return false;
 	}
 
@@ -360,6 +374,36 @@ export function isInEditorEnvironment(): boolean {
 		process.env["VIM"],
 		process.env["NVIM"],
 	].some(Boolean);
+}
+
+/**
+ * Read the `ESLINT_TYPE_AWARE` environment variable so a wrapper CLI can drive
+ * the factory's type-aware split without every consumer wiring the `typeAware`
+ * option themselves.
+ *
+ * Recognized values: `off` selects the non-type-aware pass (drop every
+ * type-aware rule and the TypeScript program); `only` selects the
+ * type-aware-only pass. `false` is a legacy alias for `off` — the canonical
+ * vocabulary is `off`/`only`. Any other value, or an unset variable, has no
+ * effect.
+ *
+ * An explicitly passed `typeAware` option always takes precedence: the factory
+ * only consults this variable when the option is left `undefined`.
+ *
+ * @returns The split mode requested by the environment, or `undefined` when the
+ *   variable is unset or holds an unrecognized value.
+ */
+export function typeAwareSplitFromEnvironment(): TypeAwareSplitMode | undefined {
+	const value = process.env["ESLINT_TYPE_AWARE"];
+	if (value === "off" || value === "false") {
+		return false;
+	}
+
+	if (value === "only") {
+		return "only";
+	}
+
+	return undefined;
 }
 
 /**

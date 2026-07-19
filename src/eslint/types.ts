@@ -490,6 +490,12 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * config whose name contains `type-aware` (for example via
 	 * `overridesTypeAware`) to be sorted into the `"only"` pass.
 	 *
+	 * When left `undefined`, the factory reads the `ESLINT_TYPE_AWARE`
+	 * environment variable so a wrapper CLI can drive the split: `off` behaves
+	 * as `false`, `only` behaves as `"only"`, and any other value has no effect
+	 * (`false` is a legacy alias for `off`). An explicitly passed option always
+	 * takes precedence over the environment variable.
+	 *
 	 * @default undefined - single full config
 	 */
 	typeAware?: "only" | boolean;
