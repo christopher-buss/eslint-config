@@ -8,10 +8,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
-import prettier from "prettier";
 import { minVersion } from "semver";
 
-import type { PrettierOptions } from "./eslint/configs/index.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
@@ -485,26 +483,6 @@ export function renamePluginInConfigs(
 
 		return clone;
 	});
-}
-
-/**
- * Resolve Prettier configuration options for the project.
- *
- * @returns The Prettier configuration options, or an empty object if none
- *   found.
- */
-export async function resolvePrettierConfigOptions(): Promise<PrettierOptions> {
-	try {
-		// Use package.json as file path since it exists in all projects and
-		// allows prettier to resolve project-wide configuration (prettierrc,
-		// EditorConfig, etc.)
-		const config = await prettier.resolveConfig("package.json", {
-			editorconfig: true,
-		});
-		return config ?? {};
-	} catch {
-		return {};
-	}
 }
 
 const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
