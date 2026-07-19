@@ -1,3 +1,4 @@
+// cspell:words mtimes unparseable
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
@@ -61,6 +62,32 @@ export interface OxlintRunDecision {
 }
 
 /**
+ * Read the hybrid marker from `eslint --print-config` stdout. Config evaluation
+ * can print non-JSON before the payload (plugin/editor-detection logs), so the
+ * JSON object is isolated (first `{` to last `}`) before parsing. Returns
+ * `undefined` when no JSON object is present or it fails to parse.
+ *
+ * @param stdout - The raw `--print-config` stdout.
+ * @returns The probed status, or `undefined` when unparseable.
+ */
+export function parseHybridPrintConfig(stdout: string): HybridStatus | undefined {
+	const first = stdout.indexOf("{");
+	const last = stdout.lastIndexOf("}");
+	if (first === -1 || last < first) {
+		return undefined;
+	}
+
+	try {
+		const config = JSON.parse(stdout.slice(first, last + 1)) as {
+			settings?: Record<string, unknown>;
+		};
+		return { oxlint: config.settings?.["isentinel/oxlint"] === true };
+	} catch {
+		return undefined;
+	}
+}
+
+/**
  * Decide whether the oxlint child runs. When both engines would run (default
  * mode or `--fix`, i.e. Neither `--eslint` nor `--oxlint`), the ESLint config
  * must be hybrid or oxlint would double-lint every mapped rule; a non-hybrid
@@ -103,6 +130,11 @@ export function resolveOxlintRun(
 /**
  * Read the cached hybrid status only when it is at least as new as the ESLint
  * config; a stale or missing file yields `undefined` (the caller then probes).
+ *
+ * Known limitation: freshness tracks `eslint.config.*` mtimes only, so toggling
+ * hybrid mode from a module the config *imports* (rather than the config file
+ * itself) is trusted from the cache for one more run before the factory's
+ * passive write corrects it — it self-heals on the next invocation.
  *
  * @param cwd - The project root.
  * @param configMtime - The newest ESLint-config mtime, or `undefined` when none.
@@ -207,10 +239,5 @@ function probeHybridConfig(cwd: string, target: string): HybridStatus | undefine
 		return undefined;
 	}
 
-	try {
-		const config = JSON.parse(result.stdout) as { settings?: Record<string, unknown> };
-		return { oxlint: config.settings?.["isentinel/oxlint"] === true };
-	} catch {
-		return undefined;
-	}
+	return parseHybridPrintConfig(result.stdout);
 }

@@ -1,9 +1,10 @@
-// cspell:words typeaware lintable
+// cspell:words typeaware lintable mtimes
 import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import process from "node:process";
+import { describe, expect, it, vi } from "vitest";
 
 import { clearAllCaches, isCacheBusted, listDirtyFiles } from "../src/lint-cli/cache.ts";
 import {
@@ -23,7 +24,7 @@ import {
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
 } from "../src/lint-cli/constants.ts";
-import { collectLintableFiles } from "../src/lint-cli/files.ts";
+import { collectLintableFiles, collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
 import {
 	hybridStatusPath,
@@ -34,13 +35,15 @@ import type { HybridStatus } from "../src/lint-cli/hybrid-status.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
 	NON_HYBRID_WARNING,
+	parseHybridPrintConfig,
 	resolveOxlintRun,
 } from "../src/lint-cli/hybrid.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
-import { composeCommands, plan, runConcurrent } from "../src/lint-cli/run.ts";
+import { composeCommands, plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
+import { findWorkspaceRoot } from "../src/lint-cli/workspace.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
@@ -86,6 +89,15 @@ function withTemporaryDirectory(run: (directory: string) => void): void {
 
 function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
 	return computeWorkerCount({ dirtyCount: dirty, filesPerWorker: perWorker, maxWorkers: max });
+}
+
+function seedFileCache(cacheFile: string, files: Array<string>): void {
+	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
+	for (const file of files) {
+		cache.getFileDescriptor(file);
+	}
+
+	cache.reconcile();
 }
 
 function concurrencyArgument(commands: Array<ChildCommand>, label: string): string {
@@ -765,19 +777,33 @@ describe("applyPackageJsonBust", () => {
 			expect(first).toBe(second);
 		});
 	});
+
+	it("folds a workspace-root dependency bump into the sub-package hash", () => {
+		expect.hasAssertions();
+
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-ph-"));
+		try {
+			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+			writePackageJson(root, { dependencies: { shared: "1.0.0" } });
+			const app = path.join(root, "packages", "app");
+			fs.mkdirSync(app, { recursive: true });
+			writePackageJson(app, { exports: "./index.js" });
+
+			const before = computePackageJsonHash(app);
+
+			// The sub-package package.json is untouched; only the hoisted root
+			// dependency changes — the combined hash must still move.
+			writePackageJson(root, { dependencies: { shared: "2.0.0" } });
+			const after = computePackageJsonHash(app);
+
+			expect(before).not.toBe(after);
+		} finally {
+			fs.rmSync(root, { force: true, recursive: true });
+		}
+	});
 });
 
 describe("runConcurrent", () => {
-	function writeFakeBin(directory: string, name: string, body: string): void {
-		const packageDirectory = path.join(directory, "node_modules", name);
-		fs.mkdirSync(packageDirectory, { recursive: true });
-		fs.writeFileSync(
-			path.join(packageDirectory, "package.json"),
-			JSON.stringify({ name, bin: { [name]: "bin.js" }, version: "0.0.0" }),
-		);
-		fs.writeFileSync(path.join(packageDirectory, "bin.js"), body);
-	}
-
 	it("runs every child to completion and aggregates a non-zero exit", async () => {
 		expect.hasAssertions();
 
@@ -788,14 +814,14 @@ describe("runConcurrent", () => {
 
 			// oxlint succeeds but only after a delay; eslint fails immediately. A
 			// kill-on-failure would kill oxlint before it writes its marker.
-			writeFakeBin(
+			writeFakeToolBin(
 				directory,
 				"oxlint",
 				`const fs=require("node:fs");setTimeout(()=>{fs.writeFileSync(${JSON.stringify(
 					oxcMarker,
 				)},"ran");process.exit(0);},250);`,
 			);
-			writeFakeBin(
+			writeFakeToolBin(
 				directory,
 				"eslint",
 				`const fs=require("node:fs");fs.writeFileSync(${JSON.stringify(
@@ -821,7 +847,7 @@ describe("runConcurrent", () => {
 });
 
 function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
-	return { bustFiles: [], lintable: [], typeAware: [], ...overrides };
+	return { bustFiles: [], lintable: [], targetsOutsideCwd: false, typeAware: [], ...overrides };
 }
 
 function setMtimeInPast(filePath: string): void {
@@ -850,7 +876,7 @@ describe("hybrid status file", () => {
 		});
 	});
 
-	it("skips rewriting identical content but rewrites on change", () => {
+	it("refreshes the mtime on identical content and rewrites on change", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
@@ -859,10 +885,13 @@ describe("hybrid status file", () => {
 			setMtimeInPast(hybridStatusPath(directory));
 			const before = fs.statSync(hybridStatusPath(directory)).mtimeMs;
 
-			// Identical content: the file must not be rewritten.
+			// Identical content: the file is not rewritten, but its mtime is
+			// refreshed so the CLI's freshness check keeps passing after a config
+			// touch (otherwise the ~3s probe would run on every later lint).
 			writeHybridStatus(directory, false);
 
-			expect(fs.statSync(hybridStatusPath(directory)).mtimeMs).toBe(before);
+			expect(fs.statSync(hybridStatusPath(directory)).mtimeMs).toBeGreaterThan(before);
+			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
 
 			// Changed content: the file is rewritten.
 			writeHybridStatus(directory, true);
@@ -1124,5 +1153,339 @@ describe("plan hybrid integration", () => {
 			expect(commands.some((command) => command.label === "oxc")).toBe(false);
 			expect(notice).toContain(NON_HYBRID_WARNING);
 		});
+	});
+});
+
+function writeFakeToolBin(directory: string, name: string, body: string): void {
+	const packageDirectory = path.join(directory, "node_modules", name);
+	fs.mkdirSync(packageDirectory, { recursive: true });
+	fs.writeFileSync(
+		path.join(packageDirectory, "package.json"),
+		JSON.stringify({ name, bin: { [name]: "bin.js" }, version: "0.0.0" }),
+	);
+	fs.writeFileSync(path.join(packageDirectory, "bin.js"), body);
+}
+
+// A no-op eslint bin so a degraded (oxlint-dropped) run completes instead of
+// failing to resolve the real binary. oxlint-tsgolint is never installed in
+// these temp dirs, so the tsgolint check sees it absent.
+const NOOP_ESLINT_BIN = "process.exit(0);";
+
+describe("runLint tsgolint check ordering", () => {
+	it("does not error without oxlint-tsgolint when the hybrid gate drops oxlint", async () => {
+		expect.hasAssertions();
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
+		try {
+			fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+			writeFakeToolBin(directory, "eslint", NOOP_ESLINT_BIN);
+			// A fresh non-hybrid status drops oxlint, so no oxlint child carries
+			// --type-aware and the check must not fire.
+			writeHybridStatus(directory, false);
+
+			const code = await withoutGitEnvironment(async () => runLint([], directory, {}));
+
+			expect(code).toBe(0);
+		} finally {
+			fs.rmSync(directory, { force: true, recursive: true });
+		}
+	});
+
+	it("still errors for an explicit --oxlint run without oxlint-tsgolint", async () => {
+		expect.hasAssertions();
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
+		try {
+			await expect(
+				withoutGitEnvironment(async () => runLint(["--oxlint"], directory, {})),
+			).rejects.toThrow(/oxlint-tsgolint is not installed/);
+		} finally {
+			fs.rmSync(directory, { force: true, recursive: true });
+		}
+	});
+
+	it("prints without erroring when oxlint-tsgolint is absent", async () => {
+		expect.hasAssertions();
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
+		const spy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+		try {
+			const code = await withoutGitEnvironment(async () => {
+				return runLint(["--print"], directory, {});
+			});
+
+			expect(code).toBe(0);
+
+			// --print returns before the check, so it never throws even though
+			// the composed oxlint child carries --type-aware.
+			const printed = spy.mock.calls.map((call) => String(call[0])).join("");
+
+			expect(printed).toContain("oxlint --type-aware");
+		} finally {
+			spy.mockRestore();
+			fs.rmSync(directory, { force: true, recursive: true });
+		}
+	});
+});
+
+describe("target normalization", () => {
+	it("relativizes an absolute target under cwd and matches its files", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "src"));
+			fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
+			fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
+
+			const files = withoutGitEnvironment(() => {
+				return collectRepoFiles(directory, [path.join(directory, "src")]);
+			});
+
+			expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
+			expect(files.targetsOutsideCwd).toBe(false);
+		});
+	});
+
+	it("flags a relative target that escapes cwd", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.writeFileSync(path.join(directory, "a.ts"), "export const a = 1;\n");
+
+			const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["../sibling"]));
+
+			expect(files.targetsOutsideCwd).toBe(true);
+		});
+	});
+
+	it("flags an absolute target outside cwd", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const outside = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-outside-"));
+			try {
+				const files = withoutGitEnvironment(() => collectRepoFiles(directory, [outside]));
+
+				expect(files.targetsOutsideCwd).toBe(true);
+			} finally {
+				fs.rmSync(outside, { force: true, recursive: true });
+			}
+		});
+	});
+
+	it("still treats './' and trailing slashes as match-all in-cwd targets", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "src"));
+			fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
+
+			const dot = withoutGitEnvironment(() => collectRepoFiles(directory, ["./"]));
+			const trailing = withoutGitEnvironment(() => collectRepoFiles(directory, ["src/"]));
+
+			expect(dot.lintable).toHaveLength(1);
+			expect(dot.targetsOutsideCwd).toBe(false);
+			expect(trailing.lintable).toHaveLength(1);
+			expect(trailing.targetsOutsideCwd).toBe(false);
+		});
+	});
+});
+
+describe("workspace root", () => {
+	it("returns the nearest ancestor bearing a marker", () => {
+		expect.hasAssertions();
+
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-ws-"));
+		try {
+			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+			const app = path.join(root, "packages", "app");
+			fs.mkdirSync(app, { recursive: true });
+
+			expect(findWorkspaceRoot(app)).toBe(root);
+		} finally {
+			fs.rmSync(root, { force: true, recursive: true });
+		}
+	});
+});
+
+describe("ancestor cache-bust collection", () => {
+	it("folds workspace-root bust files into a sub-package run", () => {
+		expect.hasAssertions();
+
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-anc-"));
+		try {
+			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+			fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+			fs.writeFileSync(path.join(root, "tsconfig.json"), "{}");
+			const app = path.join(root, "packages", "app");
+			fs.mkdirSync(app, { recursive: true });
+			fs.writeFileSync(path.join(app, "a.ts"), "export const a = 1;\n");
+
+			const files = withoutGitEnvironment(() => collectRepoFiles(app, ["."]));
+
+			expect(files.bustFiles).toContain(path.join(root, "pnpm-lock.yaml"));
+			expect(files.bustFiles).toContain(path.join(root, "tsconfig.json"));
+		} finally {
+			fs.rmSync(root, { force: true, recursive: true });
+		}
+	});
+
+	it("collects nothing extra when cwd is itself the workspace root", () => {
+		expect.hasAssertions();
+
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-anc-"));
+		try {
+			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+			fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+
+			const files = withoutGitEnvironment(() => collectRepoFiles(root, ["."]));
+
+			// The root lockfile comes from the in-cwd scan, not doubled by the
+			// ancestor walk.
+			const lockfiles = files.bustFiles.filter(
+				(file) => path.basename(file) === "pnpm-lock.yaml",
+			);
+
+			expect(lockfiles).toHaveLength(1);
+		} finally {
+			fs.rmSync(root, { force: true, recursive: true });
+		}
+	});
+});
+
+describe("full-pass env hygiene", () => {
+	it("explicitly clears ESLINT_TYPE_AWARE for the full pass so an inherited value cannot leak", () => {
+		expect.hasAssertions();
+
+		const command = composeEslintCommand(
+			options({ typeAware: "full" }),
+			baseContext({ eslintLabel: "eslint", typeAwareEnv: undefined }),
+		);
+
+		expect(Object.hasOwn(command.env, "ESLINT_TYPE_AWARE")).toBe(true);
+		expect(command.env["ESLINT_TYPE_AWARE"]).toBeUndefined();
+
+		// Merged over an inherited value, the undefined entry removes the key
+		// (Node drops undefined env entries at spawn time).
+		const merged: Record<string, string | undefined> = {
+			ESLINT_TYPE_AWARE: "only",
+			...command.env,
+		};
+
+		expect(merged["ESLINT_TYPE_AWARE"]).toBeUndefined();
+	});
+
+	it("keeps setting ESLINT_TYPE_AWARE for the fast and typed passes", () => {
+		expect.hasAssertions();
+
+		expect(
+			composeEslintCommand(options(), baseContext({ typeAwareEnv: "off" })).env,
+		).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
+		expect(
+			composeEslintCommand(options(), baseContext({ typeAwareEnv: "only" })).env,
+		).toStrictEqual({ ESLINT_TYPE_AWARE: "only" });
+	});
+});
+
+describe("explicit --type-aware selection in CI", () => {
+	it("keeps an explicit --type-aware=only pass in CI with the content cache strategy", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
+				"oxlint --type-aware .",
+				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+					"--no-warn-ignored --concurrency off --cache-strategy content .",
+			]);
+		});
+	});
+
+	it("keeps an explicit --type-aware=off pass in CI", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
+				"oxlint .",
+				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+					"--no-warn-ignored --concurrency off --cache-strategy content .",
+			]);
+		});
+	});
+});
+
+describe("bust-before-size ordering", () => {
+	it("clears every cache up front so an earlier pass is not under-provisioned", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const sources = ["a.ts", "b.ts", "c.ts"].map((name) => path.join(directory, name));
+			for (const source of sources) {
+				fs.writeFileSync(source, "export const x = 1;\n");
+			}
+
+			const configFile = path.join(directory, "eslint.config.ts");
+			fs.writeFileSync(configFile, "export default []");
+
+			const fastCache = path.join(directory, CACHE_FILE_FAST);
+			const typedCache = path.join(directory, CACHE_FILE_TYPE_AWARE);
+			seedFileCache(fastCache, sources);
+			seedFileCache(typedCache, sources);
+
+			// Order mtimes: typed cache oldest, config in the middle (the bust
+			// reference), fast cache newest. So the fast cache is fresh and only
+			// the typed cache is stale — yet the fix must clear BOTH before
+			// sizing so the fast pass is provisioned for all the re-linted files.
+			const now = Date.now() / 1000;
+			fs.utimesSync(typedCache, now - 120, now - 120);
+			fs.utimesSync(configFile, now - 60, now - 60);
+			fs.utimesSync(fastCache, now, now);
+
+			const { commands } = withoutGitEnvironment(() => {
+				return composeCommands(parseArguments([]), {
+					cwd: directory,
+					dryRun: false,
+					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
+				});
+			});
+
+			// Every lintable file (three sources plus eslint.config.ts) is dirty
+			// after the up-front clear => four fast workers at one file per
+			// worker. Without the fix the fast pass reads its fresh cache, sees
+			// only the uncached config file (one dirty) and sizes to "off".
+			expect(concurrencyArgument(commands, "fast")).toBe("4");
+		});
+	});
+});
+
+describe("parseHybridPrintConfig", () => {
+	it("reads the marker through leading log noise", () => {
+		expect.hasAssertions();
+
+		expect(
+			parseHybridPrintConfig('startup log\n{"settings":{"isentinel/oxlint":true}}'),
+		).toStrictEqual({ oxlint: true });
+		expect(parseHybridPrintConfig('noise {"settings":{}} trailing')).toStrictEqual({
+			oxlint: false,
+		});
+	});
+
+	it("returns undefined when there is no JSON object", () => {
+		expect.hasAssertions();
+
+		expect(parseHybridPrintConfig("not json at all")).toBeUndefined();
+		expect(parseHybridPrintConfig("")).toBeUndefined();
+	});
+});
+
+describe("buildShellCommand percent guard", () => {
+	it("refuses a % token on the Windows shell path but quotes it on POSIX", () => {
+		expect.hasAssertions();
+
+		expect(() => buildShellCommand("node", "/path/eslint.js", ["%PATH%"], "win32")).toThrow(
+			CliError,
+		);
+		expect(buildShellCommand("node", "/path/eslint.js", ["50%"], "linux")).toBe(
+			"node /path/eslint.js '50%'",
+		);
 	});
 });

@@ -128,6 +128,10 @@ export function openCache(cacheFilePath: string, useChecksum: boolean): DirtyCac
 		return undefined;
 	}
 
+	// Reusing one handle for both getUpdatedFiles and removeEntries is safe:
+	// verified against file-entry-cache@8 that getUpdatedFiles compares existing
+	// entries without mutating the persisted store (nothing calls setKey), and
+	// removeEntries' save(true) writes that store minus the removed keys.
 	const cache = fileEntryCache.createFromFile(cacheFilePath, useChecksum);
 	return {
 		getUpdatedFiles: (files) => cache.getUpdatedFiles(files),

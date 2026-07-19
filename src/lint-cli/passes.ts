@@ -72,17 +72,20 @@ export const FULL_PASS: PassDescriptor = {
 };
 
 /**
- * Select the ESLint passes for the resolved mode. CI, `--fix` and the explicit
- * `--type-aware=full` escape hatch collapse to the single full pass;
- * `--type-aware=off`/`=only` run their one pass; the default runs the fast and
- * type-aware passes concurrently (the typed one may later be skipped).
+ * Select the ESLint passes for the resolved mode. An explicit `--type-aware`
+ * always wins: `=full` (and `--fix`) collapse to the single full pass, while
+ * `=off`/`=only` run their one pass even in CI. Only when no mode is given does
+ * CI change the default — collapsing the concurrent two-pass split to one full
+ * pass; a local default run keeps the split (the typed pass may later be
+ * skipped). CI's `--cache-strategy content` is applied by the command composer
+ * to whichever pass runs, independently of this selection.
  *
  * @param options - The parsed CLI options.
  * @param ci - Whether the run is in CI.
  * @returns The pass descriptors to plan, in run order.
  */
 export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDescriptor> {
-	if (ci || options.fix || options.typeAware === "full") {
+	if (options.fix || options.typeAware === "full") {
 		return [FULL_PASS];
 	}
 
@@ -92,6 +95,11 @@ export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDe
 
 	if (options.typeAware === "only") {
 		return [TYPED_PASS];
+	}
+
+	// No explicit selection: CI collapses the default split to one full pass.
+	if (ci) {
+		return [FULL_PASS];
 	}
 
 	return [FAST_PASS, TYPED_PASS];

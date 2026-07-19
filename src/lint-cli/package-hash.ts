@@ -1,15 +1,17 @@
-// cspell:words typeaware
+// cspell:words typeaware unparseable
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE } from "./constants.ts";
+import { findWorkspaceRoot } from "./workspace.ts";
 
 /**
  * Root `package.json` fields whose edits can change the types a consumer's
  * importers see (resolution surface + dependency versions). A change to any of
  * these must invalidate the type-aware caches; unrelated edits (`scripts`,
- * `version`, metadata) must not.
+ * `version`, metadata) must not. `pnpm` (overrides/patchedDependencies) and
+ * `optionalDependencies` can silently swap a resolved version too.
  */
 const RESOLUTION_FIELDS = [
 	"exports",
@@ -21,6 +23,8 @@ const RESOLUTION_FIELDS = [
 	"dependencies",
 	"devDependencies",
 	"peerDependencies",
+	"optionalDependencies",
+	"pnpm",
 ] as const;
 
 /** Outcome of the package.json resolution-hash check. */
@@ -43,36 +47,33 @@ export function packageHashStatePath(cwd: string): string {
 }
 
 /**
- * Hash the resolution-relevant fields of the root `package.json` as sorted,
- * stable JSON. Returns `undefined` when there is no readable/parseable
- * `package.json` (the caller then treats the check as a no-op).
+ * Hash the resolution-relevant fields of the consumer's `package.json` as
+ * sorted, stable JSON. When `cwd` sits in a workspace whose root differs, the
+ * root `package.json`'s resolution fields fold into the same digest — a hoisted
+ * root dependency bump changes the types a sub-package sees even though its own
+ * `package.json` text is untouched. Returns `undefined` when there is no
+ * readable/parseable local `package.json` (the caller then treats the check as
+ * a no-op).
  *
  * @param cwd - The consumer project root.
  * @returns The hex digest, or `undefined` when unavailable.
  */
 export function computePackageJsonHash(cwd: string): string | undefined {
-	let raw: string;
-	try {
-		raw = fs.readFileSync(path.join(cwd, "package.json"), "utf8");
-	} catch {
+	const local = resolutionSubset(cwd);
+	if (local === undefined) {
 		return undefined;
 	}
 
-	let parsed: Record<string, unknown>;
-	try {
-		parsed = JSON.parse(raw) as Record<string, unknown>;
-	} catch {
-		return undefined;
-	}
-
-	const subset: Record<string, unknown> = {};
-	for (const field of RESOLUTION_FIELDS) {
-		if (Object.hasOwn(parsed, field)) {
-			subset[field] = parsed[field];
+	const combined: Record<string, unknown> = { local };
+	const root = findWorkspaceRoot(cwd);
+	if (root !== cwd) {
+		const rootSubset = resolutionSubset(root);
+		if (rootSubset !== undefined) {
+			combined["root"] = rootSubset;
 		}
 	}
 
-	return crypto.createHash("sha256").update(stableStringify(subset)).digest("hex");
+	return crypto.createHash("sha256").update(stableStringify(combined)).digest("hex");
 }
 
 /**
@@ -105,6 +106,38 @@ export function applyPackageJsonBust(cwd: string): PackageJsonBustOutcome {
 	fs.rmSync(path.resolve(cwd, CACHE_FILE_TYPE_AWARE), { force: true });
 	fs.rmSync(path.resolve(cwd, CACHE_FILE_DEFAULT), { force: true });
 	return { busted: true, firstRun: false };
+}
+
+/**
+ * Read a directory's `package.json` and project it down to the resolution
+ * fields, or `undefined` when it is absent or unparseable.
+ *
+ * @param directory - The directory whose `package.json` to read.
+ * @returns The resolution-field subset, or `undefined`.
+ */
+function resolutionSubset(directory: string): Record<string, unknown> | undefined {
+	let raw: string;
+	try {
+		raw = fs.readFileSync(path.join(directory, "package.json"), "utf8");
+	} catch {
+		return undefined;
+	}
+
+	let parsed: Record<string, unknown>;
+	try {
+		parsed = JSON.parse(raw) as Record<string, unknown>;
+	} catch {
+		return undefined;
+	}
+
+	const subset: Record<string, unknown> = {};
+	for (const field of RESOLUTION_FIELDS) {
+		if (Object.hasOwn(parsed, field)) {
+			subset[field] = parsed[field];
+		}
+	}
+
+	return subset;
 }
 
 /**

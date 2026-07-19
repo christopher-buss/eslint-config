@@ -6,6 +6,15 @@ import picomatch from "picomatch";
 
 import { CACHE_BUST_PATTERNS, LINTABLE_EXTENSIONS, TYPE_AWARE_EXTENSIONS } from "./constants.ts";
 import { toPosix } from "./paths.ts";
+import { findWorkspaceRoot } from "./workspace.ts";
+
+// Per-directory (single-segment) forms of the cache-bust globs: strip the
+// leading `**/` so each matches against a bare basename. Used to scan the
+// cache-bust candidates in each workspace-root ancestor directory, which a
+// sub-package `git ls-files` never lists.
+const ANCESTOR_BUST_PATTERNS = CACHE_BUST_PATTERNS.map((pattern) => {
+	return pattern.startsWith("**/") ? pattern.slice(3) : pattern;
+});
 
 // Only reached in the non-git fallback walk; inside a repo `git ls-files`
 // already applies `.gitignore`. The canonical ignore knowledge lives in
@@ -37,6 +46,13 @@ export interface RepoFiles {
 	bustFiles: Array<string>;
 	/** Absolute paths of the lintable files within the lint targets. */
 	lintable: Array<string>;
+	/**
+	 * True when a lint target resolves outside `cwd` (a `..`-prefixed relative
+	 * path, or an absolute path not under `cwd`). Such targets are absent from
+	 * the cwd-relative listing, so it under-counts them; the runner then must
+	 * not auto-skip the typed pass, and sizes conservatively.
+	 */
+	targetsOutsideCwd: boolean;
 	/** The type-aware (TS/JS-family) subset of {@link RepoFiles.lintable}. */
 	typeAware: Array<string>;
 }
@@ -55,9 +71,11 @@ export interface RepoFiles {
 export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles {
 	const relatives = listFiles(cwd, ["."]);
 	const isBustFile = picomatch([...CACHE_BUST_PATTERNS], { dot: true });
-	const isWithinTargets = matchTargets(targets);
+	const normalizedTargets = targets.map((target) => normalizeTarget(target, cwd));
+	const targetsOutsideCwd = normalizedTargets.some((target) => isOutsideCwd(target));
+	const isWithinTargets = matchTargets(normalizedTargets);
 
-	const bustFiles: Array<string> = [];
+	const bustFiles = collectAncestorBustFiles(cwd);
 	const lintable: Array<string> = [];
 	const typeAware: Array<string> = [];
 	for (const relative of relatives) {
@@ -74,7 +92,7 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 		}
 	}
 
-	return { bustFiles, lintable, typeAware };
+	return { bustFiles, lintable, targetsOutsideCwd, typeAware };
 }
 
 /**
@@ -90,8 +108,63 @@ export function collectLintableFiles(cwd: string, targets: Array<string>): Array
 	return collectRepoFiles(cwd, targets).lintable;
 }
 
-function normalizeTarget(target: string): string {
-	let value = toPosix(target);
+/**
+ * Scan the single-segment cache-bust candidates in each directory from `cwd`'s
+ * parent up to and including the workspace root. A sub-package `git ls-files`
+ * only lists files under `cwd`, so a hoisted root lockfile, tsconfig or ESLint
+ * config change would otherwise never bust the caches. Returns absolute paths
+ * (fine for mtime comparison); empty when `cwd` is itself the root.
+ *
+ * @param cwd - The project (sub-package) root to walk up from.
+ * @returns Absolute paths of the ancestor cache-bust files.
+ */
+function collectAncestorBustFiles(cwd: string): Array<string> {
+	const root = findWorkspaceRoot(cwd);
+	if (root === cwd) {
+		return [];
+	}
+
+	const isBustName = picomatch([...ANCESTOR_BUST_PATTERNS], { dot: true });
+	const found: Array<string> = [];
+	let current = path.dirname(cwd);
+	for (;;) {
+		let entries: Array<fs.Dirent> = [];
+		try {
+			entries = fs.readdirSync(current, { withFileTypes: true });
+		} catch {
+			entries = [];
+		}
+
+		for (const entry of entries) {
+			if (entry.isFile() && isBustName(entry.name)) {
+				found.push(path.join(current, entry.name));
+			}
+		}
+
+		const parent = path.dirname(current);
+		if (current === root || parent === current) {
+			break;
+		}
+
+		current = parent;
+	}
+
+	return found;
+}
+
+/**
+ * Reduce a raw target to the cwd-relative posix form the listing is keyed by.
+ * Absolute targets (including Windows drive paths) are relativized against
+ * `cwd`; `./` prefixes and trailing slashes are stripped. A target that
+ * resolves to `cwd` itself becomes `""` (match-all). Targets outside `cwd` keep
+ * their `..`-prefixed relative form so {@link isOutsideCwd} can flag them.
+ *
+ * @param target - The raw lint target path.
+ * @param cwd - The working directory to relativize against.
+ * @returns The normalized cwd-relative posix target.
+ */
+function normalizeTarget(target: string, cwd: string): string {
+	let value = path.isAbsolute(target) ? toPosix(path.relative(cwd, target)) : toPosix(target);
 	if (value.startsWith("./")) {
 		value = value.slice(2);
 	}
@@ -104,16 +177,27 @@ function normalizeTarget(target: string): string {
 }
 
 /**
+ * Whether a normalized target lies outside `cwd`. A cwd-relative listing never
+ * starts with `..`, so any `..`-prefixed target can never match — its files are
+ * invisible to the dirty count.
+ *
+ * @param normalizedTarget - A target already run through {@link normalizeTarget}.
+ * @returns True when the target escapes `cwd`.
+ */
+function isOutsideCwd(normalizedTarget: string): boolean {
+	return normalizedTarget === ".." || normalizedTarget.startsWith("../");
+}
+
+/**
  * Build a predicate for git-pathspec-style target membership: `.` matches
  * everything, otherwise a relative path matches when it equals a target or sits
  * beneath one. Faithful to `git ls-files -- <target>` for the plain directory
  * and file targets consumers pass.
  *
- * @param targets - The lint target paths.
+ * @param normalized - The lint target paths, already normalized against cwd.
  * @returns A predicate testing whether a relative posix path is a target.
  */
-function matchTargets(targets: Array<string>): (relative: string) => boolean {
-	const normalized = targets.map((target) => normalizeTarget(target));
+function matchTargets(normalized: Array<string>): (relative: string) => boolean {
 	if (normalized.some((target) => target === "" || target === ".")) {
 		return () => true;
 	}

@@ -61,8 +61,13 @@ export interface ChildCommand {
 	args: Array<string>;
 	/** Logical binary name, resolved to a real path at spawn time. */
 	bin: ToolBin;
-	/** Extra environment variables layered on top of `process.env`. */
-	env: Record<string, string>;
+	/**
+	 * Environment overrides layered on top of `process.env` at spawn time. A
+	 * value of `undefined` explicitly REMOVES the variable from the child (Node
+	 * drops undefined env entries), so an inherited `ESLINT_TYPE_AWARE` cannot
+	 * leak into the full-config pass.
+	 */
+	env: Record<string, string | undefined>;
 	/** Prefix/name used for concurrently output and logging. */
 	label: ToolLabel;
 }

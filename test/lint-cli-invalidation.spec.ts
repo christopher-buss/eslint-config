@@ -398,6 +398,37 @@ describe("composeCommands typed-pass skip", () => {
 		);
 	});
 
+	it("never skips the typed pass when a target resolves outside cwd", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, CACHE_FILE_TYPE_AWARE);
+				const fileA = path.join(directory, "src/a.ts");
+				computeAffectedFiles(directory, "only");
+				seedCache(cacheFile, [fileA]);
+
+				// "src" is in-cwd and clean, but "../elsewhere" escapes cwd, so
+				// the dirty count is unknowable: the typed pass must not
+				// auto-skip and a notice is emitted.
+				const { commands, notice } = withoutGitEnvironment(() => {
+					return composeCommands(parseArguments(["src", "../elsewhere"]), {
+						cwd: directory,
+						dryRun: false,
+						environment: {},
+					});
+				});
+
+				expect(commands.map((command) => command.label)).toContain("typed");
+				expect(notice).toMatch(/resolves outside the working directory/);
+			},
+		);
+	});
+
 	it("never skips the typed pass when --type-aware=only is explicit", () => {
 		expect.hasAssertions();
 

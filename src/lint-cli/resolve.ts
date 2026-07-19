@@ -44,11 +44,9 @@ export function resolveLocalBin(name: string, cwd: string): string {
 }
 
 /**
- * Resolve the agent-friendly ESLint formatter shipped alongside this entry.
- *
- * TODO(agents-formatter): the `formatter-agents.mjs` module is ported by a
- * separate change. This resolves its expected dist location lazily so builds
- * succeed before it lands; it is only ever called when `--agents` is used.
+ * Resolve the agent-friendly ESLint formatter shipped alongside this entry
+ * (built from `src/formatter-agents.ts` to `formatter-agents.mjs`). Resolved
+ * lazily so it is only touched when `--agents` is used.
  *
  * @returns The absolute path to the agent ESLint formatter.
  */
