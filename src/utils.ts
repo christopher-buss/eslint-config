@@ -35,6 +35,19 @@ type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
 export const require = createRequire(import.meta.url);
 
+/**
+ * Whether the environment signals a CI run. Treats an unset, empty, `"false"`
+ * or `"0"` `CI` value as not-CI, so a deliberately falsy `CI=false` is honoured
+ * rather than read as truthy.
+ *
+ * @param environment - The environment variables to inspect.
+ * @returns Whether CI is active.
+ */
+export function isCi(environment: NodeJS.ProcessEnv = process.env): boolean {
+	const value = environment["CI"];
+	return value !== undefined && value !== "" && value !== "false" && value !== "0";
+}
+
 export const parserPlain = {
 	meta: {
 		name: "parser-plain",
@@ -136,7 +149,7 @@ export function createTsParser({
 }
 
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
-	if ((process.env["CI"] ?? "") || !process.stdout.isTTY) {
+	if (isCi() || !process.stdout.isTTY) {
 		return;
 	}
 
@@ -346,7 +359,7 @@ export function isInEditorEnvironment(): boolean {
 		return explicitValue === "true" || explicitValue === "1";
 	}
 
-	if (process.env["CI"] ?? "") {
+	if (isCi()) {
 		return false;
 	}
 

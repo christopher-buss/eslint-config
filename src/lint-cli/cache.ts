@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { ALL_CACHE_FILES } from "./constants.ts";
+import { toPosix } from "./paths.ts";
 
 /**
  * Return true when any cache-bust file has been modified more recently than
@@ -64,23 +65,6 @@ export function listDirtyFiles(
 }
 
 /**
- * Count the files ESLint will actually re-lint. Thin wrapper over
- * {@link listDirtyFiles}; see it for cache-read semantics.
- *
- * @param cacheFilePath - The ESLint cache file to read.
- * @param files - Absolute paths of the candidate files.
- * @param useChecksum - Compare by content checksum instead of metadata.
- * @returns The number of files that need re-linting.
- */
-export function countDirtyFiles(
-	cacheFilePath: string,
-	files: Array<string>,
-	useChecksum: boolean,
-): number {
-	return listDirtyFiles(cacheFilePath, files, useChecksum).length;
-}
-
-/**
  * Normalize a path for cache-key comparison: absolute, forward-slash and
  * lower-cased. TypeScript emits forward-slash paths while ESLint keys the cache
  * with OS-native ones, and Windows paths are case-insensitive — this collapses
@@ -90,7 +74,7 @@ export function countDirtyFiles(
  * @returns The canonical key.
  */
 export function normalizePath(filePath: string): string {
-	return path.resolve(filePath).split(path.sep).join("/").toLowerCase();
+	return toPosix(path.resolve(filePath)).toLowerCase();
 }
 
 /**

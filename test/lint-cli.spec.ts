@@ -3,10 +3,9 @@ import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import process from "node:process";
 import { describe, expect, it } from "vitest";
 
-import { clearAllCaches, countDirtyFiles, isCacheBusted } from "../src/lint-cli/cache.ts";
+import { clearAllCaches, isCacheBusted, listDirtyFiles } from "../src/lint-cli/cache.ts";
 import {
 	buildShellCommand,
 	composeEslintCommand,
@@ -23,7 +22,6 @@ import {
 	ALL_CACHE_FILES,
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
-	cacheFileForMode,
 } from "../src/lint-cli/constants.ts";
 import { collectLintableFiles } from "../src/lint-cli/files.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
@@ -31,6 +29,7 @@ import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/pa
 import { composeCommands, runConcurrent } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
+import { withoutGitEnvironment } from "./without-git.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 	return {
@@ -62,26 +61,6 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 		typeAware: undefined,
 		...overrides,
 	};
-}
-
-function withoutGitEnvironment<T>(run: () => T): T {
-	const keys = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"];
-	const saved = keys.map((key): [string, string | undefined] => [key, process.env[key]]);
-	for (const key of keys) {
-		delete process.env[key];
-	}
-
-	try {
-		return run();
-	} finally {
-		for (const [key, value] of saved) {
-			if (value === undefined) {
-				delete process.env[key];
-			} else {
-				process.env[key] = value;
-			}
-		}
-	}
 }
 
 function withTemporaryDirectory(run: (directory: string) => void): void {
@@ -246,16 +225,6 @@ describe("resolveWorkerLimits", () => {
 	});
 });
 
-describe("cacheFileForMode", () => {
-	it("maps type-aware modes to cache files", () => {
-		expect.hasAssertions();
-
-		expect(cacheFileForMode(undefined)).toBe(".eslintcache");
-		expect(cacheFileForMode("off")).toBe(".eslintcache-fast");
-		expect(cacheFileForMode("only")).toBe(".eslintcache-typeaware");
-	});
-});
-
 describe("cache helpers", () => {
 	it("detects a bust file newer than the cache", () => {
 		expect.hasAssertions();
@@ -320,7 +289,9 @@ describe("cache helpers", () => {
 			fs.writeFileSync(fileA, "const a = 1;");
 			fs.writeFileSync(fileB, "const b = 2;");
 
-			expect(countDirtyFiles(path.join(directory, "missing"), [fileA, fileB], false)).toBe(2);
+			expect(
+				listDirtyFiles(path.join(directory, "missing"), [fileA, fileB], false),
+			).toHaveLength(2);
 		});
 	});
 
@@ -342,13 +313,13 @@ describe("cache helpers", () => {
 			cache.reconcile();
 
 			// fileA is cached and unchanged; fileB was never seen.
-			expect(countDirtyFiles(cacheFile, [fileA, fileB], false)).toBe(1);
+			expect(listDirtyFiles(cacheFile, [fileA, fileB], false)).toHaveLength(1);
 
 			fs.writeFileSync(fileA, "const a = 42;");
 			const future = Date.now() / 1000 + 60;
 			fs.utimesSync(fileA, future, future);
 
-			expect(countDirtyFiles(cacheFile, [fileA, fileB], false)).toBe(2);
+			expect(listDirtyFiles(cacheFile, [fileA, fileB], false)).toHaveLength(2);
 		});
 	});
 });

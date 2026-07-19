@@ -1,6 +1,7 @@
 import yargs from "yargs";
 
 import { splitArgs } from "./command.ts";
+import { parseBoundedInteger } from "./parse.ts";
 import type { LintCliOptions } from "./types.ts";
 import { CliError } from "./types.ts";
 
@@ -161,8 +162,8 @@ function parseConcurrency(value: string | undefined): "off" | number | undefined
 		return "off";
 	}
 
-	const parsed = Number(value);
-	if (!Number.isInteger(parsed) || parsed < 1) {
+	const parsed = parseBoundedInteger(value, 1);
+	if (parsed === undefined) {
 		throw new CliError(
 			`Invalid --concurrency "${value}"; expected a positive integer or "off".`,
 		);

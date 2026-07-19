@@ -1,4 +1,5 @@
 import { DEFAULT_FAST_FILES_PER_WORKER, DEFAULT_FILES_PER_WORKER } from "./constants.ts";
+import { parseBoundedInteger } from "./parse.ts";
 
 /** Inputs to the (pure) worker-count heuristic. */
 export interface WorkerHeuristicInput {
@@ -81,14 +82,5 @@ export function computeWorkerCount({
 }
 
 function parsePositiveInteger(value: string | undefined): number | undefined {
-	if (value === undefined) {
-		return undefined;
-	}
-
-	const parsed = Number(value.trim());
-	if (!Number.isInteger(parsed) || parsed < 1) {
-		return undefined;
-	}
-
-	return parsed;
+	return parseBoundedInteger(value, 1);
 }

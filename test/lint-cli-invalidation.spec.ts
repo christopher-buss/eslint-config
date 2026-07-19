@@ -4,7 +4,6 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import process from "node:process";
 import { describe, expect, it } from "vitest";
 
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
@@ -13,6 +12,7 @@ import { CACHE_FILE_TYPE_AWARE } from "../src/lint-cli/constants.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { composeCommands } from "../src/lint-cli/run.ts";
+import { withoutGitEnvironment } from "./without-git.ts";
 
 const TSCONFIG = JSON.stringify({
 	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
@@ -356,26 +356,6 @@ const JSON_TSCONFIG = JSON.stringify({
 	include: ["src"],
 });
 
-function withoutGit<T>(run: () => T): T {
-	const keys = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"];
-	const saved = keys.map((key): [string, string | undefined] => [key, process.env[key]]);
-	for (const key of keys) {
-		delete process.env[key];
-	}
-
-	try {
-		return run();
-	} finally {
-		for (const [key, value] of saved) {
-			if (value === undefined) {
-				delete process.env[key];
-			} else {
-				process.env[key] = value;
-			}
-		}
-	}
-}
-
 describe("composeCommands typed-pass skip", () => {
 	it("skips the typed pass in default mode when nothing type-relevant changed", () => {
 		expect.hasAssertions();
@@ -393,7 +373,7 @@ describe("composeCommands typed-pass skip", () => {
 				computeAffectedFiles(directory, "only");
 				seedCache(cacheFile, [fileA]);
 
-				const { commands, notice } = withoutGit(() => {
+				const { commands, notice } = withoutGitEnvironment(() => {
 					return composeCommands(parseArguments([]), {
 						cwd: directory,
 						dryRun: false,
@@ -424,7 +404,7 @@ describe("composeCommands typed-pass skip", () => {
 				computeAffectedFiles(directory, "only");
 				seedCache(cacheFile, [fileA]);
 
-				const { commands, notice } = withoutGit(() => {
+				const { commands, notice } = withoutGitEnvironment(() => {
 					return composeCommands(parseArguments(["--type-aware=only"]), {
 						cwd: directory,
 						dryRun: false,

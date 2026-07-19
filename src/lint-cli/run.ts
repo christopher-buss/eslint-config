@@ -6,6 +6,7 @@ import { availableParallelism } from "node:os";
 import path from "node:path";
 import process from "node:process";
 
+import { isCi } from "../utils.ts";
 import { clearAllCaches, isCacheBusted, listDirtyFiles, normalizePath } from "./cache.ts";
 import {
 	buildShellCommand,
@@ -72,17 +73,6 @@ interface CountDirtyRequest {
 	invalidation: "full" | "none" | "only";
 	/** When true, size from TS/JS-family files only (the typed pass). */
 	typeAwareOnly: boolean;
-}
-
-/**
- * Whether the environment signals a CI run.
- *
- * @param environment - The environment variables to inspect.
- * @returns Whether CI is active.
- */
-export function isCi(environment: NodeJS.ProcessEnv): boolean {
-	const value = environment["CI"];
-	return value !== undefined && value !== "" && value !== "false" && value !== "0";
 }
 
 /**

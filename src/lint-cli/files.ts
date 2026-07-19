@@ -5,7 +5,11 @@ import path from "node:path";
 import picomatch from "picomatch";
 
 import { CACHE_BUST_PATTERNS, LINTABLE_EXTENSIONS, TYPE_AWARE_EXTENSIONS } from "./constants.ts";
+import { toPosix } from "./paths.ts";
 
+// Only reached in the non-git fallback walk; inside a repo `git ls-files`
+// already applies `.gitignore`. The canonical ignore knowledge lives in
+// `src/globs.ts` GLOB_EXCLUDE — keep this in rough sync with it.
 const IGNORED_WALK_DIRECTORIES = new Set([
 	".git",
 	".next",
@@ -81,10 +85,6 @@ function gitListFiles(cwd: string, pathSpecs: Array<string>): Array<string> | un
 	} catch {
 		return undefined;
 	}
-}
-
-function toPosix(value: string): string {
-	return value.split(path.sep).join("/");
 }
 
 function walkDirectory(root: string, current: string, accumulator: Array<string>): void {
