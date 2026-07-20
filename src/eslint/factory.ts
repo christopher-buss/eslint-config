@@ -3,6 +3,7 @@ import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
+import { writeHybridStatusForCwd } from "../lint-cli/hybrid-status.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
@@ -15,6 +16,7 @@ import {
 	resolveOxfmtConfigOptions,
 	resolveSubOptions,
 	shouldEnableFeature,
+	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
 import type { PrettierOptions } from "./configs/index.ts";
 import {
@@ -266,8 +268,16 @@ export async function isentinel(
 	const hasComplement = !enableRoblox || robloxScopedFiles !== undefined;
 	const needsComplementOverlay = enableRoblox && robloxScopedFiles !== undefined;
 
-	const typeAwareMode: TypeAwareSplitMode | undefined =
-		options.typeAware === false || options.typeAware === "only" ? options.typeAware : undefined;
+	// An explicit `typeAware` option always wins; the `ESLINT_TYPE_AWARE` env var
+	// only applies when the option is left undefined (any non-split value such as
+	// `true` still counts as explicit and disables the split).
+	let typeAwareMode: TypeAwareSplitMode | undefined;
+	if (options.typeAware === false || options.typeAware === "only") {
+		typeAwareMode = options.typeAware;
+	} else if (options.typeAware === undefined) {
+		typeAwareMode = typeAwareSplitFromEnvironment();
+	}
+
 	const typeAwareOnly = typeAwareMode === "only";
 	const typescriptOptions = resolveSubOptions(options, "typescript");
 	if (
@@ -549,6 +559,22 @@ export async function isentinel(
 		if (stylisticOptions !== false && enableYaml !== false) {
 			configs.push(sortCspell());
 		}
+	}
+
+	// Passively record the hybrid status so `isentinel-lint` can tell, without
+	// re-running the config, whether oxlint would double-lint every mapped rule.
+	// Best-effort and swallowed; config evaluation must never throw for this.
+	writeHybridStatusForCwd(enableOxlint);
+
+	// Stamp a marker observable from outside via `eslint --print-config`: the CLI
+	// probes for `settings["isentinel/oxlint"]` when the cached status is stale.
+	if (enableOxlint) {
+		configs.push([
+			{
+				name: "isentinel/oxlint-marker",
+				settings: { "isentinel/oxlint": true },
+			},
+		]);
 	}
 
 	configs.push(disables({ root: rootGlobs }));
