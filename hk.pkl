@@ -12,18 +12,13 @@ local sharedGuards = new Mapping<String, Step> {
     }
 }
 
-local oxlint = new Step {
-    glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs")
-    check = "pnpm exec oxlint {{files}}"
-    fix = "pnpm exec oxlint --fix {{files}}"
-    shell = bash
-    env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
-}
-
+// The hybrid CLI sequences oxlint then ESLint itself, dropping the
+// oxlint-covered rules from the ESLint pass, so a separate oxlint step would
+// only double-lint. GIT_HOOK pins hook runs to the no-agent cache variant.
 local lint = new Step {
     glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.jsonc", "*.md", "*.toml", "*.yaml", "*.yml")
-    check = "eslint --cache --no-warn-ignored {{files}}"
-    fix = "eslint --cache --fix --no-warn-ignored {{files}}"
+    check = "isentinel-lint {{files}}"
+    fix = "isentinel-lint --fix {{files}}"
     shell = bash
     env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
 }
@@ -55,7 +50,6 @@ hooks {
         steps {
             ...sharedGuards
             ["renovate-config"] = renovateConfig
-            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
             ["test"] = test
@@ -64,7 +58,6 @@ hooks {
     ["pre-push"] {
         steps {
             ...sharedGuards
-            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
         }
@@ -87,7 +80,6 @@ hooks {
         steps {
             ...sharedGuards
             ["renovate-config"] = renovateConfig
-            ["oxlint"] = oxlint
             ["lint"] = lint
             ["typecheck"] = typecheck
         }

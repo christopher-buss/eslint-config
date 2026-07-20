@@ -1,3 +1,4 @@
+// cspell:words CLAUDECODE NVIM
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
@@ -326,51 +327,51 @@ export async function interopDefault<T>(dynamicImport: ModuleImport<T>): Promise
 	return resolved;
 }
 
-export function isInGitHooksOrLintStaged(): boolean {
+export function isInGitHooksOrLintStaged(environment: NodeJS.ProcessEnv = process.env): boolean {
 	return [
-		process.env["GIT_HOOK"],
-		process.env["GIT_PARAMS"],
-		process.env["VSCODE_GIT_COMMAND"],
-		process.env["npm_lifecycle_script"]?.startsWith("lint-staged"),
+		environment["GIT_HOOK"],
+		environment["GIT_PARAMS"],
+		environment["VSCODE_GIT_COMMAND"],
+		environment["npm_lifecycle_script"]?.startsWith("lint-staged"),
 	].some(Boolean);
 }
 
-export function isInAgentSession(): boolean {
-	if (isInGitHooksOrLintStaged()) {
+export function isInAgentSession(environment: NodeJS.ProcessEnv = process.env): boolean {
+	if (isInGitHooksOrLintStaged(environment)) {
 		return false;
 	}
 
 	return [
-		process.env["CLAUDECODE"],
-		process.env["CLAUDE_CODE_ENTRYPOINT"],
-		process.env["CODEX_THREAD_ID"],
-		process.env["CURSOR_AGENT"],
-		process.env["GEMINI_CLI"],
-		process.env["OPENCODE"],
+		environment["CLAUDECODE"],
+		environment["CLAUDE_CODE_ENTRYPOINT"],
+		environment["CODEX_THREAD_ID"],
+		environment["CURSOR_AGENT"],
+		environment["GEMINI_CLI"],
+		environment["OPENCODE"],
 	].some(Boolean);
 }
 
-export function isInEditorEnvironment(): boolean {
+export function isInEditorEnvironment(environment: NodeJS.ProcessEnv = process.env): boolean {
 	// Allow explicit override via environment variable
-	const explicitValue = process.env["ESLINT_IN_EDITOR"];
+	const explicitValue = environment["ESLINT_IN_EDITOR"];
 	if (explicitValue !== undefined) {
 		return explicitValue === "true" || explicitValue === "1";
 	}
 
-	if (isCi()) {
+	if (isCi(environment)) {
 		return false;
 	}
 
-	if (isInGitHooksOrLintStaged()) {
+	if (isInGitHooksOrLintStaged(environment)) {
 		return false;
 	}
 
 	return [
-		process.env["VSCODE_PID"],
-		process.env["VSCODE_CWD"],
-		process.env["JETBRAINS_IDE"],
-		process.env["VIM"],
-		process.env["NVIM"],
+		environment["VSCODE_PID"],
+		environment["VSCODE_CWD"],
+		environment["JETBRAINS_IDE"],
+		environment["VIM"],
+		environment["NVIM"],
 	].some(Boolean);
 }
 

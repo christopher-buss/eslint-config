@@ -1,4 +1,4 @@
-// cspell:words tsbuildinfo typeaware buildinfo normalised stabilise
+// cspell:words tsbuildinfo typeaware buildinfo mtimes normalised stabilise
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -25,17 +25,39 @@ export interface AffectedResult {
 let warned = false;
 
 /**
- * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode.
- * Stored under `node_modules/.cache/isentinel-lint/` so it never pollutes the
- * consumer's source tree and is cleaned with `node_modules`.
+ * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
+ * config variant. Stored under `node_modules/.cache/isentinel-lint/` so it
+ * never pollutes the consumer's source tree and is cleaned with
+ * `node_modules`.
+ *
+ * The variant key is part of the path because this state is drained
+ * destructively: {@link computeAffectedFiles} consumes the affected set and
+ * advances the buildinfo, and the caller removes those files from *one* cache.
+ * Sharing one buildinfo across variants would let an agent run advance the
+ * state while only its own cache was invalidated; the next human run would
+ * then see an empty affected set with stale entries still in its own warm
+ * cache — and since those files' mtimes never changed, the typed pass would
+ * auto-skip and report stale diagnostics that ESLint's `hashOfConfig` cannot
+ * catch.
  *
  * @param cwd - The consumer project root.
  * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The absolute path to the mode's buildinfo file.
  */
-export function builderStatePath(cwd: string, mode: TypeAwareMode | undefined): string {
+export function builderStatePath(
+	cwd: string,
+	mode: TypeAwareMode | undefined,
+	key: string,
+): string {
 	const suffix = mode === "only" ? "typeaware" : "full";
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `tsbuildinfo-${suffix}`);
+	return path.join(
+		cwd,
+		"node_modules",
+		".cache",
+		"isentinel-lint",
+		`tsbuildinfo-${suffix}-${key}`,
+	);
 }
 
 /**
@@ -52,11 +74,13 @@ export function builderStatePath(cwd: string, mode: TypeAwareMode | undefined): 
  *
  * @param cwd - The consumer project root.
  * @param mode - The active ESLint type-aware mode.
+ * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The affected result, or `undefined` when skipped.
  */
 export function computeAffectedFiles(
 	cwd: string,
 	mode: TypeAwareMode | undefined,
+	key: string,
 ): AffectedResult | undefined {
 	const ts = loadTypescript(cwd);
 	if (ts === undefined) {
@@ -71,7 +95,7 @@ export function computeAffectedFiles(
 	}
 
 	try {
-		return runBuilder(ts, cwd, configPath, mode);
+		return runBuilder(ts, configPath, builderStatePath(cwd, mode, key));
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		warnOnce(`type-aware cache invalidation failed: ${message}`);
@@ -154,16 +178,14 @@ function collectAffected(
  * without reporting diagnostics, then persist updated state.
  *
  * @param ts - The resolved TypeScript module.
- * @param cwd - The consumer project root.
  * @param configPath - The resolved tsconfig path.
- * @param mode - The active ESLint type-aware mode.
+ * @param buildInfoPath - The variant's buildinfo file (see {@link builderStatePath}).
  * @returns The affected result.
  */
 function runBuilder(
 	ts: typeof TypeScript,
-	cwd: string,
 	configPath: string,
-	mode: TypeAwareMode | undefined,
+	buildInfoPath: string,
 ): AffectedResult | undefined {
 	const configFile = ts.readConfigFile(configPath, (file) => ts.sys.readFile(file));
 	if (configFile.error !== undefined) {
@@ -182,7 +204,6 @@ function runBuilder(
 		return { affected: new Set(), firstRun: false };
 	}
 
-	const buildInfoPath = builderStatePath(cwd, mode);
 	fs.mkdirSync(path.dirname(buildInfoPath), { recursive: true });
 	const firstRun = !fs.existsSync(buildInfoPath);
 

@@ -1,4 +1,4 @@
-// cspell:words typeaware lintable mtimes
+// cspell:words typeaware lintable mtimes CLAUDECODE
 import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import os from "node:os";
@@ -6,7 +6,13 @@ import path from "node:path";
 import process from "node:process";
 import { describe, expect, it, vi } from "vitest";
 
-import { clearAllCaches, isCacheBusted, listDirtyFiles } from "../src/lint-cli/cache.ts";
+import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
+import {
+	clearAllCaches,
+	isCacheBusted,
+	listDirtyFiles,
+	sweepStaleCaches,
+} from "../src/lint-cli/cache.ts";
 import {
 	buildShellCommand,
 	composeEslintCommand,
@@ -21,8 +27,10 @@ import {
 } from "../src/lint-cli/concurrency.ts";
 import {
 	ALL_CACHE_FILES,
+	CACHE_FILE_DEFAULT,
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
+	cacheFileFor,
 } from "../src/lint-cli/constants.ts";
 import { collectLintableFiles, collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
@@ -39,7 +47,11 @@ import {
 	resolveOxlintRun,
 } from "../src/lint-cli/hybrid.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import { applyPackageJsonBust, computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
+import {
+	applyPackageJsonBust,
+	computePackageJsonHash,
+	packageHashStatePath,
+} from "../src/lint-cli/package-hash.ts";
 import { composeCommands, plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
@@ -89,6 +101,19 @@ function withTemporaryDirectory(run: (directory: string) => void): void {
 
 function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
 	return computeWorkerCount({ dirtyCount: dirty, filesPerWorker: perWorker, maxWorkers: max });
+}
+
+/**
+ * The keyed cache file name a run under `environment` writes for a pass. Cache
+ * files carry a config-variant key, so assertions derive the name rather than
+ * hardcoding it.
+ *
+ * @param baseName - The pass's cache base name.
+ * @param environment - The environment the run resolves its key from.
+ * @returns The keyed cache file name.
+ */
+function keyedCacheFile(baseName: string, environment: NodeJS.ProcessEnv = {}): string {
+	return cacheFileFor(baseName, resolveCacheKey(environment));
 }
 
 function seedFileCache(cacheFile: string, files: Array<string>): void {
@@ -300,6 +325,112 @@ describe("cache helpers", () => {
 			for (const name of ALL_CACHE_FILES) {
 				expect(fs.existsSync(path.join(directory, name))).toBe(false);
 			}
+		});
+	});
+
+	it("clears keyed cache variants, not just the base names", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const variants = ALL_CACHE_FILES.flatMap((name) => [
+				cacheFileFor(name, "aaaa1111"),
+				cacheFileFor(name, "bbbb2222"),
+			]);
+			for (const name of variants) {
+				fs.writeFileSync(path.join(directory, name), "{}");
+			}
+
+			clearAllCaches(directory);
+
+			for (const name of variants) {
+				expect(fs.existsSync(path.join(directory, name))).toBe(false);
+			}
+		});
+	});
+
+	describe("sweepStaleCaches", () => {
+		/**
+		 * Write a cache file whose mtime sits a fixed offset from the bust
+		 * file's, so staleness never depends on filesystem timestamp
+		 * resolution.
+		 *
+		 * @param filePath - The cache file to write.
+		 * @param mtimeSeconds - The mtime to stamp it with, in seconds.
+		 */
+		function writeCacheAt(filePath: string, mtimeSeconds: number): void {
+			fs.writeFileSync(filePath, "{}");
+			fs.utimesSync(filePath, mtimeSeconds, mtimeSeconds);
+		}
+
+		it("deletes only the individually stale variants", () => {
+			expect.hasAssertions();
+
+			withTemporaryDirectory((directory) => {
+				const configFile = path.join(directory, "eslint.config.ts");
+				const bustSeconds = Date.now() / 1000;
+				fs.writeFileSync(configFile, "export default [];");
+				fs.utimesSync(configFile, bustSeconds, bustSeconds);
+
+				const stale = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
+				const fresh = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "bbbb2222"));
+				writeCacheAt(stale, bustSeconds - 60);
+				writeCacheAt(fresh, bustSeconds + 60);
+
+				const removed = sweepStaleCaches(directory, bustSeconds * 1000);
+
+				expect(removed).toStrictEqual([stale]);
+				expect(fs.existsSync(stale)).toBe(false);
+				expect(fs.existsSync(fresh)).toBe(true);
+			});
+		});
+
+		it("deletes nothing when there is no bust file", () => {
+			expect.hasAssertions();
+
+			withTemporaryDirectory((directory) => {
+				const cacheFile = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
+				fs.writeFileSync(cacheFile, "{}");
+
+				expect(sweepStaleCaches(directory, undefined)).toStrictEqual([]);
+				expect(fs.existsSync(cacheFile)).toBe(true);
+			});
+		});
+	});
+
+	describe("resolveCacheKey", () => {
+		it("separates the agent, editor, CI and default variants", () => {
+			expect.hasAssertions();
+
+			const keys = [
+				resolveCacheKey({}),
+				resolveCacheKey({ CLAUDECODE: "1" }),
+				resolveCacheKey({ VSCODE_PID: "1" }),
+				resolveCacheKey({ CI: "true" }),
+			];
+
+			const unique = new Set(keys);
+
+			expect(unique.size).toBe(keys.length);
+		});
+
+		it("pins a git-hook run to the same variant as a plain run", () => {
+			expect.hasAssertions();
+
+			// `isInAgentSession` and `isInEditorEnvironment` both return false
+			// under GIT_HOOK, so a hook run shares the no-agent cache rather than
+			// opening a third one.
+			expect(resolveCacheKey({ CLAUDECODE: "1", GIT_HOOK: "1" })).toBe(resolveCacheKey({}));
+		});
+
+		it("honours the ISENTINEL_LINT_CACHE_KEY escape hatch", () => {
+			expect.hasAssertions();
+
+			expect(resolveCacheKey({ ISENTINEL_LINT_CACHE_KEY: "strict" })).not.toBe(
+				resolveCacheKey({}),
+			);
+			expect(resolveCacheKey({ ISENTINEL_LINT_CACHE_KEY: "strict" })).toBe(
+				resolveCacheKey({ ISENTINEL_LINT_CACHE_KEY: "strict" }),
+			);
 		});
 	});
 
@@ -559,9 +690,9 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines([], directory)).toStrictEqual([
 				"oxlint --type-aware .",
-				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 					"--no-warn-ignored --concurrency off .",
-				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 					"--no-warn-ignored --concurrency off .",
 			]);
 		});
@@ -573,7 +704,7 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
 				"oxlint .",
-				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 					"--no-warn-ignored --concurrency off .",
 			]);
 		});
@@ -585,7 +716,7 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
 				"oxlint --type-aware .",
-				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 					"--no-warn-ignored --concurrency off .",
 			]);
 		});
@@ -597,7 +728,7 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
 				"oxlint --type-aware .",
-				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off .",
+				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
 			]);
 		});
 	});
@@ -608,8 +739,7 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines([], directory, { CI: "true" })).toStrictEqual([
 				"oxlint --type-aware .",
-				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off " +
-					"--cache-strategy content .",
+				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
 			]);
 		});
 	});
@@ -620,8 +750,7 @@ describe("composeCommands --print", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--fix"], directory)).toStrictEqual([
 				"oxlint --type-aware --fix .",
-				"eslint --cache --cache-location .eslintcache --no-warn-ignored --concurrency off " +
-					"--fix .",
+				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off --fix .`,
 			]);
 		});
 	});
@@ -717,10 +846,18 @@ describe("applyPackageJsonBust", () => {
 		fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify(value));
 	}
 
+	const key = resolveCacheKey({});
+
 	function seedCaches(directory: string): void {
 		for (const name of ALL_CACHE_FILES) {
-			fs.writeFileSync(path.join(directory, name), "{}");
+			fs.writeFileSync(path.join(directory, cacheFileFor(name, key)), "{}");
 		}
+	}
+
+	function everyCacheExists(directory: string): boolean {
+		return ALL_CACHE_FILES.every((name) => {
+			return fs.existsSync(path.join(directory, cacheFileFor(name, key)));
+		});
 	}
 
 	it("stores the hash without busting on the first run", () => {
@@ -730,13 +867,10 @@ describe("applyPackageJsonBust", () => {
 			writePackageJson(directory, { exports: "./index.js" });
 			seedCaches(directory);
 
-			const outcome = applyPackageJsonBust(directory);
+			const outcome = applyPackageJsonBust(directory, key);
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
-
-			for (const name of ALL_CACHE_FILES) {
-				expect(fs.existsSync(path.join(directory, name))).toBe(true);
-			}
+			expect(everyCacheExists(directory)).toBe(true);
 		});
 	});
 
@@ -745,16 +879,22 @@ describe("applyPackageJsonBust", () => {
 
 		withTemporaryDirectory((directory) => {
 			writePackageJson(directory, { exports: "./index.js" });
-			applyPackageJsonBust(directory);
+			applyPackageJsonBust(directory, key);
 			seedCaches(directory);
 
 			writePackageJson(directory, { exports: "./other.js" });
-			const outcome = applyPackageJsonBust(directory);
+			const outcome = applyPackageJsonBust(directory, key);
 
 			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
-			expect(fs.existsSync(path.join(directory, CACHE_FILE_TYPE_AWARE))).toBe(false);
-			expect(fs.existsSync(path.join(directory, ".eslintcache"))).toBe(false);
-			expect(fs.existsSync(path.join(directory, CACHE_FILE_FAST))).toBe(true);
+			expect(
+				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, key))),
+			).toBe(false);
+			expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_DEFAULT, key)))).toBe(
+				false,
+			);
+			expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_FAST, key)))).toBe(
+				true,
+			);
 		});
 	});
 
@@ -763,7 +903,7 @@ describe("applyPackageJsonBust", () => {
 
 		withTemporaryDirectory((directory) => {
 			writePackageJson(directory, { exports: "./index.js", scripts: { build: "tsc" } });
-			applyPackageJsonBust(directory);
+			applyPackageJsonBust(directory, key);
 			seedCaches(directory);
 
 			writePackageJson(directory, {
@@ -771,14 +911,57 @@ describe("applyPackageJsonBust", () => {
 				scripts: { build: "tsc --noEmit" },
 				version: "9.9.9",
 			});
-			const outcome = applyPackageJsonBust(directory);
+			const outcome = applyPackageJsonBust(directory, key);
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
-
-			for (const name of ALL_CACHE_FILES) {
-				expect(fs.existsSync(path.join(directory, name))).toBe(true);
-			}
+			expect(everyCacheExists(directory)).toBe(true);
 		});
+	});
+
+	it("lets each variant observe the same bump independently", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const agentKey = resolveCacheKey({ CLAUDECODE: "1" });
+			writePackageJson(directory, { exports: "./index.js" });
+			applyPackageJsonBust(directory, key);
+			applyPackageJsonBust(directory, agentKey);
+
+			seedCaches(directory);
+			for (const name of ALL_CACHE_FILES) {
+				fs.writeFileSync(path.join(directory, cacheFileFor(name, agentKey)), "{}");
+			}
+
+			writePackageJson(directory, { exports: "./other.js" });
+
+			// The no-agent run busts only its own caches, and crucially does not
+			// consume the bump on the agent variant's behalf: a shared state file
+			// would make the second call a no-op and leave the agent's type-aware
+			// caches permanently stale.
+			expect(applyPackageJsonBust(directory, key)).toStrictEqual({
+				busted: true,
+				firstRun: false,
+			});
+			expect(
+				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
+			).toBe(true);
+
+			expect(applyPackageJsonBust(directory, agentKey)).toStrictEqual({
+				busted: true,
+				firstRun: false,
+			});
+			expect(
+				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
+			).toBe(false);
+		});
+	});
+
+	it("stores each variant's hash under its own state file", () => {
+		expect.hasAssertions();
+
+		expect(packageHashStatePath("/project", "aaaa1111")).not.toBe(
+			packageHashStatePath("/project", "bbbb2222"),
+		);
 	});
 
 	it("hashes resolution fields independent of key order", () => {
@@ -1415,7 +1598,7 @@ describe("explicit --type-aware selection in CI", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
 				"oxlint --type-aware .",
-				"ESLINT_TYPE_AWARE=only eslint --cache --cache-location .eslintcache-typeaware " +
+				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
 					"--no-warn-ignored --concurrency off --cache-strategy content .",
 			]);
 		});
@@ -1427,7 +1610,7 @@ describe("explicit --type-aware selection in CI", () => {
 		withTemporaryDirectory((directory) => {
 			expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
 				"oxlint .",
-				"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
 					"--no-warn-ignored --concurrency off --cache-strategy content .",
 			]);
 		});

@@ -9,6 +9,10 @@ import type { TypeAwareMode } from "./types.ts";
 
 /** Inputs to one type-aware invalidation pass. */
 export interface InvalidationRequest {
+	/**
+	 * The config-variant key from `resolveCacheKey`; keys the builder state.
+	 */
+	key: string;
 	/** Normalised paths already dirty by mtime/checksum. */
 	alreadyDirty: ReadonlySet<string>;
 	/**
@@ -60,6 +64,7 @@ export interface InvalidationOutcome {
  * @returns The invalidation outcome.
  */
 export function applyTypeAwareInvalidation({
+	key,
 	alreadyDirty,
 	cache,
 	cacheLocation,
@@ -68,7 +73,7 @@ export function applyTypeAwareInvalidation({
 	mode,
 	targetFiles,
 }: InvalidationRequest): InvalidationOutcome {
-	const result = computeAffectedFiles(cwd, mode);
+	const result = computeAffectedFiles(cwd, mode, key);
 	if (result === undefined) {
 		return { busted: false, firstRun: false, invalidated: [], skipped: true };
 	}
@@ -87,9 +92,9 @@ export function applyTypeAwareInvalidation({
 	// in-project affected set (which counts files this run will never touch).
 	const affectedTargets: Array<string> = [];
 	for (const affected of result.affected) {
-		const key = normalizePath(affected);
-		if (targets.has(key)) {
-			affectedTargets.push(key);
+		const normalized = normalizePath(affected);
+		if (targets.has(normalized)) {
+			affectedTargets.push(normalized);
 		}
 	}
 
@@ -99,7 +104,7 @@ export function applyTypeAwareInvalidation({
 		return { busted: true, firstRun: false, invalidated: [], skipped: false };
 	}
 
-	const invalidated = affectedTargets.filter((key) => !alreadyDirty.has(key));
+	const invalidated = affectedTargets.filter((target) => !alreadyDirty.has(target));
 	if (cache !== undefined) {
 		cache.removeEntries(invalidated);
 	} else {

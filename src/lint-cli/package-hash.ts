@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE } from "./constants.ts";
+import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "./constants.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
 /**
@@ -36,14 +36,21 @@ export interface PackageJsonBustOutcome {
 }
 
 /**
- * Resolve the persisted package.json resolution-hash file. Stored alongside the
- * builder state so it is cleaned with `node_modules`.
+ * Resolve the persisted package.json resolution-hash file for a config variant.
+ * Stored alongside the builder state so it is cleaned with `node_modules`.
+ *
+ * The variant key is part of the path because the stored hash is consumed once:
+ * after the first run that sees a new hash, every later run finds
+ * `stored === hash` and returns early. A shared state file would let the first
+ * variant to run absorb the dependency bump on behalf of all of them, leaving
+ * every cache it did not delete permanently stale with respect to that bump.
  *
  * @param cwd - The consumer project root.
+ * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The absolute path to the stored-hash file.
  */
-export function packageHashStatePath(cwd: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", "package-json-hash");
+export function packageHashStatePath(cwd: string, key: string): string {
+	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `package-json-hash-${key}`);
 }
 
 /**
@@ -77,22 +84,28 @@ export function computePackageJsonHash(cwd: string): string | undefined {
 }
 
 /**
- * Bust the type-aware caches when the root `package.json` resolution surface
- * changed since the last run. Deletes `.eslintcache-typeaware` and
- * `.eslintcache` (both type-aware configs) while leaving `.eslintcache-fast`
- * (syntactic-only) intact, since resolution changes cannot alter a syntactic
- * lint. The first run only stores the hash.
+ * Bust this variant's type-aware caches when the root `package.json`
+ * resolution surface changed since the last run. Deletes
+ * `.eslintcache-typeaware-<key>` and `.eslintcache-<key>` (both type-aware
+ * configs) while leaving `.eslintcache-fast-<key>` (syntactic-only) intact,
+ * since resolution changes cannot alter a syntactic lint. The first run only
+ * stores the hash.
+ *
+ * Only this variant's files are touched, which is why the stored hash is keyed
+ * too: each variant observes the bump independently on its own first run after
+ * it (see {@link packageHashStatePath}).
  *
  * @param cwd - The consumer project root.
+ * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The bust outcome.
  */
-export function applyPackageJsonBust(cwd: string): PackageJsonBustOutcome {
+export function applyPackageJsonBust(cwd: string, key: string): PackageJsonBustOutcome {
 	const hash = computePackageJsonHash(cwd);
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}
 
-	const statePath = packageHashStatePath(cwd);
+	const statePath = packageHashStatePath(cwd, key);
 	const stored = safeRead(statePath);
 	if (stored === hash) {
 		return { busted: false, firstRun: false };
@@ -103,8 +116,8 @@ export function applyPackageJsonBust(cwd: string): PackageJsonBustOutcome {
 		return { busted: false, firstRun: true };
 	}
 
-	fs.rmSync(path.resolve(cwd, CACHE_FILE_TYPE_AWARE), { force: true });
-	fs.rmSync(path.resolve(cwd, CACHE_FILE_DEFAULT), { force: true });
+	fs.rmSync(path.resolve(cwd, cacheFileFor(CACHE_FILE_TYPE_AWARE, key)), { force: true });
+	fs.rmSync(path.resolve(cwd, cacheFileFor(CACHE_FILE_DEFAULT, key)), { force: true });
 	return { busted: true, firstRun: false };
 }
 

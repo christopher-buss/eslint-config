@@ -244,13 +244,33 @@ Other behaviours:
   CPU. The fast pass is cheap per file, so it packs far more files per worker
   (see `FAST_FILES_PER_WORKER`) than the type-aware pass.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
-  `.eslintcache-fast` (fast pass), `.eslintcache-typeaware` (type-aware pass),
-  and `.eslintcache` (the full single-pass config used by `--fix`, CI and
-  `--type-aware=full`). A change to an ESLint/oxlint/Prettier/tsconfig file or a
-  lockfile clears all three; a change to the root `package.json` resolution
-  surface (`exports`, `imports`, `main`, `module`, `types`, `typesVersions`,
-  `dependencies`, `devDependencies`, `peerDependencies`) clears only the
-  type-aware caches (a syntactic lint cannot be affected by resolution).
+  `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
+  (type-aware pass), and `.eslintcache-<key>` (the full single-pass config used
+  by `--fix`, CI and `--type-aware=full`). A change to an
+  ESLint/oxlint/Prettier/tsconfig file or a lockfile clears each cache that is
+  actually older than that change; a change to the root `package.json`
+  resolution surface (`exports`, `imports`, `main`, `module`, `types`,
+  `typesVersions`, `dependencies`, `devDependencies`, `peerDependencies`) clears
+  only the type-aware caches (a syntactic lint cannot be affected by
+  resolution). Add `.eslintcache*` to `.gitignore` — a bare `.eslintcache` entry
+  does not match the suffixed names.
+- Splits every cache by **config variant**. ESLint stores a config hash per
+  cache entry, so two runs that resolve even slightly different configs wipe
+  each other's entries when they share one cache file — an agent session and a
+  human session alternating against one cache re-lint the whole project in both
+  directions, every time. The `<key>` above is an 8-character hash of the inputs
+  that make this preset resolve a different config: agent session, editor
+  session and CI. Each variant gets its own cache (and its own builder /
+  `package.json`-hash state), so nothing is invalidated; the variants simply
+  stop overwriting each other. Git-hook runs deliberately share the plain
+  no-agent variant.
+
+  If your own `eslint.config.*` branches on something the runner cannot see —
+  your own agent/editor check, a feature flag, or an explicit `isAgent`,
+  `isInEditor` or `defaultSeverity` option — set `ISENTINEL_LINT_CACHE_KEY` to a
+  value naming that branch. It is folded into the key, giving those configs
+  separate caches too.
+
 - Runs `--fix` sequentially (`oxlint --fix`, then `eslint --fix`) so two writers
   never race on the same files.
 - Lets every child run to completion and returns non-zero if any failed — an

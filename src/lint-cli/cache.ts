@@ -2,7 +2,7 @@ import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import path from "node:path";
 
-import { ALL_CACHE_FILES } from "./constants.ts";
+import { CACHE_FILE_PREFIX } from "./constants.ts";
 import { toPosix } from "./paths.ts";
 
 /**
@@ -86,18 +86,68 @@ export function isCacheBusted(cacheFilePath: string, bustFiles: Array<string>): 
 }
 
 /**
- * Delete every ESLint cache file the runner manages.
+ * List every ESLint cache file present in the working directory, matched by
+ * prefix rather than by exact name: each pass's cache carries a config-variant
+ * key suffix, so the set on disk is open-ended and an exact-name list would
+ * miss (and therefore leak) every variant but the current run's.
+ *
+ * @param cwd - The working directory containing the cache files.
+ * @returns Absolute paths to the cache files found.
+ */
+export function listCacheFiles(cwd: string): Array<string> {
+	let entries: Array<string>;
+	try {
+		entries = fs.readdirSync(cwd);
+	} catch {
+		return [];
+	}
+
+	return entries
+		.filter((entry) => entry.startsWith(CACHE_FILE_PREFIX))
+		.map((entry) => path.resolve(cwd, entry));
+}
+
+/**
+ * Delete every ESLint cache file the runner manages, across all variants.
  *
  * @param cwd - The working directory containing the cache files.
  */
 export function clearAllCaches(cwd: string): void {
-	for (const name of ALL_CACHE_FILES) {
-		try {
-			fs.rmSync(path.resolve(cwd, name), { force: true });
-		} catch {
-			// Best effort; ESLint will rebuild the cache regardless.
-		}
+	for (const cacheFilePath of listCacheFiles(cwd)) {
+		removeCacheFile(cacheFilePath);
 	}
+}
+
+/**
+ * Delete the individually stale cache files in the working directory.
+ *
+ * Deliberately per-file rather than all-or-nothing: variants this run did not
+ * select still sit on disk, and {@link isCacheStale} reports a missing file as
+ * fresh. An all-or-nothing gate over only the selected passes therefore lets an
+ * unselected-but-stale variant survive a config edit, then wipes every fresh
+ * variant the next time that stale one is selected — the same mutual
+ * invalidation the variant split exists to remove, relocated to the config-edit
+ * path.
+ *
+ * @param cwd - The working directory containing the cache files.
+ * @param newestBustMtimeMs - The newest bust-file mtime (see {@link maxMtimeMs}).
+ * @returns The absolute paths deleted.
+ */
+export function sweepStaleCaches(
+	cwd: string,
+	newestBustMtimeMs: number | undefined,
+): Array<string> {
+	const removed: Array<string> = [];
+	for (const cacheFilePath of listCacheFiles(cwd)) {
+		if (!isCacheStale(cacheFilePath, newestBustMtimeMs)) {
+			continue;
+		}
+
+		removeCacheFile(cacheFilePath);
+		removed.push(cacheFilePath);
+	}
+
+	return removed;
 }
 
 /**
@@ -180,6 +230,14 @@ function safeMtimeMs(filePath: string): number | undefined {
 		return fs.statSync(filePath).mtimeMs;
 	} catch {
 		return undefined;
+	}
+}
+
+function removeCacheFile(cacheFilePath: string): void {
+	try {
+		fs.rmSync(cacheFilePath, { force: true });
+	} catch {
+		// Best effort; ESLint will rebuild the cache regardless.
 	}
 }
 
