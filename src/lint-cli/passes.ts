@@ -12,8 +12,11 @@ import type { LintCliOptions, ToolLabel, TypeAwareMode } from "./types.ts";
  * mode branches just pick descriptors.
  */
 export interface PassDescriptor {
-	/** ESLint cache file this pass reads and writes. */
-	cacheFile: string;
+	/**
+	 * Base name of the ESLint cache this pass reads and writes. The real file
+	 * name adds the run's config-variant key; see `cacheFileFor`.
+	 */
+	cacheFileBase: string;
 	/**
 	 * Resolve the files-per-worker for this pass from the shared limits and the
 	 * environment. The fast pass uses its own higher break-even.
@@ -43,7 +46,7 @@ export interface PassDescriptor {
  * The syntactic-only fast pass (`ESLINT_TYPE_AWARE=off`, `.eslintcache-fast`).
  */
 export const FAST_PASS: PassDescriptor = {
-	cacheFile: CACHE_FILE_FAST,
+	cacheFileBase: CACHE_FILE_FAST,
 	filesPerWorker: (_limits, environment) => resolveFastFilesPerWorker(environment),
 	invalidation: "none",
 	label: "fast",
@@ -53,7 +56,7 @@ export const FAST_PASS: PassDescriptor = {
 
 /** The type-aware pass (`ESLINT_TYPE_AWARE=only`, `.eslintcache-typeaware`). */
 export const TYPED_PASS: PassDescriptor = {
-	cacheFile: CACHE_FILE_TYPE_AWARE,
+	cacheFileBase: CACHE_FILE_TYPE_AWARE,
 	filesPerWorker: (limits) => limits.filesPerWorker,
 	invalidation: "only",
 	label: "typed",
@@ -63,7 +66,7 @@ export const TYPED_PASS: PassDescriptor = {
 
 /** The full-config pass (env unset, `.eslintcache`): CI, `--fix`, `=full`. */
 export const FULL_PASS: PassDescriptor = {
-	cacheFile: CACHE_FILE_DEFAULT,
+	cacheFileBase: CACHE_FILE_DEFAULT,
 	filesPerWorker: (limits) => limits.filesPerWorker,
 	invalidation: "full",
 	label: "eslint",

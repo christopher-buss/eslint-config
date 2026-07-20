@@ -12,18 +12,28 @@ local sharedGuards = new Mapping<String, Step> {
     }
 }
 
-local oxlint = new Step {
-    glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs")
-    check = "pnpm exec oxlint {{files}}"
-    fix = "pnpm exec oxlint --fix {{files}}"
+// `isentinel-lint` shims to `dist/lint-cli.mjs`, so the bin does not exist
+// until something builds it — a fresh clone would otherwise fail the lint step.
+// Skips `nr gen`: the typegen files it writes are tracked, so they are already
+// present, and regenerating them here would rewrite tracked files mid-commit.
+// `tsdown.config.ts` sets `clean: true`, so `dist` is emptied at build start
+// and is briefly absent — the lint step's `depends` is what keeps that window
+// from being observable, not the omitted `--clean` flag.
+local build = new Step {
+    check = "pnpm exec tsdown --dts"
     shell = bash
-    env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
 }
 
+// The hybrid CLI sequences oxlint then ESLint itself, dropping the
+// oxlint-covered rules from the ESLint pass, so a separate oxlint step would
+// only double-lint. GIT_HOOK pins hook runs to the no-agent cache variant.
+// `depends` is load-bearing: hk runs steps concurrently by default, so without
+// it the build could still be writing `dist` as this step loads it.
 local lint = new Step {
     glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.jsonc", "*.md", "*.toml", "*.yaml", "*.yml")
-    check = "eslint --cache --no-warn-ignored {{files}}"
-    fix = "eslint --cache --fix --no-warn-ignored {{files}}"
+    depends = List("build")
+    check = "isentinel-lint {{files}}"
+    fix = "isentinel-lint --fix {{files}}"
     shell = bash
     env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
 }
@@ -55,7 +65,7 @@ hooks {
         steps {
             ...sharedGuards
             ["renovate-config"] = renovateConfig
-            ["oxlint"] = oxlint
+            ["build"] = build
             ["lint"] = lint
             ["typecheck"] = typecheck
             ["test"] = test
@@ -64,7 +74,7 @@ hooks {
     ["pre-push"] {
         steps {
             ...sharedGuards
-            ["oxlint"] = oxlint
+            ["build"] = build
             ["lint"] = lint
             ["typecheck"] = typecheck
         }
@@ -87,7 +97,7 @@ hooks {
         steps {
             ...sharedGuards
             ["renovate-config"] = renovateConfig
-            ["oxlint"] = oxlint
+            ["build"] = build
             ["lint"] = lint
             ["typecheck"] = typecheck
         }

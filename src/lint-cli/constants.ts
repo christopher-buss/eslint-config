@@ -20,21 +20,42 @@ export const DEFAULT_FAST_FILES_PER_WORKER = 800;
  */
 export const AFFECTED_BUST_THRESHOLD = 1000;
 
-/** ESLint cache file used when no type-aware mode is selected. */
-export const CACHE_FILE_DEFAULT = ".eslintcache";
+/**
+ * Base name of every ESLint cache file the runner manages. Each real file adds
+ * a pass suffix and a config-variant key (see {@link cacheFileFor}), so this
+ * doubles as the prefix the whole-cache sweep matches on.
+ */
+export const CACHE_FILE_PREFIX = ".eslintcache";
 
-/** ESLint cache file used for `--type-aware=off` (syntactic-only) runs. */
-export const CACHE_FILE_FAST = ".eslintcache-fast";
+/** ESLint cache base name used when no type-aware mode is selected. */
+export const CACHE_FILE_DEFAULT = CACHE_FILE_PREFIX;
 
-/** ESLint cache file used for `--type-aware=only` runs. */
-export const CACHE_FILE_TYPE_AWARE = ".eslintcache-typeaware";
+/** ESLint cache base name used for `--type-aware=off` (syntactic-only) runs. */
+export const CACHE_FILE_FAST = `${CACHE_FILE_PREFIX}-fast`;
 
-/** Every ESLint cache file the runner manages, cleared on a config change. */
+/** ESLint cache base name used for `--type-aware=only` runs. */
+export const CACHE_FILE_TYPE_AWARE = `${CACHE_FILE_PREFIX}-typeaware`;
+
+/** Every ESLint cache base name the runner manages. */
 export const ALL_CACHE_FILES = [
 	CACHE_FILE_DEFAULT,
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
 ] as const;
+
+/**
+ * Suffix a cache base name with the run's config-variant key. Two runs whose
+ * resolved ESLint configs differ get different keys and therefore different
+ * files, so neither can invalidate the other's entries via ESLint's per-entry
+ * `hashOfConfig`.
+ *
+ * @param baseName - The pass's cache base name (see {@link ALL_CACHE_FILES}).
+ * @param key - The variant key from `resolveCacheKey`.
+ * @returns The keyed cache file name, relative to the working directory.
+ */
+export function cacheFileFor(baseName: string, key: string): string {
+	return `${baseName}-${key}`;
+}
 
 // The extension arrays live in `src/globs.ts` next to the glob patterns they
 // mirror, and are re-exported here under the names the lint CLI uses:
