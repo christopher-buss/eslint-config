@@ -4,7 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 import picomatch from "picomatch";
 
-import { CACHE_BUST_PATTERNS, LINTABLE_EXTENSIONS, TYPE_AWARE_EXTENSIONS } from "./constants.ts";
+import {
+	CACHE_BUST_PATTERNS,
+	ESLINT_CONFIG_FILE_PATTERN,
+	LINTABLE_EXTENSIONS,
+	TYPE_AWARE_EXTENSIONS,
+} from "./constants.ts";
 import { toPosix } from "./paths.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
@@ -44,6 +49,13 @@ const TYPE_AWARE_EXTENSION_SET = new Set<string>(
 export interface RepoFiles {
 	/** Absolute paths of every cache-busting file (whole project). */
 	bustFiles: Array<string>;
+	/**
+	 * The flat-config entry-point subset of {@link RepoFiles.bustFiles} — the
+	 * files whose change should invalidate a config-derived signal (the hybrid
+	 * status and the config-drift hash). Derived once here so consumers do not
+	 * each re-filter `bustFiles`.
+	 */
+	configFiles: Array<string>;
 	/** Absolute paths of the lintable files within the lint targets. */
 	lintable: Array<string>;
 	/**
@@ -92,7 +104,9 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 		}
 	}
 
-	return { bustFiles, lintable, targetsOutsideCwd, typeAware };
+	const configFiles = bustFiles.filter(isConfigEntryPoint);
+
+	return { bustFiles, configFiles, lintable, targetsOutsideCwd, typeAware };
 }
 
 /**
@@ -106,6 +120,16 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
  */
 export function collectLintableFiles(cwd: string, targets: Array<string>): Array<string> {
 	return collectRepoFiles(cwd, targets).lintable;
+}
+
+/**
+ * Whether an absolute path is a flat-config entry point.
+ *
+ * @param file - The absolute path to test.
+ * @returns True when the basename matches `eslint.config.*`.
+ */
+function isConfigEntryPoint(file: string): boolean {
+	return ESLINT_CONFIG_FILE_PATTERN.test(path.basename(file));
 }
 
 /**

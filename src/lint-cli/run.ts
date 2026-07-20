@@ -209,7 +209,7 @@ export function plan(
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyConfigDriftBust(cwd, key, files.bustFiles);
+		applyConfigDriftBust(cwd, key, files.configFiles);
 	}
 
 	if (canMutateCaches && hasTypeAwarePass) {

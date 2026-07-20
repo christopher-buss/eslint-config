@@ -4,13 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type * as TypeScript from "typescript";
 
-import {
-	CACHE_FILE_DEFAULT,
-	CACHE_FILE_FAST,
-	CACHE_FILE_TYPE_AWARE,
-	cacheFileFor,
-	ESLINT_CONFIG_FILE_PATTERN,
-} from "./constants.ts";
+import { ALL_CACHE_FILES, cacheFileFor } from "./constants.ts";
 import { loadTypescript } from "./typescript.ts";
 
 /**
@@ -29,6 +23,26 @@ export interface ConfigDriftOutcome {
 }
 
 /**
+ * One file in the config import closure, read once for both imports and hash.
+ */
+interface ClosureFile {
+	/** The file's UTF-8 content. */
+	content: string;
+	/** The absolute, normalized path. */
+	file: string;
+}
+
+/** The TypeScript state threaded through the closure walk. */
+interface ClosureResolver {
+	/** The shared module-resolution cache. */
+	cache: TypeScript.ModuleResolutionCache;
+	/** The compiler options resolved for module lookup. */
+	options: TypeScript.CompilerOptions;
+	/** The consumer's resolved TypeScript module. */
+	ts: typeof TypeScript;
+}
+
+/**
  * Resolve the persisted config-hash file for a config variant. Stored alongside
  * the builder state so it is cleaned with `node_modules`, and keyed like
  * `packageHashStatePath`: the stored hash is consumed once, so a shared file
@@ -40,16 +54,6 @@ export interface ConfigDriftOutcome {
  */
 export function configHashStatePath(cwd: string, key: string): string {
 	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `config-hash-${key}`);
-}
-
-/**
- * The flat-config entry-point subset of the cache-bust files — the walk roots.
- *
- * @param bustFiles - The whole cache-bust file set.
- * @returns Every bust file whose basename is a flat-config entry point.
- */
-export function configEntryPoints(bustFiles: Array<string>): Array<string> {
-	return bustFiles.filter((file) => ESLINT_CONFIG_FILE_PATTERN.test(path.basename(file)));
 }
 
 /**
@@ -69,12 +73,11 @@ export function configEntryPoints(bustFiles: Array<string>): Array<string> {
  * point exists, so the caller treats the check as a no-op.
  *
  * @param cwd - The consumer project root.
- * @param bustFiles - The whole cache-bust file set (config roots are derived).
+ * @param configFiles - The flat-config entry points (see `RepoFiles.configFiles`).
  * @returns The hex digest, or `undefined` when unavailable.
  */
-export function computeConfigHash(cwd: string, bustFiles: Array<string>): string | undefined {
-	const roots = configEntryPoints(bustFiles);
-	if (roots.length === 0) {
+export function computeConfigHash(cwd: string, configFiles: Array<string>): string | undefined {
+	if (configFiles.length === 0) {
 		return undefined;
 	}
 
@@ -83,22 +86,20 @@ export function computeConfigHash(cwd: string, bustFiles: Array<string>): string
 		return undefined;
 	}
 
-	const hash = crypto.createHash("sha256");
-	let hashedAny = false;
-	for (const file of discoverConfigClosure(ts, cwd, roots)) {
-		const content = safeReadUtf8(file);
-		if (content === undefined) {
-			continue;
-		}
+	const closure = discoverConfigClosure(ts, cwd, configFiles);
+	if (closure.length === 0) {
+		return undefined;
+	}
 
+	const hash = crypto.createHash("sha256");
+	for (const { content, file } of closure) {
 		hash.update(file);
 		hash.update("\0");
 		hash.update(content);
 		hash.update("\0");
-		hashedAny = true;
 	}
 
-	return hashedAny ? hash.digest("hex") : undefined;
+	return hash.digest("hex");
 }
 
 /**
@@ -113,15 +114,15 @@ export function computeConfigHash(cwd: string, bustFiles: Array<string>): string
  *
  * @param cwd - The consumer project root.
  * @param key - The config-variant key from `resolveCacheKey`.
- * @param bustFiles - The whole cache-bust file set (config roots are derived).
+ * @param configFiles - The flat-config entry points (see `RepoFiles.configFiles`).
  * @returns The drift outcome.
  */
 export function applyConfigDriftBust(
 	cwd: string,
 	key: string,
-	bustFiles: Array<string>,
+	configFiles: Array<string>,
 ): ConfigDriftOutcome {
-	const hash = computeConfigHash(cwd, bustFiles);
+	const hash = computeConfigHash(cwd, configFiles);
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}
@@ -137,7 +138,7 @@ export function applyConfigDriftBust(
 		return { busted: false, firstRun: true };
 	}
 
-	for (const base of [CACHE_FILE_FAST, CACHE_FILE_TYPE_AWARE, CACHE_FILE_DEFAULT]) {
+	for (const base of ALL_CACHE_FILES) {
 		fs.rmSync(path.resolve(cwd, cacheFileFor(base, key)), { force: true });
 	}
 
@@ -175,33 +176,29 @@ function enqueueUnvisited(
 }
 
 /**
- * Resolve every in-project import of one file. `node_modules` results and
- * unresolvable specifiers are dropped, so a dependency swap (covered by the
- * lockfile bust) never enters the closure.
+ * Resolve every in-project import found in one file's already-read content.
+ * `node_modules` results and unresolvable specifiers are dropped, so a
+ * dependency swap (covered by the lockfile bust) never enters the closure.
  *
- * @param ts - The consumer's resolved TypeScript module.
- * @param options - The compiler options resolved for module lookup.
+ * @param resolver - The shared TypeScript resolution state.
  * @param file - The absolute path of the importing file.
+ * @param content - The importing file's content.
  * @returns The absolute, normalized in-project import targets.
  */
-function localImportsOf(
-	ts: typeof TypeScript,
-	options: TypeScript.CompilerOptions,
+function importsOf(
+	{ cache, options, ts }: ClosureResolver,
 	file: string,
+	content: string,
 ): Array<string> {
-	const text = safeReadUtf8(file);
-	if (text === undefined) {
-		return [];
-	}
-
 	const targets: Array<string> = [];
 	const nodeModules = `${path.sep}node_modules${path.sep}`;
-	for (const reference of ts.preProcessFile(text, true, true).importedFiles) {
+	for (const reference of ts.preProcessFile(content, true, true).importedFiles) {
 		const resolved = ts.resolveModuleName(
 			reference.fileName,
 			file,
 			options,
 			ts.sys,
+			cache,
 		).resolvedModule;
 		if (resolved === undefined || resolved.isExternalLibraryImport === true) {
 			continue;
@@ -237,45 +234,65 @@ function resolveCompilerOptions(ts: typeof TypeScript, cwd: string): TypeScript.
 		return {};
 	}
 
-	return ts.parseJsonConfigFileContent(read.config, ts.sys, path.dirname(configPath)).options;
+	// Only `.options` is needed, so a no-op `readDirectory` skips the full
+	// source-tree glob `parseJsonConfigFileContent` would otherwise run to build
+	// the (discarded) `.fileNames`; `extends` still resolves via readFile.
+	const host: TypeScript.ParseConfigHost = {
+		fileExists: (file) => ts.sys.fileExists(file),
+		readDirectory: () => [],
+		readFile: (file) => ts.sys.readFile(file),
+		useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
+	};
+	return ts.parseJsonConfigFileContent(read.config, host, path.dirname(configPath)).options;
 }
 
 /**
  * Walk the local import closure of the config entry points. BFS with a
  * normalized-path visited set; the roots are included so their own content
- * contributes to the hash.
+ * contributes to the hash. Each file is read exactly once — the content feeds
+ * both import extraction and the hash.
  *
  * @param ts - The consumer's resolved TypeScript module.
  * @param cwd - The consumer project root.
  * @param roots - The config entry-point paths to start from.
- * @returns The absolute, normalized closure paths (roots included).
+ * @returns The readable closure files (roots included), each with its content.
  */
 function discoverConfigClosure(
 	ts: typeof TypeScript,
 	cwd: string,
 	roots: Array<string>,
-): Array<string> {
+): Array<ClosureFile> {
 	const options = resolveCompilerOptions(ts, cwd);
+	const resolver: ClosureResolver = {
+		cache: ts.createModuleResolutionCache(cwd, (fileName) => fileName, options),
+		options,
+		ts,
+	};
 	const visited = new Set<string>();
 	const queue: Array<string> = [];
-	for (const root of roots) {
-		const normalized = path.normalize(root);
-		if (!visited.has(normalized)) {
-			visited.add(normalized);
-			queue.push(normalized);
-		}
-	}
+	enqueueUnvisited(
+		roots.map((root) => path.normalize(root)),
+		visited,
+		queue,
+	);
 
+	const files: Array<ClosureFile> = [];
 	while (queue.length > 0 && visited.size <= MAX_CLOSURE_FILES) {
 		const file = queue.shift();
 		if (file === undefined) {
 			break;
 		}
 
-		enqueueUnvisited(localImportsOf(ts, options, file), visited, queue);
+		const content = safeReadUtf8(file);
+		if (content === undefined) {
+			continue;
+		}
+
+		files.push({ content, file });
+		enqueueUnvisited(importsOf(resolver, file, content), visited, queue);
 	}
 
-	return [...visited].sort();
+	return files;
 }
 
 function writeHash(statePath: string, hash: string): void {
