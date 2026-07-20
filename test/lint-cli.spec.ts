@@ -514,6 +514,27 @@ describe("buildShellCommand", () => {
 			'node "C:/a b/eslint.js" .',
 		);
 	});
+
+	it("doubles trailing backslashes so they do not escape the closing quote", () => {
+		expect.hasAssertions();
+
+		// `.\src\` naively quotes to `".\src\"`, whose trailing `\"` cmd.exe
+		// reads as an escaped quote — ESLint then receives the literal `.\src"`.
+		expect(buildShellCommand("node", "C:/eslint.js", [".\\src\\"], "win32")).toBe(
+			'node C:/eslint.js ".\\src\\\\"',
+		);
+		expect(buildShellCommand("node", "C:/eslint.js", ["C:\\a b\\"], "win32")).toBe(
+			'node C:/eslint.js "C:\\a b\\\\"',
+		);
+	});
+
+	it("doubles backslashes that precede an embedded quote", () => {
+		expect.hasAssertions();
+
+		expect(buildShellCommand("node", "C:/eslint.js", [String.raw`a\"b`], "win32")).toBe(
+			String.raw`node C:/eslint.js "a\\\"b"`,
+		);
+	});
 });
 
 function printLines(

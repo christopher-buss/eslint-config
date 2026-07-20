@@ -199,5 +199,22 @@ function quoteWindows(token: string): string {
 		return token;
 	}
 
-	return `"${token.replaceAll('"', '\\"')}"`;
+	// Backslash runs are only special before a quote, so double them there and
+	// before the closing quote — otherwise a token ending in `\` (for example the
+	// Windows path `.\src\`) escapes that closing quote and merges with the next
+	// argument.
+	let escaped = "";
+	let slashes = 0;
+	for (const char of token) {
+		if (char === "\\") {
+			slashes += 1;
+			escaped += char;
+			continue;
+		}
+
+		escaped += char === '"' ? `${"\\".repeat(slashes)}\\"` : char;
+		slashes = 0;
+	}
+
+	return `"${escaped}${"\\".repeat(slashes)}"`;
 }
