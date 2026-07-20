@@ -575,6 +575,11 @@ export interface RuleOptions {
    */
   'eslint-plugin/require-meta-has-suggestions'?: Linter.RuleEntry<[]>
   /**
+   * require rules to implement a `meta.languages` property
+   * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/require-meta-languages.md
+   */
+  'eslint-plugin/require-meta-languages'?: Linter.RuleEntry<[]>
+  /**
    * require rules to implement a `meta.schema` property
    * @see https://github.com/eslint-community/eslint-plugin-eslint-plugin/tree/HEAD/docs/rules/require-meta-schema.md
    */

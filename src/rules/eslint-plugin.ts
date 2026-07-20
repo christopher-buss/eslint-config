@@ -41,6 +41,7 @@ export function eslintPluginRules(): TypedFlatConfigItem["rules"] {
 		"eslint-plugin/require-meta-docs-url": "off",
 		"eslint-plugin/require-meta-fixable": "error",
 		"eslint-plugin/require-meta-has-suggestions": "error",
+		"eslint-plugin/require-meta-languages": "error",
 		"eslint-plugin/require-meta-schema": "error",
 		"eslint-plugin/require-meta-schema-description": "error",
 		"eslint-plugin/require-meta-type": "error",
