@@ -1,4 +1,4 @@
-// cspell:words tsbuildinfo typeaware globals CLAUDECODE
+// cspell:words tsbuildinfo typeaware globals CLAUDECODE normalised buildinfo
 import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -85,6 +85,52 @@ function withFixture(files: Record<string, string>, run: (directory: string) => 
 	}
 }
 
+/**
+ * A solution-style entry tsconfig whose files all live behind `references`, one
+ * of them behind a *nested* solution — the shape that made builder invalidation
+ * a silent no-op before reference resolution recursed.
+ */
+const SOLUTION_FIXTURE = {
+	"app/b.ts": "import { a } from '../src/a';\nexport function b() { return a(); }\n",
+	"app/tsconfig.json": JSON.stringify({
+		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		include: ["."],
+	}),
+	"nested-solution/tsconfig.json": JSON.stringify({
+		files: [],
+		include: [],
+		references: [{ path: "../app" }],
+	}),
+	"src/a.ts": "export function a() { return 1; }\n",
+	"tsconfig.json": JSON.stringify({
+		files: [],
+		include: [],
+		references: [{ path: "./tsconfig.lib.json" }, { path: "./nested-solution" }],
+	}),
+	"tsconfig.lib.json": JSON.stringify({
+		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		include: ["src"],
+	}),
+};
+
+/**
+ * Builder state files matching a prefix. Every project's buildinfo is suffixed
+ * with a digest of its tsconfig path, which is a temp directory here and so
+ * cannot be spelled out — tests match the stable prefix and count instead.
+ *
+ * @param directory - The fixture project root.
+ * @param prefix - The `tsbuildinfo-<mode>-<key>` prefix to match.
+ * @returns The matching file names, empty when the cache directory is absent.
+ */
+function builderStateFiles(directory: string, prefix: string): Array<string> {
+	const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
+	if (!fs.existsSync(stateDirectory)) {
+		return [];
+	}
+
+	return fs.readdirSync(stateDirectory).filter((name) => name.startsWith(prefix));
+}
+
 function seedCache(cacheFile: string, files: Array<string>): void {
 	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
 	for (const file of files) {
@@ -158,6 +204,62 @@ describe("computeAffectedFiles", () => {
 			expect(computeAffectedFiles(directory, undefined, TEST_KEY)).toBeUndefined();
 		});
 	});
+
+	it("resolves files through a nested solution-style reference graph", () => {
+		expect.hasAssertions();
+
+		withFixture(SOLUTION_FIXTURE, (directory) => {
+			const first = computeAffectedFiles(directory, undefined, TEST_KEY);
+
+			expect(first?.firstRun).toBe(true);
+			// The entry tsconfig owns no files; both of these come from a
+			// referenced project, `app/b.ts` via a nested solution-style one.
+			// `affected` holds OS-normalised paths, so compare in that form.
+			expect(first?.affected).toContain(path.normalize(path.join(directory, "src/a.ts")));
+			expect(first?.affected).toContain(path.normalize(path.join(directory, "app/b.ts")));
+		});
+	});
+
+	it("keeps builder state per referenced project", () => {
+		expect.hasAssertions();
+
+		withFixture(SOLUTION_FIXTURE, (directory) => {
+			computeAffectedFiles(directory, "only", TEST_KEY);
+
+			// One per file-owning project (lib + app); the file-less entry
+			// tsconfig contributes no state of its own.
+			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(
+				2,
+			);
+		});
+	});
+
+	it("does not report first-run when only some projects are new", () => {
+		expect.hasAssertions();
+
+		withFixture(SOLUTION_FIXTURE, (directory) => {
+			// Warm every project, then drop one project's state so it looks newly
+			// added while its siblings stay warm — the shape of a solution that
+			// gains a reference.
+			computeAffectedFiles(directory, "only", TEST_KEY);
+			const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
+			const prefix = `tsbuildinfo-typeaware-${TEST_KEY}`;
+			const stateFiles = builderStateFiles(directory, prefix);
+
+			expect(stateFiles.length).toBeGreaterThan(1);
+
+			const [firstState = ""] = stateFiles;
+			fs.rmSync(path.join(stateDirectory, firstState));
+
+			const result = computeAffectedFiles(directory, "only", TEST_KEY);
+
+			// The run is first-run only when NO project had prior state.
+			// Reporting it here (as an OR-fold across projects would) would make
+			// the caller discard the warm projects' drained affected sets while
+			// their builder state had already advanced — the stale-cache defect.
+			expect(result?.firstRun).toBe(false);
+		});
+	});
 });
 
 describe("applyTypeAwareInvalidation", () => {
@@ -226,6 +328,27 @@ describe("applyTypeAwareInvalidation", () => {
 				expect(cacheHasEntry(cacheFile, fileC)).toBe(false);
 			},
 		);
+	});
+
+	it("invalidates an importer in another referenced project", () => {
+		expect.hasAssertions();
+
+		withFixture(SOLUTION_FIXTURE, (directory) => {
+			const cacheFile = path.join(directory, ".eslintcache");
+			const fileA = path.join(directory, "src/a.ts");
+			const fileB = path.join(directory, "app/b.ts");
+			computeAffectedFiles(directory, undefined, TEST_KEY);
+			seedCache(cacheFile, [fileA, fileB]);
+			fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
+			touch(fileA);
+
+			const dirty = new Set([normalizePath(fileA)]);
+			const outcome = invalidate(directory, [fileA, fileB], dirty);
+
+			expect(outcome.busted).toBe(false);
+			expect(outcome.invalidated).toContain(normalizePath(fileB));
+			expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
+		});
 	});
 
 	it("invalidates everything on a global-augmentation edit", () => {
@@ -320,14 +443,9 @@ describe("applyTypeAwareInvalidation", () => {
 				expect(outcome.firstRun).toBe(true);
 				expect(outcome.busted).toBe(false);
 				expect(outcome.invalidated).toStrictEqual([]);
-				expect(
-					fs.existsSync(
-						path.join(
-							directory,
-							`node_modules/.cache/isentinel-lint/tsbuildinfo-full-${TEST_KEY}`,
-						),
-					),
-				).toBe(true);
+				expect(builderStateFiles(directory, `tsbuildinfo-full-${TEST_KEY}`)).toHaveLength(
+					1,
+				);
 				expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
 				expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
 			},
@@ -486,7 +604,7 @@ describe("composeCommands typed-pass skip", () => {
 });
 
 describe("plan mutation", () => {
-	const buildInfo = `node_modules/.cache/isentinel-lint/tsbuildinfo-typeaware-${TEST_KEY}`;
+	const buildInfo = `tsbuildinfo-typeaware-${TEST_KEY}`;
 
 	it("performs no I/O mutation in read-only (print) mode", () => {
 		expect.hasAssertions();
@@ -510,13 +628,13 @@ describe("plan mutation", () => {
 					"typed",
 				]);
 				// Read-only planning never runs the builder or deletes caches.
-				expect(fs.existsSync(path.join(directory, buildInfo))).toBe(false);
+				expect(builderStateFiles(directory, buildInfo)).toHaveLength(0);
 				expect(fs.existsSync(cacheFile)).toBe(true);
 
 				// The mutating plan, by contrast, runs the builder.
 				withoutGitEnvironment(() => plan(parseArguments([]), directory, {}, true));
 
-				expect(fs.existsSync(path.join(directory, buildInfo))).toBe(true);
+				expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
 			},
 		);
 	});
@@ -624,14 +742,12 @@ describe("per-variant cache isolation", () => {
 			computeAffectedFiles(directory, "only", TEST_KEY);
 			computeAffectedFiles(directory, "only", AGENT_KEY);
 
-			const stateDirectory = path.join(directory, "node_modules", ".cache", "isentinel-lint");
-
-			expect(
-				fs.existsSync(path.join(stateDirectory, `tsbuildinfo-typeaware-${TEST_KEY}`)),
-			).toBe(true);
-			expect(
-				fs.existsSync(path.join(stateDirectory, `tsbuildinfo-typeaware-${AGENT_KEY}`)),
-			).toBe(true);
+			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(
+				1,
+			);
+			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${AGENT_KEY}`)).toHaveLength(
+				1,
+			);
 		});
 	});
 });
