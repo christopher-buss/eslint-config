@@ -20,6 +20,9 @@ export const DEFAULT_FAST_FILES_PER_WORKER = 800;
  */
 export const AFFECTED_BUST_THRESHOLD = 1000;
 
+/** Matches a flat-config entry-point basename (`eslint.config.*`). */
+export const ESLINT_CONFIG_FILE_PATTERN = /^eslint\.config\./;
+
 /**
  * Base name of every ESLint cache file the runner manages. Each real file adds
  * a pass suffix and a config-variant key (see {@link cacheFileFor}), so this

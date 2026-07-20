@@ -4,13 +4,11 @@ import path from "node:path";
 import process from "node:process";
 
 import { maxMtimeMs } from "./cache.ts";
+import { ESLINT_CONFIG_FILE_PATTERN } from "./constants.ts";
 import type { RepoFiles } from "./files.ts";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "./hybrid-status.ts";
 import type { HybridStatus } from "./hybrid-status.ts";
 import { resolveLocalBin } from "./resolve.ts";
-
-/** Matches the flat-config entry point (`eslint.config.js`, `.ts`, `.mjs`…). */
-const ESLINT_CONFIG_FILE_PATTERN = /^eslint\.config\./;
 
 /**
  * The stderr warning emitted when the resolved ESLint config is not hybrid, so
