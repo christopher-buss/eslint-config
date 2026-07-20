@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { isCi, isInAgentSession, isInEditorEnvironment } from "../utils.ts";
 
 /** Length of the hex digest slice used to suffix cache and state files. */
-const CACHE_KEY_LENGTH = 8;
+export const CACHE_KEY_LENGTH = 8;
 
 /**
  * Environment variable a consumer sets to fold its own config branches into the
