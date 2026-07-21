@@ -134,6 +134,33 @@ export function withoutIgnored(files: RepoFiles, ignored: ReadonlySet<string>): 
 }
 
 /**
+ * Restrict explicit lint targets to the ones oxlint could lint. Oxlint only
+ * handles the TS/JS family, and exits non-zero with "No files found to lint"
+ * when every path it was handed resolves to nothing — so a hook run over a
+ * `package.json`-only change would fail on a file oxlint was never going to
+ * lint. A path is kept when its extension is type-aware, when it has no
+ * extension, or when it is an existing directory (either may hold TS/JS files).
+ *
+ * @param cwd - The working directory to resolve targets against.
+ * @param targets - The explicit lint target paths.
+ * @returns The subset oxlint should receive.
+ */
+export function oxlintTargets(cwd: string, targets: Array<string>): Array<string> {
+	return targets.filter((target) => {
+		const extension = path.extname(target).toLowerCase();
+		if (extension === "" || TYPE_AWARE_EXTENSION_SET.has(extension)) {
+			return true;
+		}
+
+		try {
+			return fs.statSync(path.resolve(cwd, target)).isDirectory();
+		} catch {
+			return false;
+		}
+	});
+}
+
+/**
  * Collect the absolute paths of lintable files under `targets`, honouring
  * `.gitignore` (via `git ls-files`) when inside a git repository. Thin wrapper
  * over {@link collectRepoFiles}.

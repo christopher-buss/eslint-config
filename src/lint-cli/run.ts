@@ -19,7 +19,7 @@ import {
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
 import { applyConfigDriftBust, computeConfigHash } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
-import { collectRepoFiles, withoutIgnored } from "./files.ts";
+import { collectRepoFiles, oxlintTargets, withoutIgnored } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
 import { resolveOxlintRun } from "./hybrid.ts";
 import { resolveIgnoredFiles } from "./ignored.ts";
@@ -91,6 +91,8 @@ export interface RunPlan {
 	ci: boolean;
 	/** Whether the oxlint child runs. */
 	oxlint: boolean;
+	/** The paths the oxlint child receives (see `oxlintTargets`). */
+	oxlintPaths: Array<string>;
 	/**
 	 * A stderr warning about the oxlint decision (non-hybrid config drop or an
 	 * undeterminable hybrid status), or `undefined`.
@@ -160,16 +162,23 @@ export function plan(
 ): RunPlan {
 	const ci = isCi(environment);
 	const key = resolveCacheKey(environment);
-	const runOxlint = !options.eslint;
 	const runEslint = !options.oxlint;
 	const oxlintTypeAware = resolveOxlintTypeAware(options);
 	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
+
+	// Targets oxlint cannot lint (a `package.json`-only commit, say) are dropped,
+	// and oxlint is skipped outright when nothing survives — handed only such
+	// paths it exits non-zero on "No files found to lint", failing a hook over a
+	// file it was never going to lint. The default target `.` always survives.
+	const oxlintPaths = oxlintTargets(cwd, options.paths);
+	const runOxlint = !options.eslint && oxlintPaths.length > 0;
 
 	if (!runEslint) {
 		return {
 			agentsFormatterPath,
 			ci,
 			oxlint: runOxlint,
+			oxlintPaths,
 			oxlintReason: undefined,
 			oxlintTypeAware,
 			passes: [],
@@ -253,6 +262,7 @@ export function plan(
 		agentsFormatterPath,
 		ci,
 		oxlint: oxlintDecision.run,
+		oxlintPaths,
 		oxlintReason: oxlintDecision.reason,
 		oxlintTypeAware,
 		passes,
@@ -284,7 +294,7 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 		commands.push(
 			composeOxlintCommand(options, {
 				oxlintTypeAware: runPlan.oxlintTypeAware,
-				paths: options.paths,
+				paths: runPlan.oxlintPaths,
 			}),
 		);
 	}
