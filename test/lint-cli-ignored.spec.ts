@@ -19,9 +19,15 @@ const HASH = "config-hash";
  * A config whose ignore patterns are plain globs, so the helper can hand the
  * runner the patterns themselves. `.mjs` so ESLint loads it without a
  * TypeScript loader in the fixture's bare `node_modules`.
+ *
+ * The third entry is the one that has to survive serialization intact:
+ * `ignores` beside another key only excludes files from *that* config, so
+ * `src/b.ts` is still linted. Carrying it over as a bare `{ignores}` would
+ * silently promote it into a global ignore.
  */
 const GLOB_CONFIG =
-	'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, { ignores: ["generated/**"] }];\n';
+	'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, { ignores: ["generated/**"] }, ' +
+	'{ ignores: ["src/b.ts"], rules: {} }];\n';
 
 /**
  * The same config with a *function* matcher, which cannot cross a process
@@ -54,6 +60,29 @@ function resolve(directory: string, targets: Array<string>, mutate: boolean): Re
 	});
 }
 
+/**
+ * Resolve the way a real run does: the helper may spawn, state may be written.
+ *
+ * @param directory - The fixture project root.
+ * @param targets - Fixture-relative target paths.
+ * @returns The ignored set.
+ */
+function resolveAndStore(directory: string, targets: Array<string>): ReadonlySet<string> {
+	return resolve(directory, targets, true);
+}
+
+/**
+ * Resolve the way `--print` does. This never spawns the helper and never
+ * writes, so anything it classifies came from what is already stored.
+ *
+ * @param directory - The fixture project root.
+ * @param targets - Fixture-relative target paths.
+ * @returns The ignored set.
+ */
+function resolveReadOnly(directory: string, targets: Array<string>): ReadonlySet<string> {
+	return resolve(directory, targets, false);
+}
+
 function has(ignored: ReadonlySet<string>, directory: string, relative: string): boolean {
 	return ignored.has(normalizePath(path.join(directory, relative)));
 }
@@ -67,18 +96,27 @@ describe("resolveIgnoredFiles", () => {
 		expect.hasAssertions();
 
 		withFixture(GLOB_CONFIG, (directory) => {
-			const first = resolve(directory, ["src/a.ts"], true);
-
-			expect(has(first, directory, "src/a.ts")).toBe(false);
+			expect(has(resolveAndStore(directory, ["src/a.ts"]), directory, "src/a.ts")).toBe(
+				false,
+			);
 			expect(storedMode(directory)).toBe("predicate");
 
-			// Read-only mode never spawns the helper, so anything classified here
-			// came from the stored patterns — including a path that did not exist
-			// when they were stored.
-			const second = resolve(directory, ["src/a.ts", "generated/b.ts"], false);
+			const second = resolveReadOnly(directory, ["src/a.ts", "generated/b.ts"]);
 
 			expect(has(second, directory, "generated/b.ts")).toBe(true);
 			expect(has(second, directory, "src/a.ts")).toBe(false);
+		});
+	});
+
+	it("keeps a config's own ignores from becoming a global ignore", () => {
+		expect.hasAssertions();
+
+		withFixture(GLOB_CONFIG, (directory) => {
+			// `src/b.ts` is ignored *by one config*, which only excludes it from
+			// that config's rules. ESLint still lints it.
+			const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.ts"]);
+
+			expect(has(ignored, directory, "src/b.ts")).toBe(false);
 		});
 	});
 
@@ -89,7 +127,7 @@ describe("resolveIgnoredFiles", () => {
 			// `getConfigStatus` calls this "unconfigured" rather than "ignored",
 			// but ESLint declines to lint it either way, so it must not count as
 			// dirty.
-			const ignored = resolve(directory, ["src/a.ts", "notes.txt"], true);
+			const ignored = resolveAndStore(directory, ["src/a.ts", "notes.txt"]);
 
 			expect(has(ignored, directory, "notes.txt")).toBe(true);
 		});
@@ -99,11 +137,17 @@ describe("resolveIgnoredFiles", () => {
 		expect.hasAssertions();
 
 		withFixture(FUNCTION_CONFIG, (directory) => {
-			const ignored = resolve(directory, ["src/a.ts", "src/b.generated.ts"], true);
+			const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.generated.ts"]);
 
 			expect(storedMode(directory)).toBe("answers");
 			expect(has(ignored, directory, "src/b.generated.ts")).toBe(true);
 			expect(has(ignored, directory, "src/a.ts")).toBe(false);
+
+			// The residual the answers payload keeps: a file it was never asked
+			// about reads as not-ignored rather than being matched.
+			const later = resolveReadOnly(directory, ["src/c.generated.ts"]);
+
+			expect(has(later, directory, "src/c.generated.ts")).toBe(false);
 		});
 	});
 
@@ -111,7 +155,7 @@ describe("resolveIgnoredFiles", () => {
 		expect.hasAssertions();
 
 		withFixture(GLOB_CONFIG, (directory) => {
-			const ignored = resolve(directory, ["generated/b.ts"], false);
+			const ignored = resolveReadOnly(directory, ["generated/b.ts"]);
 
 			expect(ignored.size).toBe(0);
 			expect(storedMode(directory)).toBeUndefined();

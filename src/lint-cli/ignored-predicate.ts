@@ -1,36 +1,26 @@
+// cspell:words unconfigured
 /**
- * The serialized form of a resolved config's match/ignore patterns, and the
- * in-process evaluation of it. Produced by {@link file://./ignored-child.ts},
- * consumed by {@link file://./ignored.ts}.
+ * The serialized form of a resolved config's match patterns, and the in-process
+ * evaluation of it. Produced by {@link file://./ignored-child.ts}, consumed by
+ * {@link file://./ignored.ts}.
  *
  * The patterns are evaluated with the same `@eslint/config-array` the
  * consumer's ESLint uses, not a re-implementation: the matcher is the part
  * that has to agree exactly, since a file wrongly classified as ignored is
  * dropped from the dirty count and can skip a typed pass that had work to do.
  */
-import { createRequire } from "node:module";
-import path from "node:path";
+import { resolveEslintInstall } from "./eslint-install.ts";
 
 /**
  * One resolved config object, reduced to what decides matching and ignoring.
  */
 export interface PredicateEntry {
-	/** The config's name, kept only so errors name the offending entry. */
-	name?: string;
 	/** The config's own base path, when it declared one. */
 	basePath?: string;
 	/** The config's `files`, which may nest arrays for AND matching. */
 	files?: Array<Array<string> | string>;
 	/** The config's `ignores`. */
-	ignores?: Array<string>;
-	/**
-	 * Set when the config carried keys beyond the match ones. A config with
-	 * `ignores` and nothing else is a *global* ignore; one with any further key
-	 * only excludes files from itself. Dropping `rules` and friends on the way
-	 * out would silently promote the second kind into the first, so this marks
-	 * the difference the dropped keys used to carry.
-	 */
-	nonGlobal?: boolean;
+	ignores?: Array<Array<string> | string>;
 }
 
 /** What the helper writes back, and what the ignore-set state stores. */
@@ -52,33 +42,9 @@ interface ConfigArrayLike {
 interface ConfigArrayModule {
 	ConfigArray: new (
 		configs: Array<PredicateEntry>,
-		options: { basePath: string; schema: Record<string, unknown> },
+		options: { basePath: string },
 	) => ConfigArrayLike;
 }
-
-/**
- * The whole schema for {@link PredicateEntry.nonGlobal}: it carries no value
- * worth merging or checking, so both halves collapse to a constant.
- *
- * @returns A value the schema is satisfied by.
- */
-function acceptMarker(): true {
-	return true;
-}
-
-/**
- * Teaches the array's schema about {@link PredicateEntry.nonGlobal}, which is
- * ours rather than ESLint's: an unknown key throws when a matched config is
- * merged, which is exactly what classifying a file does.
- */
-const PREDICATE_SCHEMA = {
-	nonGlobal: { merge: acceptMarker, validate: acceptMarker },
-};
-
-/**
- * One built array per payload, so repeated calls in a process rebuild nothing.
- */
-const arrayCache = new WeakMap<object, ConfigArrayLike | undefined>();
 
 /**
  * Classify lint targets against a stored payload.
@@ -88,6 +54,10 @@ const arrayCache = new WeakMap<object, ConfigArrayLike | undefined>();
  * dirty files rather than skipping work. A `"predicate"` payload knows the
  * config itself and classifies any path, including files added since it was
  * stored.
+ *
+ * A path counts as ignored when its status is anything but `"matched"`: a file
+ * no config's `files` covers is `"unconfigured"` rather than `"ignored"`, and
+ * ESLint declines to lint it just the same.
  *
  * @param cwd - The consumer project root, used to resolve the matcher.
  * @param payload - The stored payload.
@@ -101,15 +71,14 @@ export function classifyIgnored(
 	targets: Array<string>,
 ): Array<string> | undefined {
 	if (payload.mode === "answers") {
-		return payload.ignored;
-	}
-
-	const configArray = buildConfigArray(cwd, payload);
-	if (configArray === undefined) {
-		return undefined;
+		const wanted = new Set(targets);
+		return payload.ignored.filter((file) => wanted.has(file));
 	}
 
 	try {
+		const { ConfigArray } = loadConfigArrayModule(cwd);
+		const configArray = new ConfigArray(payload.entries, { basePath: payload.basePath });
+		configArray.normalizeSync();
 		return targets.filter((target) => configArray.getConfigStatus(target) !== "matched");
 	} catch {
 		return undefined;
@@ -118,56 +87,12 @@ export function classifyIgnored(
 
 /**
  * Load the matcher out of the consumer's own ESLint installation, so the
- * patterns are evaluated by the same version that produced them. Falls back to
- * the ESLint resolvable from this file — the hoisted peer dependency, which is
- * what the fixture tests run against.
+ * patterns are evaluated by the same version that produced them.
  *
  * @param cwd - The consumer project root.
  * @returns The `@eslint/config-array` module namespace.
  * @throws {Error} When neither ESLint nor its config-array can be resolved.
  */
 function loadConfigArrayModule(cwd: string): ConfigArrayModule {
-	// A synthetic basename: `createRequire` resolves relative to a *file*, and
-	// this one is spelled so it can never collide with a real consumer module.
-	const requireFrom = createRequire(path.join(cwd, "__isentinel-lint__.js"));
-	let eslintPackageJson: string;
-	try {
-		eslintPackageJson = requireFrom.resolve("eslint/package.json");
-	} catch {
-		eslintPackageJson = createRequire(import.meta.url).resolve("eslint/package.json");
-	}
-
-	return createRequire(eslintPackageJson)("@eslint/config-array") as ConfigArrayModule;
-}
-
-/**
- * Rebuild the ignore predicate from stored patterns, memoised per payload.
- *
- * @param cwd - The consumer project root, used to resolve the matcher.
- * @param payload - The stored predicate payload.
- * @returns The normalized config array, or `undefined` when it cannot be built.
- */
-function buildConfigArray(
-	cwd: string,
-	payload: Extract<IgnoredPayload, { mode: "predicate" }>,
-): ConfigArrayLike | undefined {
-	const cached = arrayCache.get(payload);
-	if (cached !== undefined || arrayCache.has(payload)) {
-		return cached;
-	}
-
-	let configArray: ConfigArrayLike | undefined;
-	try {
-		const { ConfigArray } = loadConfigArrayModule(cwd);
-		configArray = new ConfigArray(payload.entries, {
-			basePath: payload.basePath,
-			schema: PREDICATE_SCHEMA,
-		});
-		configArray.normalizeSync();
-	} catch {
-		configArray = undefined;
-	}
-
-	arrayCache.set(payload, configArray);
-	return configArray;
+	return resolveEslintInstall(cwd).requireFrom("@eslint/config-array") as ConfigArrayModule;
 }

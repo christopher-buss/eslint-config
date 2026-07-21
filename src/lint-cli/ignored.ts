@@ -11,8 +11,23 @@ import type { IgnoredPayload } from "./ignored-predicate.ts";
 import { resolveIgnoredHelper } from "./resolve.ts";
 import { readState, statePath, writeState } from "./state.ts";
 
+/** A target list split by whether ESLint would lint it. */
+interface Classification {
+	/** The targets ESLint declines to lint. */
+	ignored: Array<string>;
+	/** The rest. */
+	linted: Array<string>;
+}
+
 /** The persisted form of a resolved ignore set. */
 interface IgnoredState {
+	/**
+	 * Every target the payload has already been asked about, as {@link
+	 * normalizePath} keys. Purely derived — the payload can recompute it — but
+	 * matching a path against a real flat config costs ~300µs, so a project of
+	 * any size would pay whole seconds of it on every run.
+	 */
+	classified: Classification;
 	/** The config hash the payload was computed against. */
 	hash: string;
 	/** What the helper returned: the config's patterns, or bare answers. */
@@ -76,6 +91,13 @@ export function ignoredStatePath(cwd: string, key: string): string {
  * count above zero forever. Patterns depend on the config alone, which is what
  * the key already says, so new files classify with no helper spawn at all.
  *
+ * The answers are still stored, but now as a cache *derived* from the patterns
+ * rather than as the source of truth: a target the cache does not cover is
+ * matched against the patterns rather than assumed not-ignored, which is the
+ * whole difference. It exists because that match costs ~300µs per path, so a
+ * few thousand targets would otherwise add a second to every run — the cost the
+ * memo exists to avoid, charged a little at a time.
+ *
  * A config whose `files`/`ignores` hold function matchers cannot be
  * serialized; the helper falls back to answering per target, and that payload
  * keeps the old residual — targets absent from it read as not-ignored, which
@@ -97,34 +119,106 @@ export function resolveIgnoredFiles({
 
 	const stateFile = ignoredStatePath(cwd, key);
 	const stored = readState<IgnoredState>(stateFile);
-	if (stored?.hash === configHash) {
-		return toSet(classifyIgnored(cwd, stored.payload, targets));
-	}
+	const fresh = stored?.hash === configHash ? stored : undefined;
 
-	if (!mutate) {
-		return EMPTY;
-	}
-
-	const payload = queryIgnoredFiles(cwd, targets);
+	let payload = fresh?.payload;
 	if (payload === undefined) {
+		if (!mutate) {
+			return EMPTY;
+		}
+
+		payload = queryIgnoredFiles(cwd, targets);
+		if (payload === undefined) {
+			return EMPTY;
+		}
+	}
+
+	const classified = classifyTargets(cwd, payload, targets, fresh?.classified);
+	if (classified === undefined) {
 		return EMPTY;
 	}
 
-	writeState(stateFile, { hash: configHash, payload } satisfies IgnoredState);
-	return toSet(classifyIgnored(cwd, payload, targets));
+	if (mutate && !sameClassification(classified, fresh?.classified)) {
+		writeState(stateFile, { classified, hash: configHash, payload } satisfies IgnoredState);
+	}
+
+	return new Set(classified.ignored);
 }
 
 /**
- * Reduce a classification to the normalized keys the file lists are filtered
- * by.
+ * Split the targets by whether ESLint would lint them, asking the payload only
+ * about the ones the stored classification does not already cover — which after
+ * the first run means only the files added since it.
  *
- * @param ignored - The ignored targets, or `undefined` when unavailable.
- * @returns The ignored set, empty when there is nothing to filter by.
+ * The result covers exactly the current targets, so storing it also drops the
+ * entries for files that have gone away.
+ *
+ * @param cwd - The consumer project root.
+ * @param payload - The patterns (or answers) to classify against.
+ * @param targets - The absolute target paths this run cares about.
+ * @param cached - The stored classification, when one applies to this payload.
+ * @returns The split, or `undefined` when the payload could not be evaluated.
  */
-function toSet(ignored: Array<string> | undefined): ReadonlySet<string> {
-	return ignored === undefined || ignored.length === 0
-		? EMPTY
-		: new Set(ignored.map((file) => normalizePath(file)));
+function classifyTargets(
+	cwd: string,
+	payload: IgnoredPayload,
+	targets: Array<string>,
+	cached: Classification | undefined,
+): Classification | undefined {
+	const known = new Map<string, boolean>();
+	const cachedIgnored = cached?.ignored ?? [];
+	const cachedLinted = cached?.linted ?? [];
+	for (const file of cachedIgnored) {
+		known.set(file, true);
+	}
+
+	for (const file of cachedLinted) {
+		known.set(file, false);
+	}
+
+	const byKey = new Map(targets.map((target) => [normalizePath(target), target]));
+	const unknown = [...byKey].filter(([key]) => !known.has(key));
+	if (unknown.length > 0) {
+		const ignored = classifyIgnored(
+			cwd,
+			payload,
+			unknown.map(([, target]) => target),
+		);
+		if (ignored === undefined) {
+			return undefined;
+		}
+
+		const ignoredKeys = new Set(ignored.map((file) => normalizePath(file)));
+		for (const [key] of unknown) {
+			known.set(key, ignoredKeys.has(key));
+		}
+	}
+
+	const classified: Classification = { ignored: [], linted: [] };
+	for (const key of byKey.keys()) {
+		(known.get(key) === true ? classified.ignored : classified.linted).push(key);
+	}
+
+	return classified;
+}
+
+/**
+ * Whether a classification is the one already on disk, so an unchanged run can
+ * skip rewriting it.
+ *
+ * @param classified - The classification this run computed.
+ * @param cached - The stored classification, when one applies.
+ * @returns True when the two cover the same targets.
+ */
+function sameClassification(
+	classified: Classification,
+	cached: Classification | undefined,
+): boolean {
+	return (
+		cached !== undefined &&
+		cached.ignored.length === classified.ignored.length &&
+		cached.linted.length === classified.linted.length
+	);
 }
 
 /**
@@ -153,6 +247,9 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): IgnoredPayload 
 			maxBuffer: 64 * 1024 * 1024,
 			stdio: ["pipe", "ignore", "ignore"],
 		});
+		// Trusted as far as its tag: the writer is our own child, and anything it
+		// got wrong past that throws where the payload is used, which is caught
+		// the same way as a failed spawn.
 		const parsed = JSON.parse(fs.readFileSync(outFile, "utf8")) as { mode?: unknown };
 		return parsed.mode === "answers" || parsed.mode === "predicate"
 			? (parsed as IgnoredPayload)
