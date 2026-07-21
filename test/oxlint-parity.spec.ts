@@ -536,6 +536,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 
 	it("should register a resolvable jsPlugin for every emitted prefixed rule", ({ expect }) => {
 		expect.hasAssertions();
+
 		expect(Object.keys(oxlintJsPlugins).length).toBeGreaterThan(20);
 
 		for (const options of jsPluginVariants) {

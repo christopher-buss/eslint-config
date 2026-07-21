@@ -72,8 +72,8 @@ export async function disables({
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"e18e/prefer-static-regex": "off",
+				"flawless/max-lines-per-function": "off",
 				"max-lines": "off",
-				"max-lines-per-function": "off",
 				"no-empty-function": "off",
 				"no-unused-expressions": "off",
 				"sonar/no-duplicate-string": "off",
@@ -112,7 +112,7 @@ export async function disables({
 			name: "isentinel/disables/jsx",
 			files: [GLOB_JSX, GLOB_TSX],
 			rules: {
-				"max-lines-per-function": "off",
+				"flawless/max-lines-per-function": "off",
 			},
 		},
 	];

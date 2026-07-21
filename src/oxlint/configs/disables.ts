@@ -83,8 +83,8 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			files: [...GLOB_TESTS],
 			rules: {
 				"antfu/no-top-level-await": "off",
+				"flawless/max-lines-per-function": "off",
 				"max-lines": "off",
-				"max-lines-per-function": "off",
 				"no-empty-function": "off",
 				"no-unused-expressions": "off",
 				"sonar/no-duplicate-string": "off",
@@ -115,7 +115,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			name: "isentinel/disables/jsx",
 			files: [GLOB_JSX, GLOB_TSX],
 			rules: {
-				"max-lines-per-function": "off",
+				"flawless/max-lines-per-function": "off",
 			},
 		}),
 	];

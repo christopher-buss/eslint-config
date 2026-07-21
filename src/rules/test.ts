@@ -114,6 +114,7 @@ export function jestRules({
 
 		...(stylistic !== false
 			? {
+					"flawless/padding-after-expect-assertions": "warn",
 					"jest/padding-around-all": "warn",
 				}
 			: {}),
@@ -226,6 +227,7 @@ export function vitestRules({
 
 		...(stylistic !== false
 			? {
+					"flawless/padding-after-expect-assertions": "warn",
 					"vitest/padding-around-all": "warn",
 				}
 			: {}),

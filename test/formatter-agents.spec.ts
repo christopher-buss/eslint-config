@@ -62,11 +62,13 @@ const DATA: ESLint.LintResultData = { cwd: ROOT, rulesMeta: {} };
 describe("eslintFormatterAgents", () => {
 	it("returns an empty string when nothing was reported", () => {
 		expect.hasAssertions();
+
 		expect(eslintFormatterAgents([makeResult("clean.ts", [])], DATA)).toBe("");
 	});
 
 	it("returns an empty string for empty result lists", () => {
 		expect.hasAssertions();
+
 		expect(eslintFormatterAgents([], DATA)).toBe("");
 	});
 

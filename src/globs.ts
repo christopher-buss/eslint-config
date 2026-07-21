@@ -69,6 +69,8 @@ export const GLOB_JSON5 = "**/*.json5";
 export const GLOB_JSONC = "**/*.jsonc";
 export const GLOB_ALL_JSON = "**/*.json{,5,c}";
 
+export const GLOB_TSCONFIG = "**/tsconfig*.json";
+
 export const GLOB_PACKAGE_JSON = "**/package.json";
 /**
  * Matches only the manifest at the config's `basePath`, rather than every

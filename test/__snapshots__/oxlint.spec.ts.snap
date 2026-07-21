@@ -1429,14 +1429,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
             "skipComments": true,
           },
         ],
-        "max-lines-per-function": [
-          "warn",
-          {
-            "max": 30,
-            "skipBlankLines": true,
-            "skipComments": true,
-          },
-        ],
         "new-cap": [
           "error",
           {
@@ -2994,6 +2986,14 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
             },
           },
         ],
+        "flawless/max-lines-per-function": [
+          "warn",
+          {
+            "max": 30,
+            "skipBlankLines": true,
+            "skipComments": true,
+          },
+        ],
         "flawless/no-export-default-arrow": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
@@ -3263,7 +3263,6 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
       ],
       "rules": {
         "max-lines": "off",
-        "max-lines-per-function": "off",
         "no-empty-function": "off",
         "no-unused-expressions": "off",
         "typescript/explicit-function-return-type": "off",
@@ -3287,12 +3286,17 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+        {
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
       },
     },
@@ -3344,8 +3348,14 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "**/*.{,c,m}jsx",
         "**/*.{,c,m}tsx",
       ],
+      "jsPlugins": [
+        {
+          "name": "flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+      ],
       "rules": {
-        "max-lines-per-function": "off",
+        "flawless/max-lines-per-function": "off",
       },
     },
     {
@@ -3800,6 +3810,10 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       "specifier": "<pkg>:eslint-plugin-jest",
     },
     {
+      "name": "flawless",
+      "specifier": "<pkg>:eslint-plugin-flawless",
+    },
+    {
       "name": "perfectionist",
       "specifier": "<pkg>:eslint-plugin-perfectionist",
     },
@@ -3814,10 +3828,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     {
       "name": "small-rules",
       "specifier": "<pkg>:@pobammer-ts/small-rules",
-    },
-    {
-      "name": "flawless",
-      "specifier": "<pkg>:eslint-plugin-flawless",
     },
     {
       "name": "oxlint-comments",
@@ -5141,14 +5151,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
             "skipComments": true,
           },
         ],
-        "max-lines-per-function": [
-          "warn",
-          {
-            "max": 30,
-            "skipBlankLines": true,
-            "skipComments": true,
-          },
-        ],
         "new-cap": [
           "error",
           {
@@ -6280,11 +6282,16 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           "specifier": "<pkg>:eslint-plugin-jest",
         },
         {
+          "name": "flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+        {
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
+        "flawless/padding-after-expect-assertions": "warn",
         "jest-js/consistent-test-it": "error",
         "jest-js/expect-expect": "warn",
         "jest-js/max-expects": "error",
@@ -6884,6 +6891,14 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
             },
           },
         ],
+        "flawless/max-lines-per-function": [
+          "warn",
+          {
+            "max": 30,
+            "skipBlankLines": true,
+            "skipComments": true,
+          },
+        ],
         "flawless/no-export-default-arrow": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
@@ -7153,7 +7168,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
       ],
       "rules": {
         "max-lines": "off",
-        "max-lines-per-function": "off",
         "no-empty-function": "off",
         "no-unused-expressions": "off",
         "typescript/explicit-function-return-type": "off",
@@ -7177,12 +7191,17 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+        {
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
       },
     },
@@ -7234,8 +7253,14 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "**/*.{,c,m}jsx",
         "**/*.{,c,m}tsx",
       ],
+      "jsPlugins": [
+        {
+          "name": "flawless",
+          "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+      ],
       "rules": {
-        "max-lines-per-function": "off",
+        "flawless/max-lines-per-function": "off",
       },
     },
     {

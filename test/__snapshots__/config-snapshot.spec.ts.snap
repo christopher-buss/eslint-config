@@ -70,6 +70,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     "name": "isentinel/flawless/rules",
     "rules": [
       "flawless/arrow-return-style",
+      "flawless/max-lines-per-function",
       "flawless/no-export-default-arrow",
       "flawless/prefer-parameter-destructuring",
     ],
@@ -301,7 +302,6 @@ exports[`config snapshots > should match default roblox game config 1`] = `
       "max-classes-per-file",
       "max-depth",
       "max-lines",
-      "max-lines-per-function",
       "new-cap",
       "no-alert",
       "no-array-constructor",
@@ -1181,6 +1181,18 @@ exports[`config snapshots > should match default roblox game config 1`] = `
   },
   {
     "files": [
+      "**/tsconfig*.json",
+    ],
+    "languageOptions": {
+      "parser": "jsonc-eslint-parser",
+    },
+    "name": "isentinel/jsonc/tsconfig",
+    "rules": [
+      "flawless/no-redundant-tsconfig-options",
+    ],
+  },
+  {
+    "files": [
       "**/[jt]sconfig.json",
       "**/[jt]sconfig.*.json",
     ],
@@ -1490,8 +1502,8 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     "rules": [
       "-antfu/no-top-level-await",
       "-e18e/prefer-static-regex",
+      "-flawless/max-lines-per-function",
       "-max-lines",
-      "-max-lines-per-function",
       "-no-empty-function",
       "-no-unused-expressions",
       "-sonar/no-duplicate-string",
@@ -1547,7 +1559,7 @@ exports[`config snapshots > should match default roblox game config 1`] = `
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
-      "-max-lines-per-function",
+      "-flawless/max-lines-per-function",
     ],
   },
   {
@@ -3349,6 +3361,18 @@ exports[`config snapshots > should match minimal config 1`] = `
   },
   {
     "files": [
+      "**/tsconfig*.json",
+    ],
+    "languageOptions": {
+      "parser": "jsonc-eslint-parser",
+    },
+    "name": "isentinel/jsonc/tsconfig",
+    "rules": [
+      "flawless/no-redundant-tsconfig-options",
+    ],
+  },
+  {
+    "files": [
       "**/*.project.json",
       "**/project.json",
     ],
@@ -3581,8 +3605,8 @@ exports[`config snapshots > should match minimal config 1`] = `
     "rules": [
       "-antfu/no-top-level-await",
       "-e18e/prefer-static-regex",
+      "-flawless/max-lines-per-function",
       "-max-lines",
-      "-max-lines-per-function",
       "-no-empty-function",
       "-no-unused-expressions",
       "-sonar/no-duplicate-string",
@@ -3638,7 +3662,7 @@ exports[`config snapshots > should match minimal config 1`] = `
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
-      "-max-lines-per-function",
+      "-flawless/max-lines-per-function",
     ],
   },
   {
@@ -3717,6 +3741,7 @@ exports[`config snapshots > should match package mode config 1`] = `
     "name": "isentinel/flawless/rules",
     "rules": [
       "flawless/arrow-return-style",
+      "flawless/max-lines-per-function",
       "flawless/no-export-default-arrow",
       "flawless/prefer-parameter-destructuring",
     ],
@@ -3953,7 +3978,6 @@ exports[`config snapshots > should match package mode config 1`] = `
       "max-classes-per-file",
       "max-depth",
       "max-lines",
-      "max-lines-per-function",
       "new-cap",
       "no-alert",
       "no-array-constructor",
@@ -4812,6 +4836,18 @@ exports[`config snapshots > should match package mode config 1`] = `
   },
   {
     "files": [
+      "**/tsconfig*.json",
+    ],
+    "languageOptions": {
+      "parser": "jsonc-eslint-parser",
+    },
+    "name": "isentinel/jsonc/tsconfig",
+    "rules": [
+      "flawless/no-redundant-tsconfig-options",
+    ],
+  },
+  {
+    "files": [
       "**/[jt]sconfig.json",
       "**/[jt]sconfig.*.json",
     ],
@@ -5114,8 +5150,8 @@ exports[`config snapshots > should match package mode config 1`] = `
     "rules": [
       "-antfu/no-top-level-await",
       "-e18e/prefer-static-regex",
+      "-flawless/max-lines-per-function",
       "-max-lines",
-      "-max-lines-per-function",
       "-no-empty-function",
       "-no-unused-expressions",
       "-sonar/no-duplicate-string",
@@ -5171,7 +5207,7 @@ exports[`config snapshots > should match package mode config 1`] = `
     ],
     "name": "isentinel/disables/jsx",
     "rules": [
-      "-max-lines-per-function",
+      "-flawless/max-lines-per-function",
     ],
   },
   {

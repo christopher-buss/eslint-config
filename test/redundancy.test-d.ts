@@ -1,4 +1,4 @@
-/* oxlint-disable sonar/no-duplicate-string, max-lines-per-function -- Type-test fixtures repeat literal rule names and group many one-line assertions per describe by design. */
+/* oxlint-disable sonar/no-duplicate-string, flawless/max-lines-per-function -- Type-test fixtures repeat literal rule names and group many one-line assertions per describe by design. */
 import { describe, expectTypeOf, it } from "vitest";
 
 import type { VARIANT_KEYS } from "../scripts/typegen-defaults-shared.ts";

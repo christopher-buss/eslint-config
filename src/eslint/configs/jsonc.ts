@@ -1,4 +1,4 @@
-import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC } from "../../globs.ts";
+import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC, GLOB_TSCONFIG } from "../../globs.ts";
 import { interopDefault, resolveWithDefaults } from "../../utils.ts";
 import type {
 	OptionsFiles,
@@ -86,6 +86,16 @@ export async function jsonc({
 					: {}),
 
 				...overrides,
+			},
+		},
+		{
+			name: "isentinel/jsonc/tsconfig",
+			files: [GLOB_TSCONFIG],
+			languageOptions: {
+				parser: parserJsonc,
+			},
+			rules: {
+				"flawless/no-redundant-tsconfig-options": "error",
 			},
 		},
 	];

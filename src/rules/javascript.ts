@@ -240,10 +240,6 @@ export function javascriptRules({
 						},
 					],
 					"max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
-					"max-lines-per-function": [
-						"warn",
-						{ max: 30, skipBlankLines: true, skipComments: true },
-					],
 					"no-lone-blocks": "error",
 					"no-multi-str": "error",
 					// "object-shorthand": "error",

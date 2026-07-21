@@ -39,9 +39,10 @@ export function arrowStyleRules({
 /**
  * Base (non-React) flawless rules shared between the ESLint and oxlint
  * factories. The React flawless rules live in the react rule map; the
- * type-aware `flawless/naming-convention` and the non-JS `flawless/toml-*` and
- * `flawless/yaml-*` rules are configured by their own configs and stay in
- * ESLint.
+ * type-aware `flawless/naming-convention`, the test-only
+ * `flawless/padding-after-expect-assertions`, and the non-JS
+ * `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
+ * `flawless/yaml-*` rules are configured by their own configs.
  *
  * @param options - Shared stylistic and arrow rule options.
  * @returns The rule map.
@@ -55,6 +56,10 @@ export function flawlessRules({
 	}
 
 	return {
+		"flawless/max-lines-per-function": [
+			"warn",
+			{ max: 30, skipBlankLines: true, skipComments: true },
+		],
 		"flawless/no-export-default-arrow": "error",
 		"flawless/prefer-parameter-destructuring": "warn",
 
