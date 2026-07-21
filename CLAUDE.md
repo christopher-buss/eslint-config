@@ -8,7 +8,7 @@ code in this repository.
 This is `@isentinel/eslint-config`, an opinionated ESLint flat config preset
 designed primarily for roblox-ts projects. It's inspired by antfu/eslint-config
 and provides a comprehensive set of linting rules with automatic plugin
-renaming, spell checking (CSpell), and Prettier integration.
+renaming, spell checking (CSpell), and formatting via oxfmt.
 
 ## Environment
 
@@ -26,7 +26,7 @@ pnpm lint       # Run oxlint and ESLint concurrently
 pnpm test       # Run tests (runs typegen first)
 pnpm test:watch # Tests in watch mode
 pnpm typecheck  # Type checking
-pnpm gen        # Generate types (src/typegen.d.ts)
+pnpm gen        # Generate types + version constants (see Type Generation)
 pnpm watch      # Watch mode
 pnpm dev        # View rules in browser inspector
 pnpm release    # Bump version and publish (uses bumpp)
@@ -43,8 +43,9 @@ pnpm release    # Bump version and publish (uses bumpp)
 
 ### Entry Point & Factory Pattern
 
-The main export is `isentinel()` in `src/factory.ts` - a factory function that
-composes ESLint flat configs based on options:
+The main export is `isentinel()` in `src/eslint/factory.ts` - a factory function
+that composes ESLint flat configs based on options. `src/oxlint/factory.ts` is
+its synchronous counterpart for oxlint:
 
 ```ts
 export default isentinel({
@@ -59,26 +60,37 @@ The factory uses `eslint-flat-config-utils`'s `FlatConfigComposer` to merge
 configs and supports automatic plugin renaming (e.g., `@typescript-eslint/*` →
 `ts/*`).
 
-### Config Modules (`src/configs/`)
+### Config Modules (`src/eslint/configs/`)
 
 Each file exports a function returning `TypedFlatConfigItem[]`. Key configs:
 
 - `roblox.ts` - roblox-ts specific rules (macro patterns, no-array-methods,
   etc.)
 - `typescript.ts` - TypeScript rules with type-aware linting
-- `prettier.ts` - Prettier integration (always last in pipeline)
+- `oxfmt.ts` - Formatting via `eslint-plugin-oxfmt` (always last in pipeline)
 - `spelling.ts` - CSpell with Roblox dictionaries
 
 ### Type Generation
 
-`scripts/typegen.ts` generates `src/typegen.d.ts` containing rule type
-definitions and config names. Run `pnpm gen` after modifying configs to update
-types.
+`pnpm gen` runs five generators in `scripts/`: `typegen.ts`
+(`src/typegen.d.ts` - ESLint rule types and config names), `typegen-oxlint.ts`
+(`src/oxlint/` equivalents), the two `typegen-defaults*.ts` (default rule
+severities, used by the redundancy check) and `versiongen.ts`
+(`src/cli/constants-generated.ts`). Run it after modifying configs.
 
-### CLI Tool
+### CLI Tools
 
-`src/cli/` contains a setup wizard (`npx @isentinel/eslint-config`) for project
-initialization/migration.
+Two bins:
+
+- `eslint-config` (`src/cli/`) - setup wizard (`npx @isentinel/eslint-config`)
+  for project initialization/migration.
+- `isentinel-lint` (`src/lint-cli/`) - the hybrid lint runner. It sequences an
+  oxlint child and one or two ESLint children, splitting ESLint into a syntactic
+  "fast" pass and a type-aware "typed" pass (`passes.ts`, `ESLINT_TYPE_AWARE`),
+  each with its own cache keyed by config variant. Worker counts are sized from
+  a git-derived dirty count (`files.ts`, `concurrency.ts`) that is corrected for
+  ESLint-ignored files (`ignored.ts`) and busted on config drift
+  (`config-hash.ts`); `run.ts` is the entry point.
 
 ## Plugin Renaming Map
 
@@ -102,7 +114,10 @@ or `isInEditor` option.
 - Uses pnpm catalogs for dependency versioning (see `pnpm-workspace.yaml`)
 - Many eslint plugins are peer dependencies (react, jest, vitest, node,
   eslint-plugin-eslint-plugin)
-- Prettier integration via `eslint-plugin-prettier` with `prettier-plugin-jsdoc`
+- Formatting via `eslint-plugin-oxfmt`; `eslint-config-prettier` still turns off
+  conflicting stylistic rules, and `prettier` remains only for its `Options`
+  type (`prettierOptions` is mapped onto oxfmt settings). No
+  `prettier-plugin-jsdoc` — see #509
 
 ## Gotchas
 
