@@ -553,7 +553,11 @@ export async function isentinel(
 		);
 	}
 
-	if (enableSpellCheck !== false && !typeAwareOnly) {
+	// Composed in "only" mode too, with its rules stripped by the split: the
+	// spelling rules apply to real TS files, so a source `eslint-disable` for
+	// them would otherwise hit "definition for rule was not found" in the
+	// type-aware pass, where the plugin would not be registered.
+	if (enableSpellCheck !== false) {
 		configs.push(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
@@ -562,7 +566,7 @@ export async function isentinel(
 			}),
 		);
 
-		if (stylisticOptions !== false && enableYaml !== false) {
+		if (stylisticOptions !== false && enableYaml !== false && !typeAwareOnly) {
 			configs.push(sortCspell());
 		}
 	}
@@ -585,22 +589,24 @@ export async function isentinel(
 
 	configs.push(disables({ root: rootGlobs }));
 
-	if (stylisticOptions !== false && !typeAwareOnly) {
+	// As with spelling above, composed in "only" mode so `oxfmt/oxfmt` resolves
+	// in disable comments; the split strips the rule itself.
+	if (stylisticOptions !== false) {
 		// Oxfmt must be the last config
 		configs.push(
 			oxfmt({
 				componentExts: componentExtensions,
 				formatters:
-					formatters !== false
-						? formatters
-						: {
+					typeAwareOnly || formatters === false
+						? {
 								css: false,
 								graphql: false,
 								html: false,
 								json: false,
 								markdown: false,
 								yaml: false,
-							},
+							}
+						: formatters,
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
 				// Native-only hybrid keeps formatting in ESLint: oxfmt runs in
