@@ -8,6 +8,73 @@ export type Severity = "enabled" | "off";
 const MATCH_OPTIONS = { dot: true } as const;
 
 /**
+ * Add every enabled rule from a rule map to the given set.
+ *
+ * @param rules - The rule map to scan.
+ * @param enabled - The set collecting enabled rule names.
+ */
+export function collectEnabledRules(
+	rules: Record<string, unknown> | undefined,
+	enabled: Set<string>,
+): void {
+	const entries = Object.entries(rules ?? {});
+	for (const [rule, value] of entries) {
+		if (value === undefined) {
+			continue;
+		}
+
+		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
+		if (severity !== "off" && severity !== 0) {
+			enabled.add(rule);
+		}
+	}
+}
+
+/**
+ * Collect all rule names with a non-"off" entry anywhere in the configs.
+ * Markdown-code sibling configs (synthesized by hybrid mode to keep dropped
+ * rules alive inside Markdown code blocks) are excluded so the hybrid drop is
+ * visible to the comparison.
+ *
+ * Unlike {@link effectiveEslintRules} this is a union across every config, not
+ * a last-wins resolution for one file.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The enabled rule names.
+ */
+export function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<string> {
+	const enabled = new Set<string>();
+
+	for (const config of configs) {
+		if (config.name?.endsWith("/markdown-code") === true) {
+			continue;
+		}
+
+		collectEnabledRules(config.rules, enabled);
+	}
+
+	return enabled;
+}
+
+/**
+ * Collect all enabled rule names from an oxlint config.
+ *
+ * @param config - The generated oxlint config.
+ * @returns The enabled rule names.
+ */
+export function enabledOxlintRules(config: OxlintConfig): Set<string> {
+	const enabled = new Set<string>();
+
+	collectEnabledRules(config.rules, enabled);
+	const overrides = config.overrides ?? [];
+	for (const override of overrides) {
+		collectEnabledRules(override.rules, enabled);
+	}
+
+	return enabled;
+}
+
+/**
  * Whether a file path matches a single glob pattern.
  *
  * @param filePath - The file path to test.

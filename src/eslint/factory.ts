@@ -59,6 +59,7 @@ import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
 import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
+import type { OxlintHybridMode } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type { ValidateOptions, ValidateUserConfigs } from "./redundancy.ts";
 import { applyTypeAwareSplit } from "./type-aware-split.ts";
@@ -253,6 +254,16 @@ export async function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	// Hybrid mode is off, full (oxlint owns every mapped rule) or native-only
+	// (oxlint owns just the Rust rules; jsPlugin rules and formatting stay here).
+	const oxlintMode: "off" | OxlintHybridMode = (() => {
+		if (enableOxlint === false) {
+			return "off";
+		}
+
+		return enableOxlint === "native" ? "native" : "full";
+	})();
 
 	// When `roblox` is scoped to specific files (or disabled entirely) the files
 	// it does not cover form the "complement": standard-TS/Node land that gets
@@ -547,7 +558,11 @@ export async function isentinel(
 		);
 	}
 
-	if (enableSpellCheck !== false && !typeAwareOnly) {
+	// Composed in "only" mode too, with its rules stripped by the split: the
+	// spelling rules apply to real TS files, so a source `eslint-disable` for
+	// them would otherwise hit "definition for rule was not found" in the
+	// type-aware pass, where the plugin would not be registered.
+	if (enableSpellCheck !== false) {
 		configs.push(
 			spelling({
 				...resolveSubOptions(options, "spellCheck"),
@@ -556,7 +571,7 @@ export async function isentinel(
 			}),
 		);
 
-		if (stylisticOptions !== false && enableYaml !== false) {
+		if (stylisticOptions !== false && enableYaml !== false && !typeAwareOnly) {
 			configs.push(sortCspell());
 		}
 	}
@@ -564,11 +579,11 @@ export async function isentinel(
 	// Passively record the hybrid status so `isentinel-lint` can tell, without
 	// re-running the config, whether oxlint would double-lint every mapped rule.
 	// Best-effort and swallowed; config evaluation must never throw for this.
-	writeHybridStatusForCwd(enableOxlint);
+	writeHybridStatusForCwd(oxlintMode !== "off");
 
 	// Stamp a marker observable from outside via `eslint --print-config`: the CLI
 	// probes for `settings["isentinel/oxlint"]` when the cached status is stale.
-	if (enableOxlint) {
+	if (oxlintMode !== "off") {
 		configs.push([
 			{
 				name: "isentinel/oxlint-marker",
@@ -579,25 +594,29 @@ export async function isentinel(
 
 	configs.push(disables({ root: rootGlobs }));
 
-	if (stylisticOptions !== false && !typeAwareOnly) {
+	// As with spelling above, composed in "only" mode so `oxfmt/oxfmt` resolves
+	// in disable comments; the split strips the rule itself.
+	if (stylisticOptions !== false) {
 		// Oxfmt must be the last config
 		configs.push(
 			oxfmt({
 				componentExts: componentExtensions,
 				formatters:
-					formatters !== false
-						? formatters
-						: {
+					typeAwareOnly || formatters === false
+						? {
 								css: false,
 								graphql: false,
 								html: false,
 								json: false,
 								markdown: false,
 								yaml: false,
-							},
+							}
+						: formatters,
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
-				oxlint: enableOxlint,
+				// Native-only hybrid keeps formatting in ESLint: oxfmt runs in
+				// oxlint as a jsPlugin, which that mode does not load.
+				oxlint: oxlintMode === "full",
 				prettierOptions: prettierSettings,
 			}),
 		);
@@ -640,7 +659,7 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
-	if (enableOxlint) {
+	if (oxlintMode !== "off") {
 		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
 		if (!tsgolintAvailable) {
 			warnMissingTsgolint();
@@ -651,10 +670,10 @@ export async function isentinel(
 		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
-				warnDeadMappedRules(resolved);
+				warnDeadMappedRules(resolved, oxlintMode);
 			}
 
-			dropOxlintCoveredRules(resolved, tsgolintAvailable);
+			dropOxlintCoveredRules(resolved, tsgolintAvailable, oxlintMode);
 		});
 	}
 

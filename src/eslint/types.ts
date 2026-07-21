@@ -345,9 +345,14 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * Requires installing the optional peer dependencies `oxlint` and
 	 * `oxlint-tsgolint`.
 	 *
+	 * `"native"` narrows the hand-off to the rules oxlint implements in Rust
+	 * (native rules plus the tsgolint type-aware ones): rules that would run in
+	 * oxlint as jsPlugins — and formatting — stay in ESLint. Pair it with
+	 * `jsPlugins: false` in the oxlint factory, or both engines run them.
+	 *
 	 * @default false
 	 */
-	oxlint?: boolean;
+	oxlint?: "native" | boolean;
 
 	/**
 	 * Warn at config-build time when a user config references a rule that

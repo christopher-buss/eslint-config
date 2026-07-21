@@ -2,9 +2,9 @@ import type PluginVitest from "@vitest/eslint-plugin";
 
 import type PluginJest from "eslint-plugin-jest";
 
-import { GLOB_TESTS } from "../../globs.ts";
+import { GLOB_TESTS, GLOB_TYPE_TESTS } from "../../globs.ts";
 import { sonarjsTestRules } from "../../rules/sonarjs.ts";
-import { jestRules, vitestRules } from "../../rules/test.ts";
+import { jestRules, typeTestRules, vitestRules } from "../../rules/test.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
 import type {
 	OptionsFiles,
@@ -105,6 +105,11 @@ export async function test({
 					},
 				},
 			},
+			{
+				name: "isentinel/test/jest/type-tests",
+				files: [GLOB_TYPE_TESTS],
+				rules: typeTestRules("jest"),
+			},
 		);
 	}
 
@@ -162,6 +167,11 @@ export async function test({
 						typecheck: vitestOptions.typecheck ?? false,
 					},
 				},
+			},
+			{
+				name: "isentinel/test/vitest/type-tests",
+				files: [GLOB_TYPE_TESTS],
+				rules: typeTestRules("vitest"),
 			},
 		);
 	}

@@ -4,6 +4,9 @@ export default isentinel(
 	{
 		name: "project/options",
 		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
+		// Experiment: oxlint runs its native rules only; everything a jsPlugin
+		// would run stays in ESLint (`oxlint: "native"` there).
+		jsPlugins: false,
 		roblox: false,
 		// Must mirror the `test` option in eslint.config.ts: hybrid mode drops
 		// the jsPlugin-mapped test rules from ESLint, so if oxlint does not
@@ -32,12 +35,13 @@ export default isentinel(
 		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {
-			"flawless/max-lines-per-function": "off",
+			// `flawless/max-lines-per-function` and `sonar/cognitive-complexity`
+			// live in eslint.config.ts: native-only mode runs no jsPlugins, so
+			// oxlint would reject the unknown plugins.
 			"max-lines": "off",
 			// This package deliberately exposes its public API through barrel
 			// index files.
 			"oxc/no-barrel-file": "off",
-			"sonar/cognitive-complexity": "off",
 			"typescript/no-inferrable-types": "off",
 
 			// Lots of configs are still untyped so we can't rely on this

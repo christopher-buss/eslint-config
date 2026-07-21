@@ -47,7 +47,7 @@ import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
-import { createOxlintConfigs } from "./utils.ts";
+import { createOxlintConfigs, jsPluginKey, stripUnregisteredPluginRules } from "./utils.ts";
 
 /**
  * The preset enables its rules explicitly, so every category is disabled to
@@ -63,6 +63,17 @@ const DEFAULT_CATEGORIES: RuleCategories = {
 	style: "off",
 	suspicious: "off",
 };
+
+/**
+ * JsPlugins the preset keeps even under `jsPlugins: false`.
+ *
+ * `oxlint-comments` lints the `oxlint-disable` directives that native rules
+ * still need, and the ESLint side cannot take it over: its rules use oxlint's
+ * `createOnce` API, which ESLint rejects. Its rules visit `Program` once per
+ * file, so the cost is negligible next to the jsPlugin rule set that native-only
+ * mode exists to avoid.
+ */
+const NATIVE_ONLY_JS_PLUGINS: ReadonlySet<string> = new Set(["oxlint-comments"]);
 
 /**
  * Generate an oxlint configuration based on the provided options.
@@ -108,6 +119,7 @@ export function isentinel(
 		globals,
 		ignores,
 		jsdoc: enableJsdoc = true,
+		jsPlugins: userJsPlugins,
 		jsx: enableJsx = true,
 		options: linterOptions,
 		oxc: enableOxc = true,
@@ -120,6 +132,11 @@ export function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	// Native-only mode: oxlint runs its Rust rules (and tsgolint) and nothing
+	// else. Every preset fragment that needs a jsPlugin is stripped, so the
+	// ESLint side (`oxlint: "native"`) keeps those rules.
+	const nativeOnly = userJsPlugins === false;
 
 	// See the ESLint factory: files outside a scoped `roblox` glob form the
 	// standard-TS/Node complement. `undefined` means no complement (default /
@@ -358,16 +375,21 @@ export function isentinel(
 			? ignores([...GLOB_EXCLUDE, ...gitignorePatterns])
 			: [...GLOB_EXCLUDE, ...gitignorePatterns, ...(ignores ?? [])];
 
+	/**
+	 * Merge a fragment into the accumulated overrides.
+	 *
+	 * @param config - The fragment to merge.
+	 */
 	function mergeFragment(config: TypedOxlintConfigItem): void {
+		const fragmentJsPlugins = config.jsPlugins ?? [];
 		const fragmentPlugins = config.plugins ?? [];
+
 		for (const plugin of fragmentPlugins) {
 			nativePlugins.add(plugin);
 		}
 
-		const fragmentJsPlugins = config.jsPlugins ?? [];
 		for (const jsPlugin of fragmentJsPlugins) {
-			const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name;
-			jsPlugins.set(key, jsPlugin);
+			jsPlugins.set(jsPluginKey(jsPlugin), jsPlugin);
 		}
 
 		if (config.settings) {
@@ -378,8 +400,21 @@ export function isentinel(
 		overrides.push(override);
 	}
 
-	const fragments = configs.flat();
-	for (const fragment of fragments) {
+	// Native-only mode drops the preset's jsPlugin fragments outright (bar the
+	// `NATIVE_ONLY_JS_PLUGINS` exception). Every one is produced separately from
+	// its native sibling (see `createOxlintConfigs`) or hand-written as a plugin
+	// registration, so the whole fragment goes — except its `settings`, which are
+	// engine-wide and stay in fragment order so the same writer wins as it would
+	// with the fragment kept.
+	for (const fragment of configs.flat()) {
+		if (nativeOnly && droppedByNativeOnly(fragment)) {
+			if (fragment.settings) {
+				Object.assign(mergedSettings, fragment.settings);
+			}
+
+			continue;
+		}
+
 		mergeFragment(fragment);
 	}
 
@@ -393,7 +428,11 @@ export function isentinel(
 			rules: rules as Rules,
 		});
 		for (const fragment of optionsFragments) {
-			mergeFragment(fragment);
+			// `options.rules` must not pull a jsPlugin back in under native-only
+			// mode. The rules stay: the strip below keeps the ones whose plugin a
+			// user config still registers and drops the rest.
+			const { jsPlugins: _fragmentJsPlugins, ...withoutJsPlugins } = fragment;
+			mergeFragment(nativeOnly ? withoutJsPlugins : fragment);
 		}
 	}
 
@@ -407,6 +446,20 @@ export function isentinel(
 
 	for (const userConfig of userConfigs) {
 		mergeFragment(userConfig);
+	}
+
+	if (Array.isArray(userJsPlugins)) {
+		for (const jsPlugin of userJsPlugins) {
+			jsPlugins.set(jsPluginKey(jsPlugin), jsPlugin);
+		}
+	}
+
+	// Oxlint rejects the whole config when a rule names a plugin that is not
+	// registered, so a rule left over from a plugin native-only mode dropped
+	// (a `sonar/*` entry in the consumer's own config, say) would fail the
+	// build rather than sit inert. Drop those; the ESLint side runs them.
+	if (nativeOnly) {
+		stripUnregisteredPluginRules(overrides, new Set([...nativePlugins, ...jsPlugins.keys()]));
 	}
 
 	if (defaultSeverity) {
@@ -437,4 +490,19 @@ export function isentinel(
 		plugins: [...nativePlugins] as OxlintConfig["plugins"],
 		settings: mergedSettings,
 	});
+}
+
+/**
+ * Whether native-only mode drops a preset fragment: it needs a jsPlugin, and at
+ * least one of them is not kept in that mode.
+ *
+ * @param fragment - The preset fragment.
+ * @returns Whether the fragment is dropped.
+ */
+function droppedByNativeOnly(fragment: TypedOxlintConfigItem): boolean {
+	const fragmentJsPlugins = fragment.jsPlugins ?? [];
+	return (
+		fragmentJsPlugins.length > 0 &&
+		fragmentJsPlugins.some((entry) => !NATIVE_ONLY_JS_PLUGINS.has(jsPluginKey(entry)))
+	);
 }

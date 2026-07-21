@@ -1,8 +1,18 @@
 import { GLOB_MARKDOWN_CODE } from "../globs.ts";
-import { isOxlintCovered, isTsgolintRule } from "../rules/oxlint-mapping.ts";
+import { isJsPluginRule, isOxlintCovered, isTsgolintRule } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 const HYBRID_FORMATTING_RULES = new Set(["oxfmt/oxfmt"]);
+
+/**
+ * How much of the mapping oxlint owns in hybrid mode.
+ *
+ * - `full` — every mapped rule (native, tsgolint and jsPlugin).
+ * - `native` — only the rules oxlint implements natively (plus the tsgolint
+ *   type-aware rules, which are also Rust). JsPlugin rules stay in ESLint,
+ *   where their original plugins already run.
+ */
+export type OxlintHybridMode = "full" | "native";
 
 interface DeadRuleReference {
 	config: string;
@@ -17,9 +27,14 @@ interface DeadRuleReference {
  * virtual files, so the preset re-enables those rules there.
  *
  * @param configs - The resolved flat config items.
+ * @param mode - The hybrid mode; in `native` mode jsPlugin rules and formatting
+ *   stay in ESLint, so entries for them are live and not reported.
  */
-export function warnDeadMappedRules(configs: Array<TypedFlatConfigItem>): void {
-	const references = findDeadMappedRules(configs);
+export function warnDeadMappedRules(
+	configs: Array<TypedFlatConfigItem>,
+	mode: OxlintHybridMode,
+): void {
+	const references = findDeadMappedRules(configs, mode);
 	if (references.length === 0) {
 		return;
 	}
@@ -61,10 +76,12 @@ export function warnMissingTsgolint(): void {
  * @param typeAware - Whether oxlint runs type-aware (oxlint-tsgolint present).
  *   When `false`, tsgolint rules are kept in ESLint so they do not vanish from
  *   both engines.
+ * @param mode - The hybrid mode; `native` keeps jsPlugin rules in ESLint.
  */
 export function dropOxlintCoveredRules(
 	configs: Array<TypedFlatConfigItem>,
 	typeAware = true,
+	mode: OxlintHybridMode = "full",
 ): void {
 	for (let index = 0; index < configs.length; index += 1) {
 		const config = configs[index];
@@ -78,7 +95,7 @@ export function dropOxlintCoveredRules(
 			continue;
 		}
 
-		const dropped = dropCoveredRulesFromConfig(config.rules, typeAware);
+		const dropped = dropCoveredRulesFromConfig(config.rules, typeAware, mode);
 		if (Object.keys(dropped).length === 0) {
 			continue;
 		}
@@ -103,6 +120,22 @@ export function dropOxlintCoveredRules(
 		});
 		index += 1;
 	}
+}
+
+/**
+ * Whether oxlint owns the rule in the given hybrid mode (and therefore whether
+ * ESLint must drop it).
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @param mode - The hybrid mode.
+ * @returns Whether oxlint runs the rule.
+ */
+function isOwnedByOxlint(rule: string, mode: OxlintHybridMode): boolean {
+	if (!isOxlintCovered(rule)) {
+		return false;
+	}
+
+	return mode === "full" || !isJsPluginRule(rule);
 }
 
 function isPresetConfig(config: TypedFlatConfigItem): boolean {
@@ -133,7 +166,10 @@ function targetsMarkdown(files: TypedFlatConfigItem["files"]): boolean {
 	);
 }
 
-function findDeadMappedRules(configs: Array<TypedFlatConfigItem>): Array<DeadRuleReference> {
+function findDeadMappedRules(
+	configs: Array<TypedFlatConfigItem>,
+	mode: OxlintHybridMode,
+): Array<DeadRuleReference> {
 	const references: Array<DeadRuleReference> = [];
 
 	for (const config of configs) {
@@ -145,7 +181,8 @@ function findDeadMappedRules(configs: Array<TypedFlatConfigItem>): Array<DeadRul
 		for (const [rule, value] of Object.entries(config.rules)) {
 			if (
 				value !== undefined &&
-				(isOxlintCovered(rule) || HYBRID_FORMATTING_RULES.has(rule))
+				(isOwnedByOxlint(rule, mode) ||
+					(mode === "full" && HYBRID_FORMATTING_RULES.has(rule)))
 			) {
 				references.push({ config: label, rule });
 			}
@@ -158,11 +195,16 @@ function findDeadMappedRules(configs: Array<TypedFlatConfigItem>): Array<DeadRul
 function dropCoveredRulesFromConfig(
 	rules: NonNullable<TypedFlatConfigItem["rules"]>,
 	typeAware: boolean,
+	mode: OxlintHybridMode,
 ): NonNullable<TypedFlatConfigItem["rules"]> {
 	const dropped: NonNullable<TypedFlatConfigItem["rules"]> = {};
 
 	for (const [rule, value] of Object.entries(rules)) {
-		if (value === undefined || !isOxlintCovered(rule) || (!typeAware && isTsgolintRule(rule))) {
+		if (
+			value === undefined ||
+			!isOwnedByOxlint(rule, mode) ||
+			(!typeAware && isTsgolintRule(rule))
+		) {
 			continue;
 		}
 

@@ -57,7 +57,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					});
 				},
 
-				// oxlint-disable-next-line perfectionist/sort-objects -- keep the order of prompts
+				// eslint-disable-next-line perfectionist/sort-objects -- `group` runs the prompts in key order, and `frameworks` reads `uncommittedConfirmed`.
 				frameworks: async ({ results }) => {
 					const isArgumentTemplateValid =
 						argumentTemplate &&

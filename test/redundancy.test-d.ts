@@ -1,4 +1,3 @@
-/* oxlint-disable sonar/no-duplicate-string, flawless/max-lines-per-function -- Type-test fixtures repeat literal rule names and group many one-line assertions per describe by design. */
 import { describe, expectTypeOf, it } from "vitest";
 
 import type { VARIANT_KEYS } from "../scripts/typegen-defaults-shared.ts";
@@ -159,6 +158,7 @@ describe("ValidateRulesAgainst", () => {
 
 	it("brands a redundant options tuple", () => {
 		type Result = Validate<{ "no-console": ["error", { allow: ["warn", "error"] }] }>;
+
 		expectTypeOf<Result["no-console"]>().toExtend<RedundantRuleError<string>>();
 	});
 
@@ -180,11 +180,13 @@ describe("ValidateRulesAgainst", () => {
 			{ "jsdoc/require-description": "error" },
 			{ type: "app" | "game" | "package" }
 		>;
+
 		expectTypeOf<Result["jsdoc/require-description"]>().toEqualTypeOf<"error">();
 	});
 
 	it("preserves optionality", () => {
 		type Result = Validate<{ "max-depth"?: "warn" }>;
+
 		expectTypeOf<Result>().toEqualTypeOf<{ "max-depth"?: "warn" }>();
 	});
 });
@@ -200,12 +202,14 @@ describe("ValidateRulesAgainst chain resolution", () => {
 
 	it("falls through to the base map for variants the delta does not cover", () => {
 		type Result = ValidateRulesAgainst<{ "max-depth": "error" }, Chain, "package_roblox">;
+
 		expectTypeOf<Result["max-depth"]>().toExtend<RedundantRuleError<string>>();
 	});
 
 	it("uses the delta value for variants it covers", () => {
 		type Flagged = ValidateRulesAgainst<{ "max-depth": "off" }, Chain, "game_roblox">;
 		type Allowed = ValidateRulesAgainst<{ "max-depth": "error" }, Chain, "game_roblox">;
+
 		expectTypeOf<Flagged["max-depth"]>().toExtend<RedundantRuleError<string>>();
 		expectTypeOf<Allowed["max-depth"]>().toEqualTypeOf<"error">();
 	});
@@ -219,6 +223,7 @@ describe("ValidateRulesAgainst chain resolution", () => {
 			[PartialBase],
 			"game_roblox" | "game_std"
 		>;
+
 		expectTypeOf<Result["max-depth"]>().toEqualTypeOf<"error">();
 	});
 
@@ -228,6 +233,7 @@ describe("ValidateRulesAgainst chain resolution", () => {
 			[BaseMap],
 			"game_roblox" | "game_std"
 		>;
+
 		expectTypeOf<Result["max-depth"]>().toExtend<RedundantRuleError<string>>();
 	});
 });

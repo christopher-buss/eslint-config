@@ -1,6 +1,6 @@
 import process from "node:process";
 import { pathToFileURL } from "node:url";
-import type { ExternalPluginEntry } from "oxlint";
+import type { ExternalPluginEntry, OxlintOverride } from "oxlint";
 
 import {
 	collapsesToTsCoreRule,
@@ -74,6 +74,48 @@ export function resolveJsPluginSpecifier(specifier: string): string {
 	}
 
 	return resolved;
+}
+
+/**
+ * The dedupe key for a jsPlugin entry (a bare specifier, or a named entry).
+ *
+ * @param entry - A bare package specifier, or a `{ name, specifier }` entry.
+ * @returns The plugin name used to deduplicate registrations.
+ */
+export function jsPluginKey(entry: ExternalPluginEntry): string {
+	return typeof entry === "string" ? entry : entry.name;
+}
+
+/**
+ * Drop every rule whose plugin prefix is not registered on the generated
+ * config, mutating the overrides in place. Oxlint fails the whole config build
+ * on a rule naming an unknown plugin, so entries left behind by a plugin that
+ * native-only mode dropped have to go rather than sit inert.
+ *
+ * Keyed on what is actually registered, so a consumer's own jsPlugin keeps its
+ * rules while a preset plugin that is no longer loaded loses them. Unprefixed
+ * (core) rules are always kept.
+ *
+ * @param overrides - The merged overrides (mutated).
+ * @param registeredPlugins - Every native plugin and jsPlugin name registered.
+ */
+export function stripUnregisteredPluginRules(
+	overrides: Array<OxlintOverride>,
+	registeredPlugins: ReadonlySet<string>,
+): void {
+	for (const override of overrides) {
+		const { rules } = override;
+		if (rules === undefined) {
+			continue;
+		}
+
+		for (const rule of Object.keys(rules)) {
+			const slashIndex = rule.indexOf("/");
+			if (slashIndex !== -1 && !registeredPlugins.has(rule.slice(0, slashIndex))) {
+				delete rules[rule as keyof typeof rules];
+			}
+		}
+	}
 }
 
 /**

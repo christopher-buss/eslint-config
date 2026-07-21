@@ -13,7 +13,8 @@ import { resolveLocalBin } from "./resolve.ts";
  * running oxlint too would double-lint every mapped rule. Oxlint is dropped.
  */
 export const NON_HYBRID_WARNING =
-	"isentinel-lint: the ESLint config does not enable hybrid mode (`oxlint: true`), " +
+	"isentinel-lint: the ESLint config does not enable hybrid mode (`oxlint: true` " +
+	'or `oxlint: "native"`), ' +
 	"so oxlint would re-run rules ESLint already checks. Running ESLint only; enable " +
 	"hybrid mode in your config or pass --oxlint to run oxlint explicitly.\n";
 

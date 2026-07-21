@@ -130,6 +130,81 @@ keeps running in ESLint, notably:
 A test suite asserts that every rule dropped from ESLint in hybrid mode is
 enabled in the oxlint factory output, so coverage loss is a test failure.
 
+### Native-only hybrid (experimental)
+
+`oxlint: "native"` narrows the hand-off: oxlint runs **only** the rules it
+implements in Rust (native rules plus the tsgolint type-aware ones). Everything
+a jsPlugin would have run — spelling, `sonar/*`, the non-native `unicorn/*`,
+`perfectionist/*`, the react and jest families, the custom `roblox/*` and
+`flawless/*` rules and oxfmt formatting — stays in ESLint, where the original
+plugins already run.
+
+`oxlint-comments` is the one jsPlugin that stays loaded. Native-only does not
+remove `oxlint-disable` comments, only narrows which rules they suppress, so the
+directives still need linting — and ESLint cannot take the plugin over, because
+its rules use oxlint's `createOnce` API (ESLint rejects a rule without
+`create`). Keeping it is close to free: its rules visit `Program` once per file,
+and the cost that native-only mode exists to avoid is the volume of jsPlugin
+rules, not the JS bridge itself. Measured on this repo (`src test scripts`, best
+of 5, with tsgolint): 2139 ms with no jsPlugins, 2367 ms with `oxlint-comments`,
+14426 ms with the full jsPlugin set.
+
+Both sides must agree, or rules run twice (or nowhere):
+
+```ts
+// eslint.config.ts
+export default isentinel({ oxlint: "native", type: "game" });
+```
+
+```ts
+// oxlint.config.ts
+export default isentinel({
+	name: "project/options",
+	jsPlugins: false,
+	type: "game",
+});
+```
+
+With `isentinel-lint` this yields three passes, each with a distinct job:
+
+| Pass    | Engine              | Runs                                                                                                            |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `oxc`   | oxlint (+ tsgolint) | native Rust rules, type-aware `ts/*`                                                                            |
+| `fast`  | ESLint, no types    | everything else that needs no type information                                                                  |
+| `typed` | ESLint, type-aware  | the remaining type-aware rules (`roblox/*`, `flawless/naming-convention`, the type-aware react and sonar rules) |
+
+Trade-offs versus full hybrid: the jsPlugin rules run under ESLint's slower
+runtime again, but they run under their real plugin (no oxlint jsPlugin scope or
+metadata caveats), and formatting no longer goes through the oxfmt jsPlugin.
+
+Rules you configure in your own `oxlint.config.ts` move with them: once
+`jsPlugins: false` is set, an entry naming a plugin that is no longer loaded
+(`"sonar/*"`, say) is dropped from the generated config, since oxlint rejects
+the whole build over a rule whose plugin is not registered. Put those entries in
+`eslint.config.ts`, which is where the rules now run. JsPlugins you register
+yourself are untouched, and so are their rules — but the entry's `name` is what
+the rule prefix is keyed on, so register with the exported resolver rather than
+a bare specifier, or the rules silently go with the drop:
+
+```ts
+import {
+	isentinel,
+	resolveJsPluginSpecifier,
+} from "@isentinel/eslint-config/oxlint";
+
+export default isentinel(
+	{ name: "project/options", jsPlugins: false },
+	{
+		name: "local/my-plugin",
+		files: ["**/*.ts"],
+		jsPlugins: [
+			{ name: "my", specifier: resolveJsPluginSpecifier("eslint-plugin-my") },
+		],
+		rules: { "my/some-rule": "error" },
+	},
+);
+```
+
 ### Dead rule warning
 
 Because the ESLint side drops every oxlint-owned rule (and lets oxlint format

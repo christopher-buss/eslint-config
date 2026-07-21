@@ -111,7 +111,7 @@ describe("oxlint standalone fixtures", () => {
 			await fs.mkdir(temporaryDirectory, { recursive: true });
 			await fs.writeFile(
 				path.join(temporaryDirectory, "input.ts"),
-				// oxlint-disable-next-line @cspell/spellchecker -- deliberate misspellings
+				// eslint-disable-next-line @cspell/spellchecker -- deliberate misspellings
 				'export const RECIEVE_MESAGE = "definately wrogn";\n',
 			);
 

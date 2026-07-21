@@ -1008,6 +1008,18 @@ export function isOxlintCovered(rule: string): boolean {
 }
 
 /**
+ * Whether the rule only runs in oxlint through a jsPlugin (the original ESLint
+ * plugin loaded by oxlint), rather than natively in Rust. Native-only hybrid
+ * mode (`oxlint: "native"`) leaves these rules in ESLint.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether the rule runs as an oxlint jsPlugin.
+ */
+export function isJsPluginRule(rule: string): boolean {
+	return oxlintRuleMapping[rule] === "js-plugin";
+}
+
+/**
  * Whether the rule runs via oxlint-tsgolint (`oxlint --type-aware`); such rules
  * are noise without type information, so they are gated on `typeAware`.
  *

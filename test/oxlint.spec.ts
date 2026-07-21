@@ -12,7 +12,12 @@ import {
 	translateRuleToOxlint,
 } from "../src/oxlint";
 import type { OxlintConfig } from "../src/oxlint";
-import { effectiveEslintRules, enabledFromEffective } from "./oxlint-helpers";
+import {
+	effectiveEslintRules,
+	enabledEslintRules,
+	enabledFromEffective,
+	enabledOxlintRules,
+} from "./oxlint-helpers";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -92,73 +97,9 @@ function disablesBarrelFileForDts(
 	override: NonNullable<OxlintConfig["overrides"]>[number],
 ): boolean {
 	return (
-		override.files.some((glob) => String(glob).includes(".d.")) &&
+		override.files.some((glob) => glob.includes(".d.")) &&
 		override.rules?.["oxc/no-barrel-file"] === "off"
 	);
-}
-
-/**
- * Add every enabled rule from a rule map to the given set.
- *
- * @param rules - The rule map to scan.
- * @param enabled - The set collecting enabled rule names.
- */
-function collectEnabledRules(
-	rules: Record<string, unknown> | undefined,
-	enabled: Set<string>,
-): void {
-	const entries = Object.entries(rules ?? {});
-	for (const [rule, value] of entries) {
-		if (value === undefined) {
-			continue;
-		}
-
-		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
-		if (severity !== "off" && severity !== 0) {
-			enabled.add(rule);
-		}
-	}
-}
-
-/**
- * Collect all rule names with a non-"off" entry anywhere in the configs.
- * Markdown-code sibling configs (synthesized by hybrid mode to keep dropped
- * rules alive inside Markdown code blocks) are excluded so the hybrid drop is
- * visible to the comparison.
- *
- * @param configs - The resolved flat config items.
- * @returns The enabled rule names.
- */
-function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<string> {
-	const enabled = new Set<string>();
-
-	for (const config of configs) {
-		if (config.name?.endsWith("/markdown-code") === true) {
-			continue;
-		}
-
-		collectEnabledRules(config.rules, enabled);
-	}
-
-	return enabled;
-}
-
-/**
- * Collect all enabled rule names from an oxlint config.
- *
- * @param config - The generated oxlint config.
- * @returns The enabled rule names.
- */
-function enabledOxlintRules(config: OxlintConfig): Set<string> {
-	const enabled = new Set<string>();
-
-	collectEnabledRules(config.rules, enabled);
-	const overrides = config.overrides ?? [];
-	for (const override of overrides) {
-		collectEnabledRules(override.rules, enabled);
-	}
-
-	return enabled;
 }
 
 const baseOptions = {
