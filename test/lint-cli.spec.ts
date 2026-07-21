@@ -1051,7 +1051,14 @@ describe("runConcurrent", () => {
 });
 
 function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
-	return { bustFiles: [], lintable: [], targetsOutsideCwd: false, typeAware: [], ...overrides };
+	return {
+		bustFiles: [],
+		configFiles: [],
+		lintable: [],
+		targetsOutsideCwd: false,
+		typeAware: [],
+		...overrides,
+	};
 }
 
 function setMtimeInPast(filePath: string): void {
@@ -1157,7 +1164,7 @@ describe("resolveOxlintRun", () => {
 			const decision = resolveOxlintRun(
 				{
 					cwd: directory,
-					files: repoFiles({ bustFiles: [config] }),
+					files: repoFiles({ configFiles: [config] }),
 					mutate: true,
 					runEslint: true,
 					runOxlint: true,
@@ -1187,7 +1194,7 @@ describe("resolveOxlintRun", () => {
 			const decision = resolveOxlintRun(
 				{
 					cwd: directory,
-					files: repoFiles({ bustFiles: [config] }),
+					files: repoFiles({ configFiles: [config] }),
 					mutate: true,
 					runEslint: true,
 					runOxlint: true,
@@ -1221,7 +1228,7 @@ describe("resolveOxlintRun", () => {
 				{
 					cwd: directory,
 					files: repoFiles({
-						bustFiles: [config],
+						configFiles: [config],
 						typeAware: [path.join(directory, "a.ts")],
 					}),
 					mutate: true,
@@ -1315,7 +1322,7 @@ describe("resolveOxlintRun", () => {
 				{
 					cwd: directory,
 					files: repoFiles({
-						bustFiles: [config],
+						configFiles: [config],
 						typeAware: [path.join(directory, "a.ts")],
 					}),
 					mutate: false,

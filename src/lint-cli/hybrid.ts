@@ -1,6 +1,5 @@
 // cspell:words mtimes unparseable
 import { spawnSync } from "node:child_process";
-import path from "node:path";
 import process from "node:process";
 
 import { maxMtimeMs } from "./cache.ts";
@@ -8,9 +7,6 @@ import type { RepoFiles } from "./files.ts";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "./hybrid-status.ts";
 import type { HybridStatus } from "./hybrid-status.ts";
 import { resolveLocalBin } from "./resolve.ts";
-
-/** Matches the flat-config entry point (`eslint.config.js`, `.ts`, `.mjs`…). */
-const ESLINT_CONFIG_FILE_PATTERN = /^eslint\.config\./;
 
 /**
  * The stderr warning emitted when the resolved ESLint config is not hybrid, so
@@ -162,18 +158,6 @@ function readFreshHybridStatus(
 }
 
 /**
- * The ESLint-config subset of the cache-bust files: the files whose change
- * should invalidate the cached hybrid status. Lockfiles and tsconfigs are
- * excluded — only the ESLint config decides the `oxlint` option.
- *
- * @param bustFiles - The whole cache-bust file set.
- * @returns Every bust file whose basename is a flat-config entry point.
- */
-function eslintConfigFiles(bustFiles: Array<string>): Array<string> {
-	return bustFiles.filter((file) => ESLINT_CONFIG_FILE_PATTERN.test(path.basename(file)));
-}
-
-/**
  * Resolve the hybrid status, trusting a fresh cache file and otherwise probing.
  * Returns `undefined` only when a probe was attempted and failed.
  *
@@ -185,7 +169,7 @@ function resolveHybridStatus(
 	{ cwd, files, mutate }: OxlintRunInput,
 	probe: HybridProbe,
 ): HybridStatus | undefined {
-	const configMtime = maxMtimeMs(eslintConfigFiles(files.bustFiles));
+	const configMtime = maxMtimeMs(files.configFiles);
 
 	const cached = readFreshHybridStatus(cwd, configMtime);
 	if (cached !== undefined) {
@@ -198,7 +182,7 @@ function resolveHybridStatus(
 		return { oxlint: true };
 	}
 
-	const target = files.typeAware[0] ?? eslintConfigFiles(files.bustFiles)[0];
+	const target = files.typeAware[0] ?? files.configFiles[0];
 	if (target === undefined) {
 		return undefined;
 	}

@@ -17,6 +17,7 @@ import {
 	formatCommandLine,
 } from "./command.ts";
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
+import { applyConfigDriftBust } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
 import { collectRepoFiles } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
@@ -200,6 +201,17 @@ export function plan(
 	// this run selected.
 	const canMutateCaches = mutate && options.cache;
 	const hasTypeAwarePass = descriptors.some((descriptor) => descriptor.invalidation !== "none");
+	if (canMutateCaches) {
+		// Config drift through a module `eslint.config.*` imports shifts ESLint's
+		// per-entry `hashOfConfig` (a full re-lint) but touches no bust file, so
+		// the mtime dirty count would size `--concurrency off` for a serial full
+		// re-lint. Content-hash the config's local import closure and delete all
+		// three of this variant's caches when it changed. Applies to every pass
+		// (a config change can alter a syntactic lint), so it runs before the
+		// type-aware-only package.json bust.
+		applyConfigDriftBust(cwd, key, files.configFiles);
+	}
+
 	if (canMutateCaches && hasTypeAwarePass) {
 		applyPackageJsonBust(cwd, key);
 	}
@@ -530,10 +542,12 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	// The typed pass may only auto-skip when the dirty count is trustworthy; an
 	// outside-cwd target makes it unknowable, so never skip in that case.
 	//
-	// Known limitation: a skipped pass never runs, so ESLint's own per-entry
-	// config hash cannot catch a config change that arrived through a module the
-	// `eslint.config.*` imports (only the config file's own mtime busts here).
-	// Touch the config, or run with `--no-cache`, after editing such a module.
+	// A config change reaching the resolved config through a module the
+	// `eslint.config.*` imports busts this variant's caches up front (see
+	// `applyConfigDriftBust` in `plan`), so the dirty count reflects it and the
+	// pass is not wrongly skipped. Residual escape hatch for the cases that
+	// misses (dynamic `import()`, non-file config inputs): touch the config, or
+	// run with `--no-cache`.
 	const canSkip =
 		context.mutate && context.multiPass && descriptor === TYPED_PASS && !conservative;
 	if (canSkip && dirtyCount === 0) {

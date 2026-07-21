@@ -9,11 +9,17 @@ import { describe, expect, it } from "vitest";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
 import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
-import { CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
+import {
+	applyConfigDriftBust,
+	computeConfigHash,
+	configHashStatePath,
+} from "../src/lint-cli/config-hash.ts";
+import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
 import { writeHybridStatus } from "../src/lint-cli/hybrid-status.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { composeCommands, plan } from "../src/lint-cli/run.ts";
+import type { PassPlan } from "../src/lint-cli/run.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 /**
@@ -782,5 +788,268 @@ describe("resolveJsonModule invalidation", () => {
 				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 			},
 		);
+	});
+});
+
+/** A config whose resolved shape depends on a local module it imports. */
+const CONFIG_IMPORT_FIXTURE = {
+	"eslint-rules.ts": "export const rules = { rules: {} };\n",
+	"eslint.config.ts": "import './eslint-rules';\nexport default [];\n",
+	"src/a.ts": "export function a(): number { return 1; }\n",
+	"tsconfig.json": TSCONFIG,
+};
+
+function configBustFiles(directory: string): Array<string> {
+	return [path.join(directory, "eslint.config.ts")];
+}
+
+function seedAllCaches(directory: string, key: string): void {
+	for (const name of ALL_CACHE_FILES) {
+		fs.writeFileSync(path.join(directory, cacheFileFor(name, key)), "{}");
+	}
+}
+
+function cacheExists(directory: string, key: string, name: string): boolean {
+	return fs.existsSync(path.join(directory, cacheFileFor(name, key)));
+}
+
+function everyCacheExists(directory: string, key: string): boolean {
+	return ALL_CACHE_FILES.every((name) => cacheExists(directory, key, name));
+}
+
+function anyCacheExists(directory: string, key: string): boolean {
+	return ALL_CACHE_FILES.some((name) => cacheExists(directory, key, name));
+}
+
+function editRules(directory: string): void {
+	fs.writeFileSync(
+		path.join(directory, "eslint-rules.ts"),
+		"export const rules = { rules: { x: 1 } };\n",
+	);
+}
+
+describe("applyConfigDriftBust", () => {
+	it("stores the hash without busting on the first run", () => {
+		expect.hasAssertions();
+
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			seedAllCaches(directory, TEST_KEY);
+
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+
+			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
+		});
+	});
+
+	it("busts every cache when an imported config module changes", () => {
+		expect.hasAssertions();
+
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			seedAllCaches(directory, TEST_KEY);
+			editRules(directory);
+
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+
+			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+			// Unlike the package.json bust, the fast (syntactic) cache is dropped
+			// too: a rule-severity change alters a syntactic lint.
+			expect(anyCacheExists(directory, TEST_KEY)).toBe(false);
+		});
+	});
+
+	it("does not bust when an imported module is only touched", () => {
+		expect.hasAssertions();
+
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			seedAllCaches(directory, TEST_KEY);
+			touch(path.join(directory, "eslint-rules.ts"));
+
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+
+			// Content-addressed, so an mtime bump with identical content is a
+			// no-op.
+			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
+		});
+	});
+
+	it("lets each variant observe the same drift independently", () => {
+		expect.hasAssertions();
+
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			applyConfigDriftBust(directory, AGENT_KEY, configBustFiles(directory));
+			seedAllCaches(directory, TEST_KEY);
+			seedAllCaches(directory, AGENT_KEY);
+			editRules(directory);
+
+			expect(
+				applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory)),
+			).toStrictEqual({
+				busted: true,
+				firstRun: false,
+			});
+			// The no-agent run must not consume the drift on the agent's behalf.
+			expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
+
+			expect(
+				applyConfigDriftBust(directory, AGENT_KEY, configBustFiles(directory)),
+			).toStrictEqual({
+				busted: true,
+				firstRun: false,
+			});
+			expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
+		});
+	});
+
+	it("stores each variant's hash under its own state file", () => {
+		expect.hasAssertions();
+
+		expect(configHashStatePath("/project", "aaaa1111")).not.toBe(
+			configHashStatePath("/project", "bbbb2222"),
+		);
+	});
+
+	it("no-ops when there is no config entry point", () => {
+		expect.hasAssertions();
+
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			seedAllCaches(directory, TEST_KEY);
+
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, []);
+
+			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
+		});
+	});
+
+	it("no-ops when typescript cannot be resolved", () => {
+		expect.hasAssertions();
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-cfg-"));
+		try {
+			fs.writeFileSync(path.join(directory, "eslint.config.ts"), "export default [];\n");
+			const roots = [path.join(directory, "eslint.config.ts")];
+
+			expect(computeConfigHash(directory, roots)).toBeUndefined();
+			expect(applyConfigDriftBust(directory, TEST_KEY, roots)).toStrictEqual({
+				busted: false,
+				firstRun: false,
+			});
+		} finally {
+			fs.rmSync(directory, { force: true, recursive: true });
+		}
+	});
+});
+
+describe("computeConfigHash discovery", () => {
+	it("follows transitive imports and re-exports", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"a.ts": "export * from './b';\n",
+				"b.ts": "export const b = 1;\n",
+				"eslint.config.ts": "import './a';\nexport default [];\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const before = computeConfigHash(directory, configBustFiles(directory));
+				fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
+				const after = computeConfigHash(directory, configBustFiles(directory));
+
+				expect(before).toBeDefined();
+				expect(after).not.toBe(before);
+			},
+		);
+	});
+
+	it("resolves tsconfig path aliases", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"config/rules.ts": "export const rules = {};\n",
+				"eslint.config.ts": "import '@rules';\nexport default [];\n",
+				"tsconfig.json": JSON.stringify({
+					compilerOptions: {
+						baseUrl: ".",
+						module: "commonjs",
+						paths: { "@rules": ["./config/rules"] },
+						strict: true,
+						target: "es2020",
+					},
+					include: ["src"],
+				}),
+			},
+			(directory) => {
+				const before = computeConfigHash(directory, configBustFiles(directory));
+				fs.writeFileSync(
+					path.join(directory, "config/rules.ts"),
+					"export const rules = { x: 1 };\n",
+				);
+				const after = computeConfigHash(directory, configBustFiles(directory));
+
+				expect(before).toBeDefined();
+				expect(after).not.toBe(before);
+			},
+		);
+	});
+
+	it("ignores files the config does not import", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				"eslint.config.ts": "import './rules';\nexport default [];\n",
+				"rules.ts": "export const rules = {};\n",
+				"tsconfig.json": TSCONFIG,
+				"unrelated.ts": "export const x = 1;\n",
+			},
+			(directory) => {
+				const before = computeConfigHash(directory, configBustFiles(directory));
+				fs.writeFileSync(path.join(directory, "unrelated.ts"), "export const x = 2;\n");
+				const after = computeConfigHash(directory, configBustFiles(directory));
+
+				expect(before).toBeDefined();
+				expect(after).toBe(before);
+			},
+		);
+	});
+});
+
+describe("config drift sizing", () => {
+	function typedPass(runPlan: ReturnType<typeof plan>): PassPlan | undefined {
+		return runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+	}
+
+	it("un-skips the typed pass when a module the config imports changed", () => {
+		expect.hasAssertions();
+
+		// Lint only `src`; the imported `eslint-rules.ts` sits at the root, so it
+		// is neither a lint target nor a cache-bust file. Editing it therefore
+		// changes nothing the mtime dirty count can see — only the config-drift
+		// bust can trigger the re-lint, isolating the fix.
+		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
+			const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+			const fileA = path.join(directory, "src/a.ts");
+			const args = parseArguments(["src"]);
+			computeAffectedFiles(directory, "only", TEST_KEY);
+			seedCache(cacheFile, [fileA]);
+			const warm = withoutGitEnvironment(() => plan(args, directory, {}, true));
+
+			expect(typedPass(warm)?.shouldRun).toBe(false);
+
+			// No bust file changes on disk, but the resolved config (and ESLint's
+			// hashOfConfig) shifts, so the drift bust must delete the caches and
+			// the typed pass must run at full size.
+			editRules(directory);
+			const drifted = withoutGitEnvironment(() => plan(args, directory, {}, true));
+
+			expect(typedPass(drifted)?.shouldRun).toBe(true);
+		});
 	});
 });
