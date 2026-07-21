@@ -20,7 +20,7 @@ local sharedGuards = new Mapping<String, Step> {
 // and is briefly absent — the lint step's `depends` is what keeps that window
 // from being observable, not the omitted `--clean` flag.
 local build = new Step {
-    check = "pnpm exec tsdown --dts"
+    check = "pnpm exec tsdown"
     shell = bash
 }
 

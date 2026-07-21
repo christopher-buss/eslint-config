@@ -11,6 +11,19 @@ const sharedOptions = {
 	shims: true,
 } satisfies UserConfig;
 
+/**
+ * Every shipped entry, in one place. The unused-dependency check builds all of
+ * them together so a dependency used by any single entry counts as used.
+ */
+const entries = {
+	"cli": "src/cli/index.ts",
+	"formatter-agents": "src/formatter-agents.ts",
+	"index": "src/index.ts",
+	"lint-cli": "src/lint-cli/index.ts",
+	"lint-ignored": "src/lint-cli/ignored-child.ts",
+	"oxlint": "src/oxlint/index.ts",
+} satisfies Record<string, string>;
+
 export default defineConfig([
 	{
 		...sharedOptions,
@@ -48,12 +61,7 @@ export default defineConfig([
 				"type-check",
 			],
 		},
-		entry: ["src/index.ts"],
-		unused: {
-			// Required for cli
-			ignore: ["ansis", "yargs", "concurrently", "file-entry-cache"],
-			level: "warning",
-		},
+		entry: [entries.index],
 	},
 	{
 		...sharedOptions,
@@ -61,25 +69,25 @@ export default defineConfig([
 		// instance. A barrel (`src/cli.ts`) would tree-shake the top-level
 		// `void instance.argv` side effect away, emitting an empty
 		// `dist/cli.mjs`.
-		entry: { cli: "src/cli/index.ts" },
+		entry: { cli: entries.cli },
 	},
 	{
 		...sharedOptions,
 		// Shipped at dist/formatter-agents.mjs; the isentinel-lint CLI resolves
 		// this exact path to pass it to `eslint --format`.
-		entry: { "formatter-agents": "src/formatter-agents.ts" },
+		entry: { "formatter-agents": entries["formatter-agents"] },
 	},
 	{
 		...sharedOptions,
 		// The lint runner shells out to the consumer's local eslint/oxlint and
 		// resolves them at runtime, so its runtime deps stay external.
-		entry: { "lint-cli": "src/lint-cli/index.ts" },
+		entry: { "lint-cli": entries["lint-cli"] },
 	},
 	{
 		...sharedOptions,
 		// Shipped at dist/lint-ignored.mjs; the lint runner spawns this exact
 		// path to ask the consumer's ESLint which targets it ignores.
-		entry: { "lint-ignored": "src/lint-cli/ignored-child.ts" },
+		entry: { "lint-ignored": entries["lint-ignored"] },
 	},
 	{
 		...sharedOptions,
@@ -96,6 +104,23 @@ export default defineConfig([
 				"oxlint",
 			],
 		},
-		entry: { oxlint: "src/oxlint/index.ts" },
+		entry: { oxlint: entries.oxlint },
+	},
+	{
+		// Dependency-usage check only: unplugin-unused inspects a single
+		// rolldown graph, so a dependency imported by only one entry looks
+		// unused to every other entry's build. Bundling all entries at once is
+		// the only way it sees the whole picture. Nothing here is shipped, so
+		// the output goes to a cache dir, declarations are skipped, and no
+		// dependency is bundled - the plugin only needs to read our own
+		// sources to spot the imports.
+		clean: true,
+		deps: { skipNodeModulesBundle: true },
+		dts: false,
+		entry: entries,
+		format: ["esm"],
+		outDir: "node_modules/.cache/tsdown-unused",
+		publint: false,
+		unused: { level: "warning" },
 	},
 ]);
