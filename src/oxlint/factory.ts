@@ -47,7 +47,7 @@ import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
-import { createOxlintConfigs } from "./utils.ts";
+import { createOxlintConfigs, hasJsPluginRule, withoutJsPluginRules } from "./utils.ts";
 
 /**
  * The preset enables its rules explicitly, so every category is disabled to
@@ -108,6 +108,7 @@ export function isentinel(
 		globals,
 		ignores,
 		jsdoc: enableJsdoc = true,
+		jsPlugins: userJsPlugins,
 		jsx: enableJsx = true,
 		options: linterOptions,
 		oxc: enableOxc = true,
@@ -120,6 +121,11 @@ export function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	// Native-only mode: oxlint runs its Rust rules (and tsgolint) and nothing
+	// else. Every preset fragment that needs a jsPlugin is stripped, so the
+	// ESLint side (`oxlint: "native"`) keeps those rules.
+	const nativeOnly = userJsPlugins === false;
 
 	// See the ESLint factory: files outside a scoped `roblox` glob form the
 	// standard-TS/Node complement. `undefined` means no complement (default /
@@ -358,13 +364,58 @@ export function isentinel(
 			? ignores([...GLOB_EXCLUDE, ...gitignorePatterns])
 			: [...GLOB_EXCLUDE, ...gitignorePatterns, ...(ignores ?? [])];
 
-	function mergeFragment(config: TypedOxlintConfigItem): void {
+	/**
+	 * Merge a fragment into the accumulated overrides.
+	 *
+	 * @param config - The fragment to merge.
+	 * @param preset - Whether the fragment comes from the preset. In native-only
+	 *   mode a preset fragment loses its jsPlugins entirely; a user fragment
+	 *   keeps them (their own plugins still load) but loses the rules of the
+	 *   preset plugins that no longer exist — oxlint rejects the whole config
+	 *   over a rule naming an unregistered plugin, so leftovers must go.
+	 */
+	function mergeFragment(config: TypedOxlintConfigItem, preset = true): void {
+		const fragmentJsPlugins = config.jsPlugins ?? [];
 		const fragmentPlugins = config.plugins ?? [];
+
+		if (nativeOnly && (fragmentJsPlugins.length > 0 || hasJsPluginRule(config.rules))) {
+			if (config.settings) {
+				Object.assign(mergedSettings, config.settings);
+			}
+
+			// Preset fragments carrying jsPlugins hold only jsPlugin rules (the
+			// splitter emits them separately from native rules), so their whole
+			// rule map goes; user fragments keep everything else.
+			const nativeRules = withoutJsPluginRules(config.rules);
+			if (!preset) {
+				for (const jsPlugin of fragmentJsPlugins) {
+					jsPlugins.set(
+						typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name,
+						jsPlugin,
+					);
+				}
+			}
+
+			if (nativeRules !== undefined || config.globals !== undefined) {
+				overrides.push({
+					files: config.files,
+					...(config.excludeFiles ? { excludeFiles: config.excludeFiles } : {}),
+					...(config.globals ? { globals: config.globals } : {}),
+					...(nativeRules ? { rules: nativeRules } : {}),
+				});
+			}
+
+			for (const plugin of fragmentPlugins) {
+				nativePlugins.add(plugin);
+			}
+
+			return;
+		}
+
 		for (const plugin of fragmentPlugins) {
 			nativePlugins.add(plugin);
 		}
 
-		const fragmentJsPlugins = config.jsPlugins ?? [];
 		for (const jsPlugin of fragmentJsPlugins) {
 			const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name;
 			jsPlugins.set(key, jsPlugin);
@@ -406,7 +457,13 @@ export function isentinel(
 	}
 
 	for (const userConfig of userConfigs) {
-		mergeFragment(userConfig);
+		mergeFragment(userConfig, false);
+	}
+
+	if (Array.isArray(userJsPlugins)) {
+		for (const jsPlugin of userJsPlugins) {
+			jsPlugins.set(typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name, jsPlugin);
+		}
 	}
 
 	if (defaultSeverity) {

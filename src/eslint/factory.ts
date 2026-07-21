@@ -59,6 +59,7 @@ import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
 import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
+import type { OxlintHybridMode } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type { ValidateOptions, ValidateUserConfigs } from "./redundancy.ts";
 import { applyTypeAwareSplit } from "./type-aware-split.ts";
@@ -253,6 +254,11 @@ export async function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+
+	// Hybrid mode is off, full (oxlint owns every mapped rule) or native-only
+	// (oxlint owns just the Rust rules; jsPlugin rules and formatting stay here).
+	const hybridEnabled = enableOxlint !== false;
+	const oxlintMode: OxlintHybridMode = enableOxlint === "native" ? "native" : "full";
 
 	// When `roblox` is scoped to specific files (or disabled entirely) the files
 	// it does not cover form the "complement": standard-TS/Node land that gets
@@ -564,11 +570,11 @@ export async function isentinel(
 	// Passively record the hybrid status so `isentinel-lint` can tell, without
 	// re-running the config, whether oxlint would double-lint every mapped rule.
 	// Best-effort and swallowed; config evaluation must never throw for this.
-	writeHybridStatusForCwd(enableOxlint);
+	writeHybridStatusForCwd(hybridEnabled);
 
 	// Stamp a marker observable from outside via `eslint --print-config`: the CLI
 	// probes for `settings["isentinel/oxlint"]` when the cached status is stale.
-	if (enableOxlint) {
+	if (hybridEnabled) {
 		configs.push([
 			{
 				name: "isentinel/oxlint-marker",
@@ -597,7 +603,9 @@ export async function isentinel(
 							},
 				oxfmtConfigOptions,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
-				oxlint: enableOxlint,
+				// Native-only hybrid keeps formatting in ESLint: oxfmt runs in
+				// oxlint as a jsPlugin, which that mode does not load.
+				oxlint: oxlintMode === "full" && hybridEnabled,
 				prettierOptions: prettierSettings,
 			}),
 		);
@@ -640,7 +648,7 @@ export async function isentinel(
 		composer = composer.renamePlugins(defaultPluginRenaming);
 	}
 
-	if (enableOxlint) {
+	if (hybridEnabled) {
 		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
 		if (!tsgolintAvailable) {
 			warnMissingTsgolint();
@@ -651,10 +659,10 @@ export async function isentinel(
 		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
-				warnDeadMappedRules(resolved);
+				warnDeadMappedRules(resolved, oxlintMode);
 			}
 
-			dropOxlintCoveredRules(resolved, tsgolintAvailable);
+			dropOxlintCoveredRules(resolved, tsgolintAvailable, oxlintMode);
 		});
 	}
 

@@ -1,4 +1,3 @@
-/* oxlint-disable sonar/no-duplicate-string -- Type-test fixtures repeat literal rule and config names by design. */
 import { describe, it } from "vitest";
 
 import { isentinel } from "../src/eslint/index.ts";

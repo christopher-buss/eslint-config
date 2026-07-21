@@ -76,6 +76,47 @@ export function resolveJsPluginSpecifier(specifier: string): string {
 	return resolved;
 }
 
+const JS_PLUGIN_PREFIXES = new Set(Object.keys(oxlintJsPlugins));
+
+/**
+ * Whether an oxlint-named rule belongs to a plugin oxlint can only run as a
+ * jsPlugin (the original ESLint plugin). Native rules keep an oxlint plugin
+ * prefix (`typescript/*`, `unicorn/*`, `oxc/*`) or none at all.
+ *
+ * @param rule - The oxlint-side rule name.
+ * @returns Whether the rule needs a jsPlugin.
+ */
+export function isJsPluginRuleName(rule: string): boolean {
+	const slashIndex = rule.indexOf("/");
+	return slashIndex !== -1 && JS_PLUGIN_PREFIXES.has(rule.slice(0, slashIndex));
+}
+
+/**
+ * Whether a fragment's rule map contains any rule that needs a jsPlugin.
+ *
+ * @param rules - The oxlint-named rule map.
+ * @returns Whether a jsPlugin rule is present.
+ */
+export function hasJsPluginRule(rules: TypedOxlintConfigItem["rules"]): boolean {
+	return Object.keys(rules ?? {}).some((rule) => isJsPluginRuleName(rule));
+}
+
+/**
+ * Drop every jsPlugin rule from a fragment's rule map, for native-only mode.
+ *
+ * @param rules - The oxlint-named rule map.
+ * @returns The remaining native rules, or `undefined` when none are left.
+ */
+export function withoutJsPluginRules(
+	rules: TypedOxlintConfigItem["rules"],
+): TypedOxlintConfigItem["rules"] {
+	const kept = Object.fromEntries(
+		Object.entries(rules ?? {}).filter(([rule]) => !isJsPluginRuleName(rule)),
+	) as NonNullable<TypedOxlintConfigItem["rules"]>;
+
+	return Object.keys(kept).length > 0 ? kept : undefined;
+}
+
 /**
  * Split a canonical (ESLint-named) rule map into oxlint-native rules and
  * jsPlugin rules, translating rule names via the oxlint rule mapping.

@@ -1,6 +1,6 @@
-import { GLOB_TESTS } from "../../globs.ts";
+import { GLOB_TESTS, GLOB_TYPE_TESTS } from "../../globs.ts";
 import { sonarjsTestRules } from "../../rules/sonarjs.ts";
-import { jestRules, vitestRules } from "../../rules/test.ts";
+import { jestRules, typeTestRules, vitestRules } from "../../rules/test.ts";
 import type {
 	OptionsFiles,
 	OptionsHasRoblox,
@@ -77,6 +77,12 @@ export function oxlintTest({
 					},
 				},
 			}),
+			...createOxlintConfigs({
+				name: "isentinel/test/jest/type-tests",
+				files: [GLOB_TYPE_TESTS],
+				keepUnmappedOff: true,
+				rules: typeTestRules("jest"),
+			}),
 		);
 	}
 
@@ -100,6 +106,12 @@ export function oxlintTest({
 						typecheck: vitestOptions.typecheck ?? false,
 					},
 				},
+			}),
+			...createOxlintConfigs({
+				name: "isentinel/test/vitest/type-tests",
+				files: [GLOB_TYPE_TESTS],
+				keepUnmappedOff: true,
+				rules: typeTestRules("vitest"),
 			}),
 		);
 	}

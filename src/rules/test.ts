@@ -14,6 +14,22 @@ export interface VitestRuleOptions extends OptionsIsInEditor, OptionsStylistic {
 }
 
 /**
+ * Rules that make no sense in a type test (`*.test-d.ts`): these files assert
+ * with `expectTypeOf`/`assertType` at compile time, run no expectations, and
+ * name their blocks after the types under test.
+ *
+ * @param prefix - The test-plugin prefix in use (`jest` or `vitest`).
+ * @returns The rule map.
+ */
+export function typeTestRules(prefix: "jest" | "vitest"): TypedFlatConfigItem["rules"] {
+	return {
+		[`${prefix}/expect-expect`]: "off",
+		[`${prefix}/prefer-expect-assertions`]: "off",
+		[`${prefix}/prefer-lowercase-title`]: "off",
+	};
+}
+
+/**
  * Jest-extended rules shared between the ESLint and oxlint factories.
  *
  * @returns The rule map.

@@ -92,7 +92,7 @@ function disablesBarrelFileForDts(
 	override: NonNullable<OxlintConfig["overrides"]>[number],
 ): boolean {
 	return (
-		override.files.some((glob) => String(glob).includes(".d.")) &&
+		override.files.some((glob) => glob.includes(".d.")) &&
 		override.rules?.["oxc/no-barrel-file"] === "off"
 	);
 }

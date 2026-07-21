@@ -72,37 +72,50 @@ export type OxlintOptionsConfig = Omit<
  * Combines oxlint config fields (`env`, `globals`, `rules`, ...) with the
  * shared preset options and the top-level linter `options` object.
  */
-export type OxlintFactoryOptions = Omit<TypedOxlintConfigItem, "files"> &
-	OxlintOptionsConfig & {
-		/**
-		 * Rule categories to enable at the top level.
-		 *
-		 * The preset enables its rules explicitly and disables every category
-		 * by default, so oxlint's own category defaults do not fire on top of
-		 * the curated set. Values here are merged over that default, so
-		 * enabling one category leaves the rest off.
-		 */
-		categories?: RuleCategories;
+export type OxlintFactoryOptions = {
+	/**
+	 * Rule categories to enable at the top level.
+	 *
+	 * The preset enables its rules explicitly and disables every category
+	 * by default, so oxlint's own category defaults do not fire on top of
+	 * the curated set. Values here are merged over that default, so
+	 * enabling one category leaves the rest off.
+	 */
+	categories?: RuleCategories;
 
-		/**
-		 * Top-level linter options emitted into the generated config
-		 * (`typeAware`, `typeCheck`, `maxWarnings`, ...).
-		 *
-		 * `typeAware` defaults to `true` when `oxlint-tsgolint` is resolvable,
-		 * so type-aware rules run without passing `--type-aware` on the CLI.
-		 * CLI flags take precedence over these values.
-		 */
-		options?: OxlintLinterOptions;
+	/**
+	 * Extra jsPlugins to load, or `false` to run oxlint with native rules
+	 * only.
+	 *
+	 * With `false` the factory emits no jsPlugins and drops every rule that
+	 * would run through one (spelling, the react and jest families, oxfmt
+	 * formatting, `oxlint-comments`, ...), leaving oxlint with its Rust
+	 * rules and — when enabled — the tsgolint type-aware ones. Pair it with
+	 * `oxlint: "native"` in the ESLint factory, which keeps exactly those
+	 * rules in ESLint.
+	 */
+	jsPlugins?: false | NonNullable<TypedOxlintConfigItem["jsPlugins"]>;
 
-		/**
-		 * Enable oxlint's native `oxc/*` rules (correctness and performance
-		 * checks with no ESLint equivalent). Defaults to `true`.
-		 *
-		 * These rules are oxlint-only, so consumers linting solely with ESLint
-		 * see no effect from this option.
-		 */
-		oxc?: boolean;
-	};
+	/**
+	 * Top-level linter options emitted into the generated config
+	 * (`typeAware`, `typeCheck`, `maxWarnings`, ...).
+	 *
+	 * `typeAware` defaults to `true` when `oxlint-tsgolint` is resolvable,
+	 * so type-aware rules run without passing `--type-aware` on the CLI.
+	 * CLI flags take precedence over these values.
+	 */
+	options?: OxlintLinterOptions;
+
+	/**
+	 * Enable oxlint's native `oxc/*` rules (correctness and performance
+	 * checks with no ESLint equivalent). Defaults to `true`.
+	 *
+	 * These rules are oxlint-only, so consumers linting solely with ESLint
+	 * see no effect from this option.
+	 */
+	oxc?: boolean;
+} & Omit<TypedOxlintConfigItem, "files" | "jsPlugins"> &
+	OxlintOptionsConfig;
 
 export type {
 	OxlintNativeRuleOptions,

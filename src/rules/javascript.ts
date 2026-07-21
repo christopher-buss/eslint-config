@@ -54,9 +54,9 @@ export function javascriptRules({
 			"error",
 			{
 				capIsNew: false,
-				// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External
+				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
 				newIsCap: true,
-				// oxlint-disable-next-line unicorn-js/no-keyword-prefix -- External
+				// eslint-disable-next-line unicorn/no-keyword-prefix -- External
 				newIsCapExceptionPattern: "^mock",
 				properties: true,
 			},

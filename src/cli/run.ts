@@ -45,19 +45,6 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	if (argumentSkipPrompt !== true) {
 		result = (await group(
 			{
-				uncommittedConfirmed: async () => {
-					if (isGitClean()) {
-						return true;
-					}
-
-					return confirm({
-						initialValue: false,
-						message:
-							"There are uncommitted changes in the current repository, are you sure to continue?",
-					});
-				},
-
-				// oxlint-disable-next-line perfectionist/sort-objects -- keep the order of prompts
 				frameworks: async ({ results }) => {
 					const isArgumentTemplateValid =
 						argumentTemplate &&
@@ -77,6 +64,18 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 						message: ansis.reset(message),
 						options: frameworkOptions,
 						required: false,
+					});
+				},
+
+				uncommittedConfirmed: async () => {
+					if (isGitClean()) {
+						return true;
+					}
+
+					return confirm({
+						initialValue: false,
+						message:
+							"There are uncommitted changes in the current repository, are you sure to continue?",
 					});
 				},
 

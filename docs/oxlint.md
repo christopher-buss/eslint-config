@@ -130,6 +130,51 @@ keeps running in ESLint, notably:
 A test suite asserts that every rule dropped from ESLint in hybrid mode is
 enabled in the oxlint factory output, so coverage loss is a test failure.
 
+### Native-only hybrid (experimental)
+
+`oxlint: "native"` narrows the hand-off: oxlint runs **only** the rules it
+implements in Rust (native rules plus the tsgolint type-aware ones) and loads no
+jsPlugins at all. Everything a jsPlugin would have run — spelling, `sonar/*`,
+the non-native `unicorn/*`, `perfectionist/*`, the react and jest families, the
+custom `roblox/*` and `flawless/*` rules, `oxlint-comments` and oxfmt formatting
+— stays in ESLint, where the original plugins already run.
+
+Both sides must agree, or rules run twice (or nowhere):
+
+```ts
+// eslint.config.ts
+export default isentinel({ oxlint: "native", type: "game" });
+```
+
+```ts
+// oxlint.config.ts
+export default isentinel({
+	name: "project/options",
+	jsPlugins: false,
+	type: "game",
+});
+```
+
+With `isentinel-lint` this yields three passes, each with a distinct job:
+
+| Pass    | Engine              | Runs                                                                                                            |
+| ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `oxc`   | oxlint (+ tsgolint) | native Rust rules, type-aware `ts/*`                                                                            |
+| `fast`  | ESLint, no types    | everything else that needs no type information                                                                  |
+| `typed` | ESLint, type-aware  | the remaining type-aware rules (`roblox/*`, `flawless/naming-convention`, the type-aware react and sonar rules) |
+
+Trade-offs versus full hybrid: the jsPlugin rules run under ESLint's slower
+runtime again, but they run under their real plugin (no oxlint jsPlugin scope or
+metadata caveats), formatting no longer goes through the oxfmt jsPlugin, and
+oxlint's config stays free of external plugin resolution. Note that
+`oxlint-comments` is a jsPlugin, so oxlint directive hygiene is not checked in
+this mode.
+
+Rules you disable in your own `oxlint.config.ts` must move with them: a
+`"sonar/*"` entry there fails the oxlint config build
+(`Plugin 'sonar' not found`) once `jsPlugins: false` is set — put it in
+`eslint.config.ts` instead.
+
 ### Dead rule warning
 
 Because the ESLint side drops every oxlint-owned rule (and lets oxlint format
