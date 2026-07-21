@@ -55,14 +55,15 @@ export function stateDirectory(cwd: string): string {
  * Resolve one state file inside {@link stateDirectory}.
  *
  * @param cwd - The consumer project root.
- * @param parts - The file name's hyphen-joined segments, usually a base name
- *   followed by the config-variant key from `resolveCacheKey`. State that is
- *   consumed once (a stored hash, a drained builder) must carry that key, or
- *   the first variant to run absorbs the change on behalf of all of them.
+ * @param name - The state's base name.
+ * @param parts - Further hyphen-joined segments, usually the config-variant key
+ *   from `resolveCacheKey`. State that is consumed once (a stored hash, a
+ *   drained builder) must carry that key, or the first variant to run absorbs
+ *   the change on behalf of all of them.
  * @returns The absolute path to the state file.
  */
-export function statePath(cwd: string, ...parts: Array<string>): string {
-	return path.join(stateDirectory(cwd), parts.join("-"));
+export function statePath(cwd: string, name: string, ...parts: Array<string>): string {
+	return path.join(stateDirectory(cwd), [name, ...parts].join("-"));
 }
 
 /**
@@ -96,23 +97,7 @@ export function readFileIfPresent(filePath: string): string | undefined {
 /* oxlint-disable typescript/no-unnecessary-type-parameters -- T is the reader's assertion about what its own state file holds, which keeps the cast at one call site instead of at every use of the result. */
 export function readState<T>(filePath: string): T | undefined {
 	const raw = readFileIfPresent(filePath);
-	if (raw === undefined) {
-		return undefined;
-	}
-
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(raw);
-	} catch {
-		return undefined;
-	}
-
-	if (typeof parsed !== "object" || parsed === null) {
-		return undefined;
-	}
-
-	const envelope = parsed as Partial<StateEnvelope<T>>;
-	return envelope.version === STATE_VERSION ? envelope.data : undefined;
+	return raw === undefined ? undefined : parseState<T>(raw);
 }
 /* oxlint-enable typescript/no-unnecessary-type-parameters */
 
@@ -139,7 +124,12 @@ export function writeState(filePath: string, data: unknown): void {
 		fs.writeFileSync(temporary, content);
 		fs.renameSync(temporary, filePath);
 	} catch {
-		fs.rmSync(temporary, { force: true });
+		try {
+			fs.rmSync(temporary, { force: true });
+		} catch {
+			// The cleanup must not throw either: the factory writes the hybrid
+			// status during config evaluation, which must never fail for this.
+		}
 	}
 }
 
@@ -151,18 +141,26 @@ export function writeState(filePath: string, data: unknown): void {
  * The value is consumed by the swap — once stored, every later run reads back
  * `"unchanged"` — which is why hash state is keyed per config variant.
  *
+ * A stored value this {@link STATE_VERSION} cannot read counts as `"changed"`,
+ * so a CLI upgrade invalidates rather than silently adopts what it finds.
+ *
  * @param filePath - The state file, from {@link statePath}.
  * @param value - The value this run computed.
  * @returns How the stored value compared.
  */
 export function swapState(filePath: string, value: string): StateSwap {
-	const stored = readState<string>(filePath);
+	const raw = readFileIfPresent(filePath);
+	const stored = raw === undefined ? undefined : parseState<string>(raw);
 	if (stored === value) {
 		return "unchanged";
 	}
 
 	writeState(filePath, value);
-	return stored === undefined ? "first" : "changed";
+	// A file that exists but does not parse back — corrupt, or written by
+	// another STATE_VERSION — counts as changed, not first. Something was
+	// stored, and nothing can vouch for what the caches keyed to it hold, so
+	// the caller must invalidate rather than adopt them.
+	return raw === undefined ? "first" : "changed";
 }
 
 /**
@@ -180,3 +178,29 @@ export function touchState(filePath: string): void {
 		// The reader treats a missing or stale file as "unknown" and recomputes.
 	}
 }
+
+/**
+ * Parse one state file's content, or `undefined` when it is malformed or
+ * carries another {@link STATE_VERSION}.
+ *
+ * @template T - The shape this file's writer stores (asserted, not checked).
+ * @param raw - The file's content.
+ * @returns The stored payload, or `undefined`.
+ */
+/* oxlint-disable typescript/no-unnecessary-type-parameters -- Mirrors readState's assertion; see its note. */
+function parseState<T>(raw: string): T | undefined {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return undefined;
+	}
+
+	if (typeof parsed !== "object" || parsed === null) {
+		return undefined;
+	}
+
+	const envelope = parsed as Partial<StateEnvelope<T>>;
+	return envelope.version === STATE_VERSION ? envelope.data : undefined;
+}
+/* oxlint-enable typescript/no-unnecessary-type-parameters */

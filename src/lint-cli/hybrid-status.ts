@@ -53,7 +53,14 @@ export function readHybridStatus(cwd: string): HybridStatus | undefined {
  * @param oxlint - Whether the config enabled hybrid mode.
  */
 export function writeHybridStatus(cwd: string, oxlint: boolean): void {
-	if (!fs.existsSync(path.resolve(cwd, "node_modules"))) {
+	let installed: boolean;
+	try {
+		installed = fs.existsSync(path.resolve(cwd, "node_modules"));
+	} catch {
+		return;
+	}
+
+	if (!installed) {
 		return;
 	}
 

@@ -101,6 +101,22 @@ describe("writeState", () => {
 });
 
 describe("swapState", () => {
+	it("reports changed for state it cannot read back", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const file = statePath(directory, "example", "key");
+			fs.mkdirSync(path.dirname(file), { recursive: true });
+			fs.writeFileSync(file, JSON.stringify({ data: "one", version: STATE_VERSION + 1 }));
+
+			// A CLI upgrade must invalidate what it finds, not adopt it: the
+			// caches keyed to an unreadable hash cannot be vouched for, so the
+			// caller has to bust rather than treat this as a first run.
+			expect(swapState(file, "one")).toBe("changed");
+			expect(swapState(file, "one")).toBe("unchanged");
+		});
+	});
+
 	it("reports first, unchanged and changed across successive runs", () => {
 		expect.hasAssertions();
 
