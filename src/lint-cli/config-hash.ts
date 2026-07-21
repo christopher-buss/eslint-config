@@ -5,6 +5,7 @@ import path from "node:path";
 import type * as TypeScript from "typescript";
 
 import { ALL_CACHE_FILES, cacheFileFor } from "./constants.ts";
+import { readState, statePath, writeState } from "./state.ts";
 import { loadTypescript } from "./typescript.ts";
 
 /**
@@ -53,7 +54,7 @@ interface ClosureResolver {
  * @returns The absolute path to the stored-hash file.
  */
 export function configHashStatePath(cwd: string, key: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `config-hash-${key}`);
+	return statePath(cwd, "config-hash", key);
 }
 
 /**
@@ -132,13 +133,13 @@ export function applyConfigDriftBust(
 		return { busted: false, firstRun: false };
 	}
 
-	const statePath = configHashStatePath(cwd, key);
-	const stored = safeReadUtf8(statePath);
+	const file = configHashStatePath(cwd, key);
+	const stored = readState<string>(file);
 	if (stored === hash) {
 		return { busted: false, firstRun: false };
 	}
 
-	writeHash(statePath, hash);
+	writeState(file, hash);
 	if (stored === undefined) {
 		return { busted: false, firstRun: true };
 	}
@@ -298,9 +299,4 @@ function discoverConfigClosure(
 	}
 
 	return files;
-}
-
-function writeHash(statePath: string, hash: string): void {
-	fs.mkdirSync(path.dirname(statePath), { recursive: true });
-	fs.writeFileSync(statePath, hash);
 }

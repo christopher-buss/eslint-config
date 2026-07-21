@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "./constants.ts";
+import { readState, statePath, writeState } from "./state.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
 /**
@@ -50,7 +51,7 @@ export interface PackageJsonBustOutcome {
  * @returns The absolute path to the stored-hash file.
  */
 export function packageHashStatePath(cwd: string, key: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `package-json-hash-${key}`);
+	return statePath(cwd, "package-json-hash", key);
 }
 
 /**
@@ -105,13 +106,13 @@ export function applyPackageJsonBust(cwd: string, key: string): PackageJsonBustO
 		return { busted: false, firstRun: false };
 	}
 
-	const statePath = packageHashStatePath(cwd, key);
-	const stored = safeRead(statePath);
+	const file = packageHashStatePath(cwd, key);
+	const stored = readState<string>(file);
 	if (stored === hash) {
 		return { busted: false, firstRun: false };
 	}
 
-	writeHash(statePath, hash);
+	writeState(file, hash);
 	if (stored === undefined) {
 		return { busted: false, firstRun: true };
 	}
@@ -174,17 +175,4 @@ function stableStringify(value: unknown): string {
 	}
 
 	return JSON.stringify(value);
-}
-
-function safeRead(filePath: string): string | undefined {
-	try {
-		return fs.readFileSync(filePath, "utf8");
-	} catch {
-		return undefined;
-	}
-}
-
-function writeHash(statePath: string, hash: string): void {
-	fs.mkdirSync(path.dirname(statePath), { recursive: true });
-	fs.writeFileSync(statePath, hash);
 }
