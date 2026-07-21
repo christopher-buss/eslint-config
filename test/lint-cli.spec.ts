@@ -31,6 +31,7 @@ import {
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
 	cacheFileFor,
+	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/constants.ts";
 import { collectLintableFiles, collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
@@ -52,6 +53,7 @@ import {
 	computePackageJsonHash,
 	packageHashStatePath,
 } from "../src/lint-cli/package-hash.ts";
+import { FAST_PASS, FULL_PASS, TYPED_PASS } from "../src/lint-cli/passes.ts";
 import { composeCommands, plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
@@ -249,11 +251,44 @@ describe("computeWorkerCount", () => {
 	});
 });
 
-describe("resolveWorkerLimits", () => {
-	it("defaults to 350 files per worker and a quarter of the CPUs", () => {
+describe("per-pass worker caps", () => {
+	it("caps the program-building passes below the shared cap", () => {
 		expect.hasAssertions();
 
-		expect(resolveWorkerLimits({}, 16)).toStrictEqual({ filesPerWorker: 350, maxWorkers: 4 });
+		const limits = resolveWorkerLimits({}, 64);
+
+		expect(limits.maxWorkers).toBe(16);
+		expect(TYPED_PASS.maxWorkers(limits)).toBe(TYPED_MAX_WORKERS);
+		expect(FULL_PASS.maxWorkers(limits)).toBe(TYPED_MAX_WORKERS);
+		expect(FAST_PASS.maxWorkers(limits)).toBe(16);
+	});
+
+	it("leaves the shared cap alone when it is already the tighter one", () => {
+		expect.hasAssertions();
+
+		const limits = resolveWorkerLimits({}, 16);
+
+		expect(TYPED_PASS.maxWorkers(limits)).toBe(4);
+	});
+
+	it("never overrides an explicit LINT_MAX_WORKERS", () => {
+		expect.hasAssertions();
+
+		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "12" }, 64);
+
+		expect(TYPED_PASS.maxWorkers(limits)).toBe(12);
+	});
+});
+
+describe("resolveWorkerLimits", () => {
+	it("defaults to 300 files per worker and a quarter of the CPUs", () => {
+		expect.hasAssertions();
+
+		expect(resolveWorkerLimits({}, 16)).toStrictEqual({
+			explicitMaxWorkers: false,
+			filesPerWorker: 300,
+			maxWorkers: 4,
+		});
 	});
 
 	it("honours env overrides", () => {
@@ -261,7 +296,11 @@ describe("resolveWorkerLimits", () => {
 
 		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "200", LINT_MAX_WORKERS: "6" }, 16);
 
-		expect(limits).toStrictEqual({ filesPerWorker: 200, maxWorkers: 6 });
+		expect(limits).toStrictEqual({
+			explicitMaxWorkers: true,
+			filesPerWorker: 200,
+			maxWorkers: 6,
+		});
 	});
 
 	it("ignores invalid env overrides", () => {
@@ -269,7 +308,11 @@ describe("resolveWorkerLimits", () => {
 
 		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "0", LINT_MAX_WORKERS: "x" }, 16);
 
-		expect(limits).toStrictEqual({ filesPerWorker: 350, maxWorkers: 4 });
+		expect(limits).toStrictEqual({
+			explicitMaxWorkers: false,
+			filesPerWorker: 300,
+			maxWorkers: 4,
+		});
 	});
 });
 
@@ -807,7 +850,7 @@ describe("plan", () => {
 });
 
 describe("fast pass sizing", () => {
-	it("sizes the fast pass from FAST_FILES_PER_WORKER and the typed pass from 350", () => {
+	it("sizes the fast pass from FAST_FILES_PER_WORKER and the typed pass from 300", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
@@ -824,7 +867,7 @@ describe("fast pass sizing", () => {
 			});
 
 			// Three dirty files: FAST_FILES_PER_WORKER=1 => 3 fast workers; the
-			// typed pass keeps the 350-file default => a single worker (off).
+			// typed pass keeps the 300-file default => a single worker (off).
 			expect(concurrencyArgument(commands, "fast")).toBe("3");
 			expect(concurrencyArgument(commands, "typed")).toBe("off");
 		});

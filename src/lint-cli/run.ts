@@ -544,19 +544,16 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
 	const conservative = context.files.targetsOutsideCwd;
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.environment);
+	const maxWorkers = descriptor.maxWorkers(context.limits);
 
 	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
 	// count under-counts them — size for the worker cap instead (maxWorkers *
 	// filesPerWorker ceils back to exactly maxWorkers).
-	const sizingDirtyCount = conservative ? context.limits.maxWorkers * filesPerWorker : dirtyCount;
+	const sizingDirtyCount = conservative ? maxWorkers * filesPerWorker : dirtyCount;
 
 	const concurrency =
 		context.options.concurrency ??
-		computeWorkerCount({
-			dirtyCount: sizingDirtyCount,
-			filesPerWorker,
-			maxWorkers: context.limits.maxWorkers,
-		});
+		computeWorkerCount({ dirtyCount: sizingDirtyCount, filesPerWorker, maxWorkers });
 
 	// The typed pass may only auto-skip when the dirty count is trustworthy; an
 	// outside-cwd target makes it unknowable, so never skip in that case.

@@ -13,6 +13,12 @@ export interface WorkerHeuristicInput {
 
 /** Resolved limits derived from the environment and available CPUs. */
 export interface WorkerLimits {
+	/**
+	 * Whether `maxWorkers` came from an explicit `LINT_MAX_WORKERS`. A pass may
+	 * tighten the derived cap (see `TYPED_MAX_WORKERS`) but never an explicit
+	 * one.
+	 */
+	explicitMaxWorkers: boolean;
 	filesPerWorker: number;
 	maxWorkers: number;
 }
@@ -21,9 +27,12 @@ export interface WorkerLimits {
  * Derive the worker limits from environment overrides, falling back to the
  * default files-per-worker and a quarter of the available parallelism.
  *
- * Type-aware linting spends roughly `filesPerWorker^1.46` per worker with a
- * fixed ~6.5s TypeScript program construction cost, so the sweet spot is
- * ~200-400 files per worker rather than ESLint's syntax-tuned `auto`.
+ * A type-aware worker costs a fixed TypeScript program build plus roughly
+ * 10-20ms per file. The build is not a constant: `projectService` only builds
+ * the projects covering the files a worker was given, so splitting the run
+ * splits the build too — but each split still repeats the per-project floor,
+ * which is what keeps the sweet spot near 300 files per worker rather than
+ * ESLint's syntax-tuned `auto`.
  *
  * @param environment - The environment variables to read overrides from.
  * @param availableParallelism - The number of available CPUs.
@@ -35,11 +44,13 @@ export function resolveWorkerLimits(
 ): WorkerLimits {
 	const filesPerWorker =
 		parsePositiveInteger(environment["FILES_PER_WORKER"]) ?? DEFAULT_FILES_PER_WORKER;
-	const maxWorkers =
-		parsePositiveInteger(environment["LINT_MAX_WORKERS"]) ??
-		Math.floor(availableParallelism / 4);
+	const explicit = parsePositiveInteger(environment["LINT_MAX_WORKERS"]);
 
-	return { filesPerWorker, maxWorkers };
+	return {
+		explicitMaxWorkers: explicit !== undefined,
+		filesPerWorker,
+		maxWorkers: explicit ?? Math.floor(availableParallelism / 4),
+	};
 }
 
 /**

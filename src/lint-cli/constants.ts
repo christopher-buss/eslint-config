@@ -2,7 +2,17 @@
 import { parseBoundedInteger } from "./parse.ts";
 
 /** Default number of files a single ESLint worker should handle. */
-export const DEFAULT_FILES_PER_WORKER = 350;
+export const DEFAULT_FILES_PER_WORKER = 300;
+
+/**
+ * Absolute worker cap for the passes that build a TypeScript program. Measured
+ * on a 32-thread / 16-core machine against a 3191-file type-aware run: 4-6
+ * workers all land at ~37-40s, then 8 workers regress to ~51s — concurrent
+ * program builds saturate memory bandwidth well before they saturate cores.
+ * Applies on top of the shared worker cap, and only bites on machines
+ * with 28 or more threads; an explicit `LINT_MAX_WORKERS` overrides it.
+ */
+export const TYPED_MAX_WORKERS = 6;
 
 /**
  * Default files-per-worker for the fast (`--type-aware=off`) pass. A syntactic
