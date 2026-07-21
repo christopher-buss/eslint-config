@@ -77,6 +77,12 @@ export default defineConfig([
 	},
 	{
 		...sharedOptions,
+		// Shipped at dist/lint-ignored.mjs; the lint runner spawns this exact
+		// path to ask the consumer's ESLint which targets it ignores.
+		entry: { "lint-ignored": "src/lint-cli/ignored-child.ts" },
+	},
+	{
+		...sharedOptions,
 		deps: {
 			neverBundle: [
 				/^@typescript-eslint\//,

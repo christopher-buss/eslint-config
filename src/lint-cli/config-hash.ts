@@ -115,14 +115,16 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
  * @param cwd - The consumer project root.
  * @param key - The config-variant key from `resolveCacheKey`.
  * @param configFiles - The flat-config entry points (see `RepoFiles.configFiles`).
+ * @param hash - The config hash, when the caller already computed it (the
+ *   runner shares one hash between this bust and the ignore-set memo).
  * @returns The drift outcome.
  */
 export function applyConfigDriftBust(
 	cwd: string,
 	key: string,
 	configFiles: Array<string>,
+	hash: string | undefined = computeConfigHash(cwd, configFiles),
 ): ConfigDriftOutcome {
-	const hash = computeConfigHash(cwd, configFiles);
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}

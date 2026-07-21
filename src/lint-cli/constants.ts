@@ -66,9 +66,8 @@ export function cacheFileFor(baseName: string, key: string): string {
 // - LINTABLE_EXTENSIONS (GLOB_LINTABLE_EXTENSIONS): every extension the preset
 //   lints by default — TS/JS family plus JSONC, YAML, TOML, Markdown and Lua.
 //   A consumer that disables one of these features never caches those files, so
-//   they count as dirty every run and mildly inflate the worker count. That is
-//   harmless (a worker of cheap non-TS files never builds a TS program) and
-//   preferable to undercounting, so there is no knob.
+//   they would count as dirty every run; `resolveIgnoredFiles` drops them,
+//   since ESLint reports a file that no config matches as ignored.
 // - TYPE_AWARE_EXTENSIONS (GLOB_SRC_EXTENSIONS): the TS/JS-family subset the
 //   type-aware (`--type-aware=only`) config lints and the only files that ever
 //   enter the type-aware cache, so the typed pass sizes from just this subset.

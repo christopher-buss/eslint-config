@@ -549,6 +549,46 @@ describe("composeCommands typed-pass skip", () => {
 		);
 	});
 
+	it("skips the typed pass when the only uncached files are ESLint-ignored", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				// A `.mjs` config so ESLint loads it without a TypeScript loader
+				// in the fixture's bare node_modules.
+				"eslint.config.mjs":
+					'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
+					'{ ignores: ["src/ignored.ts"] }];\n',
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/ignored.ts": "export function ignored(): number { return 2; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+				// Seed every file ESLint actually lints. `src/ignored.ts` is a
+				// target of the git listing but ESLint never lints it, so it
+				// has no cache entry and reads as dirty on every run — the
+				// phantom-dirty file that used to make the skip unreachable.
+				computeAffectedFiles(directory, "only", TEST_KEY);
+				seedCache(cacheFile, [
+					path.join(directory, "src/a.ts"),
+					path.join(directory, "eslint.config.mjs"),
+				]);
+
+				const { commands, notice } = withoutGitEnvironment(() => {
+					return composeCommands(parseArguments([]), {
+						cwd: directory,
+						dryRun: false,
+						environment: {},
+					});
+				});
+
+				expect(commands.map((command) => command.label)).not.toContain("typed");
+				expect(notice).toMatch(/skipping the type-aware/);
+			},
+		);
+	});
+
 	it("never skips the typed pass when a target resolves outside cwd", () => {
 		expect.hasAssertions();
 
@@ -794,7 +834,11 @@ describe("resolveJsonModule invalidation", () => {
 /** A config whose resolved shape depends on a local module it imports. */
 const CONFIG_IMPORT_FIXTURE = {
 	"eslint-rules.ts": "export const rules = { rules: {} };\n",
-	"eslint.config.ts": "import './eslint-rules';\nexport default [];\n",
+	// The config must actually match the fixture's files: ESLint reports a file
+	// no config matches as ignored, and the runner drops ignored files from its
+	// dirty count.
+	"eslint.config.ts":
+		"import './eslint-rules';\nexport default [{ files: ['**/*.ts'], rules: {} }];\n",
 	"src/a.ts": "export function a(): number { return 1; }\n",
 	"tsconfig.json": TSCONFIG,
 };

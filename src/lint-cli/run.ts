@@ -17,11 +17,12 @@ import {
 	formatCommandLine,
 } from "./command.ts";
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
-import { applyConfigDriftBust } from "./config-hash.ts";
+import { applyConfigDriftBust, computeConfigHash } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
 import { collectRepoFiles } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
 import { resolveOxlintRun } from "./hybrid.ts";
+import { resolveIgnoredFiles, withoutIgnored } from "./ignored.ts";
 import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
 import { applyPackageJsonBust } from "./package-hash.ts";
@@ -201,6 +202,13 @@ export function plan(
 	// this run selected.
 	const canMutateCaches = mutate && options.cache;
 	const hasTypeAwarePass = descriptors.some((descriptor) => descriptor.invalidation !== "none");
+
+	// One hash per run, shared by the drift bust below and the ignore-set memo:
+	// both answer "has the resolved config changed since last time", and the
+	// closure walk is not worth doing twice. Only meaningful with caching on —
+	// `--no-cache` counts every file dirty regardless.
+	const configHash = options.cache ? computeConfigHash(cwd, files.configFiles) : undefined;
+
 	if (canMutateCaches) {
 		// Config drift through a module `eslint.config.*` imports shifts ESLint's
 		// per-entry `hashOfConfig` (a full re-lint) but touches no bust file, so
@@ -209,7 +217,7 @@ export function plan(
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyConfigDriftBust(cwd, key, files.configFiles);
+		applyConfigDriftBust(cwd, key, files.configFiles, configHash);
 	}
 
 	if (canMutateCaches && hasTypeAwarePass) {
@@ -218,6 +226,17 @@ export function plan(
 
 	const clearedCaches = new Set(canMutateCaches ? sweepStaleCaches(cwd, newestBustMtime) : []);
 
+	// Drop the files ESLint declines to lint before anything sizes from them:
+	// they never enter a cache, so they would otherwise read as dirty forever
+	// and hold the typed pass's dirty count above zero (see
+	// `resolveIgnoredFiles`).
+	const ignored = resolveIgnoredFiles({ key, configHash, cwd, mutate, targets: files.lintable });
+	const sizingFiles: RepoFiles = {
+		...files,
+		lintable: withoutIgnored(files.lintable, ignored),
+		typeAware: withoutIgnored(files.typeAware, ignored),
+	};
+
 	const multiPass = descriptors.length > 1;
 	const passes = descriptors.map((descriptor) => {
 		return sizePass(descriptor, {
@@ -225,7 +244,7 @@ export function plan(
 			clearedCaches,
 			cwd,
 			environment,
-			files,
+			files: sizingFiles,
 			limits,
 			multiPass,
 			mutate,
