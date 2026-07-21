@@ -788,6 +788,29 @@ describe("composeCommands --print", () => {
 		});
 	});
 
+	it("drops oxlint when no target is a file it can lint", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["package.json"], directory)).toStrictEqual([
+				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+					"--no-warn-ignored --concurrency off package.json",
+				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+					"--no-warn-ignored --concurrency off package.json",
+			]);
+		});
+	});
+
+	it("passes oxlint only the targets it can lint", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(printLines(["package.json", "src/index.ts", "docs"], directory)[0]).toBe(
+				"oxlint --type-aware src/index.ts docs",
+			);
+		});
+	});
+
 	it("composes the sequential full-config fix pass", () => {
 		expect.hasAssertions();
 
