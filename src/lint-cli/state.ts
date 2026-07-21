@@ -10,13 +10,24 @@ import process from "node:process";
 const CACHE_DIRECTORY = path.join("node_modules", ".cache", "isentinel-lint");
 
 /**
- * Schema version stamped into every state file. A stored shape is only trusted
- * when it was written by this version, so a CLI upgrade that changes what a
- * writer stores invalidates the old files instead of silently misreading them —
- * the config hash cannot catch this, since it only says the *config* is
- * unchanged. Bump this whenever any persisted state changes meaning.
+ * Schema version stamped into every state file {@link writeState} produces. A
+ * stored payload is only trusted when it was written by this version, so a CLI
+ * upgrade that changes what a writer stores invalidates the old files instead
+ * of silently misreading them — the config hash cannot catch this, since it
+ * only says the *config* is unchanged. Bump this whenever any persisted payload
+ * changes meaning. The builder's `.tsbuildinfo` files live in the same
+ * directory but are written by TypeScript, which versions them itself.
  */
 export const STATE_VERSION = 1;
+
+/** How a stored value compared to the one {@link swapState} was given. */
+export type StateSwap =
+	/** The value differed and replaced the stored one. */
+	| "changed"
+	/** No usable state existed, so the value was stored as the baseline. */
+	| "first"
+	/** The stored value already matched; nothing was written. */
+	| "unchanged";
 
 /**
  * The on-disk envelope every {@link writeState} call produces.
@@ -44,15 +55,30 @@ export function stateDirectory(cwd: string): string {
  * Resolve one state file inside {@link stateDirectory}.
  *
  * @param cwd - The consumer project root.
- * @param name - The state's base name.
- * @param key - An optional discriminator appended to the name, usually the
- *   config-variant key from `resolveCacheKey`. State that is consumed once (a
- *   stored hash, a drained builder) must be keyed, or the first variant to run
- *   absorbs the change on behalf of all of them.
+ * @param parts - The file name's hyphen-joined segments, usually a base name
+ *   followed by the config-variant key from `resolveCacheKey`. State that is
+ *   consumed once (a stored hash, a drained builder) must carry that key, or
+ *   the first variant to run absorbs the change on behalf of all of them.
  * @returns The absolute path to the state file.
  */
-export function statePath(cwd: string, name: string, key?: string): string {
-	return path.join(stateDirectory(cwd), key === undefined ? name : `${name}-${key}`);
+export function statePath(cwd: string, ...parts: Array<string>): string {
+	return path.join(stateDirectory(cwd), parts.join("-"));
+}
+
+/**
+ * Read a UTF-8 file, or `undefined` when it cannot be read for any reason.
+ * Shared by every tolerant read in the CLI: state files, and the config-import
+ * closure walk.
+ *
+ * @param filePath - The file to read.
+ * @returns The file's content, or `undefined`.
+ */
+export function readFileIfPresent(filePath: string): string | undefined {
+	try {
+		return fs.readFileSync(filePath, "utf8");
+	} catch {
+		return undefined;
+	}
 }
 
 /**
@@ -67,9 +93,9 @@ export function statePath(cwd: string, name: string, key?: string): string {
  * @param filePath - The state file, from {@link statePath}.
  * @returns The stored payload, or `undefined`.
  */
-/* oxlint-disable typescript/no-unnecessary-type-parameters -- T is the caller's assertion about what its own state file holds, which keeps the cast at one call site instead of at every reader. */
+/* oxlint-disable typescript/no-unnecessary-type-parameters -- T is the reader's assertion about what its own state file holds, which keeps the cast at one call site instead of at every use of the result. */
 export function readState<T>(filePath: string): T | undefined {
-	const raw = readIfPresent(filePath);
+	const raw = readFileIfPresent(filePath);
 	if (raw === undefined) {
 		return undefined;
 	}
@@ -95,32 +121,16 @@ export function readState<T>(filePath: string): T | undefined {
  *
  * The write is atomic (temp file plus rename), since `plan()` runs concurrently
  * across packages in a parallel per-package lint setup and a torn file would be
- * read back as "unknown" at best. Identical content is not rewritten, but its
- * mtime is refreshed: the hybrid-status freshness check compares that mtime
- * against the config's, and the factory rewrites the same content on every
- * config evaluation.
+ * read back as "unknown" at best.
  *
  * Best-effort — a failed write leaves the state unknown, so the next run
  * recomputes rather than trusting something stale.
  *
- * @template T - The shape this file's writer stores.
  * @param filePath - The state file, from {@link statePath}.
  * @param data - The payload to store.
- * @returns True when the state is on disk.
  */
-/* oxlint-disable typescript/no-unnecessary-type-parameters -- T lets a writer pin the shape it stores at the call site; the payload is otherwise `unknown` and unchecked. */
-export function writeState<T>(filePath: string, data: T): boolean {
-	const content = `${JSON.stringify({ data, version: STATE_VERSION } satisfies StateEnvelope<T>)}\n`;
-	if (readIfPresent(filePath) === content) {
-		try {
-			const now = Date.now() / 1000;
-			fs.utimesSync(filePath, now, now);
-			return true;
-		} catch {
-			return false;
-		}
-	}
-
+export function writeState(filePath: string, data: unknown): void {
+	const content = `${JSON.stringify({ data, version: STATE_VERSION } satisfies StateEnvelope<unknown>)}\n`;
 	// One writer per process per file, so the pid keeps the temp name
 	// collision-free across parallel package lints sharing a workspace root.
 	const temporary = `${filePath}.${process.pid}.tmp`;
@@ -128,19 +138,45 @@ export function writeState<T>(filePath: string, data: T): boolean {
 		fs.mkdirSync(path.dirname(filePath), { recursive: true });
 		fs.writeFileSync(temporary, content);
 		fs.renameSync(temporary, filePath);
-		return true;
 	} catch {
 		fs.rmSync(temporary, { force: true });
-		return false;
 	}
 }
 
-/* oxlint-enable typescript/no-unnecessary-type-parameters */
+/**
+ * Compare a value against the stored one and replace it when they differ, the
+ * compare-and-swap every hash-drift bust runs: the caller acts on the outcome
+ * and never on the stored value itself.
+ *
+ * The value is consumed by the swap — once stored, every later run reads back
+ * `"unchanged"` — which is why hash state is keyed per config variant.
+ *
+ * @param filePath - The state file, from {@link statePath}.
+ * @param value - The value this run computed.
+ * @returns How the stored value compared.
+ */
+export function swapState(filePath: string, value: string): StateSwap {
+	const stored = readState<string>(filePath);
+	if (stored === value) {
+		return "unchanged";
+	}
 
-function readIfPresent(filePath: string): string | undefined {
+	writeState(filePath, value);
+	return stored === undefined ? "first" : "changed";
+}
+
+/**
+ * Refresh a state file's mtime without rewriting it, so a reader comparing that
+ * mtime against another file's still sees the state as fresh. Best-effort: a
+ * missing file simply stays missing.
+ *
+ * @param filePath - The state file, from {@link statePath}.
+ */
+export function touchState(filePath: string): void {
 	try {
-		return fs.readFileSync(filePath, "utf8");
+		const now = Date.now() / 1000;
+		fs.utimesSync(filePath, now, now);
 	} catch {
-		return undefined;
+		// The reader treats a missing or stale file as "unknown" and recomputes.
 	}
 }

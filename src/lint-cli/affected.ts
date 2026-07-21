@@ -59,9 +59,7 @@ const warned = new Set<string>();
 
 /**
  * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
- * config variant. Stored under `node_modules/.cache/isentinel-lint/` so it
- * never pollutes the consumer's source tree and is cleaned with
- * `node_modules`.
+ * config variant.
  *
  * The variant key is part of the path because this state is drained
  * destructively: {@link computeAffectedFiles} consumes the affected set and
@@ -89,7 +87,7 @@ export function builderStatePath(
 	projectId: string,
 ): string {
 	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, `tsbuildinfo-${suffix}`, `${key}-${projectId}`);
+	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
 }
 
 /**

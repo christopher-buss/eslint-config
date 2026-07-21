@@ -4,10 +4,13 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+	readFileIfPresent,
 	readState,
 	STATE_VERSION,
 	stateDirectory,
 	statePath,
+	swapState,
+	touchState,
 	writeState,
 } from "../src/lint-cli/state.ts";
 
@@ -22,7 +25,7 @@ function withTemporaryDirectory(run: (directory: string) => void): void {
 }
 
 describe("statePath", () => {
-	it("keys a name apart per variant, inside the cache directory", () => {
+	it("hyphen-joins its parts inside the cache directory", () => {
 		expect.hasAssertions();
 
 		expect(statePath("/project", "ignored", "aaaa1111")).not.toBe(
@@ -31,7 +34,9 @@ describe("statePath", () => {
 		expect(path.dirname(statePath("/project", "ignored", "aaaa1111"))).toBe(
 			stateDirectory("/project"),
 		);
-		expect(path.basename(statePath("/project", "hybrid-status"))).toBe("hybrid-status");
+		expect(path.basename(statePath("/project", "tsbuildinfo", "full", "key", "id"))).toBe(
+			"tsbuildinfo-full-key-id",
+		);
 	});
 });
 
@@ -41,8 +46,8 @@ describe("readState", () => {
 
 		withTemporaryDirectory((directory) => {
 			const file = statePath(directory, "example", "key");
+			writeState(file, { hash: "abc" });
 
-			expect(writeState(file, { hash: "abc" })).toBe(true);
 			expect(readState<{ hash: string }>(file)).toStrictEqual({ hash: "abc" });
 		});
 	});
@@ -79,7 +84,41 @@ describe("readState", () => {
 });
 
 describe("writeState", () => {
-	it("refreshes the mtime instead of rewriting identical content", () => {
+	it("leaves no temp file behind when the write fails", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			// The cache home as a file makes creating the state directory throw.
+			fs.mkdirSync(path.join(directory, "node_modules"));
+			fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
+
+			expect(() => {
+				writeState(statePath(directory, "example"), "payload");
+			}).not.toThrow();
+			expect(fs.readdirSync(directory)).toStrictEqual(["node_modules"]);
+		});
+	});
+});
+
+describe("swapState", () => {
+	it("reports first, unchanged and changed across successive runs", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const file = statePath(directory, "example", "key");
+
+			expect(swapState(file, "one")).toBe("first");
+			expect(swapState(file, "one")).toBe("unchanged");
+			expect(swapState(file, "two")).toBe("changed");
+			// The swap consumes the value, which is why hash state is keyed per
+			// config variant: a second run never sees the same change again.
+			expect(swapState(file, "two")).toBe("unchanged");
+		});
+	});
+});
+
+describe("touchState", () => {
+	it("refreshes an existing mtime and ignores a missing file", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
@@ -88,22 +127,27 @@ describe("writeState", () => {
 			const past = Date.now() / 1000 - 60;
 			fs.utimesSync(file, past, past);
 			const before = fs.statSync(file).mtimeMs;
+			const content = readFileIfPresent(file);
 
-			expect(writeState(file, { oxlint: true })).toBe(true);
+			touchState(file);
+
 			expect(fs.statSync(file).mtimeMs).toBeGreaterThan(before);
+			expect(readFileIfPresent(file)).toBe(content);
+			expect(() => {
+				touchState(statePath(directory, "absent"));
+			}).not.toThrow();
 		});
 	});
+});
 
-	it("leaves no temp file behind and reports a failed write", () => {
+describe("readFileIfPresent", () => {
+	it("returns undefined instead of throwing for an unreadable file", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
-			// The cache home as a file makes creating the state directory throw.
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
-
-			expect(writeState(statePath(directory, "example"), "payload")).toBe(false);
-			expect(fs.existsSync(stateDirectory(directory))).toBe(false);
+			expect(readFileIfPresent(path.join(directory, "absent"))).toBeUndefined();
+			// A directory is readable as a path but not as a file.
+			expect(readFileIfPresent(directory)).toBeUndefined();
 		});
 	});
 });

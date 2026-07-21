@@ -2,10 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { readState, statePath, writeState } from "./state.ts";
-
-/** File recording whether the resolved ESLint config runs in hybrid mode. */
-const STATUS_FILE = "hybrid-status";
+import { readState, statePath, touchState, writeState } from "./state.ts";
 
 /**
  * The persisted hybrid status: whether the resolved ESLint config enabled the
@@ -25,17 +22,29 @@ export interface HybridStatus {
  * @returns The absolute status-file path.
  */
 export function hybridStatusPath(cwd: string): string {
-	return statePath(cwd, STATUS_FILE);
+	return statePath(cwd, "hybrid-status");
+}
+
+/**
+ * Read the persisted hybrid status, or `undefined` when the file is missing,
+ * unreadable or malformed (the CLI then treats the status as unknown).
+ *
+ * @param cwd - The project root.
+ * @returns The parsed status, or `undefined`.
+ */
+export function readHybridStatus(cwd: string): HybridStatus | undefined {
+	const stored = readState<HybridStatus>(hybridStatusPath(cwd));
+	return typeof stored?.oxlint === "boolean" ? stored : undefined;
 }
 
 /**
  * Passively record whether the resolved ESLint config runs in hybrid mode.
- * Called from the factory on every config evaluation, which is why
- * {@link writeState} is write-if-changed and mtime-refreshing: the file must
- * not churn as editors and both lint passes re-evaluate the config, yet its
- * mtime must stay ahead of the config's or the CLI re-runs its ~3s probe every
- * lint. Every failure is swallowed — config evaluation must never throw for
- * this, and the CLI treats a missing or stale file as "unknown" and re-probes.
+ * Called from the factory on every config evaluation, so an unchanged status is
+ * touched rather than rewritten: the file must not churn as editors and both
+ * lint passes re-evaluate the config, yet its mtime must stay ahead of the
+ * config's or the CLI re-runs its ~3s probe every lint. Every failure is
+ * swallowed — config evaluation must never throw for this, and the CLI treats a
+ * missing or stale file as "unknown" and re-probes.
  *
  * Skipped entirely when `node_modules` is absent (nothing installed, so no
  * cache home and no CLI to read it).
@@ -48,19 +57,13 @@ export function writeHybridStatus(cwd: string, oxlint: boolean): void {
 		return;
 	}
 
-	writeState<HybridStatus>(hybridStatusPath(cwd), { oxlint });
-}
+	const filePath = hybridStatusPath(cwd);
+	if (readHybridStatus(cwd)?.oxlint === oxlint) {
+		touchState(filePath);
+		return;
+	}
 
-/**
- * Read the persisted hybrid status, or `undefined` when the file is missing,
- * unreadable or malformed (the CLI then treats the status as unknown).
- *
- * @param cwd - The project root.
- * @returns The parsed status, or `undefined`.
- */
-export function readHybridStatus(cwd: string): HybridStatus | undefined {
-	const stored = readState<HybridStatus>(hybridStatusPath(cwd));
-	return typeof stored?.oxlint === "boolean" ? { oxlint: stored.oxlint } : undefined;
+	writeState(filePath, { oxlint } satisfies HybridStatus);
 }
 
 /**

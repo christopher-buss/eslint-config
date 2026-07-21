@@ -38,8 +38,8 @@ export interface IgnoredFilesContext {
 }
 
 /**
- * Resolve the persisted ignore-set file for a config variant. Stored beside the
- * config hash it is keyed by, so `node_modules` removal clears both together.
+ * Resolve the persisted ignore-set file for a config variant, keyed by the same
+ * variant as the config hash it stores.
  *
  * @param cwd - The consumer project root.
  * @param key - The config-variant key from `resolveCacheKey`.
@@ -101,7 +101,7 @@ export function resolveIgnoredFiles({
 		return EMPTY;
 	}
 
-	writeState<IgnoredState>(stateFile, { hash: configHash, ignored });
+	writeState(stateFile, { hash: configHash, ignored } satisfies IgnoredState);
 	return new Set(ignored);
 }
 

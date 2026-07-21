@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "./constants.ts";
-import { readState, statePath, writeState } from "./state.ts";
+import { readFileIfPresent, statePath, swapState } from "./state.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
 /**
@@ -38,7 +38,6 @@ export interface PackageJsonBustOutcome {
 
 /**
  * Resolve the persisted package.json resolution-hash file for a config variant.
- * Stored alongside the builder state so it is cleaned with `node_modules`.
  *
  * The variant key is part of the path because the stored hash is consumed once:
  * after the first run that sees a new hash, every later run finds
@@ -106,15 +105,9 @@ export function applyPackageJsonBust(cwd: string, key: string): PackageJsonBustO
 		return { busted: false, firstRun: false };
 	}
 
-	const file = packageHashStatePath(cwd, key);
-	const stored = readState<string>(file);
-	if (stored === hash) {
-		return { busted: false, firstRun: false };
-	}
-
-	writeState(file, hash);
-	if (stored === undefined) {
-		return { busted: false, firstRun: true };
+	const swap = swapState(packageHashStatePath(cwd, key), hash);
+	if (swap !== "changed") {
+		return { busted: false, firstRun: swap === "first" };
 	}
 
 	fs.rmSync(path.resolve(cwd, cacheFileFor(CACHE_FILE_TYPE_AWARE, key)), { force: true });
@@ -130,10 +123,8 @@ export function applyPackageJsonBust(cwd: string, key: string): PackageJsonBustO
  * @returns The resolution-field subset, or `undefined`.
  */
 function resolutionSubset(directory: string): Record<string, unknown> | undefined {
-	let raw: string;
-	try {
-		raw = fs.readFileSync(path.join(directory, "package.json"), "utf8");
-	} catch {
+	const raw = readFileIfPresent(path.join(directory, "package.json"));
+	if (raw === undefined) {
 		return undefined;
 	}
 
