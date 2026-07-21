@@ -81,16 +81,6 @@ async function buildSplitConfigs(options: Record<string, unknown>): Promise<{
 }
 
 /**
- * Compare the merged effective severities of both split passes against the
- * full config for one file.
- *
- * @param filePath - The file path under comparison.
- * @param full - Effective severities of the full config.
- * @param fast - Effective severities of the non-type-aware pass.
- * @param slow - Effective severities of the type-aware-only pass.
- * @returns Human-readable problems.
- */
-/**
  * Every plugin prefix registered anywhere in the configs.
  *
  * @param configs - The resolved flat config items.
@@ -143,6 +133,16 @@ function hasNonJsLanguage(config: TypedFlatConfigItem): boolean {
 	return config.processor !== undefined || "language" in config;
 }
 
+/**
+ * Compare the merged effective severities of both split passes against the
+ * full config for one file.
+ *
+ * @param filePath - The file path under comparison.
+ * @param full - Effective severities of the full config.
+ * @param fast - Effective severities of the non-type-aware pass.
+ * @param slow - Effective severities of the type-aware-only pass.
+ * @returns Human-readable problems.
+ */
 function findPartitionProblems(
 	filePath: string,
 	full: Map<string, Severity>,

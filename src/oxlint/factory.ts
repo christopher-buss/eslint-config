@@ -392,19 +392,17 @@ export function isentinel(
 	// Native-only mode drops the preset's jsPlugin fragments outright. Every one
 	// is produced separately from its native sibling (see `createOxlintConfigs`)
 	// or hand-written as a plugin registration, so the whole fragment goes —
-	// except its `settings`, which are engine-wide and merged below.
-	const fragments = configs
-		.flat()
-		.filter((fragment) => !nativeOnly || (fragment.jsPlugins ?? []).length === 0);
-	if (nativeOnly) {
-		for (const fragment of configs.flat()) {
+	// except its `settings`, which are engine-wide and stay in fragment order so
+	// the same writer wins as it would with the fragment kept.
+	for (const fragment of configs.flat()) {
+		if (nativeOnly && (fragment.jsPlugins ?? []).length > 0) {
 			if (fragment.settings) {
 				Object.assign(mergedSettings, fragment.settings);
 			}
-		}
-	}
 
-	for (const fragment of fragments) {
+			continue;
+		}
+
 		mergeFragment(fragment);
 	}
 
@@ -418,7 +416,11 @@ export function isentinel(
 			rules: rules as Rules,
 		});
 		for (const fragment of optionsFragments) {
-			mergeFragment(fragment);
+			// `options.rules` must not pull a jsPlugin back in under native-only
+			// mode. The rules stay: the strip below keeps the ones whose plugin a
+			// user config still registers and drops the rest.
+			const { jsPlugins: _fragmentJsPlugins, ...withoutJsPlugins } = fragment;
+			mergeFragment(nativeOnly ? withoutJsPlugins : fragment);
 		}
 	}
 

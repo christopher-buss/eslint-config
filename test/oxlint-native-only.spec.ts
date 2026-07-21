@@ -67,6 +67,9 @@ describe("oxlint native-only hybrid mode", () => {
 			...baseOptions,
 			jsPlugins: false,
 			react: true,
+			// `options.rules` goes through the same splitter as the preset
+			// fragments, so it is the other way a jsPlugin could sneak back in.
+			rules: { "perfectionist/sort-objects": "error", "sonar/cognitive-complexity": "off" },
 			test: { jest: true },
 		});
 
