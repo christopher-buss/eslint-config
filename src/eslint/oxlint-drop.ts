@@ -32,7 +32,7 @@ interface DeadRuleReference {
  */
 export function warnDeadMappedRules(
 	configs: Array<TypedFlatConfigItem>,
-	mode: OxlintHybridMode = "full",
+	mode: OxlintHybridMode,
 ): void {
 	const references = findDeadMappedRules(configs, mode);
 	if (references.length === 0) {

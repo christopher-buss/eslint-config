@@ -170,10 +170,12 @@ oxlint's config stays free of external plugin resolution. Note that
 `oxlint-comments` is a jsPlugin, so oxlint directive hygiene is not checked in
 this mode.
 
-Rules you disable in your own `oxlint.config.ts` must move with them: a
-`"sonar/*"` entry there fails the oxlint config build
-(`Plugin 'sonar' not found`) once `jsPlugins: false` is set — put it in
-`eslint.config.ts` instead.
+Rules you configure in your own `oxlint.config.ts` move with them: once
+`jsPlugins: false` is set, an entry naming a plugin that is no longer loaded
+(`"sonar/*"`, say) is dropped from the generated config, since oxlint rejects
+the whole build over a rule whose plugin is not registered. Put those entries in
+`eslint.config.ts`, which is where the rules now run. JsPlugins you register
+yourself are untouched, and so are their rules.
 
 ### Dead rule warning
 

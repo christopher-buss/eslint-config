@@ -1,6 +1,6 @@
 import process from "node:process";
 import { pathToFileURL } from "node:url";
-import type { ExternalPluginEntry } from "oxlint";
+import type { ExternalPluginEntry, OxlintOverride } from "oxlint";
 
 import {
 	collapsesToTsCoreRule,
@@ -76,45 +76,46 @@ export function resolveJsPluginSpecifier(specifier: string): string {
 	return resolved;
 }
 
-const JS_PLUGIN_PREFIXES = new Set(Object.keys(oxlintJsPlugins));
-
 /**
- * Whether an oxlint-named rule belongs to a plugin oxlint can only run as a
- * jsPlugin (the original ESLint plugin). Native rules keep an oxlint plugin
- * prefix (`typescript/*`, `unicorn/*`, `oxc/*`) or none at all.
+ * The dedupe key for a jsPlugin entry (a bare specifier, or a named entry).
  *
- * @param rule - The oxlint-side rule name.
- * @returns Whether the rule needs a jsPlugin.
+ * @param entry - A bare package specifier, or a `{ name, specifier }` entry.
+ * @returns The plugin name used to deduplicate registrations.
  */
-export function isJsPluginRuleName(rule: string): boolean {
-	const slashIndex = rule.indexOf("/");
-	return slashIndex !== -1 && JS_PLUGIN_PREFIXES.has(rule.slice(0, slashIndex));
+export function jsPluginKey(entry: ExternalPluginEntry): string {
+	return typeof entry === "string" ? entry : entry.name;
 }
 
 /**
- * Whether a fragment's rule map contains any rule that needs a jsPlugin.
+ * Drop every rule whose plugin prefix is not registered on the generated
+ * config, mutating the overrides in place. Oxlint fails the whole config build
+ * on a rule naming an unknown plugin, so entries left behind by a plugin that
+ * native-only mode dropped have to go rather than sit inert.
  *
- * @param rules - The oxlint-named rule map.
- * @returns Whether a jsPlugin rule is present.
- */
-export function hasJsPluginRule(rules: TypedOxlintConfigItem["rules"]): boolean {
-	return Object.keys(rules ?? {}).some((rule) => isJsPluginRuleName(rule));
-}
-
-/**
- * Drop every jsPlugin rule from a fragment's rule map, for native-only mode.
+ * Keyed on what is actually registered, so a consumer's own jsPlugin keeps its
+ * rules while a preset plugin that is no longer loaded loses them. Unprefixed
+ * (core) rules are always kept.
  *
- * @param rules - The oxlint-named rule map.
- * @returns The remaining native rules, or `undefined` when none are left.
+ * @param overrides - The merged overrides (mutated).
+ * @param registeredPlugins - Every native plugin and jsPlugin name registered.
  */
-export function withoutJsPluginRules(
-	rules: TypedOxlintConfigItem["rules"],
-): TypedOxlintConfigItem["rules"] {
-	const kept = Object.fromEntries(
-		Object.entries(rules ?? {}).filter(([rule]) => !isJsPluginRuleName(rule)),
-	) as NonNullable<TypedOxlintConfigItem["rules"]>;
+export function stripUnregisteredPluginRules(
+	overrides: Array<OxlintOverride>,
+	registeredPlugins: ReadonlySet<string>,
+): void {
+	for (const override of overrides) {
+		const { rules } = override;
+		if (rules === undefined) {
+			continue;
+		}
 
-	return Object.keys(kept).length > 0 ? kept : undefined;
+		for (const rule of Object.keys(rules)) {
+			const slashIndex = rule.indexOf("/");
+			if (slashIndex !== -1 && !registeredPlugins.has(rule.slice(0, slashIndex))) {
+				delete rules[rule as keyof typeof rules];
+			}
+		}
+	}
 }
 
 /**

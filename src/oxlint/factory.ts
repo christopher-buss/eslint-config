@@ -47,7 +47,7 @@ import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
-import { createOxlintConfigs, hasJsPluginRule, withoutJsPluginRules } from "./utils.ts";
+import { createOxlintConfigs, jsPluginKey, stripUnregisteredPluginRules } from "./utils.ts";
 
 /**
  * The preset enables its rules explicitly, so every category is disabled to
@@ -368,57 +368,17 @@ export function isentinel(
 	 * Merge a fragment into the accumulated overrides.
 	 *
 	 * @param config - The fragment to merge.
-	 * @param preset - Whether the fragment comes from the preset. In native-only
-	 *   mode a preset fragment loses its jsPlugins entirely; a user fragment
-	 *   keeps them (their own plugins still load) but loses the rules of the
-	 *   preset plugins that no longer exist — oxlint rejects the whole config
-	 *   over a rule naming an unregistered plugin, so leftovers must go.
 	 */
-	function mergeFragment(config: TypedOxlintConfigItem, preset = true): void {
+	function mergeFragment(config: TypedOxlintConfigItem): void {
 		const fragmentJsPlugins = config.jsPlugins ?? [];
 		const fragmentPlugins = config.plugins ?? [];
-
-		if (nativeOnly && (fragmentJsPlugins.length > 0 || hasJsPluginRule(config.rules))) {
-			if (config.settings) {
-				Object.assign(mergedSettings, config.settings);
-			}
-
-			// Preset fragments carrying jsPlugins hold only jsPlugin rules (the
-			// splitter emits them separately from native rules), so their whole
-			// rule map goes; user fragments keep everything else.
-			const nativeRules = withoutJsPluginRules(config.rules);
-			if (!preset) {
-				for (const jsPlugin of fragmentJsPlugins) {
-					jsPlugins.set(
-						typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name,
-						jsPlugin,
-					);
-				}
-			}
-
-			if (nativeRules !== undefined || config.globals !== undefined) {
-				overrides.push({
-					files: config.files,
-					...(config.excludeFiles ? { excludeFiles: config.excludeFiles } : {}),
-					...(config.globals ? { globals: config.globals } : {}),
-					...(nativeRules ? { rules: nativeRules } : {}),
-				});
-			}
-
-			for (const plugin of fragmentPlugins) {
-				nativePlugins.add(plugin);
-			}
-
-			return;
-		}
 
 		for (const plugin of fragmentPlugins) {
 			nativePlugins.add(plugin);
 		}
 
 		for (const jsPlugin of fragmentJsPlugins) {
-			const key = typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name;
-			jsPlugins.set(key, jsPlugin);
+			jsPlugins.set(jsPluginKey(jsPlugin), jsPlugin);
 		}
 
 		if (config.settings) {
@@ -429,7 +389,21 @@ export function isentinel(
 		overrides.push(override);
 	}
 
-	const fragments = configs.flat();
+	// Native-only mode drops the preset's jsPlugin fragments outright. Every one
+	// is produced separately from its native sibling (see `createOxlintConfigs`)
+	// or hand-written as a plugin registration, so the whole fragment goes —
+	// except its `settings`, which are engine-wide and merged below.
+	const fragments = configs
+		.flat()
+		.filter((fragment) => !nativeOnly || (fragment.jsPlugins ?? []).length === 0);
+	if (nativeOnly) {
+		for (const fragment of configs.flat()) {
+			if (fragment.settings) {
+				Object.assign(mergedSettings, fragment.settings);
+			}
+		}
+	}
+
 	for (const fragment of fragments) {
 		mergeFragment(fragment);
 	}
@@ -457,13 +431,21 @@ export function isentinel(
 	}
 
 	for (const userConfig of userConfigs) {
-		mergeFragment(userConfig, false);
+		mergeFragment(userConfig);
 	}
 
 	if (Array.isArray(userJsPlugins)) {
 		for (const jsPlugin of userJsPlugins) {
-			jsPlugins.set(typeof jsPlugin === "string" ? jsPlugin : jsPlugin.name, jsPlugin);
+			jsPlugins.set(jsPluginKey(jsPlugin), jsPlugin);
 		}
+	}
+
+	// Oxlint rejects the whole config when a rule names a plugin that is not
+	// registered, so a rule left over from a plugin native-only mode dropped
+	// (a `sonar/*` entry in the consumer's own config, say) would fail the
+	// build rather than sit inert. Drop those; the ESLint side runs them.
+	if (nativeOnly) {
+		stripUnregisteredPluginRules(overrides, new Set([...nativePlugins, ...jsPlugins.keys()]));
 	}
 
 	if (defaultSeverity) {

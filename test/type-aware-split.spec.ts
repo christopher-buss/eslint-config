@@ -91,6 +91,48 @@ async function buildSplitConfigs(options: Record<string, unknown>): Promise<{
  * @returns Human-readable problems.
  */
 /**
+ * Every plugin prefix registered anywhere in the configs.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The registered plugin prefixes.
+ */
+function registeredPlugins(configs: Array<TypedFlatConfigItem>): Set<string> {
+	const plugins = new Set<string>();
+
+	for (const config of configs) {
+		const prefixes = Object.keys(config.plugins ?? {});
+		for (const prefix of prefixes) {
+			plugins.add(prefix);
+		}
+	}
+
+	return plugins;
+}
+
+/**
+ * The plugin prefixes of every rule enabled for a TS source file. These are the
+ * prefixes a disable comment in that file can name, so both passes have to
+ * resolve them.
+ *
+ * @param configs - The resolved flat config items.
+ * @param filePath - The source file to resolve for.
+ * @returns The plugin prefixes in play for that file.
+ */
+function pluginsUsedForFile(configs: Array<TypedFlatConfigItem>, filePath: string): Set<string> {
+	const prefixes = new Set<string>();
+
+	const effective = effectiveEslintRules(configs, filePath);
+	for (const [rule, severity] of effective) {
+		const slashIndex = rule.lastIndexOf("/");
+		if (severity === "enabled" && slashIndex !== -1) {
+			prefixes.add(rule.slice(0, slashIndex));
+		}
+	}
+
+	return prefixes;
+}
+
+/**
  * Whether a config item targets something other than plain JS or TS, meaning
  * it carries a processor or declares its own language.
  *
@@ -297,6 +339,23 @@ describe("type-aware split", () => {
 
 		expect(fastEffective.has("no-console")).toBe(false);
 		expect(slowEffective.has("no-console")).toBe(true);
+	});
+
+	it("should register every JS/TS plugin in both passes", async ({ expect }) => {
+		expect.hasAssertions();
+
+		// A rule name only resolves in a pass whose configs registered its
+		// plugin, so a module targeting JS/TS files that is composed in one
+		// pass but not the other makes an `eslint-disable` for its rules fail
+		// that pass with "Definition for rule was not found". Modules for other
+		// languages are exempt: the "only" pass ignores their files outright.
+		const { full, slow } = await buildSplitConfigs(baseOptions);
+		const registeredInSlow = registeredPlugins(slow);
+		const missing = [...pluginsUsedForFile(full, "src/index.ts")].filter(
+			(plugin) => !registeredInSlow.has(plugin),
+		);
+
+		expect(missing).toStrictEqual([]);
 	});
 
 	it("should reject typeAware 'only' without type-aware linting", async ({ expect }) => {

@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 
 import { isentinel } from "../src";
-import type { TypedFlatConfigItem } from "../src";
 import { isentinel as oxlintIsentinel } from "../src/oxlint";
 import type { OxlintConfig } from "../src/oxlint";
 import {
 	isJsPluginRule,
 	isOxlintCovered,
-	oxlintJsPlugins,
 	oxlintRuleMapping,
 	translateRuleToOxlint,
 } from "../src/rules/oxlint-mapping";
-import { effectiveEslintRules, enabledFromEffective } from "./oxlint-helpers";
+import {
+	effectiveEslintRules,
+	enabledEslintRules,
+	enabledFromEffective,
+	enabledOxlintRules,
+} from "./oxlint-helpers";
 
 const baseOptions = {
 	gitignore: false,
@@ -19,69 +22,6 @@ const baseOptions = {
 	isInEditor: false,
 	pnpm: false,
 } as const;
-
-/**
- * Add every enabled rule from a rule map to the given set.
- *
- * @param rules - The rule map to scan.
- * @param enabled - The set collecting enabled rule names.
- */
-function collectEnabledRules(
-	rules: Record<string, unknown> | undefined,
-	enabled: Set<string>,
-): void {
-	const entries = Object.entries(rules ?? {});
-	for (const [rule, value] of entries) {
-		if (value === undefined) {
-			continue;
-		}
-
-		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
-		if (severity !== "off" && severity !== 0) {
-			enabled.add(rule);
-		}
-	}
-}
-
-/**
- * Collect the rule names enabled anywhere in the resolved ESLint configs,
- * ignoring the Markdown-code siblings hybrid mode synthesizes so the drop is
- * visible.
- *
- * @param configs - The resolved flat config items.
- * @returns The enabled rule names.
- */
-function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<string> {
-	const enabled = new Set<string>();
-
-	for (const config of configs) {
-		if (config.name?.endsWith("/markdown-code") === true) {
-			continue;
-		}
-
-		collectEnabledRules(config.rules, enabled);
-	}
-
-	return enabled;
-}
-
-/**
- * Collect the rule names enabled anywhere in a generated oxlint config.
- *
- * @param config - The generated oxlint config.
- * @returns The enabled rule names.
- */
-function enabledOxlintRules(config: OxlintConfig): Set<string> {
-	const enabled = new Set<string>();
-
-	collectEnabledRules(config.rules, enabled);
-	const overrides = config.overrides ?? [];
-	for (const override of overrides) {
-		collectEnabledRules(override.rules, enabled);
-	}
-
-	return enabled;
-}
 
 async function eslintRules(options: Record<string, unknown>): Promise<Set<string>> {
 	const composer = await isentinel({ name: "test/native-only", ...baseOptions, ...options });
@@ -93,24 +33,28 @@ function nativeOnlyOxlintConfig(): OxlintConfig {
 }
 
 /**
- * Whether an oxlint-side rule name belongs to a plugin oxlint can only load as
- * a jsPlugin.
+ * The enabled rules of a generated config whose plugin prefix the config does
+ * not register. Oxlint fails the whole config build on any of these.
  *
- * @param rule - The oxlint-side rule name.
- * @returns Whether the rule needs a jsPlugin.
+ * @param config - The generated oxlint config.
+ * @returns The offending rule names.
  */
-function needsJsPlugin(rule: string): boolean {
-	return Object.keys(oxlintJsPlugins).some((prefix) => rule.startsWith(`${prefix}/`));
+function unregisteredRules(config: OxlintConfig): Array<string> {
+	const registered = new Set<string>(config.plugins);
+	return [...enabledOxlintRules(config)].filter((rule) => {
+		const slashIndex = rule.indexOf("/");
+		return slashIndex !== -1 && !registered.has(rule.slice(0, slashIndex));
+	});
 }
 
 /**
- * Whether a rule dropped from ESLint is one native-only mode may drop: it must
- * be mapped, and not a jsPlugin rule.
+ * Whether native-only mode must NOT drop this rule from ESLint: only mapped,
+ * non-jsPlugin rules move to oxlint.
  *
  * @param rule - The canonical ESLint rule name.
- * @returns Whether the drop is unexpected.
+ * @returns Whether dropping the rule would be a coverage loss.
  */
-function isWrongDropTarget(rule: string): boolean {
+function mustStayInEslint(rule: string): boolean {
 	return isJsPluginRule(rule) || !isOxlintCovered(rule);
 }
 
@@ -128,9 +72,9 @@ describe("oxlint native-only hybrid mode", () => {
 
 		expect(config.jsPlugins).toStrictEqual([]);
 
-		const jsPluginRules = [...enabledOxlintRules(config)].filter((rule) => needsJsPlugin(rule));
-
-		expect(jsPluginRules).toStrictEqual([]);
+		// With no jsPlugins loaded, every rule left must belong to a plugin the
+		// config still registers — oxlint fails the whole build otherwise.
+		expect(unregisteredRules(config)).toStrictEqual([]);
 	});
 
 	it("should keep jsPlugin-mapped rules in ESLint", async () => {
@@ -164,10 +108,13 @@ describe("oxlint native-only hybrid mode", () => {
 
 		expect(dropped.length).toBeGreaterThan(100);
 
-		const wrongTarget = dropped.filter((rule) => isWrongDropTarget(rule));
+		// Only mapped, non-jsPlugin rules may leave ESLint in this mode...
+		const wrongTarget = dropped.filter((rule) => mustStayInEslint(rule));
 
 		expect(wrongTarget).toStrictEqual([]);
 
+		// ...and each one must be enabled in the oxlint config, or it runs in
+		// neither engine.
 		const oxlintEnabled = enabledOxlintRules(nativeOnlyOxlintConfig());
 		const missing = dropped.filter((rule) => !oxlintEnabled.has(translateRuleToOxlint(rule)));
 
@@ -208,24 +155,6 @@ describe("oxlint native-only hybrid mode", () => {
 		);
 
 		expect(marked).toBe(true);
-	});
-
-	it("should lose no rule across the two engines", async () => {
-		expect.hasAssertions();
-
-		const eslintOnly = await eslintRules({});
-		const native = await eslintRules({ oxlint: "native" });
-		const oxlintEnabled = enabledOxlintRules(nativeOnlyOxlintConfig());
-
-		function handledByOxlint(rule: string): boolean {
-			return oxlintEnabled.has(translateRuleToOxlint(rule));
-		}
-
-		const lost = [...eslintOnly]
-			.filter((rule) => !native.has(rule))
-			.filter((rule) => !handledByOxlint(rule));
-
-		expect(lost).toStrictEqual([]);
 	});
 
 	it("should not double-lint a rule in both engines", async () => {
