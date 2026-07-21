@@ -87,12 +87,15 @@ export type OxlintFactoryOptions = {
 	 * Extra jsPlugins to load, or `false` to run oxlint with native rules
 	 * only.
 	 *
-	 * With `false` the factory emits no jsPlugins and drops every rule that
-	 * would run through one (spelling, the react and jest families, oxfmt
-	 * formatting, `oxlint-comments`, ...), leaving oxlint with its Rust
-	 * rules and — when enabled — the tsgolint type-aware ones. Pair it with
-	 * `oxlint: "native"` in the ESLint factory, which keeps exactly those
-	 * rules in ESLint.
+	 * With `false` the factory drops every rule that would run through a
+	 * jsPlugin (spelling, the react and jest families, oxfmt formatting, ...),
+	 * leaving oxlint with its Rust rules and — when enabled — the tsgolint
+	 * type-aware ones. Pair it with `oxlint: "native"` in the ESLint factory,
+	 * which keeps exactly those rules in ESLint.
+	 *
+	 * `oxlint-comments` is the one exception: it lints the `oxlint-disable`
+	 * directives that native rules still need, ESLint cannot run it, and its
+	 * rules visit each file once, so it stays loaded.
 	 */
 	jsPlugins?: false | NonNullable<TypedOxlintConfigItem["jsPlugins"]>;
 

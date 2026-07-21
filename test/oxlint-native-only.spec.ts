@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { isentinel } from "../src";
 import { isentinel as oxlintIsentinel } from "../src/oxlint";
 import type { OxlintConfig } from "../src/oxlint";
+import { jsPluginKey } from "../src/oxlint/utils.ts";
 import {
 	isJsPluginRule,
 	isOxlintCovered,
@@ -40,7 +41,10 @@ function nativeOnlyOxlintConfig(): OxlintConfig {
  * @returns The offending rule names.
  */
 function unregisteredRules(config: OxlintConfig): Array<string> {
-	const registered = new Set<string>(config.plugins);
+	const registered = new Set<string>([
+		...(config.plugins ?? []),
+		...(config.jsPlugins ?? []).map((entry) => jsPluginKey(entry)),
+	]);
 	return [...enabledOxlintRules(config)].filter((rule) => {
 		const slashIndex = rule.indexOf("/");
 		return slashIndex !== -1 && !registered.has(rule.slice(0, slashIndex));
@@ -59,7 +63,7 @@ function mustStayInEslint(rule: string): boolean {
 }
 
 describe("oxlint native-only hybrid mode", () => {
-	it("should load no jsPlugins when jsPlugins is false", () => {
+	it("should load only the directive jsPlugin when jsPlugins is false", () => {
 		expect.hasAssertions();
 
 		const config = oxlintIsentinel({
@@ -73,11 +77,26 @@ describe("oxlint native-only hybrid mode", () => {
 			test: { jest: true },
 		});
 
-		expect(config.jsPlugins).toStrictEqual([]);
+		// `oxlint-comments` is the documented exception: it lints the
+		// `oxlint-disable` directives that native rules still need, and ESLint
+		// cannot run it (its rules use oxlint's `createOnce` API).
+		expect(config.jsPlugins?.map((entry) => jsPluginKey(entry))).toStrictEqual([
+			"oxlint-comments",
+		]);
 
-		// With no jsPlugins loaded, every rule left must belong to a plugin the
-		// config still registers — oxlint fails the whole build otherwise.
+		// Every rule left must belong to a plugin the config still registers —
+		// oxlint fails the whole build otherwise.
 		expect(unregisteredRules(config)).toStrictEqual([]);
+	});
+
+	it("should keep the oxlint-comments rules enabled in native-only mode", () => {
+		expect.hasAssertions();
+
+		const enabled = enabledOxlintRules(nativeOnlyOxlintConfig());
+		const directiveRules = [...enabled].filter((rule) => rule.startsWith("oxlint-comments/"));
+
+		expect(directiveRules).toContain("oxlint-comments/require-description");
+		expect(directiveRules.length).toBeGreaterThan(3);
 	});
 
 	it("should keep jsPlugin-mapped rules in ESLint", async () => {

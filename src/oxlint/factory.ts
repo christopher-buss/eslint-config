@@ -65,6 +65,17 @@ const DEFAULT_CATEGORIES: RuleCategories = {
 };
 
 /**
+ * JsPlugins the preset keeps even under `jsPlugins: false`.
+ *
+ * `oxlint-comments` lints the `oxlint-disable` directives that native rules
+ * still need, and the ESLint side cannot take it over: its rules use oxlint's
+ * `createOnce` API, which ESLint rejects. Its rules visit `Program` once per
+ * file, so the cost is negligible next to the jsPlugin rule set that native-only
+ * mode exists to avoid.
+ */
+const NATIVE_ONLY_JS_PLUGINS: ReadonlySet<string> = new Set(["oxlint-comments"]);
+
+/**
  * Generate an oxlint configuration based on the provided options.
  *
  * The returned value is a plain oxlint config object suitable for
@@ -389,13 +400,14 @@ export function isentinel(
 		overrides.push(override);
 	}
 
-	// Native-only mode drops the preset's jsPlugin fragments outright. Every one
-	// is produced separately from its native sibling (see `createOxlintConfigs`)
-	// or hand-written as a plugin registration, so the whole fragment goes —
-	// except its `settings`, which are engine-wide and stay in fragment order so
-	// the same writer wins as it would with the fragment kept.
+	// Native-only mode drops the preset's jsPlugin fragments outright (bar the
+	// `NATIVE_ONLY_JS_PLUGINS` exception). Every one is produced separately from
+	// its native sibling (see `createOxlintConfigs`) or hand-written as a plugin
+	// registration, so the whole fragment goes — except its `settings`, which are
+	// engine-wide and stay in fragment order so the same writer wins as it would
+	// with the fragment kept.
 	for (const fragment of configs.flat()) {
-		if (nativeOnly && (fragment.jsPlugins ?? []).length > 0) {
+		if (nativeOnly && droppedByNativeOnly(fragment)) {
 			if (fragment.settings) {
 				Object.assign(mergedSettings, fragment.settings);
 			}
@@ -478,4 +490,19 @@ export function isentinel(
 		plugins: [...nativePlugins] as OxlintConfig["plugins"],
 		settings: mergedSettings,
 	});
+}
+
+/**
+ * Whether native-only mode drops a preset fragment: it needs a jsPlugin, and at
+ * least one of them is not kept in that mode.
+ *
+ * @param fragment - The preset fragment.
+ * @returns Whether the fragment is dropped.
+ */
+function droppedByNativeOnly(fragment: TypedOxlintConfigItem): boolean {
+	const fragmentJsPlugins = fragment.jsPlugins ?? [];
+	return (
+		fragmentJsPlugins.length > 0 &&
+		fragmentJsPlugins.some((entry) => !NATIVE_ONLY_JS_PLUGINS.has(jsPluginKey(entry)))
+	);
 }
