@@ -143,6 +143,7 @@ export const GLOB_EXCLUDE = [
 	"**/.changeset",
 	"**/.agents",
 	"**/.claude/**/*",
+	"!**/.claude/settings.json",
 	"**/.gemini",
 	"**/.kilocode",
 	"**/.opencode",
