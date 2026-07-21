@@ -137,6 +137,27 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
 	return fs.readdirSync(stateDirectory).filter((name) => name.startsWith(prefix));
 }
 
+/**
+ * Compose a default (mutating) run inside a fixture, without the ambient git
+ * environment.
+ *
+ * @param directory - The fixture project root.
+ * @param argv - The CLI arguments (default: none).
+ * @returns The composed command plan.
+ */
+function composeInFixture(
+	directory: string,
+	argv: Array<string> = [],
+): ReturnType<typeof composeCommands> {
+	return withoutGitEnvironment(() => {
+		return composeCommands(parseArguments(argv), {
+			cwd: directory,
+			dryRun: false,
+			environment: {},
+		});
+	});
+}
+
 function seedCache(cacheFile: string, files: Array<string>): void {
 	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
 	for (const file of files) {
@@ -532,18 +553,46 @@ describe("composeCommands typed-pass skip", () => {
 				computeAffectedFiles(directory, "only", TEST_KEY);
 				seedCache(cacheFile, [fileA]);
 
-				const { commands, notice } = withoutGitEnvironment(() => {
-					return composeCommands(parseArguments([]), {
-						cwd: directory,
-						dryRun: false,
-						environment: {},
-					});
-				});
+				const { commands, notice } = composeInFixture(directory);
 
 				const labels = commands.map((command) => command.label);
 
 				expect(labels).toContain("fast");
 				expect(labels).not.toContain("typed");
+				expect(notice).toMatch(/skipping the type-aware/);
+			},
+		);
+	});
+
+	it("skips the typed pass when the only uncached files are ESLint-ignored", () => {
+		expect.hasAssertions();
+
+		withFixture(
+			{
+				// A `.mjs` config so ESLint loads it without a TypeScript loader
+				// in the fixture's bare node_modules.
+				"eslint.config.mjs":
+					'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
+					'{ ignores: ["src/ignored.ts"] }];\n',
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/ignored.ts": "export function ignored(): number { return 2; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			(directory) => {
+				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+				// Seed every file ESLint actually lints. `src/ignored.ts` is a
+				// target of the git listing but ESLint never lints it, so it
+				// has no cache entry and reads as dirty on every run — the
+				// phantom-dirty file that used to make the skip unreachable.
+				computeAffectedFiles(directory, "only", TEST_KEY);
+				seedCache(cacheFile, [
+					path.join(directory, "src/a.ts"),
+					path.join(directory, "eslint.config.mjs"),
+				]);
+
+				const { commands, notice } = composeInFixture(directory);
+
+				expect(commands.map((command) => command.label)).not.toContain("typed");
 				expect(notice).toMatch(/skipping the type-aware/);
 			},
 		);
@@ -566,13 +615,7 @@ describe("composeCommands typed-pass skip", () => {
 				// "src" is in-cwd and clean, but "../elsewhere" escapes cwd, so
 				// the dirty count is unknowable: the typed pass must not
 				// auto-skip and a notice is emitted.
-				const { commands, notice } = withoutGitEnvironment(() => {
-					return composeCommands(parseArguments(["src", "../elsewhere"]), {
-						cwd: directory,
-						dryRun: false,
-						environment: {},
-					});
-				});
+				const { commands, notice } = composeInFixture(directory, ["src", "../elsewhere"]);
 
 				expect(commands.map((command) => command.label)).toContain("typed");
 				expect(notice).toMatch(/resolves outside the working directory/);
@@ -594,13 +637,7 @@ describe("composeCommands typed-pass skip", () => {
 				computeAffectedFiles(directory, "only", TEST_KEY);
 				seedCache(cacheFile, [fileA]);
 
-				const { commands, notice } = withoutGitEnvironment(() => {
-					return composeCommands(parseArguments(["--type-aware=only"]), {
-						cwd: directory,
-						dryRun: false,
-						environment: {},
-					});
-				});
+				const { commands, notice } = composeInFixture(directory, ["--type-aware=only"]);
 
 				expect(commands.map((command) => command.label)).toContain("typed");
 				expect(notice).toBeUndefined();
@@ -794,13 +831,27 @@ describe("resolveJsonModule invalidation", () => {
 /** A config whose resolved shape depends on a local module it imports. */
 const CONFIG_IMPORT_FIXTURE = {
 	"eslint-rules.ts": "export const rules = { rules: {} };\n",
-	"eslint.config.ts": "import './eslint-rules';\nexport default [];\n",
+	// The config must actually match the fixture's files: ESLint reports a file
+	// no config matches as ignored, and the runner drops ignored files from its
+	// dirty count.
+	"eslint.config.ts":
+		"import './eslint-rules';\nexport default [{ files: ['**/*.ts'], rules: {} }];\n",
 	"src/a.ts": "export function a(): number { return 1; }\n",
 	"tsconfig.json": TSCONFIG,
 };
 
 function configBustFiles(directory: string): Array<string> {
 	return [path.join(directory, "eslint.config.ts")];
+}
+
+/**
+ * The config hash a fixture's entry point currently hashes to.
+ *
+ * @param directory - The fixture project root.
+ * @returns The hash, or undefined when it could not be computed.
+ */
+function configHashFor(directory: string): string | undefined {
+	return computeConfigHash(directory, configBustFiles(directory));
 }
 
 function seedAllCaches(directory: string, key: string): void {
@@ -835,7 +886,7 @@ describe("applyConfigDriftBust", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
 			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
@@ -846,11 +897,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			editRules(directory);
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
 			// Unlike the package.json bust, the fast (syntactic) cache is dropped
@@ -863,11 +914,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			touch(path.join(directory, "eslint-rules.ts"));
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
+			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
 
 			// Content-addressed, so an mtime bump with identical content is a
 			// no-op.
@@ -880,14 +931,14 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory));
-			applyConfigDriftBust(directory, AGENT_KEY, configBustFiles(directory));
+			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			applyConfigDriftBust(directory, AGENT_KEY, configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			seedAllCaches(directory, AGENT_KEY);
 			editRules(directory);
 
 			expect(
-				applyConfigDriftBust(directory, TEST_KEY, configBustFiles(directory)),
+				applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory)),
 			).toStrictEqual({
 				busted: true,
 				firstRun: false,
@@ -896,7 +947,7 @@ describe("applyConfigDriftBust", () => {
 			expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
 
 			expect(
-				applyConfigDriftBust(directory, AGENT_KEY, configBustFiles(directory)),
+				applyConfigDriftBust(directory, AGENT_KEY, configHashFor(directory)),
 			).toStrictEqual({
 				busted: true,
 				firstRun: false,
@@ -919,7 +970,11 @@ describe("applyConfigDriftBust", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, []);
+			const outcome = applyConfigDriftBust(
+				directory,
+				TEST_KEY,
+				computeConfigHash(directory, []),
+			);
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
 			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
@@ -935,7 +990,9 @@ describe("applyConfigDriftBust", () => {
 			const roots = [path.join(directory, "eslint.config.ts")];
 
 			expect(computeConfigHash(directory, roots)).toBeUndefined();
-			expect(applyConfigDriftBust(directory, TEST_KEY, roots)).toStrictEqual({
+			expect(
+				applyConfigDriftBust(directory, TEST_KEY, computeConfigHash(directory, roots)),
+			).toStrictEqual({
 				busted: false,
 				firstRun: false,
 			});

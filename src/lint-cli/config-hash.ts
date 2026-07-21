@@ -112,17 +112,22 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
  * Keyed per variant so each observes the drift independently on its own first
  * run after it (see {@link configHashStatePath}).
  *
+ * Takes the hash rather than computing it: the runner shares one hash between
+ * this bust and the ignore-set memo, and `undefined` then unambiguously means
+ * "unavailable" (no config entry point, or no resolvable TypeScript) rather
+ * than "the caller did not supply one".
+ *
  * @param cwd - The consumer project root.
  * @param key - The config-variant key from `resolveCacheKey`.
- * @param configFiles - The flat-config entry points (see `RepoFiles.configFiles`).
+ * @param hash - The config hash from {@link computeConfigHash}, or `undefined`
+ *   when it could not be computed (the check is then a no-op).
  * @returns The drift outcome.
  */
 export function applyConfigDriftBust(
 	cwd: string,
 	key: string,
-	configFiles: Array<string>,
+	hash: string | undefined,
 ): ConfigDriftOutcome {
-	const hash = computeConfigHash(cwd, configFiles);
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}

@@ -1,4 +1,5 @@
 import { getPackageInfoSync } from "local-pkg";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -52,4 +53,23 @@ export function resolveLocalBin(name: string, cwd: string): string {
  */
 export function resolveAgentsFormatter(): string {
 	return fileURLToPath(new URL("./formatter-agents.mjs", import.meta.url));
+}
+
+/**
+ * Resolve the ignored-files helper shipped alongside this entry (built from
+ * `src/lint-cli/ignored-child.ts` to `lint-ignored.mjs`).
+ *
+ * Unlike {@link resolveAgentsFormatter} this falls back to the TypeScript
+ * source sibling, because the runner spawns it itself and the fixture tests run
+ * from `src` where no bundle exists. The fallback means the tests never
+ * exercise the shipped path — a broken or unshipped `dist` entry degrades the
+ * runner to "no ignore filtering" rather than failing.
+ *
+ * @returns The absolute path to the helper module.
+ */
+export function resolveIgnoredHelper(): string {
+	const built = fileURLToPath(new URL("./lint-ignored.mjs", import.meta.url));
+	return fs.existsSync(built)
+		? built
+		: fileURLToPath(new URL("./ignored-child.ts", import.meta.url));
 }

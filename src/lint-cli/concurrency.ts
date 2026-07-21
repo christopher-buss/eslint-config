@@ -1,4 +1,8 @@
-import { DEFAULT_FAST_FILES_PER_WORKER, DEFAULT_FILES_PER_WORKER } from "./constants.ts";
+import {
+	DEFAULT_FAST_FILES_PER_WORKER,
+	DEFAULT_FILES_PER_WORKER,
+	TYPED_MAX_WORKERS,
+} from "./constants.ts";
 import { parseBoundedInteger } from "./parse.ts";
 
 /** Inputs to the (pure) worker-count heuristic. */
@@ -14,16 +18,27 @@ export interface WorkerHeuristicInput {
 /** Resolved limits derived from the environment and available CPUs. */
 export interface WorkerLimits {
 	filesPerWorker: number;
+	/** The cap for a pass that builds no TypeScript program (the fast pass). */
 	maxWorkers: number;
+	/**
+	 * The cap for a pass that builds one: tighter, because concurrent program
+	 * builds saturate memory bandwidth before they saturate cores (see
+	 * {@link TYPED_MAX_WORKERS}). Both caps collapse to an explicit
+	 * `LINT_MAX_WORKERS`, which is a deliberate request and is never tightened.
+	 */
+	typedMaxWorkers: number;
 }
 
 /**
  * Derive the worker limits from environment overrides, falling back to the
  * default files-per-worker and a quarter of the available parallelism.
  *
- * Type-aware linting spends roughly `filesPerWorker^1.46` per worker with a
- * fixed ~6.5s TypeScript program construction cost, so the sweet spot is
- * ~200-400 files per worker rather than ESLint's syntax-tuned `auto`.
+ * A type-aware worker costs a fixed TypeScript program build plus roughly
+ * 10-20ms per file. The build is not a constant: `projectService` only builds
+ * the projects covering the files a worker was given, so splitting the run
+ * splits the build too — but each split still repeats the per-project floor,
+ * which is what keeps the sweet spot near 300 files per worker rather than
+ * ESLint's syntax-tuned `auto`.
  *
  * @param environment - The environment variables to read overrides from.
  * @param availableParallelism - The number of available CPUs.
@@ -35,11 +50,14 @@ export function resolveWorkerLimits(
 ): WorkerLimits {
 	const filesPerWorker =
 		parsePositiveInteger(environment["FILES_PER_WORKER"]) ?? DEFAULT_FILES_PER_WORKER;
-	const maxWorkers =
-		parsePositiveInteger(environment["LINT_MAX_WORKERS"]) ??
-		Math.floor(availableParallelism / 4);
+	const explicit = parsePositiveInteger(environment["LINT_MAX_WORKERS"]);
+	const maxWorkers = explicit ?? Math.floor(availableParallelism / 4);
 
-	return { filesPerWorker, maxWorkers };
+	return {
+		filesPerWorker,
+		maxWorkers,
+		typedMaxWorkers: explicit ?? Math.min(maxWorkers, TYPED_MAX_WORKERS),
+	};
 }
 
 /**

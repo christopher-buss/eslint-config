@@ -107,3 +107,17 @@ export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDe
 
 	return [FAST_PASS, TYPED_PASS];
 }
+
+/**
+ * The worker cap for a pass. `invalidation` already records whether a pass
+ * builds a TypeScript program — the fast pass runs no builder precisely because
+ * it builds none — so it doubles as the cap selector rather than restating the
+ * same fact per descriptor.
+ *
+ * @param descriptor - The pass being sized.
+ * @param limits - The shared worker limits.
+ * @returns The worker cap for this pass.
+ */
+export function maxWorkersFor(descriptor: PassDescriptor, limits: WorkerLimits): number {
+	return descriptor.invalidation === "none" ? limits.maxWorkers : limits.typedMaxWorkers;
+}
