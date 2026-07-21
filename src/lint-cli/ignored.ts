@@ -4,14 +4,26 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
+
+import { normalizePath } from "./cache.ts";
+import { resolveIgnoredHelper } from "./resolve.ts";
+
+/**
+ * Schema version of the persisted ignore set. The config hash only says the
+ * config itself is unchanged, so it cannot catch a CLI upgrade that changed the
+ * stored shape — a stale file would then be accepted and every lookup would
+ * silently miss. Bump this whenever {@link IgnoredState} changes meaning.
+ */
+const IGNORED_STATE_VERSION = 1;
 
 /** The persisted form of a resolved ignore set. */
 interface IgnoredState {
 	/** The config hash the set was computed against. */
 	hash: string;
-	/** The ignored target paths, exactly as they were passed in. */
+	/** The ignored targets, as {@link normalizePath} keys. */
 	ignored: Array<string>;
+	/** The {@link IGNORED_STATE_VERSION} the file was written by. */
+	version: number;
 }
 
 /** Reused for every miss, so callers never allocate on the no-op path. */
@@ -47,8 +59,8 @@ export function ignoredStatePath(cwd: string, key: string): string {
 }
 
 /**
- * The lint targets ESLint declines to lint, so the runner can drop them from
- * its dirty count.
+ * The lint targets ESLint declines to lint, as {@link normalizePath} keys, so
+ * the runner can drop them from its dirty count.
  *
  * The file lists come from `git ls-files` filtered by extension and know
  * nothing of the config's own `ignores`. ESLint writes no cache entry for a
@@ -59,8 +71,10 @@ export function ignoredStatePath(cwd: string, key: string): string {
  * Asking ESLint itself is the only correct answer, but loading a consumer's
  * flat config costs several seconds. It is therefore memoised against the same
  * config hash that drives the cache-drift bust: the answer can only change when
- * the resolved config changes, and that already forces a full re-lint, so the
- * recompute rides along with a run that was going to be slow anyway.
+ * the resolved config changes. That recompute is a blocking cost on the run
+ * that pays it, but it is a run whose caches the drift bust just deleted, so
+ * every file re-lints anyway — and the ignore set still sizes that re-lint's
+ * workers, which is why it is computed then rather than deferred.
  *
  * Targets absent from a stored set are treated as not-ignored. That is the safe
  * direction — it can only over-count dirty files, never skip a pass that had
@@ -83,7 +97,7 @@ export function resolveIgnoredFiles({
 
 	const statePath = ignoredStatePath(cwd, key);
 	const stored = readState(statePath);
-	if (stored?.hash === configHash) {
+	if (stored?.hash === configHash && stored.version === IGNORED_STATE_VERSION) {
 		return new Set(stored.ignored);
 	}
 
@@ -91,42 +105,13 @@ export function resolveIgnoredFiles({
 		return EMPTY;
 	}
 
-	const ignored = queryIgnoredFiles(cwd, targets);
+	const ignored = queryIgnoredFiles(cwd, targets)?.map((file) => normalizePath(file));
 	if (ignored === undefined) {
 		return EMPTY;
 	}
 
-	writeState(statePath, { hash: configHash, ignored });
+	writeState(statePath, { hash: configHash, ignored, version: IGNORED_STATE_VERSION });
 	return new Set(ignored);
-}
-
-/**
- * Drop the ignored entries from a file list, preserving order.
- *
- * @param files - The target files.
- * @param ignored - The ignored set from {@link resolveIgnoredFiles}.
- * @returns The retained files (`files` itself when nothing was dropped).
- */
-export function withoutIgnored(files: Array<string>, ignored: ReadonlySet<string>): Array<string> {
-	if (ignored.size === 0) {
-		return files;
-	}
-
-	return files.filter((file) => !ignored.has(file));
-}
-
-/**
- * Resolve the helper entry point: the built `lint-ignored.mjs` beside this
- * bundle, falling back to the TypeScript source sibling when running from
- * `src` (tests and `node --experimental-strip-types`).
- *
- * @returns The absolute path to the helper module.
- */
-function resolveHelperPath(): string {
-	const built = fileURLToPath(new URL("./lint-ignored.mjs", import.meta.url));
-	return fs.existsSync(built)
-		? built
-		: fileURLToPath(new URL("./ignored-child.ts", import.meta.url));
 }
 
 /**
@@ -135,18 +120,21 @@ function resolveHelperPath(): string {
  * `undefined`, which the caller treats as "no filtering" — the behaviour before
  * this existed.
  *
+ * The result comes back through a scratch file rather than stdout: loading a
+ * consumer's config evaluates their plugins, and anything one of those prints
+ * would land in the middle of the JSON.
+ *
  * @param cwd - The consumer project root.
  * @param targets - The target files to classify.
  * @returns The ignored targets, or `undefined` when the query failed.
  */
 function queryIgnoredFiles(cwd: string, targets: Array<string>): Array<string> | undefined {
-	const outFile = path.join(
-		fs.mkdtempSync(path.join(os.tmpdir(), "isentinel-lint-ignored-")),
-		"ignored.json",
-	);
+	// One query per process at a time, so the pid is collision-free even when
+	// the consumer lints several packages in parallel.
+	const outFile = path.join(os.tmpdir(), `isentinel-lint-ignored-${process.pid}.json`);
 
 	try {
-		execFileSync(process.execPath, [resolveHelperPath(), cwd, outFile], {
+		execFileSync(process.execPath, [resolveIgnoredHelper(), cwd, outFile], {
 			cwd,
 			input: JSON.stringify(targets),
 			maxBuffer: 64 * 1024 * 1024,
@@ -157,7 +145,7 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): Array<string> |
 	} catch {
 		return undefined;
 	} finally {
-		fs.rmSync(path.dirname(outFile), { force: true, recursive: true });
+		fs.rmSync(outFile, { force: true });
 	}
 }
 

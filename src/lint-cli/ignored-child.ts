@@ -39,18 +39,17 @@ interface EslintModule {
  * @rejects {Error} When ESLint cannot be resolved from either location.
  */
 async function loadEslint(cwd: string): Promise<EslintModule> {
-	const require = createRequire(path.join(cwd, "noop.js"));
+	// A synthetic basename: `createRequire` resolves relative to a *file*, and
+	// this one is spelled so it can never collide with a real consumer module.
+	const requireFrom = createRequire(path.join(cwd, "__isentinel-lint__.js"));
 	let entry: string;
 	try {
-		entry = require.resolve("eslint");
+		entry = requireFrom.resolve("eslint");
 	} catch {
-		return import("eslint");
+		entry = createRequire(import.meta.url).resolve("eslint");
 	}
 
-	const namespace = (await import(pathToFileURL(entry).href)) as
-		| EslintModule
-		| { default: EslintModule };
-	return "ESLint" in namespace ? namespace : namespace.default;
+	return (await import(pathToFileURL(entry).href)) as EslintModule;
 }
 
 async function main(): Promise<void> {

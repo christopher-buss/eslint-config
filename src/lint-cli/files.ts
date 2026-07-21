@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import picomatch from "picomatch";
 
+import { normalizePath } from "./cache.ts";
 import {
 	CACHE_BUST_PATTERNS,
 	ESLINT_CONFIG_FILE_PATTERN,
@@ -107,6 +108,29 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 	const configFiles = bustFiles.filter(isConfigEntryPoint);
 
 	return { bustFiles, configFiles, lintable, targetsOutsideCwd, typeAware };
+}
+
+/**
+ * Drop the files ESLint declines to lint from the *target* lists, leaving the
+ * rest of the listing untouched.
+ *
+ * Only the `lintable` and `typeAware` lists are lint targets. The `bustFiles`
+ * and `configFiles` lists are whole-project cache-bust inputs — a tsconfig or
+ * lockfile is never linted, so filtering them by "would ESLint lint this" would
+ * empty them. Any list added to {@link RepoFiles} later has to make that same
+ * choice here, which is why this lives beside the type rather than at the call
+ * site.
+ *
+ * @param files - The collected repository files.
+ * @param ignored - The ignored set from `resolveIgnoredFiles` (normalized keys).
+ * @returns The listing with its target lists filtered.
+ */
+export function withoutIgnored(files: RepoFiles, ignored: ReadonlySet<string>): RepoFiles {
+	return {
+		...files,
+		lintable: retained(files.lintable, ignored),
+		typeAware: retained(files.typeAware, ignored),
+	};
 }
 
 /**
@@ -301,4 +325,8 @@ function walkFallback(cwd: string, targets: Array<string>): Array<string> {
 
 function listFiles(cwd: string, targets: Array<string>): Array<string> {
 	return gitListFiles(cwd, targets) ?? walkFallback(cwd, targets);
+}
+
+function retained(files: Array<string>, ignored: ReadonlySet<string>): Array<string> {
+	return files.filter((file) => !ignored.has(normalizePath(file)));
 }

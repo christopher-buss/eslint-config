@@ -1,12 +1,7 @@
 // cspell:words typeaware
 import { resolveFastFilesPerWorker } from "./concurrency.ts";
 import type { WorkerLimits } from "./concurrency.ts";
-import {
-	CACHE_FILE_DEFAULT,
-	CACHE_FILE_FAST,
-	CACHE_FILE_TYPE_AWARE,
-	TYPED_MAX_WORKERS,
-} from "./constants.ts";
+import { CACHE_FILE_DEFAULT, CACHE_FILE_FAST, CACHE_FILE_TYPE_AWARE } from "./constants.ts";
 import type { LintCliOptions, ToolLabel, TypeAwareMode } from "./types.ts";
 
 /**
@@ -39,15 +34,6 @@ export interface PassDescriptor {
 	/** `concurrently` prefix / ESLint child label. */
 	label: ToolLabel;
 	/**
-	 * Resolve the worker cap for this pass. The passes that build a TypeScript
-	 * program tighten the shared cap (see `TYPED_MAX_WORKERS`); the syntactic
-	 * fast pass, which builds none, keeps it.
-	 *
-	 * @param limits - The shared worker limits.
-	 * @returns The worker cap for this pass.
-	 */
-	maxWorkers: (limits: WorkerLimits) => number;
-	/**
 	 * Value for the child's `ESLINT_TYPE_AWARE`, moving in lockstep with the
 	 * label. `undefined` leaves it unset (the full config).
 	 */
@@ -64,7 +50,6 @@ export const FAST_PASS: PassDescriptor = {
 	filesPerWorker: (_limits, environment) => resolveFastFilesPerWorker(environment),
 	invalidation: "none",
 	label: "fast",
-	maxWorkers: (limits) => limits.maxWorkers,
 	typeAwareEnv: "off",
 	typeAwareOnly: false,
 };
@@ -75,7 +60,6 @@ export const TYPED_PASS: PassDescriptor = {
 	filesPerWorker: (limits) => limits.filesPerWorker,
 	invalidation: "only",
 	label: "typed",
-	maxWorkers: cappedMaxWorkers,
 	typeAwareEnv: "only",
 	typeAwareOnly: true,
 };
@@ -86,7 +70,6 @@ export const FULL_PASS: PassDescriptor = {
 	filesPerWorker: (limits) => limits.filesPerWorker,
 	invalidation: "full",
 	label: "eslint",
-	maxWorkers: cappedMaxWorkers,
 	typeAwareEnv: undefined,
 	typeAwareOnly: false,
 };
@@ -126,14 +109,15 @@ export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDe
 }
 
 /**
- * Tighten the shared worker cap for a pass that builds a TypeScript program,
- * unless the user pinned `LINT_MAX_WORKERS` — an explicit request always wins.
+ * The worker cap for a pass. `invalidation` already records whether a pass
+ * builds a TypeScript program — the fast pass runs no builder precisely because
+ * it builds none — so it doubles as the cap selector rather than restating the
+ * same fact per descriptor.
  *
+ * @param descriptor - The pass being sized.
  * @param limits - The shared worker limits.
- * @returns The capped worker count.
+ * @returns The worker cap for this pass.
  */
-function cappedMaxWorkers(limits: WorkerLimits): number {
-	return limits.explicitMaxWorkers
-		? limits.maxWorkers
-		: Math.min(limits.maxWorkers, TYPED_MAX_WORKERS);
+export function maxWorkersFor(descriptor: PassDescriptor, limits: WorkerLimits): number {
+	return descriptor.invalidation === "none" ? limits.maxWorkers : limits.typedMaxWorkers;
 }

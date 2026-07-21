@@ -1,4 +1,8 @@
-import { DEFAULT_FAST_FILES_PER_WORKER, DEFAULT_FILES_PER_WORKER } from "./constants.ts";
+import {
+	DEFAULT_FAST_FILES_PER_WORKER,
+	DEFAULT_FILES_PER_WORKER,
+	TYPED_MAX_WORKERS,
+} from "./constants.ts";
 import { parseBoundedInteger } from "./parse.ts";
 
 /** Inputs to the (pure) worker-count heuristic. */
@@ -13,14 +17,16 @@ export interface WorkerHeuristicInput {
 
 /** Resolved limits derived from the environment and available CPUs. */
 export interface WorkerLimits {
-	/**
-	 * Whether `maxWorkers` came from an explicit `LINT_MAX_WORKERS`. A pass may
-	 * tighten the derived cap (see `TYPED_MAX_WORKERS`) but never an explicit
-	 * one.
-	 */
-	explicitMaxWorkers: boolean;
 	filesPerWorker: number;
+	/** The cap for a pass that builds no TypeScript program (the fast pass). */
 	maxWorkers: number;
+	/**
+	 * The cap for a pass that builds one: tighter, because concurrent program
+	 * builds saturate memory bandwidth before they saturate cores (see
+	 * {@link TYPED_MAX_WORKERS}). Both caps collapse to an explicit
+	 * `LINT_MAX_WORKERS`, which is a deliberate request and is never tightened.
+	 */
+	typedMaxWorkers: number;
 }
 
 /**
@@ -45,11 +51,12 @@ export function resolveWorkerLimits(
 	const filesPerWorker =
 		parsePositiveInteger(environment["FILES_PER_WORKER"]) ?? DEFAULT_FILES_PER_WORKER;
 	const explicit = parsePositiveInteger(environment["LINT_MAX_WORKERS"]);
+	const maxWorkers = explicit ?? Math.floor(availableParallelism / 4);
 
 	return {
-		explicitMaxWorkers: explicit !== undefined,
 		filesPerWorker,
-		maxWorkers: explicit ?? Math.floor(availableParallelism / 4),
+		maxWorkers,
+		typedMaxWorkers: explicit ?? Math.min(maxWorkers, TYPED_MAX_WORKERS),
 	};
 }
 

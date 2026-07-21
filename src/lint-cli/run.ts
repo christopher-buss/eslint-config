@@ -19,14 +19,14 @@ import {
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
 import { applyConfigDriftBust, computeConfigHash } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
-import { collectRepoFiles } from "./files.ts";
+import { collectRepoFiles, withoutIgnored } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
 import { resolveOxlintRun } from "./hybrid.ts";
-import { resolveIgnoredFiles, withoutIgnored } from "./ignored.ts";
+import { resolveIgnoredFiles } from "./ignored.ts";
 import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
 import { applyPackageJsonBust } from "./package-hash.ts";
-import { selectPasses, TYPED_PASS } from "./passes.ts";
+import { maxWorkersFor, selectPasses, TYPED_PASS } from "./passes.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { resolveAgentsFormatter, resolveLocalBin } from "./resolve.ts";
 import type { ChildCommand, LintCliOptions, ToolLabel } from "./types.ts";
@@ -217,7 +217,7 @@ export function plan(
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyConfigDriftBust(cwd, key, files.configFiles, configHash);
+		applyConfigDriftBust(cwd, key, configHash);
 	}
 
 	if (canMutateCaches && hasTypeAwarePass) {
@@ -231,11 +231,7 @@ export function plan(
 	// and hold the typed pass's dirty count above zero (see
 	// `resolveIgnoredFiles`).
 	const ignored = resolveIgnoredFiles({ key, configHash, cwd, mutate, targets: files.lintable });
-	const sizingFiles: RepoFiles = {
-		...files,
-		lintable: withoutIgnored(files.lintable, ignored),
-		typeAware: withoutIgnored(files.typeAware, ignored),
-	};
+	const sizingFiles = withoutIgnored(files, ignored);
 
 	const multiPass = descriptors.length > 1;
 	const passes = descriptors.map((descriptor) => {
@@ -544,7 +540,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
 	const conservative = context.files.targetsOutsideCwd;
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.environment);
-	const maxWorkers = descriptor.maxWorkers(context.limits);
+	const maxWorkers = maxWorkersFor(descriptor, context.limits);
 
 	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
 	// count under-counts them — size for the worker cap instead (maxWorkers *

@@ -53,7 +53,7 @@ import {
 	computePackageJsonHash,
 	packageHashStatePath,
 } from "../src/lint-cli/package-hash.ts";
-import { FAST_PASS, FULL_PASS, TYPED_PASS } from "../src/lint-cli/passes.ts";
+import { FAST_PASS, FULL_PASS, maxWorkersFor, TYPED_PASS } from "../src/lint-cli/passes.ts";
 import { composeCommands, plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
@@ -258,9 +258,9 @@ describe("per-pass worker caps", () => {
 		const limits = resolveWorkerLimits({}, 64);
 
 		expect(limits.maxWorkers).toBe(16);
-		expect(TYPED_PASS.maxWorkers(limits)).toBe(TYPED_MAX_WORKERS);
-		expect(FULL_PASS.maxWorkers(limits)).toBe(TYPED_MAX_WORKERS);
-		expect(FAST_PASS.maxWorkers(limits)).toBe(16);
+		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(TYPED_MAX_WORKERS);
+		expect(maxWorkersFor(FULL_PASS, limits)).toBe(TYPED_MAX_WORKERS);
+		expect(maxWorkersFor(FAST_PASS, limits)).toBe(16);
 	});
 
 	it("leaves the shared cap alone when it is already the tighter one", () => {
@@ -268,7 +268,7 @@ describe("per-pass worker caps", () => {
 
 		const limits = resolveWorkerLimits({}, 16);
 
-		expect(TYPED_PASS.maxWorkers(limits)).toBe(4);
+		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(4);
 	});
 
 	it("never overrides an explicit LINT_MAX_WORKERS", () => {
@@ -276,7 +276,8 @@ describe("per-pass worker caps", () => {
 
 		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "12" }, 64);
 
-		expect(TYPED_PASS.maxWorkers(limits)).toBe(12);
+		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(12);
+		expect(maxWorkersFor(FAST_PASS, limits)).toBe(12);
 	});
 });
 
@@ -285,9 +286,9 @@ describe("resolveWorkerLimits", () => {
 		expect.hasAssertions();
 
 		expect(resolveWorkerLimits({}, 16)).toStrictEqual({
-			explicitMaxWorkers: false,
 			filesPerWorker: 300,
 			maxWorkers: 4,
+			typedMaxWorkers: 4,
 		});
 	});
 
@@ -297,9 +298,9 @@ describe("resolveWorkerLimits", () => {
 		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "200", LINT_MAX_WORKERS: "6" }, 16);
 
 		expect(limits).toStrictEqual({
-			explicitMaxWorkers: true,
 			filesPerWorker: 200,
 			maxWorkers: 6,
+			typedMaxWorkers: 6,
 		});
 	});
 
@@ -309,9 +310,9 @@ describe("resolveWorkerLimits", () => {
 		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "0", LINT_MAX_WORKERS: "x" }, 16);
 
 		expect(limits).toStrictEqual({
-			explicitMaxWorkers: false,
 			filesPerWorker: 300,
 			maxWorkers: 4,
+			typedMaxWorkers: 4,
 		});
 	});
 });
