@@ -7,14 +7,7 @@ import process from "node:process";
 
 import { normalizePath } from "./cache.ts";
 import { resolveIgnoredHelper } from "./resolve.ts";
-
-/**
- * Schema version of the persisted ignore set. The config hash only says the
- * config itself is unchanged, so it cannot catch a CLI upgrade that changed the
- * stored shape — a stale file would then be accepted and every lookup would
- * silently miss. Bump this whenever {@link IgnoredState} changes meaning.
- */
-const IGNORED_STATE_VERSION = 1;
+import { readState, statePath, writeState } from "./state.ts";
 
 /** The persisted form of a resolved ignore set. */
 interface IgnoredState {
@@ -22,8 +15,6 @@ interface IgnoredState {
 	hash: string;
 	/** The ignored targets, as {@link normalizePath} keys. */
 	ignored: Array<string>;
-	/** The {@link IGNORED_STATE_VERSION} the file was written by. */
-	version: number;
 }
 
 /** Reused for every miss, so callers never allocate on the no-op path. */
@@ -47,15 +38,15 @@ export interface IgnoredFilesContext {
 }
 
 /**
- * Resolve the persisted ignore-set file for a config variant. Stored beside the
- * config hash it is keyed by, so `node_modules` removal clears both together.
+ * Resolve the persisted ignore-set file for a config variant, keyed by the same
+ * variant as the config hash it stores.
  *
  * @param cwd - The consumer project root.
  * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The absolute path to the stored ignore-set file.
  */
 export function ignoredStatePath(cwd: string, key: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `ignored-${key}`);
+	return statePath(cwd, "ignored", key);
 }
 
 /**
@@ -95,9 +86,9 @@ export function resolveIgnoredFiles({
 		return EMPTY;
 	}
 
-	const statePath = ignoredStatePath(cwd, key);
-	const stored = readState(statePath);
-	if (stored?.hash === configHash && stored.version === IGNORED_STATE_VERSION) {
+	const stateFile = ignoredStatePath(cwd, key);
+	const stored = readState<IgnoredState>(stateFile);
+	if (stored?.hash === configHash) {
 		return new Set(stored.ignored);
 	}
 
@@ -110,7 +101,7 @@ export function resolveIgnoredFiles({
 		return EMPTY;
 	}
 
-	writeState(statePath, { hash: configHash, ignored, version: IGNORED_STATE_VERSION });
+	writeState(stateFile, { hash: configHash, ignored } satisfies IgnoredState);
 	return new Set(ignored);
 }
 
@@ -147,17 +138,4 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): Array<string> |
 	} finally {
 		fs.rmSync(outFile, { force: true });
 	}
-}
-
-function readState(statePath: string): IgnoredState | undefined {
-	try {
-		return JSON.parse(fs.readFileSync(statePath, "utf8")) as IgnoredState;
-	} catch {
-		return undefined;
-	}
-}
-
-function writeState(statePath: string, state: IgnoredState): void {
-	fs.mkdirSync(path.dirname(statePath), { recursive: true });
-	fs.writeFileSync(statePath, JSON.stringify(state));
 }

@@ -5,6 +5,7 @@ import path from "node:path";
 import type * as TypeScript from "typescript";
 
 import { ALL_CACHE_FILES, cacheFileFor } from "./constants.ts";
+import { readFileIfPresent, statePath, swapState } from "./state.ts";
 import { loadTypescript } from "./typescript.ts";
 
 /**
@@ -43,8 +44,7 @@ interface ClosureResolver {
 }
 
 /**
- * Resolve the persisted config-hash file for a config variant. Stored alongside
- * the builder state so it is cleaned with `node_modules`, and keyed like
+ * Resolve the persisted config-hash file for a config variant, keyed like
  * `packageHashStatePath`: the stored hash is consumed once, so a shared file
  * would let the first variant to run absorb the drift for all of them.
  *
@@ -53,7 +53,7 @@ interface ClosureResolver {
  * @returns The absolute path to the stored-hash file.
  */
 export function configHashStatePath(cwd: string, key: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint", `config-hash-${key}`);
+	return statePath(cwd, "config-hash", key);
 }
 
 /**
@@ -132,15 +132,9 @@ export function applyConfigDriftBust(
 		return { busted: false, firstRun: false };
 	}
 
-	const statePath = configHashStatePath(cwd, key);
-	const stored = safeReadUtf8(statePath);
-	if (stored === hash) {
-		return { busted: false, firstRun: false };
-	}
-
-	writeHash(statePath, hash);
-	if (stored === undefined) {
-		return { busted: false, firstRun: true };
+	const swap = swapState(configHashStatePath(cwd, key), hash);
+	if (swap !== "changed") {
+		return { busted: false, firstRun: swap === "first" };
 	}
 
 	for (const base of ALL_CACHE_FILES) {
@@ -148,14 +142,6 @@ export function applyConfigDriftBust(
 	}
 
 	return { busted: true, firstRun: false };
-}
-
-function safeReadUtf8(filePath: string): string | undefined {
-	try {
-		return fs.readFileSync(filePath, "utf8");
-	} catch {
-		return undefined;
-	}
 }
 
 /**
@@ -288,7 +274,7 @@ function discoverConfigClosure(
 			break;
 		}
 
-		const content = safeReadUtf8(file);
+		const content = readFileIfPresent(file);
 		if (content === undefined) {
 			continue;
 		}
@@ -298,9 +284,4 @@ function discoverConfigClosure(
 	}
 
 	return files;
-}
-
-function writeHash(statePath: string, hash: string): void {
-	fs.mkdirSync(path.dirname(statePath), { recursive: true });
-	fs.writeFileSync(statePath, hash);
 }

@@ -8,6 +8,7 @@ import type * as TypeScript from "typescript";
 
 import { CACHE_KEY_LENGTH } from "./cache-key.ts";
 import { toPosix } from "./paths.ts";
+import { stateDirectory, statePath } from "./state.ts";
 import type { TypeAwareMode } from "./types.ts";
 import { loadTypescript } from "./typescript.ts";
 
@@ -58,9 +59,7 @@ const warned = new Set<string>();
 
 /**
  * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
- * config variant. Stored under `node_modules/.cache/isentinel-lint/` so it
- * never pollutes the consumer's source tree and is cleaned with
- * `node_modules`.
+ * config variant.
  *
  * The variant key is part of the path because this state is drained
  * destructively: {@link computeAffectedFiles} consumes the affected set and
@@ -88,7 +87,7 @@ export function builderStatePath(
 	projectId: string,
 ): string {
 	const suffix = mode === "only" ? "typeaware" : "full";
-	return path.join(builderStateDirectory(cwd), `tsbuildinfo-${suffix}-${key}-${projectId}`);
+	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
 }
 
 /**
@@ -144,7 +143,7 @@ export function computeAffectedFiles(
 
 		// Every project's state lands in this one directory, so create it once
 		// here rather than once per builder.
-		fs.mkdirSync(builderStateDirectory(cwd), { recursive: true });
+		fs.mkdirSync(stateDirectory(cwd), { recursive: true });
 
 		const affected = new Set<string>();
 		let warmProjects = 0;
@@ -175,16 +174,6 @@ export function computeAffectedFiles(
 		warnOnce(`type-aware cache invalidation failed: ${message}`);
 		return undefined;
 	}
-}
-
-/**
- * The directory every builder state file lives in.
- *
- * @param cwd - The consumer project root.
- * @returns The absolute path to the runner's cache directory.
- */
-function builderStateDirectory(cwd: string): string {
-	return path.join(cwd, "node_modules", ".cache", "isentinel-lint");
 }
 
 /**
