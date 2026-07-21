@@ -18,7 +18,7 @@ const CACHE_DIRECTORY = path.join("node_modules", ".cache", "isentinel-lint");
  * changes meaning. The builder's `.tsbuildinfo` files live in the same
  * directory but are written by TypeScript, which versions them itself.
  */
-export const STATE_VERSION = 1;
+export const STATE_VERSION = 2;
 
 /** How a stored value compared to the one {@link swapState} was given. */
 export type StateSwap =

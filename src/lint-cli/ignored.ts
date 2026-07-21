@@ -6,15 +6,17 @@ import path from "node:path";
 import process from "node:process";
 
 import { normalizePath } from "./cache.ts";
+import { classifyIgnored } from "./ignored-predicate.ts";
+import type { IgnoredPayload } from "./ignored-predicate.ts";
 import { resolveIgnoredHelper } from "./resolve.ts";
 import { readState, statePath, writeState } from "./state.ts";
 
 /** The persisted form of a resolved ignore set. */
 interface IgnoredState {
-	/** The config hash the set was computed against. */
+	/** The config hash the payload was computed against. */
 	hash: string;
-	/** The ignored targets, as {@link normalizePath} keys. */
-	ignored: Array<string>;
+	/** What the helper returned: the config's patterns, or bare answers. */
+	payload: IgnoredPayload;
 }
 
 /** Reused for every miss, so callers never allocate on the no-op path. */
@@ -67,10 +69,17 @@ export function ignoredStatePath(cwd: string, key: string): string {
  * every file re-lints anyway — and the ignore set still sizes that re-lint's
  * workers, which is why it is computed then rather than deferred.
  *
- * Targets absent from a stored set are treated as not-ignored. That is the safe
- * direction — it can only over-count dirty files, never skip a pass that had
- * work to do — but it does mean a newly added ignored file keeps the typed pass
- * awake until the next config change.
+ * What is memoised is the config's *patterns*, not its answers about one
+ * target list. Storing answers made the memo a partial function over a file
+ * list that kept moving: every file added after the last config change was
+ * absent from the set, counted not-ignored, and floored the typed pass's dirty
+ * count above zero forever. Patterns depend on the config alone, which is what
+ * the key already says, so new files classify with no helper spawn at all.
+ *
+ * A config whose `files`/`ignores` hold function matchers cannot be
+ * serialized; the helper falls back to answering per target, and that payload
+ * keeps the old residual — targets absent from it read as not-ignored, which
+ * over-counts dirty files rather than skipping work.
  *
  * @param context - The cwd, variant key, config hash, targets and mutate flag.
  * @returns The ignored subset of `targets`, or an empty set when unavailable.
@@ -89,37 +98,50 @@ export function resolveIgnoredFiles({
 	const stateFile = ignoredStatePath(cwd, key);
 	const stored = readState<IgnoredState>(stateFile);
 	if (stored?.hash === configHash) {
-		return new Set(stored.ignored);
+		return toSet(classifyIgnored(cwd, stored.payload, targets));
 	}
 
 	if (!mutate) {
 		return EMPTY;
 	}
 
-	const ignored = queryIgnoredFiles(cwd, targets)?.map((file) => normalizePath(file));
-	if (ignored === undefined) {
+	const payload = queryIgnoredFiles(cwd, targets);
+	if (payload === undefined) {
 		return EMPTY;
 	}
 
-	writeState(stateFile, { hash: configHash, ignored } satisfies IgnoredState);
-	return new Set(ignored);
+	writeState(stateFile, { hash: configHash, payload } satisfies IgnoredState);
+	return toSet(classifyIgnored(cwd, payload, targets));
 }
 
 /**
- * Spawn the helper and read back the ignored subset. Every failure mode (no
+ * Reduce a classification to the normalized keys the file lists are filtered
+ * by.
+ *
+ * @param ignored - The ignored targets, or `undefined` when unavailable.
+ * @returns The ignored set, empty when there is nothing to filter by.
+ */
+function toSet(ignored: Array<string> | undefined): ReadonlySet<string> {
+	return ignored === undefined || ignored.length === 0
+		? EMPTY
+		: new Set(ignored.map((file) => normalizePath(file)));
+}
+
+/**
+ * Spawn the helper and read back its payload. Every failure mode (no
  * resolvable ESLint, a config that throws, a malformed result) degrades to
- * `undefined`, which the caller treats as "no filtering" — the behaviour before
- * this existed.
+ * `undefined`, which the caller treats as "no filtering" — the behaviour
+ * before this existed.
  *
  * The result comes back through a scratch file rather than stdout: loading a
  * consumer's config evaluates their plugins, and anything one of those prints
  * would land in the middle of the JSON.
  *
  * @param cwd - The consumer project root.
- * @param targets - The target files to classify.
- * @returns The ignored targets, or `undefined` when the query failed.
+ * @param targets - The target files the fallback path classifies.
+ * @returns The helper's payload, or `undefined` when the query failed.
  */
-function queryIgnoredFiles(cwd: string, targets: Array<string>): Array<string> | undefined {
+function queryIgnoredFiles(cwd: string, targets: Array<string>): IgnoredPayload | undefined {
 	// One query per process at a time, so the pid is collision-free even when
 	// the consumer lints several packages in parallel.
 	const outFile = path.join(os.tmpdir(), `isentinel-lint-ignored-${process.pid}.json`);
@@ -131,8 +153,10 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): Array<string> |
 			maxBuffer: 64 * 1024 * 1024,
 			stdio: ["pipe", "ignore", "ignore"],
 		});
-		const parsed = JSON.parse(fs.readFileSync(outFile, "utf8")) as unknown;
-		return Array.isArray(parsed) ? (parsed as Array<string>) : undefined;
+		const parsed = JSON.parse(fs.readFileSync(outFile, "utf8")) as { mode?: unknown };
+		return parsed.mode === "answers" || parsed.mode === "predicate"
+			? (parsed as IgnoredPayload)
+			: undefined;
 	} catch {
 		return undefined;
 	} finally {
