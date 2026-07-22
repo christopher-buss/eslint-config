@@ -46,6 +46,8 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
+	"unicorn/no-useless-coercion":
+		"Optionally type-aware: values whose type is only known through TypeScript (a `string`-typed parameter, say) are missed without parser services, so it stays in ESLint (see optionallyTypeAwareRules)",
 };
 
 export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
@@ -349,7 +351,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"unicorn/no-unreadable-new-expression": "js-plugin",
 	"unicorn/no-unsafe-property-key": "js-plugin",
 	"unicorn/no-unused-properties": "js-plugin",
-	"unicorn/no-useless-coercion": "js-plugin",
 	"unicorn/no-useless-compound-assignment": "js-plugin",
 	"unicorn/no-useless-concat": "js-plugin",
 	"unicorn/no-useless-delete-check": "js-plugin",
@@ -895,6 +896,7 @@ export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
 	"e18e/prefer-array-to-reversed",
 	"e18e/prefer-array-to-sorted",
 	"e18e/prefer-spread-syntax",
+	"unicorn/no-useless-coercion",
 ]);
 
 /**

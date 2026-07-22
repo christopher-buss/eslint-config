@@ -2333,7 +2333,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "*.{,c,m}[jt]s{,x}",
+        "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
         "apps/*/*.{,c,m}[jt]s{,x}",
         "libs/*/*.{,c,m}[jt]s{,x}",
@@ -3360,7 +3360,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "*",
+        "./*",
         "packages/*/*",
         "apps/*/*",
         "libs/*/*",
@@ -3374,7 +3374,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "*",
+        "./*",
         "packages/*/*",
         "apps/*/*",
         "libs/*/*",
@@ -6106,7 +6106,6 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "unicorn-js/no-unreadable-new-expression": "error",
         "unicorn-js/no-unsafe-property-key": "error",
         "unicorn-js/no-unused-properties": "error",
-        "unicorn-js/no-useless-coercion": "error",
         "unicorn-js/no-useless-compound-assignment": "error",
         "unicorn-js/no-useless-concat": "error",
         "unicorn-js/no-useless-delete-check": "error",
@@ -6146,7 +6145,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     },
     {
       "files": [
-        "*.{,c,m}[jt]s{,x}",
+        "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
         "apps/*/*.{,c,m}[jt]s{,x}",
         "libs/*/*.{,c,m}[jt]s{,x}",
@@ -7356,7 +7355,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     },
     {
       "files": [
-        "*",
+        "./*",
         "packages/*/*",
         "apps/*/*",
         "libs/*/*",
@@ -7370,7 +7369,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
     },
     {
       "files": [
-        "*",
+        "./*",
         "packages/*/*",
         "apps/*/*",
         "libs/*/*",
