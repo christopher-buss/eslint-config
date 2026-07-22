@@ -210,8 +210,8 @@ catalogs:
       specifier: 7.3.0
       version: 7.3.0
     eslint-plugin-roblox-ts:
-      specifier: 1.4.0
-      version: 1.4.0
+      specifier: 1.4.1
+      version: 1.4.1
     eslint-plugin-sentinel:
       specifier: 0.1.2
       version: 0.1.2
@@ -384,7 +384,7 @@ importers:
         version: 7.3.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-roblox-ts:
         specifier: catalog:prod
-        version: 1.4.0(@typescript-eslint/parser@8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+        version: 1.4.1(@typescript-eslint/parser@8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-sentinel:
         specifier: catalog:prod
         version: 0.1.2(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(typescript@6.0.3)
@@ -2798,8 +2798,8 @@ packages:
       eslint: '*'
       typescript: '*'
 
-  eslint-plugin-roblox-ts@1.4.0:
-    resolution: {integrity: sha512-OWj+JfQlvGSiAJ5YOmiQc+M29ZJFc7VFYP0U1J3orZNT9GP5CWfpRNqPHuDhsvz+ni0BwoI4aqGv2bIPDueGrQ==}
+  eslint-plugin-roblox-ts@1.4.1:
+    resolution: {integrity: sha512-H/Wuohkjsfv5elrrjEJYegA/wua1P48yClk6FGR5c2UJ5XtafEa20o6XpNNJIi304kZPtwvKo0PkF75yKIC8CA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=22.5.1}
     peerDependencies:
       '@typescript-eslint/parser': '>=6.0.0'
@@ -6159,7 +6159,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-roblox-ts@1.4.0(@typescript-eslint/parser@8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
+  eslint-plugin-roblox-ts@1.4.1(@typescript-eslint/parser@8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
     dependencies:
       '@roblox-ts/luau-ast': 2.0.1
       '@typescript-eslint/parser': 8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
