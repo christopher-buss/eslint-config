@@ -6448,7 +6448,16 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "jest-js/prefer-called-with": "warn",
         "jest-js/prefer-comparison-matcher": "warn",
         "jest-js/prefer-each": "warn",
-        "jest-js/prefer-ending-with-an-expect": "warn",
+        "jest-js/prefer-ending-with-an-expect": [
+          "warn",
+          {
+            "assertFunctionNames": [
+              "expect",
+              "expectTypeOf",
+              "assertType",
+            ],
+          },
+        ],
         "jest-js/prefer-equality-matcher": "warn",
         "jest-js/prefer-expect-assertions": "error",
         "jest-js/prefer-hooks-in-order": "warn",

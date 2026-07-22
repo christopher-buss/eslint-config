@@ -92,7 +92,10 @@ export function jestRules({
 		"jest/prefer-called-with": "warn",
 		"jest/prefer-comparison-matcher": "warn",
 		"jest/prefer-each": "warn",
-		"jest/prefer-ending-with-an-expect": "warn",
+		"jest/prefer-ending-with-an-expect": [
+			"warn",
+			{ assertFunctionNames: ["expect", "expectTypeOf", "assertType"] },
+		],
 		"jest/prefer-equality-matcher": "warn",
 		"jest/prefer-expect-assertions": "error",
 		"jest/prefer-hooks-in-order": "warn",
