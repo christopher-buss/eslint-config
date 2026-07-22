@@ -18,8 +18,8 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
-import { resolveEslintInstall } from "./eslint-install.ts";
-import type { IgnoredPayload, PredicateEntry } from "./ignored-predicate.ts";
+import { resolveEslintInstall } from "./lib/exec/eslint-install.ts";
+import type { IgnoredPayload, PredicateEntry } from "./lib/files/ignored-predicate.ts";
 
 /** The subset of the `ESLint` class this helper uses. */
 interface EslintLike {

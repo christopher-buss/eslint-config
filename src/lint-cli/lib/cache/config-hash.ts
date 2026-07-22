@@ -1,12 +1,10 @@
 // cspell:words extensionless mtimes typeaware
 import crypto from "node:crypto";
-import fs from "node:fs";
 import path from "node:path";
 import type * as TypeScript from "typescript";
 
-import { ALL_CACHE_FILES, cacheFileFor } from "./constants.ts";
-import { readFileIfPresent, statePath, swapState } from "./state.ts";
-import { loadTypescript } from "./typescript.ts";
+import { readFileIfPresent } from "../state.ts";
+import { loadTypescript } from "../typescript/load.ts";
 
 /**
  * Upper bound on the number of files walked from the config entry points. A
@@ -14,14 +12,6 @@ import { loadTypescript } from "./typescript.ts";
  * against a pathological graph and never trips in practice.
  */
 const MAX_CLOSURE_FILES = 500;
-
-/** Outcome of the config-drift hash check. */
-export interface ConfigDriftOutcome {
-	/** True when the hash changed and this variant's caches were deleted. */
-	busted: boolean;
-	/** True when no prior hash existed (state stored, no bust). */
-	firstRun: boolean;
-}
 
 /**
  * One file in the config import closure, read once for both imports and hash.
@@ -41,19 +31,6 @@ interface ClosureResolver {
 	options: TypeScript.CompilerOptions;
 	/** The consumer's resolved TypeScript module. */
 	ts: typeof TypeScript;
-}
-
-/**
- * Resolve the persisted config-hash file for a config variant, keyed like
- * `packageHashStatePath`: the stored hash is consumed once, so a shared file
- * would let the first variant to run absorb the drift for all of them.
- *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
- * @returns The absolute path to the stored-hash file.
- */
-export function configHashStatePath(cwd: string, key: string): string {
-	return statePath(cwd, "config-hash", key);
 }
 
 /**
@@ -100,48 +77,6 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
 	}
 
 	return hash.digest("hex");
-}
-
-/**
- * Bust every one of this variant's ESLint caches when the config content
- * changed since the last run. Deletes the fast, type-aware and default caches —
- * the fast (syntactic-only) cache included, unlike the package.json bust, since
- * a config change such as a rule-severity flip alters a syntactic lint too. The
- * first run only stores the hash.
- *
- * Keyed per variant so each observes the drift independently on its own first
- * run after it (see {@link configHashStatePath}).
- *
- * Takes the hash rather than computing it: the runner shares one hash between
- * this bust and the ignore-set memo, and `undefined` then unambiguously means
- * "unavailable" (no config entry point, or no resolvable TypeScript) rather
- * than "the caller did not supply one".
- *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
- * @param hash - The config hash from {@link computeConfigHash}, or `undefined`
- *   when it could not be computed (the check is then a no-op).
- * @returns The drift outcome.
- */
-export function applyConfigDriftBust(
-	cwd: string,
-	key: string,
-	hash: string | undefined,
-): ConfigDriftOutcome {
-	if (hash === undefined) {
-		return { busted: false, firstRun: false };
-	}
-
-	const swap = swapState(configHashStatePath(cwd, key), hash);
-	if (swap !== "changed") {
-		return { busted: false, firstRun: swap === "first" };
-	}
-
-	for (const base of ALL_CACHE_FILES) {
-		fs.rmSync(path.resolve(cwd, cacheFileFor(base, key)), { force: true });
-	}
-
-	return { busted: true, firstRun: false };
 }
 
 /**

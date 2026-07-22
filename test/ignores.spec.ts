@@ -5,7 +5,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
-import { toPosix } from "../src/lint-cli/paths.ts";
+import { toPosix } from "../src/lint-cli/lib/paths.ts";
 
 /**
  * Build a temporary project containing a `.claude` directory, and an ESLint

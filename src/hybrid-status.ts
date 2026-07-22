@@ -2,13 +2,19 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { readState, statePath, touchState, writeState } from "./state.ts";
+import { readState, statePath, touchState, writeState } from "./lint-cli/lib/state.ts";
 
 /**
  * The persisted hybrid status: whether the resolved ESLint config enabled the
  * factory's `oxlint` option (hybrid mode). Written passively by the factory on
  * every config evaluation and read by the CLI to decide whether running both
  * engines would duplicate work.
+ *
+ * Lives here rather than under `src/lint-cli/` because it is genuinely shared:
+ * the factory writes it during config evaluation and the lint runner reads it.
+ * Routing the factory's import through the runner would pull that whole tree
+ * (yargs, concurrently) into `dist/index.mjs`; the state primitives it does
+ * import use node builtins only.
  */
 export interface HybridStatus {
 	/** Whether the ESLint config runs in hybrid (oxlint) mode. */

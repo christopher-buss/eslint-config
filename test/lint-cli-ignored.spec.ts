@@ -4,10 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { normalizePath } from "../src/lint-cli/cache.ts";
-import type { IgnoredPayload } from "../src/lint-cli/ignored-predicate.ts";
-import { ignoredStatePath, resolveIgnoredFiles } from "../src/lint-cli/ignored.ts";
-import { readState } from "../src/lint-cli/state.ts";
+import { normalizePath } from "../src/lint-cli/lib/cache/entries.ts";
+import type { RunContext } from "../src/lint-cli/lib/context.ts";
+import type { IgnoredPayload } from "../src/lint-cli/lib/files/ignored-predicate.ts";
+import { ignoredStatePath, resolveIgnoredFiles } from "../src/lint-cli/lib/files/ignored.ts";
+import { readState } from "../src/lint-cli/lib/state.ts";
 
 /** The config-variant key these fixtures store their ignore set under. */
 const KEY = "ignored-test";
@@ -50,14 +51,25 @@ function withFixture(config: string, run: (directory: string) => void): void {
 	}
 }
 
+/**
+ * A run against a fixture, pinned to {@link KEY}. Built literally rather than
+ * through `resolveRunContext` so the variant key stays a fixed, readable name
+ * instead of an environment-derived digest.
+ *
+ * @param directory - The fixture project root.
+ * @param mutate - Whether the run may spawn the helper and write state.
+ * @returns The run context.
+ */
+function runFor(directory: string, mutate: boolean): RunContext {
+	return { key: KEY, ci: false, cwd: directory, environment: {}, mutate };
+}
+
 function resolve(directory: string, targets: Array<string>, mutate: boolean): ReadonlySet<string> {
-	return resolveIgnoredFiles({
-		key: KEY,
-		configHash: HASH,
-		cwd: directory,
-		mutate,
-		targets: targets.map((target) => path.join(directory, target)),
-	});
+	return resolveIgnoredFiles(
+		runFor(directory, mutate),
+		HASH,
+		targets.map((target) => path.join(directory, target)),
+	);
 }
 
 /**
@@ -88,7 +100,8 @@ function has(ignored: ReadonlySet<string>, directory: string, relative: string):
 }
 
 function storedMode(directory: string): string | undefined {
-	return readState<{ payload: IgnoredPayload }>(ignoredStatePath(directory, KEY))?.payload.mode;
+	return readState<{ payload: IgnoredPayload }>(ignoredStatePath(runFor(directory, false)))
+		?.payload.mode;
 }
 
 describe("resolveIgnoredFiles", () => {

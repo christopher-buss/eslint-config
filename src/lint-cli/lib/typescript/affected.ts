@@ -6,11 +6,12 @@ import path from "node:path";
 import process from "node:process";
 import type * as TypeScript from "typescript";
 
-import { CACHE_KEY_LENGTH } from "./cache-key.ts";
-import { toPosix } from "./paths.ts";
-import { stateDirectory, statePath } from "./state.ts";
-import type { TypeAwareMode } from "./types.ts";
-import { loadTypescript } from "./typescript.ts";
+import type { TypeAwareMode } from "../cli/types.ts";
+import { CACHE_KEY_LENGTH } from "../context.ts";
+import type { RunContext } from "../context.ts";
+import { toPosix } from "../paths.ts";
+import { stateDirectory, statePath } from "../state.ts";
+import { loadTypescript } from "./load.ts";
 
 /** Result of a builder pass over the consumer's program. */
 export interface AffectedResult {
@@ -58,39 +59,6 @@ interface ProjectWalkResult {
 const warned = new Set<string>();
 
 /**
- * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
- * config variant.
- *
- * The variant key is part of the path because this state is drained
- * destructively: {@link computeAffectedFiles} consumes the affected set and
- * advances the buildinfo, and the caller removes those files from *one* cache.
- * Sharing one buildinfo across variants would let an agent run advance the
- * state while only its own cache was invalidated; the next human run would
- * then see an empty affected set with stale entries still in its own warm
- * cache — and since those files' mtimes never changed, the typed pass would
- * auto-skip and report stale diagnostics that ESLint's `hashOfConfig` cannot
- * catch.
- *
- * @param cwd - The consumer project root.
- * @param mode - The active ESLint type-aware mode (never `"off"` here).
- * @param key - The config-variant key from `resolveCacheKey`.
- * @param projectId - {@link projectDigest} of the project's tsconfig. Every
- *   project is suffixed, including the entry one: a solution's members each
- *   need their own state, and an unsuffixed special case for the entry config
- *   would make `${key}` and `${key}-${digest}` ambiguous to parse back.
- * @returns The absolute path to the mode's buildinfo file.
- */
-export function builderStatePath(
-	cwd: string,
-	mode: TypeAwareMode | undefined,
-	key: string,
-	projectId: string,
-): string {
-	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
-}
-
-/**
  * Compute the set of files whose type-aware lint results may have changed since
  * the previous run, using TypeScript's builder API. The builder does a native
  * shape-hash BFS: it recomputes each dependent's emitted-`.d.ts` shape hash and
@@ -102,15 +70,13 @@ export function builderStatePath(
  * `typescript` unresolvable, parse/build error) — callers then lint without
  * invalidation. Never throws.
  *
- * @param cwd - The consumer project root.
+ * @param run - The run context.
  * @param mode - The active ESLint type-aware mode.
- * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The affected result, or `undefined` when skipped.
  */
 export function computeAffectedFiles(
-	cwd: string,
+	{ key, cwd }: RunContext,
 	mode: TypeAwareMode | undefined,
-	key: string,
 ): AffectedResult | undefined {
 	const ts = loadTypescript(cwd);
 	if (ts === undefined) {
@@ -174,6 +140,39 @@ export function computeAffectedFiles(
 		warnOnce(`type-aware cache invalidation failed: ${message}`);
 		return undefined;
 	}
+}
+
+/**
+ * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
+ * config variant.
+ *
+ * The variant key is part of the path because this state is drained
+ * destructively: {@link computeAffectedFiles} consumes the affected set and
+ * advances the buildinfo, and the caller removes those files from *one* cache.
+ * Sharing one buildinfo across variants would let an agent run advance the
+ * state while only its own cache was invalidated; the next human run would
+ * then see an empty affected set with stale entries still in its own warm
+ * cache — and since those files' mtimes never changed, the typed pass would
+ * auto-skip and report stale diagnostics that ESLint's `hashOfConfig` cannot
+ * catch.
+ *
+ * @param cwd - The consumer project root.
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @param key - The config-variant key from `resolveCacheKey`.
+ * @param projectId - {@link projectDigest} of the project's tsconfig. Every
+ *   project is suffixed, including the entry one: a solution's members each
+ *   need their own state, and an unsuffixed special case for the entry config
+ *   would make `${key}` and `${key}-${digest}` ambiguous to parse back.
+ * @returns The absolute path to the mode's buildinfo file.
+ */
+function builderStatePath(
+	cwd: string,
+	mode: TypeAwareMode | undefined,
+	key: string,
+	projectId: string,
+): string {
+	const suffix = mode === "only" ? "typeaware" : "full";
+	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
 }
 
 /**

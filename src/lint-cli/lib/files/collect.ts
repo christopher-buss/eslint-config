@@ -4,14 +4,14 @@ import fs from "node:fs";
 import path from "node:path";
 import picomatch from "picomatch";
 
-import { normalizePath } from "./cache.ts";
+import { normalizePath } from "../cache/entries.ts";
+import { toPosix } from "../paths.ts";
 import {
 	CACHE_BUST_PATTERNS,
 	ESLINT_CONFIG_FILE_PATTERN,
 	LINTABLE_EXTENSIONS,
 	TYPE_AWARE_EXTENSIONS,
 } from "./constants.ts";
-import { toPosix } from "./paths.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
 // Per-directory (single-segment) forms of the cache-bust globs: strip the
@@ -158,19 +158,6 @@ export function oxlintTargets(cwd: string, targets: Array<string>): Array<string
 			return false;
 		}
 	});
-}
-
-/**
- * Collect the absolute paths of lintable files under `targets`, honouring
- * `.gitignore` (via `git ls-files`) when inside a git repository. Thin wrapper
- * over {@link collectRepoFiles}.
- *
- * @param cwd - The working directory to resolve targets against.
- * @param targets - The target paths to scan.
- * @returns The absolute paths of lintable files.
- */
-export function collectLintableFiles(cwd: string, targets: Array<string>): Array<string> {
-	return collectRepoFiles(cwd, targets).lintable;
 }
 
 /**

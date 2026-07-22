@@ -1,8 +1,8 @@
 // cspell:words typeaware
+import { CACHE_FILE_DEFAULT, CACHE_FILE_FAST, CACHE_FILE_TYPE_AWARE } from "../cache/constants.ts";
+import type { LintCliOptions, ToolLabel, TypeAwareMode } from "../cli/types.ts";
 import { resolveFastFilesPerWorker } from "./concurrency.ts";
 import type { WorkerLimits } from "./concurrency.ts";
-import { CACHE_FILE_DEFAULT, CACHE_FILE_FAST, CACHE_FILE_TYPE_AWARE } from "./constants.ts";
-import type { LintCliOptions, ToolLabel, TypeAwareMode } from "./types.ts";
 
 /**
  * The invariant tuple describing one ESLint pass: its cache file, the
