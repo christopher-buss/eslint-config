@@ -38,6 +38,16 @@ import isentinel from "@isentinel/eslint-config";
 export default isentinel();
 ```
 
+`@isentinel/eslint-config/eslint` is an explicit alias of the root export, for
+symmetry with `@isentinel/eslint-config/oxlint`:
+
+```ts
+// eslint.config.ts
+import { isentinel } from "@isentinel/eslint-config/eslint";
+
+export default isentinel();
+```
+
 #### Optional: TypeScript Config Support
 
 If you want to use `eslint.config.ts` instead of `.js`, install `jiti` v2.0.0 or
