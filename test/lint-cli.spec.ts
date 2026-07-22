@@ -276,7 +276,7 @@ describe("per-pass worker caps", () => {
 	it("caps the program-building passes below the shared cap", () => {
 		expect.hasAssertions();
 
-		const limits = resolveWorkerLimits({}, 64);
+		const limits = resolveWorkerLimits({}, 64, false);
 
 		expect(limits.maxWorkers).toBe(16);
 		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(TYPED_MAX_WORKERS);
@@ -287,7 +287,7 @@ describe("per-pass worker caps", () => {
 	it("leaves the shared cap alone when it is already the tighter one", () => {
 		expect.hasAssertions();
 
-		const limits = resolveWorkerLimits({}, 16);
+		const limits = resolveWorkerLimits({}, 16, false);
 
 		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(4);
 	});
@@ -295,7 +295,7 @@ describe("per-pass worker caps", () => {
 	it("never overrides an explicit LINT_MAX_WORKERS", () => {
 		expect.hasAssertions();
 
-		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "12" }, 64);
+		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "12" }, 64, false);
 
 		expect(maxWorkersFor(TYPED_PASS, limits)).toBe(12);
 		expect(maxWorkersFor(FAST_PASS, limits)).toBe(12);
@@ -306,7 +306,7 @@ describe("resolveWorkerLimits", () => {
 	it("defaults to 300 files per worker and a quarter of the CPUs", () => {
 		expect.hasAssertions();
 
-		expect(resolveWorkerLimits({}, 16)).toStrictEqual({
+		expect(resolveWorkerLimits({}, 16, false)).toStrictEqual({
 			filesPerWorker: 300,
 			maxWorkers: 4,
 			typedMaxWorkers: 4,
@@ -316,7 +316,11 @@ describe("resolveWorkerLimits", () => {
 	it("honours env overrides", () => {
 		expect.hasAssertions();
 
-		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "200", LINT_MAX_WORKERS: "6" }, 16);
+		const limits = resolveWorkerLimits(
+			{ FILES_PER_WORKER: "200", LINT_MAX_WORKERS: "6" },
+			16,
+			false,
+		);
 
 		expect(limits).toStrictEqual({
 			filesPerWorker: 200,
@@ -328,13 +332,45 @@ describe("resolveWorkerLimits", () => {
 	it("ignores invalid env overrides", () => {
 		expect.hasAssertions();
 
-		const limits = resolveWorkerLimits({ FILES_PER_WORKER: "0", LINT_MAX_WORKERS: "x" }, 16);
+		const limits = resolveWorkerLimits(
+			{ FILES_PER_WORKER: "0", LINT_MAX_WORKERS: "x" },
+			16,
+			false,
+		);
 
 		expect(limits).toStrictEqual({
 			filesPerWorker: 300,
 			maxWorkers: 4,
 			typedMaxWorkers: 4,
 		});
+	});
+
+	it("uses the full parallelism in CI", () => {
+		expect.hasAssertions();
+
+		expect(resolveWorkerLimits({}, 4, true)).toStrictEqual({
+			filesPerWorker: 300,
+			maxWorkers: 4,
+			typedMaxWorkers: 4,
+		});
+	});
+
+	it("still caps the program-building passes in CI", () => {
+		expect.hasAssertions();
+
+		const limits = resolveWorkerLimits({}, 16, true);
+
+		expect(limits.maxWorkers).toBe(16);
+		expect(limits.typedMaxWorkers).toBe(TYPED_MAX_WORKERS);
+	});
+
+	it("prefers an explicit LINT_MAX_WORKERS over the CI sizing", () => {
+		expect.hasAssertions();
+
+		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "2" }, 16, true);
+
+		expect(limits.maxWorkers).toBe(2);
+		expect(limits.typedMaxWorkers).toBe(2);
 	});
 });
 

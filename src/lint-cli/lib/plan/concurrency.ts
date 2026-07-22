@@ -47,7 +47,7 @@ export interface WorkerLimits {
 
 /**
  * Derive the worker limits from environment overrides, falling back to the
- * default files-per-worker and a quarter of the available parallelism.
+ * default files-per-worker and a share of the available parallelism.
  *
  * A type-aware worker costs a fixed TypeScript program build plus roughly
  * 10-20ms per file. The build is not a constant: `projectService` only builds
@@ -56,18 +56,28 @@ export interface WorkerLimits {
  * which is what keeps the sweet spot near 300 files per worker rather than
  * ESLint's syntax-tuned `auto`.
  *
+ * Locally the cap is a quarter of the CPUs: the fast and typed passes run as
+ * siblings alongside oxlint (and usually an editor), so each pass only gets a
+ * share. In CI the run collapses to a single full pass with nothing to reserve
+ * for, and a 4-core CI runner sweep (3.1k-file repo) measured monotonic
+ * improvement all the way to workers = cores — 200s single-process against 53s
+ * at 4 workers — so CI uses the full parallelism instead.
+ *
  * @param environment - The environment variables to read overrides from.
  * @param availableParallelism - The number of available CPUs.
+ * @param ci - Whether the run is in CI (single pass, idle machine).
  * @returns The resolved worker limits.
  */
 export function resolveWorkerLimits(
 	environment: NodeJS.ProcessEnv,
 	availableParallelism: number,
+	ci: boolean,
 ): WorkerLimits {
 	const filesPerWorker =
 		parsePositiveInteger(environment["FILES_PER_WORKER"]) ?? DEFAULT_FILES_PER_WORKER;
 	const explicit = parsePositiveInteger(environment["LINT_MAX_WORKERS"]);
-	const maxWorkers = explicit ?? Math.floor(availableParallelism / 4);
+	const maxWorkers =
+		explicit ?? (ci ? availableParallelism : Math.floor(availableParallelism / 4));
 
 	return {
 		filesPerWorker,

@@ -89,7 +89,7 @@ export function plan(options: LintCliOptions, run: RunContext): RunPlan {
 	const descriptors = selectPasses(options, ci);
 	const files = collectRepoFiles(cwd, options.paths);
 	const newestBustMtime = maxMtimeMs(files.bustFiles);
-	const limits = resolveWorkerLimits(environment, availableParallelism());
+	const limits = resolveWorkerLimits(environment, availableParallelism(), ci);
 
 	// Hybrid gate: when both engines would run, oxlint only runs if the resolved
 	// ESLint config is hybrid (`oxlint: true`); otherwise the two engines would
