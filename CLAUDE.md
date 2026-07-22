@@ -1,8 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with
-code in this repository.
-
 ## Project Overview
 
 This is `@isentinel/eslint-config`, an opinionated ESLint flat config preset
@@ -38,6 +33,8 @@ pnpm release    # Bump version and publish (uses bumpp)
 - **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, typecheck
   and tests
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
+- Do not create a new branch for every PR unless asked. Default to committing
+  directly to `main`.
 
 ## Architecture
 
