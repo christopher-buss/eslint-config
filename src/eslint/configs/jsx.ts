@@ -1,7 +1,7 @@
 import { GLOB_JSX, GLOB_TSX } from "../../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
-export async function jsx(): Promise<Array<TypedFlatConfigItem>> {
+export function jsx(): Array<TypedFlatConfigItem> {
 	return [
 		{
 			name: "isentinel/jsx/setup",

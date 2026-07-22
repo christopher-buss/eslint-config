@@ -1,14 +1,17 @@
+import type { Linter } from "eslint";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
+
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const isWindows = os.platform() === "win32";
 
 const RULE = "no-duplicate-imports";
-const RULE_ENTRY = ["error", { allowSeparateTypeImports: true }] as const;
+const RULE_ENTRY: Linter.RuleEntry = ["error", { allowSeparateTypeImports: true }];
 
 // import type + value from the same module: allowed by allowSeparateTypeImports.
 const SPLIT_FIXTURE =
@@ -38,10 +41,17 @@ function runOxlint(directory: string): Array<string> {
 		throw new Error(`oxlint failed: status=${result.status}, stderr=${result.stderr}`);
 	}
 
-	const parsed = JSON.parse(result.stdout) as {
-		diagnostics: Array<{ code: string; filename: string }>;
-	};
-	return parsed.diagnostics
+	const parsed: unknown = JSON.parse(result.stdout);
+	const diagnostics =
+		isRecord(parsed) && Array.isArray(parsed["diagnostics"]) ? parsed["diagnostics"] : [];
+	return diagnostics
+		.filter((diagnostic): diagnostic is { code: string; filename: string } => {
+			return (
+				isRecord(diagnostic) &&
+				typeof diagnostic["code"] === "string" &&
+				typeof diagnostic["filename"] === "string"
+			);
+		})
 		.filter((diagnostic) => diagnostic.code === `eslint(${RULE})`)
 		.map((diagnostic) => path.basename(diagnostic.filename));
 }
@@ -64,7 +74,7 @@ async function runEslint(directory: string): Promise<Array<string>> {
 				languageOptions: { parser: parser.default },
 				rules: { [RULE]: RULE_ENTRY },
 			},
-		] as never,
+		],
 		overrideConfigFile: true,
 	});
 

@@ -14,12 +14,12 @@ const TS_EXTENSION_PAIRS = [
 ];
 
 function buildRules(order: Array<string>, extension: string): Rules {
-	const rules: Record<string, string> = {};
+	const rules: Rules = {};
 	for (const rule of order) {
 		rules[rule] = rule === extension ? "error" : "off";
 	}
 
-	return rules as Rules;
+	return rules;
 }
 
 describe("splitOxlintRules ts-extension precedence", () => {

@@ -24,9 +24,15 @@ import type {
 export async function loadSmallRulesPlugin(): Promise<
 	NonNullable<TypedFlatConfigItem["plugins"]>[string]
 > {
-	return eslintCompatPlugin(
-		(await interopDefault(import("@pobammer-ts/small-rules"))) as unknown as OxlintPlugin,
-	);
+	// `@pobammer-ts/small-rules` ships its own `oxlint-plugin-utilities` Plugin
+	// type that is structurally an oxlint/ESLint plugin but not nominally
+	// assignable to `@oxlint/plugins`' Plugin; `eslintCompatPlugin` adapts it at
+	// runtime.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- cross-package plugin-type mismatch, runtime-compatible
+	const plugin = (await interopDefault(
+		import("@pobammer-ts/small-rules"),
+	)) as unknown as OxlintPlugin;
+	return eslintCompatPlugin(plugin);
 }
 
 export async function smallRules(

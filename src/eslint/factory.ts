@@ -1,4 +1,5 @@
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
+import type { ResolvableFlatConfig } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 
@@ -637,7 +638,7 @@ export async function isentinel(
 	// We pick the known keys as ESLint would do schema validation
 	const fusedConfig = flatConfigProps.reduce<TypedFlatConfigItem>((accumulator, key) => {
 		if (key in options) {
-			accumulator[key] = options[key] as any;
+			Object.assign(accumulator, { [key]: options[key] });
 		}
 
 		return accumulator;
@@ -648,7 +649,12 @@ export async function isentinel(
 
 	let composer = new FlatConfigComposerClass<TypedFlatConfigItem, ConfigNames>();
 
-	composer = composer.append(...configs, ...(userConfigs as Array<TypedFlatConfigItem>));
+	// `ResolvableFlatConfig` does not model an awaitable resolving to a composer,
+	// which the public `userConfigs` type permits and `append` resolves at
+	// runtime.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- lib type narrower than the accepted runtime input
+	const resolvableUserConfigs = userConfigs as Array<ResolvableFlatConfig<TypedFlatConfigItem>>;
+	composer = composer.append(...configs, ...resolvableUserConfigs);
 
 	// Markdown uses the `markdown/gfm` language, whose `SourceCode` lacks
 	// JS-only methods like `getAllComments`. Without this, any rule override

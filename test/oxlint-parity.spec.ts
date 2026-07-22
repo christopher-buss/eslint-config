@@ -1,6 +1,7 @@
 import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import {
 	isOxlintCovered,
@@ -11,10 +12,6 @@ import {
 import type { OxlintConfig } from "../src/oxlint/index.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import { effectiveEslintRules, effectiveOxlintRules } from "./oxlint-helpers.ts";
-
-interface PluginRuleMeta {
-	meta?: { docs?: Record<string, unknown> };
-}
 
 interface ParityVariant {
 	name: string;
@@ -251,6 +248,37 @@ function jsPluginSpecifiers(config: OxlintConfig): Map<string, string> {
 }
 
 /**
+ * Read the `rules` record off a dynamically imported plugin module, tolerating
+ * both default and namespace exports.
+ *
+ * @param module_ - The imported module namespace.
+ * @returns The plugin's rule definitions, or an empty record.
+ */
+function extractPluginRules(module_: unknown): Record<string, unknown> {
+	if (!isRecord(module_)) {
+		return {};
+	}
+
+	const base = isRecord(module_["default"]) ? module_["default"] : module_;
+	return isRecord(base["rules"]) ? base["rules"] : {};
+}
+
+/**
+ * Whether a rule's runtime metadata declares that it requires type information.
+ *
+ * @param rule - A plugin rule definition of unknown shape.
+ * @returns Whether `meta.docs.requiresTypeChecking` is `true`.
+ */
+function ruleRequiresTypeChecking(rule: unknown): boolean {
+	if (!isRecord(rule) || !isRecord(rule["meta"])) {
+		return false;
+	}
+
+	const { docs } = rule["meta"];
+	return isRecord(docs) && docs["requiresTypeChecking"] === true;
+}
+
+/**
  * Check one plugin's emitted rules against its runtime metadata.
  *
  * @param prefix - The jsPlugin alias.
@@ -263,16 +291,12 @@ async function findTypeAwareRulesInPlugin(
 	specifier: string,
 	ruleNames: Set<string>,
 ): Promise<Array<string>> {
-	const module_ = (await import(specifier)) as {
-		default?: { rules?: Record<string, PluginRuleMeta> };
-		rules?: Record<string, PluginRuleMeta>;
-	};
-	const plugin = module_.default ?? module_;
+	const module_: unknown = await import(specifier);
+	const rules = extractPluginRules(module_);
 
 	const problems: Array<string> = [];
 	for (const ruleName of ruleNames) {
-		const rule = plugin.rules?.[ruleName];
-		if (rule?.meta?.docs?.["requiresTypeChecking"] === true) {
+		if (ruleRequiresTypeChecking(rules[ruleName])) {
 			problems.push(`${prefix}/${ruleName} (${specifier}) requires type information`);
 		}
 	}

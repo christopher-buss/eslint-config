@@ -14,7 +14,7 @@ import {
 import type { Rules } from "../types.ts";
 import type { OxlintPlugin, TypedOxlintConfigItem } from "./types.ts";
 
-const NATIVE_PLUGINS = new Set<OxlintPlugin>([
+const NATIVE_PLUGINS = new Set<string>([
 	"eslint",
 	"import",
 	"jest",
@@ -31,6 +31,16 @@ const NATIVE_PLUGINS = new Set<OxlintPlugin>([
 	"vitest",
 	"vue",
 ]);
+
+/**
+ * Whether a rule's plugin prefix names a plugin oxlint implements natively.
+ *
+ * @param prefix - The rule's plugin prefix.
+ * @returns Whether the prefix is a native oxlint plugin.
+ */
+function isNativePlugin(prefix: string): prefix is OxlintPlugin {
+	return NATIVE_PLUGINS.has(prefix);
+}
 
 /**
  * Anchor for resolving a plugin from the consumer project, used when a plugin
@@ -176,7 +186,7 @@ export function splitOxlintRules(
 		// example oxc/*, which has no ESLint equivalent to map) run natively:
 		// they need no jsPlugin specifier and must not be routed as jsPlugin
 		// rules, which would throw on the missing specifier.
-		const isNativePrefix = NATIVE_PLUGINS.has(prefix as OxlintPlugin);
+		const nativePrefix = isNativePlugin(prefix) ? prefix : undefined;
 
 		if (!covered && isOff && keepUnmappedOff) {
 			// Preserve an explicit disable. A native-prefix disable is kept and
@@ -185,9 +195,9 @@ export function splitOxlintRules(
 			// specific files. A jsPlugin disable is kept only when the plugin is
 			// installed, since oxlint errors the whole config build both on an
 			// unregistered plugin and on a registered-but-unresolvable one.
-			if (isNativePrefix) {
+			if (nativePrefix !== undefined) {
 				nativeRules[translated] = value;
-				nativePlugins.add(prefix as OxlintPlugin);
+				nativePlugins.add(nativePrefix);
 			} else {
 				const specifier = oxlintJsPlugins[prefix];
 				if (specifier !== undefined && canResolveJsPlugin(specifier)) {
@@ -203,7 +213,7 @@ export function splitOxlintRules(
 			continue;
 		}
 
-		const uncoveredTarget = isNativePrefix ? "native" : "js-plugin";
+		const uncoveredTarget = nativePrefix !== undefined ? "native" : "js-plugin";
 		const target = covered ? mappedTarget(rule) : uncoveredTarget;
 
 		if (target === "js-plugin") {
@@ -219,8 +229,8 @@ export function splitOxlintRules(
 			nativeRules[translated] = value;
 		}
 
-		if (isNativePrefix) {
-			nativePlugins.add(prefix as OxlintPlugin);
+		if (nativePrefix !== undefined) {
+			nativePlugins.add(nativePrefix);
 		}
 	}
 
@@ -274,6 +284,7 @@ export function createOxlintConfigs({
 			plugins: nativePlugins,
 			// The split rules are keyed by translated oxlint names, which the
 			// eslint-side `Rules` typing cannot express.
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 			rules: nativeRules as TypedOxlintConfigItem["rules"],
 			...(settings ? { settings } : {}),
 		});
@@ -286,6 +297,7 @@ export function createOxlintConfigs({
 			files,
 			...(globals && fragments.length === 0 ? { globals } : {}),
 			jsPlugins,
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 			rules: jsPluginRules as TypedOxlintConfigItem["rules"],
 			...(settings && fragments.length === 0 ? { settings } : {}),
 		});

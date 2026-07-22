@@ -10,12 +10,29 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/oxlint/index.ts";
 
 interface OxlintRuleInfo {
 	scope: string;
 	type_aware: boolean;
 	value: string;
+}
+
+/**
+ * Whether a parsed `oxlint --rules` entry has the string fields this script
+ * reads.
+ *
+ * @param value - A parsed array element.
+ * @returns Whether the value is a usable rule info entry.
+ */
+function isOxlintRuleInfo(value: unknown): value is OxlintRuleInfo {
+	return (
+		isRecord(value) &&
+		typeof value["scope"] === "string" &&
+		typeof value["value"] === "string" &&
+		typeof value["type_aware"] === "boolean"
+	);
 }
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -26,11 +43,16 @@ const output = execFileSync(oxlintBinary, ["--rules", "-f", "json"], {
 	encoding: "utf8",
 	shell: process.platform === "win32",
 });
-const ruleList = JSON.parse(output) as Array<OxlintRuleInfo>;
+const parsedRuleList: unknown = JSON.parse(output);
+if (!Array.isArray(parsedRuleList)) {
+	throw new Error("Unexpected `oxlint --rules` output: expected a JSON array.");
+}
 
 const validRules = new Set<string>();
-for (const rule of ruleList) {
-	validRules.add(`${rule.scope}/${rule.value}`);
+for (const rule of parsedRuleList) {
+	if (isOxlintRuleInfo(rule)) {
+		validRules.add(`${rule.scope}/${rule.value}`);
+	}
 }
 
 if (validRules.size === 0) {

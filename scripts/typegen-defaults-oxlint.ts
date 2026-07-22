@@ -31,11 +31,17 @@ type Variant = (typeof VARIANT_KEYS)[number];
 type GeneratorOptions = Omit<OxlintFactoryOptions, "name">;
 
 /**
- * The factory retyped without its redundancy-validation generics, which cannot
- * infer against wide (non-literal) options types. Options stay fully checked
- * against `OxlintFactoryOptions`.
+ * The factory called through a plain signature: its redundancy-validation
+ * generics cannot infer against wide (non-literal) options types, so this
+ * wrapper pins the parameter to `OxlintFactoryOptions` (still fully checked)
+ * and the return to the resolved `OxlintConfig`.
+ *
+ * @param options - Factory options for this extraction run.
+ * @returns The generated oxlint config.
  */
-const buildConfig = isentinel as unknown as (options: OxlintFactoryOptions) => OxlintConfig;
+function buildConfig(options: OxlintFactoryOptions): OxlintConfig {
+	return isentinel(options);
+}
 
 /**
  * Deterministic base options: no environment detection and type-aware rules
@@ -101,29 +107,28 @@ function mergedRulesFromConfig(config: OxlintConfig, file: string): Record<strin
  * Build the config once per formatter probe and combine the merged rules of
  * each scope file.
  *
- * @template S - The scope names extracted by this run.
  * @param options - Factory options for this extraction run.
  * @param scopes - Scope names to extract, resolved to representative files.
  * @returns Combined rules per scope.
  */
-function extractScopes<const S extends ScopeFile>(
+function extractScopes(
 	options: GeneratorOptions,
-	scopes: ReadonlyArray<S>,
-): Record<S, ScopeRules> {
+	scopes: ReadonlyArray<ScopeFile>,
+): Record<string, ScopeRules> {
 	const [rulesA, rulesB] = FORMATTER_PROBES.map((formatters) => {
 		const config = buildConfig({ ...BASE_OPTIONS, ...options, formatters });
 		return scopes.map((scope) => mergedRulesFromConfig(config, SCOPE_FILES[scope]));
 	});
 
 	return Object.fromEntries(
-		scopes.map((scope, index) => [
+		scopes.map((scope, index): [string, ScopeRules] => [
 			scope,
 			combineProbes(rulesA?.[index] ?? {}, rulesB?.[index] ?? {}),
 		]),
-	) as Record<S, ScopeRules>;
+	);
 }
 
-function extractVariant(variant: Variant): VariantExtraction {
+function extractVariant(variant: Variant): Record<string, ScopeRules> {
 	const variantOptions = VARIANT_OPTIONS[variant];
 
 	const baseScopes = extractScopes(variantOptions, ["main"]);
@@ -133,22 +138,23 @@ function extractVariant(variant: Variant): VariantExtraction {
 		"react",
 	]);
 
-	const { main } = baseScopes;
-	const sourceFeature = deltaAgainst(featureScopes.main, [main]);
+	const main = baseScopes["main"] ?? {};
+	const sourceFeature = deltaAgainst(featureScopes["main"] ?? {}, [main]);
 
 	return {
 		main,
-		react: deltaAgainst(featureScopes.react, [sourceFeature, main]),
+		react: deltaAgainst(featureScopes["react"] ?? {}, [sourceFeature, main]),
 		sourceFeature,
-		test: deltaAgainst(featureScopes.test, [sourceFeature, main]),
-	};
+		test: deltaAgainst(featureScopes["test"] ?? {}, [sourceFeature, main]),
+	} satisfies VariantExtraction;
 }
 
-const extractions = {} as Record<Variant, VariantExtraction>;
+const extractions: Record<string, Record<string, ScopeRules>> = {};
 for (const variant of VARIANT_KEYS) {
-	extractions[variant] = extractVariant(variant);
-	assertExtractionSane(`oxlint ${variant}`, extractions[variant], "main", "no-alert");
-	logVariantCounts("oxlint ", variant, extractions[variant]);
+	const extraction = extractVariant(variant);
+	extractions[variant] = extraction;
+	assertExtractionSane(`oxlint ${variant}`, extraction, "main", "no-alert");
+	logVariantCounts("oxlint ", variant, extraction);
 }
 
 const banner = `/* eslint-disable */

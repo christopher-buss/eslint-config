@@ -1992,6 +1992,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
+        "require-await": "off",
         "typescript/array-type": [
           "error",
           {
@@ -2025,6 +2026,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
           "error",
           "interface",
         ],
+        "typescript/consistent-type-exports": "error",
         "typescript/consistent-type-imports": [
           "error",
           {
@@ -2052,6 +2054,8 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
             },
           },
         ],
+        "typescript/no-array-delete": "error",
+        "typescript/no-base-to-string": "error",
         "typescript/no-confusing-non-null-assertion": "error",
         "typescript/no-confusing-void-expression": "error",
         "typescript/no-deprecated": "error",
@@ -2074,6 +2078,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "typescript/no-meaningless-void-operator": "error",
         "typescript/no-misused-new": "error",
         "typescript/no-misused-promises": "error",
+        "typescript/no-misused-spread": "error",
         "typescript/no-mixed-enums": "error",
         "typescript/no-non-null-asserted-nullish-coalescing": "error",
         "typescript/no-non-null-asserted-optional-chain": "error",
@@ -2094,6 +2099,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "typescript/no-unnecessary-type-arguments": "error",
         "typescript/no-unnecessary-type-assertion": "error",
         "typescript/no-unnecessary-type-constraint": "error",
+        "typescript/no-unnecessary-type-conversion": "error",
         "typescript/no-unnecessary-type-parameters": "error",
         "typescript/no-unsafe-argument": "error",
         "typescript/no-unsafe-assignment": "error",
@@ -2103,6 +2109,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
         "typescript/no-unsafe-return": "error",
+        "typescript/no-unsafe-type-assertion": "error",
         "typescript/no-unsafe-unary-minus": "error",
         "typescript/no-useless-default-assignment": "error",
         "typescript/no-wrapper-object-types": "error",
@@ -2138,7 +2145,15 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "typescript/prefer-reduce-type-parameter": "error",
         "typescript/prefer-return-this-type": "error",
         "typescript/promise-function-async": "error",
+        "typescript/require-await": "error",
         "typescript/restrict-plus-operands": "error",
+        "typescript/restrict-template-expressions": [
+          "error",
+          {
+            "allowBoolean": true,
+            "allowNumber": true,
+          },
+        ],
         "typescript/return-await": "error",
         "typescript/strict-boolean-expressions": "error",
         "typescript/strict-void-return": "error",
@@ -5778,6 +5793,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
+        "require-await": "off",
         "typescript/array-type": [
           "error",
           {
@@ -5811,6 +5827,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
           "error",
           "interface",
         ],
+        "typescript/consistent-type-exports": "error",
         "typescript/consistent-type-imports": [
           "error",
           {
@@ -5838,6 +5855,8 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
             },
           },
         ],
+        "typescript/no-array-delete": "error",
+        "typescript/no-base-to-string": "error",
         "typescript/no-confusing-non-null-assertion": "error",
         "typescript/no-confusing-void-expression": "error",
         "typescript/no-deprecated": "error",
@@ -5860,6 +5879,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "typescript/no-meaningless-void-operator": "error",
         "typescript/no-misused-new": "error",
         "typescript/no-misused-promises": "error",
+        "typescript/no-misused-spread": "error",
         "typescript/no-mixed-enums": "error",
         "typescript/no-non-null-asserted-nullish-coalescing": "error",
         "typescript/no-non-null-asserted-optional-chain": "error",
@@ -5880,6 +5900,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "typescript/no-unnecessary-type-arguments": "error",
         "typescript/no-unnecessary-type-assertion": "error",
         "typescript/no-unnecessary-type-constraint": "error",
+        "typescript/no-unnecessary-type-conversion": "error",
         "typescript/no-unnecessary-type-parameters": "error",
         "typescript/no-unsafe-argument": "error",
         "typescript/no-unsafe-assignment": "error",
@@ -5889,6 +5910,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
         "typescript/no-unsafe-return": "error",
+        "typescript/no-unsafe-type-assertion": "error",
         "typescript/no-unsafe-unary-minus": "error",
         "typescript/no-useless-default-assignment": "error",
         "typescript/no-wrapper-object-types": "error",
@@ -5924,7 +5946,17 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "typescript/prefer-reduce-type-parameter": "error",
         "typescript/prefer-return-this-type": "error",
         "typescript/promise-function-async": "error",
+        "typescript/related-getter-setter-pairs": "error",
+        "typescript/require-array-sort-compare": "error",
+        "typescript/require-await": "error",
         "typescript/restrict-plus-operands": "error",
+        "typescript/restrict-template-expressions": [
+          "error",
+          {
+            "allowBoolean": true,
+            "allowNumber": true,
+          },
+        ],
         "typescript/return-await": "error",
         "typescript/strict-boolean-expressions": "error",
         "typescript/strict-void-return": "error",

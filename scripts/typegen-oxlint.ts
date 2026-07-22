@@ -22,6 +22,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
 
+import { isRecord } from "../src/guards.ts";
 import { oxlintJsPluginPrefixRenames, oxlintJsPlugins } from "../src/rules/oxlint-mapping.ts";
 
 interface OxlintRuleInfo {
@@ -37,16 +38,75 @@ interface RuleMeta {
 	docs?: { description?: string; url?: string };
 }
 
+/**
+ * Whether a parsed `oxlint --rules` entry carries the fields this script reads.
+ *
+ * @param value - A parsed array element.
+ * @returns Whether the value is a usable rule info entry.
+ */
+function isOxlintRuleInfo(value: unknown): value is OxlintRuleInfo {
+	return (
+		isRecord(value) &&
+		typeof value["scope"] === "string" &&
+		typeof value["value"] === "string" &&
+		typeof value["type_aware"] === "boolean" &&
+		typeof value["docs_url"] === "string"
+	);
+}
+
+/**
+ * Extract a rule's `meta` from an untyped plugin rule object, keeping only the
+ * documentation fields the emitter reads.
+ *
+ * @param rule - A plugin rule value of unknown shape.
+ * @returns The rule metadata, or `undefined` when absent.
+ */
+function ruleMetaOf(rule: unknown): RuleMeta | undefined {
+	if (!isRecord(rule)) {
+		return undefined;
+	}
+
+	const { meta } = rule;
+	if (!isRecord(meta)) {
+		return undefined;
+	}
+
+	const { deprecated, docs } = meta;
+	if (!isRecord(docs)) {
+		return { deprecated };
+	}
+
+	return {
+		deprecated,
+		docs: {
+			description: typeof docs["description"] === "string" ? docs["description"] : undefined,
+			url: typeof docs["url"] === "string" ? docs["url"] : undefined,
+		},
+	};
+}
+
 const require = createRequire(import.meta.url);
 const oxlintRoot = path.join(path.dirname(require.resolve("oxlint")), "..");
 
 // ----- Native rules -----
 
-const schema = JSON.parse(
+const schema: unknown = JSON.parse(
 	await fs.readFile(path.join(oxlintRoot, "configuration_schema.json"), "utf8"),
-) as { definitions: { DummyRuleMap: { properties: Record<string, unknown> } } };
+);
+const dummyRuleMapProperties =
+	isRecord(schema) &&
+	isRecord(schema["definitions"]) &&
+	isRecord(schema["definitions"]["DummyRuleMap"]) &&
+	isRecord(schema["definitions"]["DummyRuleMap"]["properties"])
+		? schema["definitions"]["DummyRuleMap"]["properties"]
+		: undefined;
+if (dummyRuleMapProperties === undefined) {
+	throw new Error(
+		"configuration_schema.json: missing definitions.DummyRuleMap.properties object.",
+	);
+}
 
-const nativeKeys = Object.keys(schema.definitions.DummyRuleMap.properties).sort();
+const nativeKeys = Object.keys(dummyRuleMapProperties).sort();
 
 const rulesResult = spawnSync(
 	process.execPath,
@@ -57,7 +117,12 @@ if (rulesResult.status !== 0) {
 	throw new Error(`oxlint --rules failed: ${rulesResult.stderr}`);
 }
 
-const ruleInfos = JSON.parse(rulesResult.stdout) as Array<OxlintRuleInfo>;
+const parsedRuleInfos: unknown = JSON.parse(rulesResult.stdout);
+if (!Array.isArray(parsedRuleInfos)) {
+	throw new Error("`oxlint --rules --format=json` did not return a JSON array.");
+}
+
+const ruleInfos = parsedRuleInfos.filter(isOxlintRuleInfo);
 const ruleInfoByKey = new Map<string, OxlintRuleInfo>();
 for (const info of ruleInfos) {
 	// `--rules` scopes use underscores (jsx_a11y), config keys use dashes.
@@ -98,17 +163,21 @@ const eslintRulePrefixes = new Set(
 	Array.from(eslintRuleKeys, (key) => key.slice(0, Math.max(0, key.lastIndexOf("/")))),
 );
 
-async function loadPluginRules(specifier: string): Promise<Record<string, { meta?: RuleMeta }>> {
-	const imported = (await import(specifier)) as Record<string, unknown>;
-	const unwrapped = (imported["default"] ?? imported) as { default?: unknown; rules?: unknown };
-	const plugin = (unwrapped.rules === undefined ? unwrapped.default : unwrapped) as {
-		rules?: Record<string, { meta?: RuleMeta }>;
-	};
-	if (plugin.rules === undefined) {
+async function loadPluginRules(specifier: string): Promise<Record<string, unknown>> {
+	const imported: unknown = await import(specifier);
+	if (!isRecord(imported)) {
+		throw new Error(`Cannot resolve module for jsPlugin package: ${specifier}`);
+	}
+
+	const defaultExport = imported["default"];
+	const unwrapped = isRecord(defaultExport) ? defaultExport : imported;
+	const nested = unwrapped["rules"] === undefined ? unwrapped["default"] : unwrapped;
+	const plugin = isRecord(nested) ? nested : undefined;
+	if (plugin === undefined || !isRecord(plugin["rules"])) {
 		throw new Error(`Cannot resolve rules of jsPlugin package: ${specifier}`);
 	}
 
-	return plugin.rules;
+	return plugin["rules"];
 }
 
 function toJsdoc(meta: RuleMeta | undefined): Array<string> {
@@ -154,7 +223,7 @@ for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
 
 		renamedEntries.push(
 			[
-				...toJsdoc(rules[ruleName]?.meta),
+				...toJsdoc(ruleMetaOf(rules[ruleName])),
 				`  '${oxlintPrefix}/${ruleName}'?: ${typeReference}`,
 			].join("\n"),
 		);
@@ -181,6 +250,9 @@ for (const prefix of keptGeneratedPrefixes) {
 	extraPlugins[prefix] = { rules: await loadPluginRules(specifier) };
 }
 
+// `pluginsToRulesDTS` types plugins as `ESLint.Plugin`, but these are minimal
+// `{ rules }` shapes loaded from untyped oxlint jsPlugins; only `rules` is read.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- lib expects ESLint.Plugin; only `rules` is consumed
 let extraDts = await pluginsToRulesDTS(extraPlugins as never, {
 	exportTypeName: "OxlintExtraJsPluginRuleOptions",
 	includeAugmentation: false,

@@ -3,6 +3,7 @@ import type { Linter } from "eslint";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/index.ts";
 
@@ -182,14 +183,13 @@ async function prepareTemporaryDirectory(name: string, isRoblox: boolean): Promi
  * @returns The parser name, or "unknown" when it cannot be determined.
  */
 function extractParserName(parser: unknown): string {
-	if (typeof parser !== "object" || parser === null) {
+	if (!isRecord(parser)) {
 		return "unknown";
 	}
 
-	const parserRecord = parser as Record<string, unknown>;
-	const meta = parserRecord["meta"] as Record<string, unknown> | undefined;
-
-	return String(meta?.["name"] ?? parserRecord["name"] ?? "unknown");
+	const { meta } = parser;
+	const name = (isRecord(meta) ? meta["name"] : undefined) ?? parser["name"];
+	return typeof name === "string" ? name : "unknown";
 }
 
 /**
@@ -209,8 +209,8 @@ function serializeLanguageOptions(
 
 	delete result["globals"];
 
-	if (typeof result["parserOptions"] === "object" && result["parserOptions"] !== null) {
-		const cleaned = { ...(result["parserOptions"] as Record<string, unknown>) };
+	if (isRecord(result["parserOptions"])) {
+		const cleaned = { ...result["parserOptions"] };
 		delete cleaned["tsconfigRootDir"];
 		delete cleaned["projectService"];
 		result["parserOptions"] = cleaned;

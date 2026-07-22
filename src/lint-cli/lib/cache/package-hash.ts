@@ -2,6 +2,7 @@
 import crypto from "node:crypto";
 import path from "node:path";
 
+import { isRecord } from "../../../guards.ts";
 import { findWorkspaceRoot } from "../files/workspace.ts";
 import { readFileIfPresent } from "../state.ts";
 
@@ -69,10 +70,14 @@ function resolutionSubset(directory: string): Record<string, unknown> | undefine
 		return undefined;
 	}
 
-	let parsed: Record<string, unknown>;
+	let parsed: unknown;
 	try {
-		parsed = JSON.parse(raw) as Record<string, unknown>;
+		parsed = JSON.parse(raw);
 	} catch {
+		return undefined;
+	}
+
+	if (!isRecord(parsed)) {
 		return undefined;
 	}
 
@@ -98,11 +103,10 @@ function stableStringify(value: unknown): string {
 		return `[${value.map((item) => stableStringify(item)).join(",")}]`;
 	}
 
-	if (value !== null && typeof value === "object") {
-		const record = value as Record<string, unknown>;
-		const entries = Object.keys(record)
+	if (isRecord(value)) {
+		const entries = Object.keys(value)
 			.sort()
-			.map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`);
+			.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`);
 		return `{${entries.join(",")}}`;
 	}
 

@@ -14,25 +14,16 @@ import { minVersion } from "semver";
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
+import { isRecord } from "./guards.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
-
-interface DevelopmentEngineRuntime {
-	name?: string;
-	version?: string;
-}
 
 type AgentMatcher = (environment: NodeJS.ProcessEnv) => boolean;
 
 type AgentCheck = AgentMatcher | string;
 
 type ModuleImport<T> = Promise<T | { default: T }>;
-
-interface PackageJsonEngines {
-	devEngines?: { runtime?: Array<DevelopmentEngineRuntime> | DevelopmentEngineRuntime };
-	engines?: { node?: string };
-}
 
 type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
@@ -157,8 +148,8 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 	}
 
 	const nonExistingPackages = packages.filter(
-		(index) => index !== undefined && !isPackageExists(index),
-	) as Array<string>;
+		(index): index is string => index !== undefined && !isPackageExists(index),
+	);
 	if (nonExistingPackages.length === 0) {
 		return;
 	}
@@ -230,9 +221,12 @@ export function resolveNodeMajor(
 			return undefined;
 		}
 
-		let manifest: PackageJsonEngines = {};
+		let manifest: Record<string, unknown> = {};
 		try {
-			manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as PackageJsonEngines;
+			const parsed: unknown = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+			if (isRecord(parsed)) {
+				manifest = parsed;
+			}
 		} catch {
 			// An unreadable or malformed manifest tells us nothing; keep walking.
 		}
@@ -256,11 +250,14 @@ export function resolveSubOptions<K extends keyof OptionsConfig>(
 	key: K,
 ): ResolvedOptions<OptionsConfig[K]> {
 	const optionValue = options[key];
-	const defaults = resolveWithDefaults(
-		optionValue as boolean | OptionsConfig[K] | undefined,
-		{} as OptionsConfig[K],
-	);
-	return (defaults === false ? {} : defaults) as ResolvedOptions<OptionsConfig[K]>;
+	const resolved =
+		optionValue === true || optionValue === false || optionValue === undefined
+			? {}
+			: optionValue;
+	// `ResolvedOptions` is a conditional type the compiler cannot derive from the
+	// runtime narrowing above; the value is the resolved object either way.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- generic conditional-type erasure
+	return resolved as ResolvedOptions<OptionsConfig[K]>;
 }
 
 export function toSourceGlob(glob: string): string {
@@ -278,30 +275,27 @@ export function getOverrides(
 	overridesTypeAware: TypedFlatConfigItem["rules"];
 } {
 	const sub = resolveSubOptions(options, key);
+	if (!isRecord(sub)) {
+		return { overrides: {}, overridesTypeAware: {} };
+	}
+
+	// `sub` is a resolved sub-option object; its optional fields carry the types
+	// declared on the public `OptionsConfig`, which the widened `key` erases.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typed sub-option fields erased by the generic key
+	const shape = sub as {
+		files?: NonNullable<TypedFlatConfigItem["files"]>;
+		filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
+		ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
+		overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
+		overridesTypeAware?: NonNullable<TypedFlatConfigItem["rules"]>;
+	};
 
 	return {
-		files:
-			typeof sub === "object" && "files" in sub
-				? (sub as { files: TypedFlatConfigItem["files"] }).files
-				: undefined,
-		filesTypeAware:
-			typeof sub === "object" && "filesTypeAware" in sub
-				? (sub as { filesTypeAware: TypedFlatConfigItem["files"] }).filesTypeAware
-				: undefined,
-		ignoresTypeAware:
-			typeof sub === "object" && "ignoresTypeAware" in sub
-				? (sub as { ignoresTypeAware: TypedFlatConfigItem["ignores"] }).ignoresTypeAware
-				: undefined,
-		overrides: {
-			...(typeof sub === "object" && "overrides" in sub
-				? (sub as { overrides: TypedFlatConfigItem["rules"] }).overrides
-				: {}),
-		},
-		overridesTypeAware: {
-			...(typeof sub === "object" && "overridesTypeAware" in sub
-				? (sub as { overridesTypeAware: TypedFlatConfigItem["rules"] }).overridesTypeAware
-				: {}),
-		},
+		files: shape.files,
+		filesTypeAware: shape.filesTypeAware,
+		ignoresTypeAware: shape.ignoresTypeAware,
+		overrides: { ...shape.overrides },
+		overridesTypeAware: { ...shape.overridesTypeAware },
 	};
 }
 
@@ -659,7 +653,12 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
 			const content = await fs.promises.readFile(configPath, "utf-8");
-			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
+			const parsed: unknown = JSON.parse(content);
+			if (!isRecord(parsed)) {
+				continue;
+			}
+
+			const { $schema: _, ...config } = parsed;
 			return config;
 		} catch {
 			continue;
@@ -680,7 +679,12 @@ export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
 		const configPath = path.resolve(process.cwd(), filename);
 		try {
 			const content = fs.readFileSync(configPath, "utf-8");
-			const { $schema: _, ...config } = JSON.parse(content) as Record<string, unknown>;
+			const parsed: unknown = JSON.parse(content);
+			if (!isRecord(parsed)) {
+				continue;
+			}
+
+			const { $schema: _, ...config } = parsed;
 			return config;
 		} catch {
 			continue;
@@ -768,7 +772,8 @@ function parseNodeMajor(range: string): number | undefined {
  */
 function readSettingsNodeVersion(settings?: Readonly<Record<string, unknown>>): string | undefined {
 	for (const key of ["n", "node"]) {
-		const version = (settings?.[key] as undefined | { version?: unknown })?.version;
+		const setting = settings?.[key];
+		const version = isRecord(setting) ? setting["version"] : undefined;
 		if (typeof version === "string") {
 			return version;
 		}
@@ -785,14 +790,17 @@ function readSettingsNodeVersion(settings?: Readonly<Record<string, unknown>>): 
  * @param manifest - The parsed manifest.
  * @returns The declared range, or `undefined` when the manifest declares none.
  */
-function readNodeRange(manifest: PackageJsonEngines): string | undefined {
-	const enginesNode = manifest.engines?.node;
-	if (enginesNode !== undefined) {
-		return enginesNode;
+function readNodeRange({ devEngines, engines }: Record<string, unknown>): string | undefined {
+	if (isRecord(engines) && typeof engines["node"] === "string") {
+		return engines["node"];
 	}
 
-	const { runtime } = manifest.devEngines ?? {};
+	const runtime = isRecord(devEngines) ? devEngines["runtime"] : undefined;
 	const runtimes = Array.isArray(runtime) ? runtime : [runtime];
 
-	return runtimes.find((entry) => entry?.name === "node")?.version;
+	const match = runtimes.find(
+		(entry): entry is Record<string, unknown> => isRecord(entry) && entry["name"] === "node",
+	);
+	const version = match?.["version"];
+	return typeof version === "string" ? version : undefined;
 }

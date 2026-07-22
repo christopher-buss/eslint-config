@@ -75,7 +75,9 @@ const configs = await combine(
 	yaml(),
 );
 
-const configNames = configs.map((config) => config.name).filter(Boolean) as Array<string>;
+const configNames = configs
+	.map((config) => config.name)
+	.filter((name): name is string => Boolean(name));
 
 let dts = await flatConfigsToRulesDTS(configs, {
 	includeAugmentation: false,

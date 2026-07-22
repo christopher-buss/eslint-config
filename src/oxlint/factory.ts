@@ -46,7 +46,12 @@ import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
-import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
+import type {
+	OxlintFactoryOptions,
+	OxlintPlugin,
+	OxlintSettings,
+	TypedOxlintConfigItem,
+} from "./types.ts";
 import {
 	anchorOxlintGlob,
 	createOxlintConfigs,
@@ -385,7 +390,7 @@ export function isentinel(
 	// Merge fragments into overrides; hoist settings and jsPlugins to the top
 	// level, deduplicated.
 	const jsPlugins = new Map<string, ExternalPluginEntry>();
-	const nativePlugins = new Set<string>();
+	const nativePlugins = new Set<OxlintPlugin>();
 	const overrides: Array<OxlintOverride> = [];
 	const mergedSettings: OxlintSettings = {};
 
@@ -450,6 +455,7 @@ export function isentinel(
 			keepUnmappedOff: true,
 			// The split accepts eslint-named rules and translates them; the
 			// oxlint-facing `OxlintRules` typing cannot express that input.
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OxlintRules and Rules share a runtime shape; only the key naming differs.
 			rules: rules as Rules,
 		});
 		for (const fragment of optionsFragments) {
@@ -512,7 +518,7 @@ export function isentinel(
 			...linterOptions,
 		},
 		overrides,
-		plugins: [...nativePlugins] as OxlintConfig["plugins"],
+		plugins: [...nativePlugins],
 		settings: mergedSettings,
 	});
 }

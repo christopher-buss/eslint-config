@@ -1,9 +1,9 @@
 import { GLOB_EXCLUDE } from "../../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
-export async function ignores(
+export function ignores(
 	userIgnores: ((originals: Array<string>) => Array<string>) | Array<string> = [],
-): Promise<Array<TypedFlatConfigItem>> {
+): Array<TypedFlatConfigItem> {
 	return [
 		{
 			name: "isentinel/ignores",

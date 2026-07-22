@@ -9,7 +9,7 @@ import isentinel from '@isentinel/eslint-config'
 
 export default isentinel({
 ${mainConfig}
-}${additionalConfigs?.map((config) => `,{\n${config}\n}`)})
+}${additionalConfigs?.map((config) => `,{\n${config}\n}`).join(",") ?? ""})
 `.trimStart();
 }
 

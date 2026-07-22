@@ -5,12 +5,13 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
+import { isRecord, isStringArray } from "../../../guards.ts";
 import { normalizePath } from "../cache/entries.ts";
 import type { RunContext } from "../context.ts";
 import { resolveIgnoredHelper } from "../exec/resolve.ts";
 import { readState, statePath, writeState } from "../state.ts";
 import { classifyIgnored } from "./ignored-predicate.ts";
-import type { IgnoredPayload } from "./ignored-predicate.ts";
+import type { IgnoredPayload, PredicateEntry } from "./ignored-predicate.ts";
 
 /** A target list split by whether ESLint would lint it. */
 interface Classification {
@@ -33,6 +34,18 @@ interface IgnoredState {
 	hash: string;
 	/** What the helper returned: the config's patterns, or bare answers. */
 	payload: IgnoredPayload;
+}
+
+/**
+ * Whether a value is a serializable predicate-entry array. The child writes it,
+ * so its element shape is trusted to its array-ness — a wrong element throws
+ * where the payload is used, and that degrades to no filtering all the same.
+ *
+ * @param value - The value to test.
+ * @returns Whether the value is an array of {@link PredicateEntry}.
+ */
+function isPredicateEntryArray(value: unknown): value is Array<PredicateEntry> {
+	return Array.isArray(value);
 }
 
 /** Reused for every miss, so callers never allocate on the no-op path. */
@@ -232,13 +245,28 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): IgnoredPayload 
 			maxBuffer: 64 * 1024 * 1024,
 			stdio: ["pipe", "ignore", "ignore"],
 		});
-		// Trusted as far as its tag: the writer is our own child, and anything it
-		// got wrong past that throws where the payload is used, which is caught
-		// the same way as a failed spawn.
-		const parsed = JSON.parse(fs.readFileSync(outFile, "utf8")) as { mode?: unknown };
-		return parsed.mode === "answers" || parsed.mode === "predicate"
-			? (parsed as IgnoredPayload)
-			: undefined;
+		// The writer is our own child; its payload is validated down to its
+		// discriminant and the fields each mode carries, so a malformed result
+		// degrades to no filtering rather than being trusted on its tag alone.
+		const parsed: unknown = JSON.parse(fs.readFileSync(outFile, "utf8"));
+		if (!isRecord(parsed)) {
+			return undefined;
+		}
+
+		const { basePath, entries, ignored, mode } = parsed;
+		if (mode === "answers" && isStringArray(ignored)) {
+			return { ignored, mode };
+		}
+
+		if (
+			mode === "predicate" &&
+			typeof basePath === "string" &&
+			isPredicateEntryArray(entries)
+		) {
+			return { basePath, entries, mode };
+		}
+
+		return undefined;
 	} catch {
 		return undefined;
 	} finally {

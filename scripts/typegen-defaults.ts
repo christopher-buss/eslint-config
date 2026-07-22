@@ -26,6 +26,7 @@ import process from "node:process";
 
 import { isentinel } from "../src/eslint/index.ts";
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
+import { isRecord } from "../src/guards.ts";
 import type { ScopeRules } from "./typegen-defaults-shared.ts";
 import {
 	assertExtractionSane,
@@ -43,14 +44,18 @@ type Variant = (typeof VARIANT_KEYS)[number];
 type GeneratorOptions = Omit<OptionsConfig, "ignores">;
 
 /**
- * The factory retyped without its redundancy-validation generics, which cannot
- * infer against wide (non-literal) options types. Options stay fully checked
- * against `OptionsConfig`; awaiting the returned composer yields the resolved
- * config array.
+ * The factory called through a plain signature: its redundancy-validation
+ * generics cannot infer against wide (non-literal) options types, so this
+ * wrapper pins the parameter to `GeneratorOptions` (still fully checked against
+ * `OptionsConfig`) and awaits the returned composer to the resolved config
+ * array.
+ *
+ * @param options - Factory options for this extraction run.
+ * @returns The resolved config array.
  */
-const buildConfigs = isentinel as unknown as (
-	options: GeneratorOptions,
-) => Promise<Array<TypedFlatConfigItem>>;
+async function buildConfigs(options: GeneratorOptions): Promise<Array<TypedFlatConfigItem>> {
+	return isentinel(options);
+}
 
 /**
  * Deterministic base options: no environment detection, no repo-specific
@@ -100,17 +105,15 @@ async function mergedRulesPerFile(
 	files: ReadonlyArray<string>,
 ): Promise<Array<Record<string, unknown>>> {
 	const eslint = new ESLint({
-		baseConfig: configs as never,
+		baseConfig: configs,
 		cwd,
 		overrideConfigFile: true,
 	});
 
 	return Promise.all(
 		files.map(async (file) => {
-			const config = (await eslint.calculateConfigForFile(path.join(cwd, file))) as
-				| undefined
-				| { rules?: Record<string, unknown> };
-			return config?.rules ?? {};
+			const config: unknown = await eslint.calculateConfigForFile(path.join(cwd, file));
+			return isRecord(config) && isRecord(config["rules"]) ? config["rules"] : {};
 		}),
 	);
 }
@@ -119,15 +122,14 @@ async function mergedRulesPerFile(
  * Resolve one option set under both formatter probes and combine the merged
  * rules of each scope file.
  *
- * @template S - The scope names extracted by this run.
  * @param options - Factory options for this extraction run.
  * @param scopes - Scope names to extract, resolved to representative files.
  * @returns Combined rules per scope.
  */
-async function extractScopes<const S extends ScopeFile>(
+async function extractScopes(
 	options: GeneratorOptions,
-	scopes: ReadonlyArray<S>,
-): Promise<Record<S, ScopeRules>> {
+	scopes: ReadonlyArray<ScopeFile>,
+): Promise<Record<string, ScopeRules>> {
 	const files = scopes.map((scope) => SCOPE_FILES[scope]);
 	const [rulesA, rulesB] = await Promise.all(
 		FORMATTER_PROBES.map(async (formatters) => {
@@ -137,14 +139,14 @@ async function extractScopes<const S extends ScopeFile>(
 	);
 
 	return Object.fromEntries(
-		scopes.map((scope, index) => [
+		scopes.map((scope, index): [string, ScopeRules] => [
 			scope,
 			combineProbes(rulesA?.[index] ?? {}, rulesB?.[index] ?? {}),
 		]),
-	) as Record<S, ScopeRules>;
+	);
 }
 
-async function extractVariant(variant: Variant): Promise<VariantExtraction> {
+async function extractVariant(variant: Variant): Promise<Record<string, ScopeRules>> {
 	const variantOptions = VARIANT_OPTIONS[variant];
 
 	const [baseScopes, featureScopes] = await Promise.all([
@@ -152,25 +154,25 @@ async function extractVariant(variant: Variant): Promise<VariantExtraction> {
 		extractScopes({ ...variantOptions, ...FEATURE_OPTIONS }, ["main", "test", "react"]),
 	]);
 
-	const { main } = baseScopes;
-	const sourceFeature = deltaAgainst(featureScopes.main, [main]);
+	const main = baseScopes["main"] ?? {};
+	const sourceFeature = deltaAgainst(featureScopes["main"] ?? {}, [main]);
 
 	return {
-		jsonc: baseScopes.jsonc,
+		jsonc: baseScopes["jsonc"] ?? {},
 		main,
-		markdown: baseScopes.markdown,
-		react: deltaAgainst(featureScopes.react, [sourceFeature, main]),
+		markdown: baseScopes["markdown"] ?? {},
+		react: deltaAgainst(featureScopes["react"] ?? {}, [sourceFeature, main]),
 		sourceFeature,
-		test: deltaAgainst(featureScopes.test, [sourceFeature, main]),
-		toml: baseScopes.toml,
-		yaml: baseScopes.yaml,
-	};
+		test: deltaAgainst(featureScopes["test"] ?? {}, [sourceFeature, main]),
+		toml: baseScopes["toml"] ?? {},
+		yaml: baseScopes["yaml"] ?? {},
+	} satisfies VariantExtraction;
 }
 
 const extractionEntries = await Promise.all(
 	VARIANT_KEYS.map(async (variant) => [variant, await extractVariant(variant)] as const),
 );
-const extractions = Object.fromEntries(extractionEntries) as Record<Variant, VariantExtraction>;
+const extractions = Object.fromEntries(extractionEntries);
 for (const [variant, scopes] of extractionEntries) {
 	assertExtractionSane(variant, scopes, "main", "no-alert");
 	logVariantCounts("", variant, scopes);

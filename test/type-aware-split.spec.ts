@@ -1,14 +1,11 @@
 import process from "node:process";
 import { describe, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import { effectiveEslintRules } from "./oxlint-helpers.ts";
-
-interface PluginRuleMeta {
-	meta?: { docs?: Record<string, unknown> };
-}
 
 interface SplitVariant {
 	name: string;
@@ -182,21 +179,34 @@ function findPartitionProblems(
  * @param configs - The resolved flat config items.
  * @returns Rule id to rule definition.
  */
-function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, PluginRuleMeta> {
-	const registry = new Map<string, PluginRuleMeta>();
+function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, unknown> {
+	const registry = new Map<string, unknown>();
 	for (const config of configs) {
 		const plugins = Object.entries(config.plugins ?? {});
 		for (const [prefix, plugin] of plugins) {
-			const ruleEntries = Object.entries(
-				(plugin as { rules?: Record<string, PluginRuleMeta> }).rules ?? {},
-			);
-			for (const [name, rule] of ruleEntries) {
+			const rules = isRecord(plugin) && isRecord(plugin["rules"]) ? plugin["rules"] : {};
+			for (const [name, rule] of Object.entries(rules)) {
 				registry.set(`${prefix}/${name}`, rule);
 			}
 		}
 	}
 
 	return registry;
+}
+
+/**
+ * Whether a rule's runtime metadata declares that it requires type information.
+ *
+ * @param rule - A plugin rule definition of unknown shape.
+ * @returns Whether `meta.docs.requiresTypeChecking` is `true`.
+ */
+function ruleRequiresTypeChecking(rule: unknown): boolean {
+	if (!isRecord(rule) || !isRecord(rule["meta"])) {
+		return false;
+	}
+
+	const { docs } = rule["meta"];
+	return isRecord(docs) && docs["requiresTypeChecking"] === true;
 }
 
 /**
@@ -209,7 +219,7 @@ function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, P
  */
 function findTypeCheckedRules(
 	config: TypedFlatConfigItem,
-	registry: Map<string, PluginRuleMeta>,
+	registry: Map<string, unknown>,
 ): Array<string> {
 	const problems: Array<string> = [];
 	const entries = Object.entries(config.rules ?? {});
@@ -219,7 +229,7 @@ function findTypeCheckedRules(
 			continue;
 		}
 
-		if (registry.get(rule)?.meta?.docs?.["requiresTypeChecking"] === true) {
+		if (ruleRequiresTypeChecking(registry.get(rule))) {
 			problems.push(`${rule} in ${config.name ?? "unnamed config"}`);
 		}
 	}
@@ -234,10 +244,8 @@ function findTypeCheckedRules(
  * @returns Whether the config enables the project service.
  */
 function enablesProjectService(config: TypedFlatConfigItem): boolean {
-	const parserOptions = config.languageOptions?.["parserOptions"] as
-		| Record<string, unknown>
-		| undefined;
-	const projectService = parserOptions?.["projectService"];
+	const parserOptions = config.languageOptions?.["parserOptions"];
+	const projectService = isRecord(parserOptions) ? parserOptions["projectService"] : undefined;
 	return projectService !== undefined && projectService !== false;
 }
 

@@ -572,10 +572,7 @@ describe("cache helpers", () => {
 			fs.writeFileSync(fileA, "const a = 1;");
 			fs.writeFileSync(fileB, "const b = 2;");
 
-			const cache = fileEntryCache.createFromFile(cacheFile, false) as unknown as {
-				getFileDescriptor: (file: string) => unknown;
-				reconcile: () => void;
-			};
+			const cache = fileEntryCache.createFromFile(cacheFile, false);
 			cache.getFileDescriptor(fileA);
 			cache.reconcile();
 

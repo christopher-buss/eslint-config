@@ -43,7 +43,7 @@ export interface ScriptMergeResult {
  * @returns Which scripts were added and which were overwritten.
  */
 export async function mergeLintScripts(
-	scripts: Record<string, string>,
+	scripts: Partial<Record<string, string>>,
 	options: { confirmOverwrite?: ConfirmOverwrite; skipPrompt: boolean },
 ): Promise<ScriptMergeResult> {
 	const added: Array<string> = [];
@@ -105,7 +105,7 @@ export async function updatePackageJson(result: PromptResult, skipPrompt = false
 	}
 
 	parsedPackage.scripts ??= {};
-	const scripts = parsedPackage.scripts as Record<string, string>;
+	const { scripts = {} } = parsedPackage;
 	const { added, overwritten } = await mergeLintScripts(scripts, {
 		confirmOverwrite: async (name, existing, desired) => {
 			const answer = await confirm({

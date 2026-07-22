@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+import { isRecord } from "../../../guards.ts";
 import type { HybridStatus } from "../../../hybrid-status.ts";
 import { resolveLocalBin } from "../exec/resolve.ts";
 
@@ -30,10 +31,9 @@ export function parseHybridPrintConfig(stdout: string): HybridStatus | undefined
 	}
 
 	try {
-		const config = JSON.parse(stdout.slice(first, last + 1)) as {
-			settings?: Record<string, unknown>;
-		};
-		return { oxlint: config.settings?.["isentinel/oxlint"] === true };
+		const config: unknown = JSON.parse(stdout.slice(first, last + 1));
+		const settings = isRecord(config) ? config["settings"] : undefined;
+		return { oxlint: isRecord(settings) && settings["isentinel/oxlint"] === true };
 	} catch {
 		return undefined;
 	}

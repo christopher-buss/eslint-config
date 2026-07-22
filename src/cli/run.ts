@@ -4,6 +4,7 @@ import ansis from "ansis";
 import fs from "node:fs";
 import process from "node:process";
 
+import { isStringArray } from "../guards.ts";
 import { frameworkOptions, frameworks } from "./constants.ts";
 import { updateEslintFiles } from "./stages/update-eslint-files.ts";
 import { updatePackageJson } from "./stages/update-package-json.ts";
@@ -23,7 +24,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	const argumentTemplate = options.frameworks
 		?.map((framework) => framework.trim())
 		.filter((framework): framework is FrameworkOption => {
-			return frameworks.includes(framework as FrameworkOption);
+			return frameworks.some((valid) => valid === framework);
 		});
 
 	const eslintConfigFiles = fs
@@ -43,7 +44,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	};
 
 	if (argumentSkipPrompt !== true) {
-		result = (await group(
+		const grouped: Record<string, unknown> = await group(
 			{
 				uncommittedConfirmed: async () => {
 					if (isGitClean()) {
@@ -97,7 +98,25 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					process.exit(0);
 				},
 			},
-		)) as PromptResult;
+		);
+
+		// `group`'s inferred result type collapses per field (its generics cannot
+		// express the early-returning generators), so the result is read back as
+		// a record and validated into the shape `PromptResult` promises.
+		const {
+			frameworks: groupedFrameworks,
+			uncommittedConfirmed,
+			updateVscodeSettings: shouldUpdateVscode,
+		} = grouped;
+		result = {
+			frameworks: isStringArray(groupedFrameworks)
+				? groupedFrameworks.filter((value): value is FrameworkOption => {
+						return frameworks.some((option) => option === value);
+					})
+				: [],
+			uncommittedConfirmed: uncommittedConfirmed === true,
+			updateVscodeSettings: shouldUpdateVscode !== false,
+		};
 
 		if (!result.uncommittedConfirmed) {
 			return process.exit(1);

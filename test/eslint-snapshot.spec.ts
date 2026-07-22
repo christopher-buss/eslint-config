@@ -1,7 +1,26 @@
 import { describe, expect, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
+import type { TypedFlatConfigItem } from "../src/index.ts";
 import { serializeConfigs } from "./helpers.ts";
+
+/**
+ * Read the naming-convention rule options for a named config, if it is present
+ * as a rule tuple.
+ *
+ * @param configs - The resolved flat config array.
+ * @param name - The config item name to look up.
+ * @returns The rule tuple, or `undefined` when absent or not a tuple.
+ */
+function findNamingRule(
+	configs: Array<TypedFlatConfigItem>,
+	name: string,
+): Array<unknown> | undefined {
+	const rule = configs.find((config) => config.name === name)?.rules?.[
+		"flawless/naming-convention"
+	];
+	return Array.isArray(rule) ? rule : undefined;
+}
 
 function findUnicornRules(
 	configs: Array<{ name?: string; rules?: Record<string, unknown> }>,
@@ -186,14 +205,8 @@ describe("config snapshots", () => {
 			})),
 		];
 
-		function findNamingRule(name: string): Array<unknown> | undefined {
-			return configs.find((config) => config.name === name)?.rules?.[
-				"flawless/naming-convention"
-			] as Array<unknown> | undefined;
-		}
-
-		const tsRule = findNamingRule("isentinel/naming/ts/rules-type-aware");
-		const tsxRule = findNamingRule("isentinel/naming/tsx/rules-type-aware");
+		const tsRule = findNamingRule(configs, "isentinel/naming/ts/rules-type-aware");
+		const tsxRule = findNamingRule(configs, "isentinel/naming/tsx/rules-type-aware");
 
 		expect(tsRule?.[1]).toStrictEqual(variableSelector);
 		expect(tsxRule?.[1]).toStrictEqual(functionSelector);

@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { describe, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
 import {
@@ -34,6 +35,21 @@ interface HybridVariant {
 }
 
 /**
+ * Whether a parsed value has the shape of an oxlint native rule entry.
+ *
+ * @param value - A candidate element from the parsed rule list.
+ * @returns Whether the value matches {@link OxlintRuleInfo}.
+ */
+function isOxlintRuleInfo(value: unknown): value is OxlintRuleInfo {
+	return (
+		isRecord(value) &&
+		typeof value["scope"] === "string" &&
+		typeof value["value"] === "string" &&
+		typeof value["type_aware"] === "boolean"
+	);
+}
+
+/**
  * Query the installed oxlint binary for its native rule list.
  *
  * @returns Native rule metadata keyed by `scope/rule`.
@@ -47,9 +63,12 @@ function getOxlintNativeRules(): Map<string, OxlintRuleInfo> {
 	});
 
 	const rules = new Map<string, OxlintRuleInfo>();
-	const ruleList = JSON.parse(output) as Array<OxlintRuleInfo>;
+	const parsed: unknown = JSON.parse(output);
+	const ruleList = Array.isArray(parsed) ? parsed : [];
 	for (const rule of ruleList) {
-		rules.set(`${rule.scope}/${rule.value}`, rule);
+		if (isOxlintRuleInfo(rule)) {
+			rules.set(`${rule.scope}/${rule.value}`, rule);
+		}
 	}
 
 	return rules;

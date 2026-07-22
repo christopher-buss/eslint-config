@@ -18,6 +18,7 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
+import { isRecord, isStringArray } from "../guards.ts";
 import { resolveEslintInstall } from "./lib/exec/eslint-install.ts";
 import type { IgnoredPayload, PredicateEntry } from "./lib/files/ignored-predicate.ts";
 
@@ -49,6 +50,27 @@ interface ConfigLoaderModule {
 }
 
 /**
+ * Whether a required module exposes the `ESLint` constructor this helper uses.
+ *
+ * @param value - The imported module's namespace.
+ * @returns Whether the namespace carries an `ESLint` constructor.
+ */
+function isEslintModule(value: unknown): value is EslintModule {
+	return isRecord(value) && typeof value["ESLint"] === "function";
+}
+
+/**
+ * Whether a required module exposes the `ConfigLoader` constructor this helper
+ * uses.
+ *
+ * @param value - The required module's exports.
+ * @returns Whether the exports carry a `ConfigLoader` constructor.
+ */
+function isConfigLoaderModule(value: unknown): value is ConfigLoaderModule {
+	return isRecord(value) && typeof value["ConfigLoader"] === "function";
+}
+
+/**
  * The config keys that leave a `files`-less config able to say something about
  * a path, mirroring `META_FIELDS` in `@eslint/config-array`: a config carrying
  * `ignores` and nothing else outside this set is a global ignore, and one with
@@ -74,9 +96,14 @@ async function loadConfigArray(cwd: string): Promise<ConfigArrayLike | undefined
 	let loader;
 	try {
 		const { requireFrom, root } = resolveEslintInstall(cwd);
-		const { ConfigLoader } = requireFrom(
+		const configLoaderModule: unknown = requireFrom(
 			path.join(root, "lib", "config", "config-loader.js"),
-		) as ConfigLoaderModule;
+		);
+		if (!isConfigLoaderModule(configLoaderModule)) {
+			throw new Error("eslint config-loader did not export a ConfigLoader constructor");
+		}
+
+		const { ConfigLoader } = configLoaderModule;
 		loader = new ConfigLoader({ configFile: undefined, cwd, ignoreEnabled: true });
 	} catch {
 		return undefined;
@@ -194,9 +221,12 @@ function serializeEntries(configArray: ConfigArrayLike): Array<PredicateEntry> |
  */
 async function queryEslint(cwd: string, targets: Array<string>): Promise<Array<string>> {
 	const { requireFrom } = resolveEslintInstall(cwd);
-	const { ESLint } = (await import(
-		pathToFileURL(requireFrom.resolve("eslint")).href
-	)) as EslintModule;
+	const eslintModule: unknown = await import(pathToFileURL(requireFrom.resolve("eslint")).href);
+	if (!isEslintModule(eslintModule)) {
+		throw new Error("eslint did not export an ESLint constructor");
+	}
+
+	const { ESLint } = eslintModule;
 	const eslint = new ESLint({ cwd });
 
 	const ignored: Array<string> = [];
@@ -216,7 +246,12 @@ async function queryEslint(cwd: string, targets: Array<string>): Promise<Array<s
  * @returns The target files, absolute.
  */
 function readTargets(): Array<string> {
-	return JSON.parse(fs.readFileSync(0, "utf8")) as Array<string>;
+	const parsed: unknown = JSON.parse(fs.readFileSync(0, "utf8"));
+	if (!isStringArray(parsed)) {
+		throw new Error("expected a JSON array of target paths on stdin");
+	}
+
+	return parsed;
 }
 
 /**

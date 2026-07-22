@@ -9,6 +9,7 @@
  * that has to agree exactly, since a file wrongly classified as ignored is
  * dropped from the dirty count and can skip a typed pass that had work to do.
  */
+import { isRecord } from "../../../guards.ts";
 import { resolveEslintInstall } from "../exec/eslint-install.ts";
 
 /**
@@ -86,6 +87,17 @@ export function classifyIgnored(
 }
 
 /**
+ * Whether a required module exposes the `ConfigArray` constructor this module
+ * uses.
+ *
+ * @param value - The required module's exports.
+ * @returns Whether the exports carry a `ConfigArray` constructor.
+ */
+function isConfigArrayModule(value: unknown): value is ConfigArrayModule {
+	return isRecord(value) && typeof value["ConfigArray"] === "function";
+}
+
+/**
  * Load the matcher out of the consumer's own ESLint installation, so the
  * patterns are evaluated by the same version that produced them.
  *
@@ -94,5 +106,10 @@ export function classifyIgnored(
  * @throws {Error} When neither ESLint nor its config-array can be resolved.
  */
 function loadConfigArrayModule(cwd: string): ConfigArrayModule {
-	return resolveEslintInstall(cwd).requireFrom("@eslint/config-array") as ConfigArrayModule;
+	const required: unknown = resolveEslintInstall(cwd).requireFrom("@eslint/config-array");
+	if (!isConfigArrayModule(required)) {
+		throw new Error("@eslint/config-array did not export a ConfigArray constructor");
+	}
+
+	return required;
 }

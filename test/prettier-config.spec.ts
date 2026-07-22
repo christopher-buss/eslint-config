@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import { isentinel as oxlint } from "../src/oxlint/index.ts";
 import { PRETTIER_DEFAULTS, resolvePrettierSettings } from "../src/prettier-config.ts";
@@ -140,8 +141,8 @@ describe("resolvePrettierSettings", () => {
  * @param rules - The rule map to read from.
  * @returns The rule's options object, if the rule is present.
  */
-function arrowOptions(rules: Record<string, unknown> | undefined): unknown {
-	const entry = rules?.["flawless/arrow-return-style"];
+function arrowOptions(rules: unknown): unknown {
+	const entry = isRecord(rules) ? rules["flawless/arrow-return-style"] : undefined;
 	return Array.isArray(entry) ? entry[1] : undefined;
 }
 
@@ -163,6 +164,6 @@ describe("factory parity", () => {
 		const fromEslint = arrowOptions(eslintRules);
 
 		expect(fromEslint).toBeDefined();
-		expect(arrowOptions(oxlintRules as Record<string, unknown>)).toStrictEqual(fromEslint);
+		expect(arrowOptions(oxlintRules)).toStrictEqual(fromEslint);
 	});
 });

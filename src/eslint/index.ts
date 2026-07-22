@@ -7,4 +7,4 @@ export * from "./configs/index.ts";
 
 export * from "./factory.ts";
 export { isentinel as default } from "./factory.ts";
-export * from "./types.ts";
+export type * from "./types.ts";

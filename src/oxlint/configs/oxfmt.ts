@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 
 import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
 import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
+import { isRecord } from "../../guards.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
@@ -22,13 +23,15 @@ export function oxlintOxfmt(
 	} = options ?? {};
 
 	// Disable rules that conflict with formatting — loaded sync via require()
-	const configPrettier = require("eslint-config-prettier/flat") as {
-		rules: Record<string, 0>;
-	};
+	const configPrettier: unknown = require("eslint-config-prettier/flat");
+	const configPrettierRules =
+		isRecord(configPrettier) && isRecord(configPrettier["rules"])
+			? configPrettier["rules"]
+			: {};
 
 	const rulesToIgnore = new Set(["curly", "style/quotes"]);
 	const canonicalDisables: Rules = {};
-	const prettierRuleNames = Object.keys(renameRules(configPrettier.rules, defaultPluginRenaming));
+	const prettierRuleNames = Object.keys(renameRules(configPrettierRules, defaultPluginRenaming));
 	for (const key of prettierRuleNames) {
 		if (!rulesToIgnore.has(key)) {
 			canonicalDisables[key] = "off";
@@ -44,15 +47,17 @@ export function oxlintOxfmt(
 	// `style/*` rules that ESLint's formatter-compat layer turns off, and this
 	// config runs last to mirror that (e.g. `style/jsx-newline`). Names are
 	// checked against the plugin so oxlint never sees an unknown rule.
-	const stylisticPlugin = require("@stylistic/eslint-plugin") as {
-		rules: Record<string, unknown>;
-	};
+	const stylisticPlugin: unknown = require("@stylistic/eslint-plugin");
+	const stylisticRules =
+		isRecord(stylisticPlugin) && isRecord(stylisticPlugin["rules"])
+			? stylisticPlugin["rules"]
+			: {};
 	for (const [rule, value] of Object.entries(canonicalDisables)) {
 		if (!rule.startsWith("style/") || jsPluginRules[rule] !== undefined) {
 			continue;
 		}
 
-		if (stylisticPlugin.rules[rule.slice("style/".length)] !== undefined) {
+		if (stylisticRules[rule.slice("style/".length)] !== undefined) {
 			jsPluginRules[rule] = value;
 		}
 	}
@@ -86,6 +91,7 @@ export function oxlintOxfmt(
 				files,
 				// The split rules are keyed by translated oxlint names, which
 				// the eslint-side `Rules` typing cannot express.
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 				rules: {
 					...nativeRules,
 					"arrow-body-style": "off",
@@ -96,6 +102,7 @@ export function oxlintOxfmt(
 				name: `${name}/js-plugin`,
 				files,
 				jsPlugins: [...jsPlugins, oxfmtPlugin],
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 				rules: {
 					...jsPluginRules,
 					"oxfmt/oxfmt": ["error", oxfmtOptions],

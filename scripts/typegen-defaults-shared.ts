@@ -82,8 +82,12 @@ export function normalizeEntry(rawEntry: unknown): {
 	entry: RuleEntryJson;
 	severityOnly: boolean;
 } {
-	const asArray = Array.isArray(rawEntry) ? rawEntry : [rawEntry];
-	const severity = SEVERITY_NAMES[asArray[0] as number | string];
+	const asArray: Array<unknown> = Array.isArray(rawEntry) ? rawEntry : [rawEntry];
+	const rawSeverity = asArray[0];
+	const severity =
+		typeof rawSeverity === "number" || typeof rawSeverity === "string"
+			? SEVERITY_NAMES[rawSeverity]
+			: undefined;
 	if (severity === undefined) {
 		throw new Error(`Unknown severity in entry: ${JSON.stringify(rawEntry)}`);
 	}
@@ -98,8 +102,10 @@ export function normalizeEntry(rawEntry: unknown): {
 		return { entry: severity, severityOnly: true };
 	}
 
+	const parsedOptions: unknown = JSON.parse(serialized);
+	const optionValues: Array<unknown> = Array.isArray(parsedOptions) ? parsedOptions : [];
 	return {
-		entry: [severity, ...(JSON.parse(serialized) as Array<unknown>)],
+		entry: [severity, ...optionValues],
 		severityOnly: false,
 	};
 }
@@ -170,25 +176,24 @@ export function deltaAgainst(scope: ScopeRules, chain: ReadonlyArray<ScopeRules>
  * file's globs drifted, which would otherwise silently emit defaults maps
  * that no-op the whole redundancy check.
  *
- * @template S - The scope names of this generator.
  * @param label - Generator + variant label for error messages.
  * @param scopes - The extracted scope rules.
  * @param mainScope - The scope that must contain `anchorRule`.
  * @param anchorRule - A rule the preset always enables in the main scope.
  */
-export function assertExtractionSane<S extends string>(
+export function assertExtractionSane(
 	label: string,
-	scopes: Record<S, ScopeRules>,
-	mainScope: S,
+	scopes: Record<string, ScopeRules>,
+	mainScope: string,
 	anchorRule: string,
 ): void {
-	for (const scope of Object.keys(scopes) as Array<S>) {
-		if (Object.keys(scopes[scope]).length === 0) {
+	for (const [scope, scopeRules] of Object.entries(scopes)) {
+		if (Object.keys(scopeRules).length === 0) {
 			throw new Error(`[typegen-defaults] ${label}: scope "${scope}" extracted no rules`);
 		}
 	}
 
-	const mainRules = scopes[mainScope];
+	const mainRules = scopes[mainScope] ?? {};
 	if (!(anchorRule in mainRules) || Object.keys(mainRules).length < 100) {
 		throw new Error(
 			`[typegen-defaults] ${label}: main scope looks broken (${Object.keys(mainRules).length} rules, anchor "${anchorRule}" ${anchorRule in mainRules ? "present" : "missing"})`,
@@ -199,18 +204,17 @@ export function assertExtractionSane<S extends string>(
 /**
  * Log per-scope rule counts for one extracted variant.
  *
- * @template S - The scope names of this generator.
  * @param prefix - Log-line prefix identifying the generator.
  * @param variant - The extracted variant.
  * @param scopes - The extracted scope rules.
  */
-export function logVariantCounts<S extends string>(
+export function logVariantCounts(
 	prefix: string,
 	variant: VariantKey,
-	scopes: Record<S, ScopeRules>,
+	scopes: Record<string, ScopeRules>,
 ): void {
-	const counts = (Object.keys(scopes) as Array<S>)
-		.map((scope) => `${scope} ${Object.keys(scopes[scope]).length}`)
+	const counts = Object.entries(scopes)
+		.map(([scope, scopeRules]) => `${scope} ${Object.keys(scopeRules).length}`)
 		.join(", ");
 	console.log(`${prefix}${variant}: ${counts}`);
 }
@@ -219,24 +223,23 @@ export function logVariantCounts<S extends string>(
  * Emit the defaults `.d.ts` file: one interface per scope, entries keyed per
  * variant (or `"*"` when identical across variants).
  *
- * @template S - The scope names covered by this file.
  * @param banner - Leading comment block for the generated file.
  * @param extractions - Extracted scope rules per variant.
  * @param interfaceNames - Interface name per scope.
  * @param outPath - Output path of the generated file.
  */
-export async function writeDefaultsFile<S extends string>(
+export async function writeDefaultsFile(
 	banner: string,
-	extractions: Record<VariantKey, Record<S, ScopeRules>>,
-	interfaceNames: Record<S, string>,
+	extractions: Record<string, Record<string, ScopeRules>>,
+	interfaceNames: Record<string, string>,
 	outPath: string,
 ): Promise<void> {
-	const scopes = (Object.keys(interfaceNames) as Array<S>).toSorted();
+	const scopes = Object.keys(interfaceNames).toSorted();
 	const interfaces = scopes.map((scope) => {
-		const perVariant = Object.fromEntries(
-			VARIANT_KEYS.map((variant) => [variant, extractions[variant][scope]]),
-		) as Record<VariantKey, ScopeRules>;
-		return emitScopeInterface(interfaceNames[scope], perVariant);
+		return emitScopeInterface(
+			interfaceNames[scope] ?? scope,
+			(variant) => extractions[variant]?.[scope] ?? {},
+		);
 	});
 
 	await fs.writeFile(outPath, `${banner}\n${interfaces.join("\n\n")}\n`);
@@ -268,16 +271,21 @@ function severityOf(entry: RuleEntryJson): string {
 		return entry;
 	}
 
-	return Array.isArray(entry) ? (entry[0] as string) : entry.severityOnly;
+	if (Array.isArray(entry)) {
+		const [first] = entry;
+		return typeof first === "string" ? first : String(first);
+	}
+
+	return entry.severityOnly;
 }
 
-function emitScopeInterface(name: string, perVariant: Record<VariantKey, ScopeRules>): string {
-	const allNames = new Set(VARIANT_KEYS.flatMap((variant) => Object.keys(perVariant[variant])));
+function emitScopeInterface(name: string, perVariant: (variant: VariantKey) => ScopeRules): string {
+	const allNames = new Set(VARIANT_KEYS.flatMap((variant) => Object.keys(perVariant(variant))));
 	const ruleNames = [...allNames].toSorted();
 
 	const lines = ruleNames.map((rule) => {
 		const values = VARIANT_KEYS.map((variant) => {
-			const entry = perVariant[variant][rule];
+			const entry = perVariant(variant)[rule];
 			return entry === undefined ? undefined : JSON.stringify(entry);
 		});
 

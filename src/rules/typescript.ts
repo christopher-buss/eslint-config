@@ -113,12 +113,16 @@ export function typescriptTypeAwareRules({
 		"no-implied-eval": "off",
 		"no-unsafe-optional-chaining": "error",
 		"prefer-promise-reject-errors": "off",
+		"require-await": "off",
 		"ts/await-thenable": "error",
 		"ts/consistent-type-assertions": [
 			"error",
 			{ assertionStyle: "as", objectLiteralTypeAssertions: "allow" },
 		],
+		"ts/consistent-type-exports": "error",
 		"ts/dot-notation": ["error", { allowKeywords: true }],
+		"ts/no-array-delete": "error",
+		"ts/no-base-to-string": "error",
 		"ts/no-confusing-void-expression": "error",
 		"ts/no-deprecated": "error",
 		"ts/no-duplicate-type-constituents": "error",
@@ -134,6 +138,7 @@ export function typescriptTypeAwareRules({
 		"ts/no-implied-eval": "error",
 		"ts/no-meaningless-void-operator": "error",
 		"ts/no-misused-promises": "error",
+		"ts/no-misused-spread": "error",
 		"ts/no-mixed-enums": "error",
 		"ts/no-redundant-type-constituents": "error",
 		"ts/no-unnecessary-boolean-literal-compare": "error",
@@ -144,6 +149,7 @@ export function typescriptTypeAwareRules({
 		"ts/no-unnecessary-type-arguments": "error",
 		"ts/no-unnecessary-type-assertion": "error",
 		"ts/no-unnecessary-type-constraint": "error",
+		"ts/no-unnecessary-type-conversion": "error",
 		"ts/no-unnecessary-type-parameters": "error",
 		"ts/no-unsafe-argument": "error",
 		"ts/no-unsafe-assignment": "error",
@@ -151,6 +157,7 @@ export function typescriptTypeAwareRules({
 		"ts/no-unsafe-enum-comparison": "error",
 		"ts/no-unsafe-member-access": "error",
 		"ts/no-unsafe-return": "error",
+		"ts/no-unsafe-type-assertion": "error",
 		"ts/no-unsafe-unary-minus": "error",
 		"ts/no-useless-default-assignment": "error",
 		"ts/non-nullable-type-assertion-style": "error",
@@ -168,14 +175,22 @@ export function typescriptTypeAwareRules({
 		"ts/prefer-reduce-type-parameter": "error",
 		"ts/prefer-return-this-type": "error",
 		"ts/promise-function-async": "error",
+		"ts/require-await": "error",
 		"ts/restrict-plus-operands": "error",
-		"ts/restrict-template-expressions": "off",
+		"ts/restrict-template-expressions": ["error", { allowBoolean: true, allowNumber: true }],
 		"ts/return-await": "error",
 		"ts/strict-boolean-expressions": "error",
 		"ts/strict-void-return": "error",
 		"ts/switch-exhaustiveness-check": "error",
 		"ts/unbound-method": "error",
 		"ts/use-unknown-in-catch-callback-variable": "error",
+
+		...(roblox
+			? {}
+			: {
+					"ts/related-getter-setter-pairs": "error",
+					"ts/require-array-sort-compare": "error",
+				}),
 	};
 }
 

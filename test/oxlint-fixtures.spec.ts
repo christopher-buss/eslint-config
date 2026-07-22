@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import { FIXTURES_TEMP } from "./helpers.ts";
 
@@ -15,9 +16,25 @@ const isWindows = os.platform() === "win32";
 const timeout = isWindows ? 300_000 : 120_000;
 
 interface OxlintDiagnostic {
-	code: string;
+	// oxlint omits `code` for some diagnostics; keep it optional so the runtime
+	/**
+	 * Shape (and the resulting `"file:line undefined"` string) is preserved.
+	 */
+	code?: string;
 	filename: string;
 	labels: Array<{ span: { line: number } }>;
+}
+
+/**
+ * Whether a parsed value has the shape of an oxlint diagnostic.
+ *
+ * @param value - A candidate element from the parsed `diagnostics` array.
+ * @returns Whether the value matches {@link OxlintDiagnostic}.
+ */
+function isOxlintDiagnostic(value: unknown): value is OxlintDiagnostic {
+	return (
+		isRecord(value) && typeof value["filename"] === "string" && Array.isArray(value["labels"])
+	);
 }
 
 /**
@@ -51,14 +68,17 @@ function runOxlint(workingDirectory: string): Array<string> {
 		throw new Error(`oxlint failed to run: ${runContext}`);
 	}
 
-	let parsed: { diagnostics: Array<OxlintDiagnostic> };
+	let parsed: unknown;
 	try {
-		parsed = JSON.parse(result.stdout) as { diagnostics: Array<OxlintDiagnostic> };
+		parsed = JSON.parse(result.stdout);
 	} catch {
 		throw new Error(`Failed to parse oxlint JSON output. ${runContext}\n${result.stdout}`);
 	}
 
-	const diagnostics = parsed.diagnostics
+	const rawDiagnostics =
+		isRecord(parsed) && Array.isArray(parsed["diagnostics"]) ? parsed["diagnostics"] : [];
+	const diagnostics = rawDiagnostics
+		.filter(isOxlintDiagnostic)
 		.map((diagnostic) => {
 			const file = diagnostic.filename.replaceAll("\\", "/");
 			const line = diagnostic.labels[0]?.span.line ?? 0;

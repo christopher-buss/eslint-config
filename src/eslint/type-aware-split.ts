@@ -1,4 +1,5 @@
 import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
+import { isRecord } from "../guards.ts";
 import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
@@ -15,14 +16,6 @@ const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 
 /** The type-aware split mode; see the factory's `typeAware` option. */
 export type TypeAwareSplitMode = "only" | false;
-
-interface PluginRuleMeta {
-	meta?: { docs?: { requiresTypeChecking?: boolean } };
-}
-
-interface PluginLike {
-	rules?: Record<string, PluginRuleMeta>;
-}
 
 /**
  * Collect the names of every type-aware rule referenced by the resolved
@@ -120,7 +113,7 @@ export function applyTypeAwareSplit(
  */
 function collectFromConfig(
 	config: TypedFlatConfigItem,
-	registry: Map<string, PluginRuleMeta>,
+	registry: Map<string, boolean>,
 	typeAware: Set<string>,
 ): void {
 	const inTypeAwareConfig = config.name?.includes("type-aware") ?? false;
@@ -130,10 +123,7 @@ function collectFromConfig(
 			continue;
 		}
 
-		if (
-			FUNCTIONALLY_TYPE_AWARE_RULES.has(rule) ||
-			registry.get(rule)?.meta?.docs?.requiresTypeChecking === true
-		) {
+		if (FUNCTIONALLY_TYPE_AWARE_RULES.has(rule) || registry.get(rule) === true) {
 			typeAware.add(rule);
 			continue;
 		}
@@ -146,21 +136,44 @@ function collectFromConfig(
 }
 
 /**
+ * Whether a plugin rule definition declares `meta.docs.requiresTypeChecking`,
+ * validating each hop since the plugin object crosses an untyped boundary.
+ *
+ * @param rule - The rule definition read off a plugin's `rules` record.
+ * @returns Whether the rule requires type information.
+ */
+function requiresTypeChecking(rule: unknown): boolean {
+	if (!isRecord(rule)) {
+		return false;
+	}
+
+	const { meta } = rule;
+	if (!isRecord(meta)) {
+		return false;
+	}
+
+	const { docs } = meta;
+	return isRecord(docs) && docs["requiresTypeChecking"] === true;
+}
+
+/**
  * Build a registry of rule definitions from the plugins registered on the
  * resolved configs, keyed by the (renamed) `prefix/name` rule id.
  *
  * @param configs - The resolved flat config items.
  * @returns Rule id to rule definition.
  */
-function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, PluginRuleMeta> {
-	const registry = new Map<string, PluginRuleMeta>();
+function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, boolean> {
+	const registry = new Map<string, boolean>();
 
 	for (const config of configs) {
 		const plugins = Object.entries(config.plugins ?? {});
 		for (const [prefix, plugin] of plugins) {
-			const ruleEntries = Object.entries((plugin as PluginLike).rules ?? {});
-			for (const [name, rule] of ruleEntries) {
-				registry.set(`${prefix}/${name}`, rule);
+			const rules = isRecord(plugin) ? plugin["rules"] : undefined;
+			if (isRecord(rules)) {
+				for (const [name, rule] of Object.entries(rules)) {
+					registry.set(`${prefix}/${name}`, requiresTypeChecking(rule));
+				}
 			}
 		}
 	}
@@ -204,9 +217,7 @@ function isTypeAwareParserConfig(config: TypedFlatConfigItem): boolean {
 		return false;
 	}
 
-	const parserOptions = config.languageOptions?.["parserOptions"] as
-		| Record<string, unknown>
-		| undefined;
-	const projectService = parserOptions?.["projectService"];
+	const parserOptions = config.languageOptions?.["parserOptions"];
+	const projectService = isRecord(parserOptions) ? parserOptions["projectService"] : undefined;
 	return projectService !== undefined && projectService !== false;
 }

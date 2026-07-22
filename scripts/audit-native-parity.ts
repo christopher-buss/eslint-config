@@ -7,12 +7,42 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { isentinel as eslintIsentinel } from "../src/eslint/index.ts";
+import type { OptionsConfig } from "../src/eslint/types.ts";
+import { isRecord } from "../src/guards.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import {
 	isTsCoreCounterpartRule,
 	oxlintRuleMapping,
 	translateRuleToOxlint,
 } from "../src/rules/oxlint-mapping.ts";
+
+/**
+ * Factory options for the ESLint side; `ignores` is dropped to fit the factory
+ * overloads.
+ */
+type EslintAuditOptions = Omit<OptionsConfig, "ignores">;
+
+/** A single oxlint JSON diagnostic, reduced to the fields this audit reads. */
+interface OxlintDiagnostic {
+	code: string;
+	filename: string;
+	labels: Array<{ span: { line: number } }>;
+}
+
+/**
+ * Whether a parsed oxlint diagnostic carries the fields this audit reads.
+ *
+ * @param value - A parsed diagnostic element.
+ * @returns Whether the value is a usable diagnostic.
+ */
+function isOxlintDiagnostic(value: unknown): value is OxlintDiagnostic {
+	return (
+		isRecord(value) &&
+		typeof value["code"] === "string" &&
+		typeof value["filename"] === "string" &&
+		Array.isArray(value["labels"])
+	);
+}
 
 // Empirically diff oxlint's native (Rust) rule implementations against the real
 // ESLint plugin rule they replace in hybrid mode, for every rule mapped
@@ -51,7 +81,7 @@ interface Corpus {
 }
 
 interface Variant {
-	eslintOptions: Record<string, unknown>;
+	eslintOptions: EslintAuditOptions;
 	label: string;
 	oxlintOptions: Parameters<typeof oxlintIsentinel>[0];
 }
@@ -145,16 +175,16 @@ function runOxlint(
 		{ cwd: scratch, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, shell: isWindows },
 	);
 
-	const parsed = JSON.parse(result.stdout) as {
-		diagnostics: Array<{
-			code: string;
-			filename: string;
-			labels: Array<{ span: { line: number } }>;
-		}>;
-	};
+	const parsed: unknown = JSON.parse(result.stdout);
+	const diagnostics =
+		isRecord(parsed) && Array.isArray(parsed["diagnostics"]) ? parsed["diagnostics"] : [];
 
 	const hits = new Map<string, Array<Hit>>();
-	for (const diagnostic of parsed.diagnostics) {
+	for (const diagnostic of diagnostics) {
+		if (!isOxlintDiagnostic(diagnostic)) {
+			continue;
+		}
+
 		const identifier = normalizeOxlintCode(diagnostic.code);
 		const line = diagnostic.labels[0]?.span.line ?? 0;
 		addHit(hits, identifier, { file: shortPath(diagnostic.filename), line });
@@ -173,18 +203,21 @@ function runOxlint(
  * @returns Hits keyed by canonical ESLint `ruleId`.
  */
 async function runEslint(
-	options: Record<string, unknown>,
+	options: EslintAuditOptions,
 	globs: Array<string>,
 ): Promise<Map<string, Array<Hit>>> {
 	const config = await eslintIsentinel({
 		...options,
 		name: "audit-native-parity",
-		typescript: { ...(options["typescript"] as object | undefined), typeAware: false },
-	} as Parameters<typeof eslintIsentinel>[0]);
+		typescript: {
+			...(isRecord(options.typescript) ? options.typescript : {}),
+			typeAware: false,
+		},
+	});
 
 	const eslint = new ESLint({
 		cwd: rootDirectory,
-		overrideConfig: config as never,
+		overrideConfig: config,
 		overrideConfigFile: true,
 	});
 	const results = await eslint.lintFiles(globs);

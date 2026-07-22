@@ -35,7 +35,7 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 }
 
 // Re-export all shared types so ESLint consumers can import from one place
-export * from "../types.ts";
+export type * from "../types.ts";
 
 /**
  * A TypedFlatConfigItem that requires a name property. All configs should have
