@@ -42,7 +42,6 @@ const TSCONFIG_ROBLOX = JSON.stringify(
 			module: "commonjs",
 			moduleDetection: "force",
 			moduleResolution: "node",
-			noLib: true,
 			skipLibCheck: true,
 			strict: true,
 			target: "ESNext",
@@ -113,6 +112,17 @@ async function buildConfig(
 		pnpm: false,
 		spellCheck: false,
 		typescript: {
+			// The fixture dir has no owning project: the copied `tsconfig.json`
+			// fixture only includes `src/**`, and the repo root config excludes
+			// `_fixtures`. Point the project service at the temp dir so fixtures
+			// resolve through `defaultProject` instead of ancestor lookup.
+			parserOptionsTypeAware: {
+				projectService: {
+					allowDefaultProject: ["*.ts", "*.tsx"],
+					defaultProject: TSCONFIG_NAME,
+				},
+				tsconfigRootDir: temporaryDirectory,
+			},
 			tsconfigPath: path.join(temporaryDirectory, TSCONFIG_NAME),
 		},
 		...options,
