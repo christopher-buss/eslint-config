@@ -3,7 +3,7 @@ import fs from "node:fs";
 
 import { computeAffectedFiles } from "./affected.ts";
 import type { DirtyCache } from "./cache.ts";
-import { normalizePath, removeCacheEntries } from "./cache.ts";
+import { normalizePath } from "./cache.ts";
 import { resolveAffectedBustThreshold } from "./constants.ts";
 import type { TypeAwareMode } from "./types.ts";
 
@@ -17,9 +17,11 @@ export interface InvalidationRequest {
 	alreadyDirty: ReadonlySet<string>;
 	/**
 	 * The already-loaded cache to remove entries from, reusing the handle the
-	 * caller opened for the dirty query. When omitted, opened afresh.
+	 * caller opened for the dirty query. `undefined` when the cache file does
+	 * not exist, in which case there is nothing to remove entries from and
+	 * every target file is already dirty.
 	 */
-	cache?: DirtyCache;
+	cache: DirtyCache | undefined;
 	/** Absolute path to the mode's ESLint cache file. */
 	cacheLocation: string;
 	/** The consumer project root. */
@@ -104,12 +106,10 @@ export function applyTypeAwareInvalidation({
 		return { busted: true, firstRun: false, invalidated: [], skipped: false };
 	}
 
+	// A missing cache (`undefined`) needs no removal: with no entries on disk
+	// every target is dirty already, which is what the caller counted.
 	const invalidated = affectedTargets.filter((target) => !alreadyDirty.has(target));
-	if (cache !== undefined) {
-		cache.removeEntries(invalidated);
-	} else {
-		removeCacheEntries(cacheLocation, invalidated);
-	}
+	cache?.removeEntries(invalidated);
 
 	return { busted: false, firstRun: false, invalidated, skipped: false };
 }

@@ -19,7 +19,16 @@ export interface DirtyCache {
 	getUpdatedFiles: (files: Array<string>) => Array<string>;
 	/**
 	 * Surgically drop the given files so they are re-linted next run, leaving
-	 * every other entry intact, and persist the result.
+	 * every other entry intact, and persist the result. This is the only write
+	 * path to the ESLint cache besides the whole-cache bust; used to invalidate
+	 * files whose type-aware results may have changed because a file they
+	 * import changed.
+	 *
+	 * Matching is path-normalized (case-insensitive, separator-agnostic)
+	 * because TypeScript reports forward-slash paths while ESLint keys the
+	 * cache with the OS-native paths it linted. Persists via the underlying
+	 * flat-cache with pruning disabled, so untouched (unvisited) entries
+	 * survive.
 	 *
 	 * @param files - Absolute paths whose cache entries should be removed.
 	 * @returns The number of entries actually removed.
@@ -70,52 +79,6 @@ export function isCacheStale(
 	}
 
 	return newestBustMtimeMs > cacheMtime;
-}
-
-/**
- * Return true when any cache-bust file has been modified more recently than
- * the given cache file. A missing cache file returns false: the caller already
- * treats an absent cache as "everything is dirty".
- *
- * @param cacheFilePath - The ESLint cache file to compare against.
- * @param bustFiles - Files whose modification invalidates the cache.
- * @returns Whether the cache is stale.
- */
-export function isCacheBusted(cacheFilePath: string, bustFiles: Array<string>): boolean {
-	return isCacheStale(cacheFilePath, maxMtimeMs(bustFiles));
-}
-
-/**
- * List every ESLint cache file present in the working directory, matched by
- * prefix rather than by exact name: each pass's cache carries a config-variant
- * key suffix, so the set on disk is open-ended and an exact-name list would
- * miss (and therefore leak) every variant but the current run's.
- *
- * @param cwd - The working directory containing the cache files.
- * @returns Absolute paths to the cache files found.
- */
-export function listCacheFiles(cwd: string): Array<string> {
-	let entries: Array<string>;
-	try {
-		entries = fs.readdirSync(cwd);
-	} catch {
-		return [];
-	}
-
-	return entries
-		.filter((entry) => entry.startsWith(CACHE_FILE_PREFIX))
-		.map((entry) => path.resolve(cwd, entry));
-}
-
-/**
- * Delete every ESLint cache file the runner manages, across all variants.
- *
- * @param cwd - The working directory containing the cache files.
- */
-export function clearAllCaches(cwd: string): void {
-	for (const cacheFilePath of listCacheFiles(cwd)) {
-		removeCacheFile(cacheFilePath);
-	}
 }
 
 /**
@@ -189,48 +152,34 @@ export function openCache(cacheFilePath: string, useChecksum: boolean): DirtyCac
 	};
 }
 
-/**
- * List the files ESLint will actually re-lint: those changed or absent from
- * the cache. When the cache file is missing, every target file is dirty.
- *
- * @param cacheFilePath - The ESLint cache file to read.
- * @param files - Absolute paths of the candidate files.
- * @param useChecksum - Compare by content checksum instead of metadata.
- * @returns The candidate files that need re-linting.
- */
-export function listDirtyFiles(
-	cacheFilePath: string,
-	files: Array<string>,
-	useChecksum: boolean,
-): Array<string> {
-	return openCache(cacheFilePath, useChecksum)?.getUpdatedFiles(files) ?? [...files];
-}
-
-/**
- * Surgically drop the given files from an ESLint cache so they are re-linted on
- * the next run, leaving every other entry intact. This is the only write path
- * to the ESLint cache besides the whole-cache bust; used to invalidate files
- * whose type-aware results may have changed because a file they import changed.
- *
- * Matching is path-normalized (case-insensitive, separator-agnostic) because
- * TypeScript reports forward-slash paths while ESLint keys the cache with the
- * OS-native paths it linted. Persists via the underlying flat-cache with
- * pruning disabled, so untouched (unvisited) entries survive.
- *
- * @param cacheFilePath - The ESLint cache file to rewrite.
- * @param files - Absolute paths whose cache entries should be removed.
- * @returns The number of entries actually removed.
- */
-export function removeCacheEntries(cacheFilePath: string, files: Iterable<string>): number {
-	return openCache(cacheFilePath, false)?.removeEntries(files) ?? 0;
-}
-
 function safeMtimeMs(filePath: string): number | undefined {
 	try {
 		return fs.statSync(filePath).mtimeMs;
 	} catch {
 		return undefined;
 	}
+}
+
+/**
+ * List every ESLint cache file present in the working directory, matched by
+ * prefix rather than by exact name: each pass's cache carries a config-variant
+ * key suffix, so the set on disk is open-ended and an exact-name list would
+ * miss (and therefore leak) every variant but the current run's.
+ *
+ * @param cwd - The working directory containing the cache files.
+ * @returns Absolute paths to the cache files found.
+ */
+function listCacheFiles(cwd: string): Array<string> {
+	let entries: Array<string>;
+	try {
+		entries = fs.readdirSync(cwd);
+	} catch {
+		return [];
+	}
+
+	return entries
+		.filter((entry) => entry.startsWith(CACHE_FILE_PREFIX))
+		.map((entry) => path.resolve(cwd, entry));
 }
 
 function removeCacheFile(cacheFilePath: string): void {

@@ -50,16 +50,6 @@ const OUTSIDE_CWD_NOTICE =
 	"isentinel-lint: a lint target resolves outside the working directory; sizing " +
 	"conservatively and not auto-skipping the type-aware pass.\n";
 
-/** Where a run looks, and whether it may mutate (planning `dryRun` inverse). */
-export interface SizingContext {
-	/** The working directory. */
-	cwd: string;
-	/** When true, never run the builder or delete cache files (`--print`). */
-	dryRun: boolean;
-	/** The process environment. */
-	environment: NodeJS.ProcessEnv;
-}
-
 /** One planned ESLint pass: its descriptor, sizing and run/skip decision. */
 export interface PassPlan {
 	/**
@@ -322,18 +312,6 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 	}
 
 	return { commands, notice: notices.length > 0 ? notices.join("") : undefined };
-}
-
-/**
- * Compose the child commands for the selected mode. Compatibility wrapper over
- * {@link plan} + {@link compose}; `context.dryRun` maps to a non-mutating plan.
- *
- * @param options - The parsed CLI options.
- * @param context - The sizing context (cwd, environment, dry-run flag).
- * @returns The composed command plan.
- */
-export function composeCommands(options: LintCliOptions, context: SizingContext): CommandPlan {
-	return compose(plan(options, context.cwd, context.environment, !context.dryRun), options);
 }
 
 /**

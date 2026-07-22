@@ -9,12 +9,7 @@ import { describe, expect, it, vi } from "vitest";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
 import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
-import {
-	clearAllCaches,
-	isCacheBusted,
-	listDirtyFiles,
-	sweepStaleCaches,
-} from "../src/lint-cli/cache.ts";
+import { isCacheStale, maxMtimeMs, openCache, sweepStaleCaches } from "../src/lint-cli/cache.ts";
 import {
 	buildShellCommand,
 	composeEslintCommand,
@@ -35,7 +30,7 @@ import {
 	cacheFileFor,
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/constants.ts";
-import { collectLintableFiles, collectRepoFiles } from "../src/lint-cli/files.ts";
+import { collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
@@ -50,10 +45,11 @@ import {
 	packageHashStatePath,
 } from "../src/lint-cli/package-hash.ts";
 import { FAST_PASS, FULL_PASS, maxWorkersFor, TYPED_PASS } from "../src/lint-cli/passes.ts";
-import { composeCommands, plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
+import { plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/workspace.ts";
+import { composeInDirectory } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
@@ -343,7 +339,7 @@ describe("cache helpers", () => {
 			const future = Date.now() / 1000 + 60;
 			fs.utimesSync(configFile, future, future);
 
-			expect(isCacheBusted(cacheFile, [configFile])).toBe(true);
+			expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(true);
 		});
 	});
 
@@ -358,7 +354,7 @@ describe("cache helpers", () => {
 			fs.utimesSync(configFile, past, past);
 			fs.writeFileSync(cacheFile, "{}");
 
-			expect(isCacheBusted(cacheFile, [configFile])).toBe(false);
+			expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(false);
 		});
 	});
 
@@ -366,11 +362,11 @@ describe("cache helpers", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
-			expect(isCacheBusted(path.join(directory, "missing"), [])).toBe(false);
+			expect(isCacheStale(path.join(directory, "missing"), maxMtimeMs([]))).toBe(false);
 		});
 	});
 
-	it("clears every managed cache file", () => {
+	it("sweeps every managed cache file when all are stale", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
@@ -378,7 +374,8 @@ describe("cache helpers", () => {
 				fs.writeFileSync(path.join(directory, name), "{}");
 			}
 
-			clearAllCaches(directory);
+			// A bust newer than every cache makes all of them stale.
+			sweepStaleCaches(directory, Date.now() + 60_000);
 
 			for (const name of ALL_CACHE_FILES) {
 				expect(fs.existsSync(path.join(directory, name))).toBe(false);
@@ -386,7 +383,7 @@ describe("cache helpers", () => {
 		});
 	});
 
-	it("clears keyed cache variants, not just the base names", () => {
+	it("sweeps keyed cache variants, not just the base names", () => {
 		expect.hasAssertions();
 
 		withTemporaryDirectory((directory) => {
@@ -398,7 +395,7 @@ describe("cache helpers", () => {
 				fs.writeFileSync(path.join(directory, name), "{}");
 			}
 
-			clearAllCaches(directory);
+			sweepStaleCaches(directory, Date.now() + 60_000);
 
 			for (const name of variants) {
 				expect(fs.existsSync(path.join(directory, name))).toBe(false);
@@ -492,6 +489,18 @@ describe("cache helpers", () => {
 		});
 	});
 
+	/**
+	 * The files ESLint would re-lint, as the runner counts them: a missing
+	 * cache file means every candidate is dirty.
+	 *
+	 * @param cacheFile - The ESLint cache file to read.
+	 * @param files - The candidate files.
+	 * @returns The files needing a re-lint.
+	 */
+	function dirtyFiles(cacheFile: string, files: Array<string>): Array<string> {
+		return openCache(cacheFile, false)?.getUpdatedFiles(files) ?? files;
+	}
+
 	it("counts all files when the cache is missing", () => {
 		expect.hasAssertions();
 
@@ -501,9 +510,7 @@ describe("cache helpers", () => {
 			fs.writeFileSync(fileA, "const a = 1;");
 			fs.writeFileSync(fileB, "const b = 2;");
 
-			expect(
-				listDirtyFiles(path.join(directory, "missing"), [fileA, fileB], false),
-			).toHaveLength(2);
+			expect(dirtyFiles(path.join(directory, "missing"), [fileA, fileB])).toHaveLength(2);
 		});
 	});
 
@@ -525,18 +532,18 @@ describe("cache helpers", () => {
 			cache.reconcile();
 
 			// fileA is cached and unchanged; fileB was never seen.
-			expect(listDirtyFiles(cacheFile, [fileA, fileB], false)).toHaveLength(1);
+			expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(1);
 
 			fs.writeFileSync(fileA, "const a = 42;");
 			const future = Date.now() / 1000 + 60;
 			fs.utimesSync(fileA, future, future);
 
-			expect(listDirtyFiles(cacheFile, [fileA, fileB], false)).toHaveLength(2);
+			expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(2);
 		});
 	});
 });
 
-describe("collectLintableFiles", () => {
+describe("collectRepoFiles lintable set", () => {
 	it("collects the TS/JS family plus JSONC, YAML, TOML, Markdown and Lua", () => {
 		expect.hasAssertions();
 
@@ -559,7 +566,7 @@ describe("collectLintableFiles", () => {
 				fs.writeFileSync(path.join(directory, name), "");
 			}
 
-			const files = withoutGitEnvironment(() => collectLintableFiles(directory, ["."]));
+			const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["."]).lintable);
 			const collected = files.map((file) => path.basename(file));
 
 			expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
@@ -731,17 +738,11 @@ function printLines(
 	directory: string,
 	environment: NodeJS.ProcessEnv = {},
 ): Array<string> {
-	return withoutGitEnvironment(() => {
-		const { commands } = composeCommands(parseArguments(argv, environment), {
-			cwd: directory,
-			dryRun: true,
-			environment,
-		});
-		return commands.map((command) => formatCommandLine(command));
-	});
+	const { commands } = composeInDirectory(argv, directory, { environment });
+	return commands.map((command) => formatCommandLine(command));
 }
 
-describe("composeCommands --print", () => {
+describe("compose --print", () => {
 	it("composes the default concurrent two-pass mode plus oxlint", () => {
 		expect.hasAssertions();
 
@@ -912,12 +913,8 @@ describe("fast pass sizing", () => {
 				fs.writeFileSync(path.join(directory, name), "export const x = 1;\n");
 			}
 
-			const { commands } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([], {}), {
-					cwd: directory,
-					dryRun: true,
-					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
-				});
+			const { commands } = composeInDirectory([], directory, {
+				environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
 			});
 
 			// Three dirty files: FAST_FILES_PER_WORKER=1 => 3 fast workers; the
@@ -1450,13 +1447,7 @@ describe("plan hybrid integration", () => {
 			setMtimeInPast(config);
 			writeHybridStatus(directory, false);
 
-			const { commands, notice } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([], {}), {
-					cwd: directory,
-					dryRun: false,
-					environment: {},
-				});
-			});
+			const { commands, notice } = composeInDirectory([], directory, { mutate: true });
 
 			expect(commands.some((command) => command.label === "oxc")).toBe(false);
 			expect(notice).toContain(NON_HYBRID_WARNING);
@@ -1748,12 +1739,9 @@ describe("bust-before-size ordering", () => {
 			fs.utimesSync(configFile, now - 60, now - 60);
 			fs.utimesSync(fastCache, now, now);
 
-			const { commands } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([], {}), {
-					cwd: directory,
-					dryRun: false,
-					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
-				});
+			const { commands } = composeInDirectory([], directory, {
+				environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
+				mutate: true,
 			});
 
 			// Every lintable file (three sources plus eslint.config.ts) is dirty

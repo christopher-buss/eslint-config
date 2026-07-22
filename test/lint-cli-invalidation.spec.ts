@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
-import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
+import { normalizePath, openCache } from "../src/lint-cli/cache.ts";
 import {
 	applyConfigDriftBust,
 	computeConfigHash,
@@ -18,8 +18,9 @@ import {
 import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import { composeCommands, plan } from "../src/lint-cli/run.ts";
-import type { PassPlan } from "../src/lint-cli/run.ts";
+import { plan } from "../src/lint-cli/run.ts";
+import type { CommandPlan, PassPlan } from "../src/lint-cli/run.ts";
+import { composeInDirectory } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 /**
@@ -92,9 +93,9 @@ function withFixture(files: Record<string, string>, run: (directory: string) => 
 }
 
 /**
- * A solution-style entry tsconfig whose files all live behind `references`, one
- * of them behind a *nested* solution — the shape that made builder invalidation
- * a silent no-op before reference resolution recursed.
+ * A solution-style entry tsconfig whose files all live behind `references`,
+ * one of them behind a *nested* solution — the shape that made builder
+ * invalidation a silent no-op before reference resolution recursed.
  */
 const SOLUTION_FIXTURE = {
 	"app/b.ts": "import { a } from '../src/a';\nexport function b() { return a(); }\n",
@@ -145,17 +146,8 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
  * @param argv - The CLI arguments (default: none).
  * @returns The composed command plan.
  */
-function composeInFixture(
-	directory: string,
-	argv: Array<string> = [],
-): ReturnType<typeof composeCommands> {
-	return withoutGitEnvironment(() => {
-		return composeCommands(parseArguments(argv, {}), {
-			cwd: directory,
-			dryRun: false,
-			environment: {},
-		});
-	});
+function composeInFixture(directory: string, argv: Array<string> = []): CommandPlan {
+	return composeInDirectory(argv, directory, { mutate: true });
 }
 
 function seedCache(cacheFile: string, files: Array<string>): void {
@@ -188,10 +180,14 @@ function invalidate(
 	alreadyDirty: ReadonlySet<string>,
 	environment: NodeJS.ProcessEnv = {},
 ): ReturnType<typeof applyTypeAwareInvalidation> {
+	const cacheLocation = path.join(cwd, ".eslintcache");
 	return applyTypeAwareInvalidation({
 		key: TEST_KEY,
 		alreadyDirty,
-		cacheLocation: path.join(cwd, ".eslintcache"),
+		// The runner always hands over the handle it opened for the dirty
+		// query; `undefined` when the cache file does not exist yet.
+		cache: openCache(cacheLocation, false),
+		cacheLocation,
 		cwd,
 		environment,
 		mode: undefined,
@@ -496,7 +492,7 @@ describe("applyTypeAwareInvalidation", () => {
 	});
 });
 
-describe("removeCacheEntries", () => {
+describe("dirtyCache.removeEntries", () => {
 	it("removes only the named entries and keeps the rest", () => {
 		expect.hasAssertions();
 
@@ -514,7 +510,9 @@ describe("removeCacheEntries", () => {
 				seedCache(cacheFile, [fileA, fileB, fileC]);
 
 				// Forward-slash path proves separator-insensitive matching.
-				const removed = removeCacheEntries(cacheFile, [fileB.split(path.sep).join("/")]);
+				const removed = openCache(cacheFile, false)?.removeEntries([
+					fileB.split(path.sep).join("/"),
+				]);
 
 				expect(removed).toBe(1);
 				expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
@@ -536,7 +534,7 @@ const JSON_TSCONFIG = JSON.stringify({
 	include: ["src"],
 });
 
-describe("composeCommands typed-pass skip", () => {
+describe("typed-pass skip", () => {
 	it("skips the typed pass in default mode when nothing type-relevant changed", () => {
 		expect.hasAssertions();
 
@@ -710,8 +708,8 @@ describe("plan mutation", () => {
 
 describe("per-variant cache isolation", () => {
 	/**
-	 * Seed a warm type-aware cache for one variant: establish its builder state
-	 * so nothing is affected, then record `src/a.ts` as already linted.
+	 * Seed a warm type-aware cache for one variant: establish its builder
+	 * state so nothing is affected, then record `src/a.ts` as already linted.
 	 *
 	 * @param directory - The fixture root.
 	 * @param environment - The environment identifying the variant.

@@ -161,19 +161,6 @@ export function oxlintTargets(cwd: string, targets: Array<string>): Array<string
 }
 
 /**
- * Collect the absolute paths of lintable files under `targets`, honouring
- * `.gitignore` (via `git ls-files`) when inside a git repository. Thin wrapper
- * over {@link collectRepoFiles}.
- *
- * @param cwd - The working directory to resolve targets against.
- * @param targets - The target paths to scan.
- * @returns The absolute paths of lintable files.
- */
-export function collectLintableFiles(cwd: string, targets: Array<string>): Array<string> {
-	return collectRepoFiles(cwd, targets).lintable;
-}
-
-/**
  * Whether an absolute path is a flat-config entry point.
  *
  * @param file - The absolute path to test.
