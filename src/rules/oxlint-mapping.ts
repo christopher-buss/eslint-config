@@ -429,6 +429,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"jsdoc/no-multi-asterisks": "js-plugin",
 	"jsdoc/no-types": "js-plugin",
 	"jsdoc/no-undefined-types": "js-plugin",
+	"jsdoc/normalize-see-links": "js-plugin",
 	"jsdoc/require-asterisk-prefix": "js-plugin",
 	"jsdoc/require-description": "js-plugin",
 	"jsdoc/require-description-complete-sentence": "js-plugin",

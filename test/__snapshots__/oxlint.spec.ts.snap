@@ -2450,6 +2450,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "jsdoc-js/no-multi-asterisks": "warn",
         "jsdoc-js/no-types": "warn",
         "jsdoc-js/no-undefined-types": "error",
+        "jsdoc-js/normalize-see-links": "warn",
         "jsdoc-js/require-asterisk-prefix": "warn",
         "jsdoc-js/require-description": [
           "warn",
@@ -6279,6 +6280,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "jsdoc-js/no-multi-asterisks": "warn",
         "jsdoc-js/no-types": "warn",
         "jsdoc-js/no-undefined-types": "error",
+        "jsdoc-js/normalize-see-links": "warn",
         "jsdoc-js/require-asterisk-prefix": "warn",
         "jsdoc-js/require-description": [
           "warn",
