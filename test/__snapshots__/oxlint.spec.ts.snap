@@ -2948,6 +2948,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         },
       ],
       "rules": {
+        "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [
@@ -6873,6 +6874,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         },
       ],
       "rules": {
+        "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [

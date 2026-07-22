@@ -15,6 +15,7 @@ export function smallRulesRules({
 	stylistic = true,
 }: OptionsIsInEditor & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"small-rules/no-async-constructor": "error",
 		"small-rules/no-commented-code": isInEditor ? "off" : "error",
 		"small-rules/prefer-class-properties": "error",
 		"small-rules/prefer-early-return": ["error", { maximumStatements: 1 }],

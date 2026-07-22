@@ -43,7 +43,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-async-constructor, sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 };
@@ -572,6 +572,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// lives in eslint-plugin-flawless and stays in ESLint)
 	"small-rules/no-array-constructor-elements": "js-plugin",
 	"small-rules/no-array-size-assignment": "js-plugin",
+	"small-rules/no-async-constructor": "js-plugin",
 	"small-rules/no-commented-code": "js-plugin",
 	"small-rules/prefer-class-properties": "js-plugin",
 	"small-rules/prefer-early-return": "js-plugin",
@@ -869,7 +870,6 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"react/no-implicit-ref",
 	"react/no-leaked-conditional-rendering",
 	"react/no-unused-props",
-	"sonar/no-async-constructor",
 	"sonar/no-ignored-return",
 	"sonar/no-incompatible-assertion-types",
 	"sonar/no-redundant-optional",

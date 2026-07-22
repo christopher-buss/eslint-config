@@ -21,7 +21,6 @@ export function sonarjsRules({
 		"sonar/max-switch-cases": "error",
 		"sonar/misplaced-loop-counter": "error",
 		"sonar/no-all-duplicated-branches": "error",
-		"sonar/no-async-constructor": "error",
 		"sonar/no-collapsible-if": "error",
 		"sonar/no-commented-code": "off",
 		"sonar/no-dead-store": "error",
