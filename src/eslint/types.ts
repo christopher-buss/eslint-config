@@ -43,8 +43,31 @@ export * from "../types.ts";
  */
 export type NamedFlatConfigItem = SetRequired<TypedFlatConfigItem, "name">;
 
+export type NamingSelector = ExtractRuleOptions<
+	NonNullable<RuleOptions["flawless/naming-convention"]>
+>[number];
+
 export interface OptionsOverridesTypeAware extends OptionsOverrides {
 	overridesTypeAware?: NonNullable<TypedFlatConfigItem["rules"]>;
+}
+
+export interface NamingConfig extends OptionsOverridesTypeAware {
+	/**
+	 * Extra `flawless/naming-convention` selector entries, prepended before the
+	 * built-in defaults in both the TS and TSX configs.
+	 *
+	 * The rule applies the first matching entry after specificity sorting, so
+	 * an entry with the same specificity as a default overrides it, while new
+	 * selectors are simply added. A less specific entry cannot override a more
+	 * specific default.
+	 */
+	selectors?: Array<NamingSelector>;
+
+	/**
+	 * TSX-only selector entries, prepended before `selectors` in the TSX
+	 * config only.
+	 */
+	selectorsTsx?: Array<NamingSelector>;
 }
 
 export interface OptionsTypeScriptParserOptions {
@@ -331,7 +354,7 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 *
 	 * @default false
 	 */
-	naming?: boolean | OptionsOverridesTypeAware;
+	naming?: boolean | NamingConfig;
 
 	/**
 	 * Run ESLint alongside oxlint (hybrid mode).

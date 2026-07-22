@@ -722,6 +722,37 @@ otherwise, you can install them manually:
 pnpm i -D eslint-plugin-react-x eslint-plugin-react-jsx eslint-plugin-react-naming-convention eslint-plugin-jest
 ```
 
+#### Naming Conventions
+
+Enable the opinionated `flawless/naming-convention` rules with `naming: true`,
+or pass an object to add new selector entries or override the built-in defaults:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	naming: {
+		selectors: [
+			// Override the default variable format
+			{ format: ["snake_case"], selector: "variable" },
+			// Add a new selector not covered by the defaults
+			{ format: ["PascalCase"], prefix: ["I"], selector: "interface" },
+		],
+		// Applied only to .tsx files, before `selectors`
+		selectorsTsx: [{ format: ["StrictPascalCase"], selector: "function" }],
+	},
+});
+```
+
+Entries in `selectors` apply to both the TS and TSX configs; `selectorsTsx`
+applies to the TSX config only. User entries are prepended before the defaults,
+and the rule applies the first matching entry after sorting by specificity — so
+an entry with the same specificity as a default overrides it, while new
+selectors are simply added. A less specific entry cannot override a more
+specific default. The `overridesTypeAware` escape hatch still replaces the whole
+rule if you need full control.
+
 #### Oxlint
 
 The config can run alongside (or be replaced by)

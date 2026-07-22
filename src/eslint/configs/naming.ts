@@ -1,18 +1,21 @@
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
-	OptionsOverridesTypeAware,
+	NamingConfig,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
 } from "../types.ts";
 
 export async function naming(
-	options: OptionsOverridesTypeAware &
-		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+	options: NamingConfig & OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { overridesTypeAware = {}, typeAware = true } = options;
+	const {
+		overridesTypeAware = {},
+		selectors = [],
+		selectorsTsx = [],
+		typeAware = true,
+	} = options;
 
 	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
 
@@ -38,6 +41,7 @@ export async function naming(
 						rules: {
 							"flawless/naming-convention": [
 								"error",
+								...selectors,
 								{
 									format: ["strictCamelCase"],
 									selector: "default",
@@ -171,6 +175,8 @@ export async function naming(
 						rules: {
 							"flawless/naming-convention": [
 								"error",
+								...selectorsTsx,
+								...selectors,
 								{
 									format: ["strictCamelCase"],
 									selector: "default",

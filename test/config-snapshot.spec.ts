@@ -131,6 +131,41 @@ describe("config snapshots", () => {
 		expect(configs.find((config) => config.name === "isentinel/node/rules")).toBeUndefined();
 	});
 
+	it("should prepend naming selectors before the defaults", async () => {
+		expect.hasAssertions();
+
+		const variableSelector = { format: ["snake_case" as const], selector: "variable" as const };
+		const functionSelector = {
+			format: ["StrictPascalCase" as const],
+			selector: "function" as const,
+		};
+
+		const configs = [
+			...(await isentinel({
+				name: "test/naming-selectors",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				naming: { selectors: [variableSelector], selectorsTsx: [functionSelector] },
+				pnpm: false,
+				spellCheck: false,
+			})),
+		];
+
+		function findNamingRule(name: string): Array<unknown> | undefined {
+			return configs.find((config) => config.name === name)?.rules?.[
+				"flawless/naming-convention"
+			] as Array<unknown> | undefined;
+		}
+
+		const tsRule = findNamingRule("isentinel/naming/ts/rules-type-aware");
+		const tsxRule = findNamingRule("isentinel/naming/tsx/rules-type-aware");
+
+		expect(tsRule?.[1]).toStrictEqual(variableSelector);
+		expect(tsxRule?.[1]).toStrictEqual(functionSelector);
+		expect(tsxRule?.[2]).toStrictEqual(variableSelector);
+	});
+
 	it("should match minimal config", async () => {
 		expect.hasAssertions();
 

@@ -399,10 +399,11 @@ export async function isentinel(
 		}),
 	);
 
-	if (options.naming === true) {
+	if (options.naming !== undefined && options.naming !== false) {
 		configs.push(
 			naming({
 				...getOverrides(options, "naming"),
+				...resolveSubOptions(options, "naming"),
 			}),
 		);
 	}
