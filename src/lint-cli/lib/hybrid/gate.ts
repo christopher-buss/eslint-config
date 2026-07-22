@@ -1,13 +1,12 @@
 // cspell:words mtimes unparseable
-import { spawnSync } from "node:child_process";
-import process from "node:process";
 
-import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../hybrid-status.ts";
-import type { HybridStatus } from "../hybrid-status.ts";
-import { maxMtimeMs } from "./cache.ts";
-import type { RunContext } from "./context.ts";
-import type { RepoFiles } from "./files.ts";
-import { resolveLocalBin } from "./resolve.ts";
+import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../../../hybrid-status.ts";
+import type { HybridStatus } from "../../../hybrid-status.ts";
+import { maxMtimeMs } from "../cache/entries.ts";
+import type { RunContext } from "../context.ts";
+import type { RepoFiles } from "../files/collect.ts";
+import type { HybridProbe } from "./probe.ts";
+import { probeHybridConfig } from "./probe.ts";
 
 /**
  * The stderr warning emitted when the resolved ESLint config is not hybrid, so
@@ -27,14 +26,6 @@ export const HYBRID_UNKNOWN_WARNING =
 	"isentinel-lint: could not determine whether the ESLint config enables hybrid " +
 	"mode; running both engines.\n";
 
-/**
- * Probe the resolved ESLint config for the hybrid marker by spawning
- * `eslint --print-config <target>` and reading `settings["isentinel/oxlint"]`.
- * Returns `undefined` on any failure (missing bin, non-zero exit, malformed
- * output) so the caller can fail open.
- */
-export type HybridProbe = (cwd: string, target: string) => HybridStatus | undefined;
-
 /** Inputs to {@link resolveOxlintRun}, assembled once in the plan phase. */
 export interface OxlintRunInput {
 	/** The collected repo file lists (config-file subset + a probe target). */
@@ -51,32 +42,6 @@ export interface OxlintRunDecision {
 	reason: string | undefined;
 	/** Whether the oxlint child runs. */
 	run: boolean;
-}
-
-/**
- * Read the hybrid marker from `eslint --print-config` stdout. Config evaluation
- * can print non-JSON before the payload (plugin/editor-detection logs), so the
- * JSON object is isolated (first `{` to last `}`) before parsing. Returns
- * `undefined` when no JSON object is present or it fails to parse.
- *
- * @param stdout - The raw `--print-config` stdout.
- * @returns The probed status, or `undefined` when unparseable.
- */
-export function parseHybridPrintConfig(stdout: string): HybridStatus | undefined {
-	const first = stdout.indexOf("{");
-	const last = stdout.lastIndexOf("}");
-	if (first === -1 || last < first) {
-		return undefined;
-	}
-
-	try {
-		const config = JSON.parse(stdout.slice(first, last + 1)) as {
-			settings?: Record<string, unknown>;
-		};
-		return { oxlint: config.settings?.["isentinel/oxlint"] === true };
-	} catch {
-		return undefined;
-	}
 }
 
 /**
@@ -195,33 +160,4 @@ function resolveHybridStatus(
 	// The probe pays once per config change: persist so later runs read it back.
 	writeHybridStatus(cwd, probed.oxlint);
 	return probed;
-}
-
-/**
- * The real prober: spawn the resolved local ESLint with `--print-config` and
- * read the hybrid marker from the merged `settings`.
- *
- * @param cwd - The project root.
- * @param target - A file whose resolved config carries the marker.
- * @returns The probed status, or `undefined` on any failure.
- */
-function probeHybridConfig(cwd: string, target: string): HybridStatus | undefined {
-	let binJs: string;
-	try {
-		binJs = resolveLocalBin("eslint", cwd);
-	} catch {
-		return undefined;
-	}
-
-	const result = spawnSync(process.execPath, [binJs, "--print-config", target], {
-		cwd,
-		encoding: "utf8",
-		maxBuffer: 64 * 1024 * 1024,
-	});
-
-	if (result.status !== 0 || typeof result.stdout !== "string") {
-		return undefined;
-	}
-
-	return parseHybridPrintConfig(result.stdout);
 }

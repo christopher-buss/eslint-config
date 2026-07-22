@@ -1,9 +1,9 @@
 import process from "node:process";
 import yargs from "yargs";
 
-import { isInAgentSession } from "../utils.ts";
-import { splitArgs } from "./command.ts";
+import { isInAgentSession } from "../../../utils.ts";
 import { parseBoundedInteger } from "./parse.ts";
+import { splitArgs } from "./split-args.ts";
 import type { LintCliOptions } from "./types.ts";
 import { CliError } from "./types.ts";
 

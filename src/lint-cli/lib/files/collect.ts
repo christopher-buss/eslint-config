@@ -4,14 +4,14 @@ import fs from "node:fs";
 import path from "node:path";
 import picomatch from "picomatch";
 
-import { normalizePath } from "./cache.ts";
+import { normalizePath } from "../cache/entries.ts";
+import { toPosix } from "../paths.ts";
 import {
 	CACHE_BUST_PATTERNS,
 	ESLINT_CONFIG_FILE_PATTERN,
 	LINTABLE_EXTENSIONS,
 	TYPE_AWARE_EXTENSIONS,
 } from "./constants.ts";
-import { toPosix } from "./paths.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
 // Per-directory (single-segment) forms of the cache-bust globs: strip the

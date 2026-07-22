@@ -8,48 +8,58 @@ import { describe, expect, it, vi } from "vitest";
 
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
-import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/bust.ts";
-import type { BustOutcome } from "../src/lint-cli/bust.ts";
-import { isCacheStale, maxMtimeMs, openCache, sweepStaleCaches } from "../src/lint-cli/cache.ts";
-import {
-	buildShellCommand,
-	composeEslintCommand,
-	composeOxlintCommand,
-	formatCommandLine,
-	splitArgs,
-} from "../src/lint-cli/command.ts";
-import {
-	computeWorkerCount,
-	resolveFastFilesPerWorker,
-	resolveWorkerLimits,
-} from "../src/lint-cli/concurrency.ts";
+import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/lib/cache/bust.ts";
+import type { BustOutcome } from "../src/lint-cli/lib/cache/bust.ts";
 import {
 	ALL_CACHE_FILES,
 	CACHE_FILE_DEFAULT,
 	CACHE_FILE_FAST,
 	CACHE_FILE_TYPE_AWARE,
 	cacheFileFor,
-	TYPED_MAX_WORKERS,
-} from "../src/lint-cli/constants.ts";
-import { resolveCacheKey } from "../src/lint-cli/context.ts";
-import type { RunContext } from "../src/lint-cli/context.ts";
-import { execute } from "../src/lint-cli/execute.ts";
-import { collectRepoFiles } from "../src/lint-cli/files.ts";
-import type { RepoFiles } from "../src/lint-cli/files.ts";
+} from "../src/lint-cli/lib/cache/constants.ts";
+import {
+	isCacheStale,
+	maxMtimeMs,
+	openCache,
+	sweepStaleCaches,
+} from "../src/lint-cli/lib/cache/entries.ts";
+import { computePackageJsonHash } from "../src/lint-cli/lib/cache/package-hash.ts";
+import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
+import { splitArgs } from "../src/lint-cli/lib/cli/split-args.ts";
+import type {
+	ChildCommand,
+	ComposeContext,
+	LintCliOptions,
+} from "../src/lint-cli/lib/cli/types.ts";
+import { CliError } from "../src/lint-cli/lib/cli/types.ts";
+import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
+import type { RunContext } from "../src/lint-cli/lib/context.ts";
+import { execute } from "../src/lint-cli/lib/exec/execute.ts";
+import { buildShellCommand, formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
+import { collectRepoFiles } from "../src/lint-cli/lib/files/collect.ts";
+import type { RepoFiles } from "../src/lint-cli/lib/files/collect.ts";
+import { findWorkspaceRoot } from "../src/lint-cli/lib/files/workspace.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
 	NON_HYBRID_WARNING,
-	parseHybridPrintConfig,
 	resolveOxlintRun,
-} from "../src/lint-cli/hybrid.ts";
-import { parseArguments } from "../src/lint-cli/options.ts";
-import { computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
-import { FAST_PASS, FULL_PASS, maxWorkersFor, TYPED_PASS } from "../src/lint-cli/passes.ts";
-import { plan } from "../src/lint-cli/plan.ts";
-import { runLint } from "../src/lint-cli/run.ts";
-import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
-import { CliError } from "../src/lint-cli/types.ts";
-import { findWorkspaceRoot } from "../src/lint-cli/workspace.ts";
+} from "../src/lint-cli/lib/hybrid/gate.ts";
+import { parseHybridPrintConfig } from "../src/lint-cli/lib/hybrid/probe.ts";
+import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/plan/command.ts";
+import {
+	computeWorkerCount,
+	resolveFastFilesPerWorker,
+	resolveWorkerLimits,
+	TYPED_MAX_WORKERS,
+} from "../src/lint-cli/lib/plan/concurrency.ts";
+import {
+	FAST_PASS,
+	FULL_PASS,
+	maxWorkersFor,
+	TYPED_PASS,
+} from "../src/lint-cli/lib/plan/passes.ts";
+import { plan } from "../src/lint-cli/lib/plan/plan.ts";
+import { runLint } from "../src/lint-cli/lib/run.ts";
 import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 

@@ -1,13 +1,13 @@
 import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
-import { formatCommandLine } from "./command.ts";
-import { compose } from "./compose.ts";
+import { parseArguments } from "./cli/options.ts";
+import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
-import { execute } from "./execute.ts";
-import { parseArguments } from "./options.ts";
-import { plan } from "./plan.ts";
-import { CliError } from "./types.ts";
+import { execute } from "./exec/execute.ts";
+import { formatCommandLine } from "./exec/shell.ts";
+import { compose } from "./plan/compose.ts";
+import { plan } from "./plan/plan.ts";
 
 /**
  * Parse, validate, compose and run the hybrid oxlint + ESLint invocation.

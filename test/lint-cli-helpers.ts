@@ -1,9 +1,9 @@
-import { compose } from "../src/lint-cli/compose.ts";
-import type { CommandPlan } from "../src/lint-cli/compose.ts";
-import { resolveRunContext } from "../src/lint-cli/context.ts";
-import type { RunContext } from "../src/lint-cli/context.ts";
-import { parseArguments } from "../src/lint-cli/options.ts";
-import { plan } from "../src/lint-cli/plan.ts";
+import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
+import { resolveRunContext } from "../src/lint-cli/lib/context.ts";
+import type { RunContext } from "../src/lint-cli/lib/context.ts";
+import { compose } from "../src/lint-cli/lib/plan/compose.ts";
+import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
+import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 /** How a fixture run differs from the defaults. */

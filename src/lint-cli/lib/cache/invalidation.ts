@@ -1,12 +1,12 @@
 // cspell:words normalised
 import fs from "node:fs";
 
-import { computeAffectedFiles } from "./affected.ts";
-import type { DirtyCache } from "./cache.ts";
-import { normalizePath } from "./cache.ts";
+import type { TypeAwareMode } from "../cli/types.ts";
+import type { RunContext } from "../context.ts";
+import { computeAffectedFiles } from "../typescript/affected.ts";
 import { resolveAffectedBustThreshold } from "./constants.ts";
-import type { RunContext } from "./context.ts";
-import type { TypeAwareMode } from "./types.ts";
+import type { DirtyCache } from "./entries.ts";
+import { normalizePath } from "./entries.ts";
 
 /** Inputs to one type-aware invalidation pass. */
 export interface InvalidationRequest {

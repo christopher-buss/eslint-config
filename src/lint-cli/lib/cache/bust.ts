@@ -2,14 +2,14 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import type { RunContext } from "../context.ts";
+import { statePath, swapState } from "../state.ts";
 import {
 	ALL_CACHE_FILES,
 	CACHE_FILE_DEFAULT,
 	CACHE_FILE_TYPE_AWARE,
 	cacheFileFor,
 } from "./constants.ts";
-import type { RunContext } from "./context.ts";
-import { statePath, swapState } from "./state.ts";
 
 /**
  * One hash-drift bust: a hash this run computed, compared against the one the

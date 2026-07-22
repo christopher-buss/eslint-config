@@ -5,12 +5,12 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-import { normalizePath } from "./cache.ts";
-import type { RunContext } from "./context.ts";
+import { normalizePath } from "../cache/entries.ts";
+import type { RunContext } from "../context.ts";
+import { resolveIgnoredHelper } from "../exec/resolve.ts";
+import { readState, statePath, writeState } from "../state.ts";
 import { classifyIgnored } from "./ignored-predicate.ts";
 import type { IgnoredPayload } from "./ignored-predicate.ts";
-import { resolveIgnoredHelper } from "./resolve.ts";
-import { readState, statePath, writeState } from "./state.ts";
 
 /** A target list split by whether ESLint would lint it. */
 interface Classification {

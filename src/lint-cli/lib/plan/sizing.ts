@@ -1,17 +1,17 @@
 // cspell:words lintable typeaware
 import path from "node:path";
 
-import type { DirtyCache } from "./cache.ts";
-import { isCacheStale, normalizePath, openCache } from "./cache.ts";
+import { cacheFileFor } from "../cache/constants.ts";
+import type { DirtyCache } from "../cache/entries.ts";
+import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
+import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
+import type { LintCliOptions } from "../cli/types.ts";
+import type { RunContext } from "../context.ts";
+import type { RepoFiles } from "../files/collect.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
-import { cacheFileFor } from "./constants.ts";
-import type { RunContext } from "./context.ts";
-import type { RepoFiles } from "./files.ts";
-import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { maxWorkersFor, TYPED_PASS } from "./passes.ts";
-import type { LintCliOptions } from "./types.ts";
 
 /** The stderr notice emitted when the type-aware pass is skipped. */
 export const TYPED_SKIP_NOTICE =

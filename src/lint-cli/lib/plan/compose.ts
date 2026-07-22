@@ -1,6 +1,6 @@
+import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import { composeEslintCommand, composeOxlintCommand } from "./command.ts";
 import type { RunPlan } from "./plan.ts";
-import type { ChildCommand, LintCliOptions } from "./types.ts";
 
 /** The stderr notice emitted when a lint target resolves outside the cwd. */
 const OUTSIDE_CWD_NOTICE =

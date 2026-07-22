@@ -2,8 +2,8 @@
 import crypto from "node:crypto";
 import path from "node:path";
 
-import { readFileIfPresent } from "./state.ts";
-import { findWorkspaceRoot } from "./workspace.ts";
+import { findWorkspaceRoot } from "../files/workspace.ts";
+import { readFileIfPresent } from "../state.ts";
 
 /**
  * Root `package.json` fields whose edits can change the types a consumer's

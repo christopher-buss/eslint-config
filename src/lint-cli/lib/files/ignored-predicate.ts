@@ -9,7 +9,7 @@
  * that has to agree exactly, since a file wrongly classified as ignored is
  * dropped from the dirty count and can skip a typed pass that had work to do.
  */
-import { resolveEslintInstall } from "./eslint-install.ts";
+import { resolveEslintInstall } from "../exec/eslint-install.ts";
 
 /**
  * One resolved config object, reduced to what decides matching and ignoring.

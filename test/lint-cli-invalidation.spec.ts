@@ -7,19 +7,23 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { writeHybridStatus } from "../src/hybrid-status.ts";
-import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
-import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/bust.ts";
-import type { BustOutcome } from "../src/lint-cli/bust.ts";
-import { normalizePath, openCache } from "../src/lint-cli/cache.ts";
-import type { CommandPlan } from "../src/lint-cli/compose.ts";
-import { computeConfigHash } from "../src/lint-cli/config-hash.ts";
-import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
-import { resolveCacheKey } from "../src/lint-cli/context.ts";
-import type { RunContext } from "../src/lint-cli/context.ts";
-import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
-import { parseArguments } from "../src/lint-cli/options.ts";
-import { plan } from "../src/lint-cli/plan.ts";
-import type { PassPlan } from "../src/lint-cli/sizing.ts";
+import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/lib/cache/bust.ts";
+import type { BustOutcome } from "../src/lint-cli/lib/cache/bust.ts";
+import { computeConfigHash } from "../src/lint-cli/lib/cache/config-hash.ts";
+import {
+	ALL_CACHE_FILES,
+	CACHE_FILE_TYPE_AWARE,
+	cacheFileFor,
+} from "../src/lint-cli/lib/cache/constants.ts";
+import { normalizePath, openCache } from "../src/lint-cli/lib/cache/entries.ts";
+import { applyTypeAwareInvalidation } from "../src/lint-cli/lib/cache/invalidation.ts";
+import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
+import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
+import type { RunContext } from "../src/lint-cli/lib/context.ts";
+import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
+import { plan } from "../src/lint-cli/lib/plan/plan.ts";
+import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
+import { computeAffectedFiles } from "../src/lint-cli/lib/typescript/affected.ts";
 import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 

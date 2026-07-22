@@ -12,7 +12,7 @@ import {
 	swapState,
 	touchState,
 	writeState,
-} from "../src/lint-cli/state.ts";
+} from "../src/lint-cli/lib/state.ts";
 
 function withTemporaryDirectory(run: (directory: string) => void): void {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-state-"));

@@ -1,8 +1,8 @@
 import process from "node:process";
 
 import packageJson from "../../package.json" with { type: "json" };
-import { runLint } from "./run.ts";
-import { CliError } from "./types.ts";
+import { CliError } from "./lib/cli/types.ts";
+import { runLint } from "./lib/run.ts";
 
 const HELP = `isentinel-lint [flags] [paths...]
 

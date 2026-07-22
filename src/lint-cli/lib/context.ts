@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { isCi, isInAgentSession, isInEditorEnvironment } from "../utils.ts";
+import { isCi, isInAgentSession, isInEditorEnvironment } from "../../utils.ts";
 
 /** Length of the hex digest slice used to suffix cache and state files. */
 export const CACHE_KEY_LENGTH = 8;

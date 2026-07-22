@@ -6,12 +6,12 @@ import path from "node:path";
 import process from "node:process";
 import type * as TypeScript from "typescript";
 
-import { CACHE_KEY_LENGTH } from "./context.ts";
-import type { RunContext } from "./context.ts";
-import { toPosix } from "./paths.ts";
-import { stateDirectory, statePath } from "./state.ts";
-import type { TypeAwareMode } from "./types.ts";
-import { loadTypescript } from "./typescript.ts";
+import type { TypeAwareMode } from "../cli/types.ts";
+import { CACHE_KEY_LENGTH } from "../context.ts";
+import type { RunContext } from "../context.ts";
+import { toPosix } from "../paths.ts";
+import { stateDirectory, statePath } from "../state.ts";
+import { loadTypescript } from "./load.ts";
 
 /** Result of a builder pass over the consumer's program. */
 export interface AffectedResult {

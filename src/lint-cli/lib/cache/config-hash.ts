@@ -3,8 +3,8 @@ import crypto from "node:crypto";
 import path from "node:path";
 import type * as TypeScript from "typescript";
 
-import { readFileIfPresent } from "./state.ts";
-import { loadTypescript } from "./typescript.ts";
+import { readFileIfPresent } from "../state.ts";
+import { loadTypescript } from "../typescript/load.ts";
 
 /**
  * Upper bound on the number of files walked from the config entry points. A

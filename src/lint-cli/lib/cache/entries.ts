@@ -2,8 +2,8 @@ import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import path from "node:path";
 
+import { toPosix } from "../paths.ts";
 import { CACHE_FILE_PREFIX } from "./constants.ts";
-import { toPosix } from "./paths.ts";
 
 /**
  * A loaded ESLint cache, reused for both the dirty query and surgical removal.

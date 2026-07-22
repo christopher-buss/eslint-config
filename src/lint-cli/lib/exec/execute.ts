@@ -2,9 +2,9 @@ import concurrently from "concurrently";
 import { spawn } from "node:child_process";
 import process from "node:process";
 
-import { buildShellCommand } from "./command.ts";
+import type { ChildCommand, ToolLabel } from "../cli/types.ts";
 import { resolveLocalBin } from "./resolve.ts";
-import type { ChildCommand, ToolLabel } from "./types.ts";
+import { buildShellCommand } from "./shell.ts";
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
 const PREFIX_COLOR: Record<ToolLabel, string> = {

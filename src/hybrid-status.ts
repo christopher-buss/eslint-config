@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { readState, statePath, touchState, writeState } from "./lint-cli/state.ts";
+import { readState, statePath, touchState, writeState } from "./lint-cli/lib/state.ts";
 
 /**
  * The persisted hybrid status: whether the resolved ESLint config enabled the

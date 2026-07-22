@@ -4,11 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { normalizePath } from "../src/lint-cli/cache.ts";
-import type { RunContext } from "../src/lint-cli/context.ts";
-import type { IgnoredPayload } from "../src/lint-cli/ignored-predicate.ts";
-import { ignoredStatePath, resolveIgnoredFiles } from "../src/lint-cli/ignored.ts";
-import { readState } from "../src/lint-cli/state.ts";
+import { normalizePath } from "../src/lint-cli/lib/cache/entries.ts";
+import type { RunContext } from "../src/lint-cli/lib/context.ts";
+import type { IgnoredPayload } from "../src/lint-cli/lib/files/ignored-predicate.ts";
+import { ignoredStatePath, resolveIgnoredFiles } from "../src/lint-cli/lib/files/ignored.ts";
+import { readState } from "../src/lint-cli/lib/state.ts";
 
 /** The config-variant key these fixtures store their ignore set under. */
 const KEY = "ignored-test";

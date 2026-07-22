@@ -1,20 +1,20 @@
 // cspell:words lintable typeaware
 import { availableParallelism } from "node:os";
 
-import { applyHashBust, CONFIG_DRIFT, PACKAGE_RESOLUTION } from "./bust.ts";
-import { maxMtimeMs, sweepStaleCaches } from "./cache.ts";
+import { applyHashBust, CONFIG_DRIFT, PACKAGE_RESOLUTION } from "../cache/bust.ts";
+import { computeConfigHash } from "../cache/config-hash.ts";
+import { maxMtimeMs, sweepStaleCaches } from "../cache/entries.ts";
+import { computePackageJsonHash } from "../cache/package-hash.ts";
+import type { LintCliOptions } from "../cli/types.ts";
+import type { RunContext } from "../context.ts";
+import { resolveAgentsFormatter } from "../exec/resolve.ts";
+import { collectRepoFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
+import { resolveIgnoredFiles } from "../files/ignored.ts";
+import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { resolveWorkerLimits } from "./concurrency.ts";
-import { computeConfigHash } from "./config-hash.ts";
-import type { RunContext } from "./context.ts";
-import { collectRepoFiles, oxlintTargets, withoutIgnored } from "./files.ts";
-import { resolveOxlintRun } from "./hybrid.ts";
-import { resolveIgnoredFiles } from "./ignored.ts";
-import { computePackageJsonHash } from "./package-hash.ts";
 import { selectPasses } from "./passes.ts";
-import { resolveAgentsFormatter } from "./resolve.ts";
 import type { PassPlan } from "./sizing.ts";
 import { sizePasses } from "./sizing.ts";
-import type { LintCliOptions } from "./types.ts";
 
 /**
  * A composed run as plain data: all I/O and mutation happen once in
