@@ -11,14 +11,15 @@ import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/bust.ts";
 import type { BustOutcome } from "../src/lint-cli/bust.ts";
 import { normalizePath, openCache } from "../src/lint-cli/cache.ts";
+import type { CommandPlan } from "../src/lint-cli/compose.ts";
 import { computeConfigHash } from "../src/lint-cli/config-hash.ts";
 import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
 import { resolveCacheKey } from "../src/lint-cli/context.ts";
 import type { RunContext } from "../src/lint-cli/context.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import { plan } from "../src/lint-cli/run.ts";
-import type { CommandPlan, PassPlan } from "../src/lint-cli/run.ts";
+import { plan } from "../src/lint-cli/plan.ts";
+import type { PassPlan } from "../src/lint-cli/sizing.ts";
 import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 

@@ -33,6 +33,7 @@ import {
 } from "../src/lint-cli/constants.ts";
 import { resolveCacheKey } from "../src/lint-cli/context.ts";
 import type { RunContext } from "../src/lint-cli/context.ts";
+import { execute } from "../src/lint-cli/execute.ts";
 import { collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
 import {
@@ -44,7 +45,8 @@ import {
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
 import { FAST_PASS, FULL_PASS, maxWorkersFor, TYPED_PASS } from "../src/lint-cli/passes.ts";
-import { plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
+import { plan } from "../src/lint-cli/plan.ts";
+import { runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
 import { CliError } from "../src/lint-cli/types.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/workspace.ts";
@@ -1108,7 +1110,7 @@ describe("applyPackageJsonBust", () => {
 	});
 });
 
-describe("runConcurrent", () => {
+describe("execute", () => {
 	it("runs every child to completion and aggregates a non-zero exit", async () => {
 		expect.hasAssertions();
 
@@ -1134,12 +1136,13 @@ describe("runConcurrent", () => {
 				)},"ran");process.exit(1);`,
 			);
 
-			const code = await runConcurrent(
+			const code = await execute(
 				[
 					{ args: [], bin: "oxlint", env: {}, label: "oxc" },
 					{ args: [], bin: "eslint", env: {}, label: "eslint" },
 				],
 				directory,
+				false,
 			);
 
 			expect(code).toBe(1);
