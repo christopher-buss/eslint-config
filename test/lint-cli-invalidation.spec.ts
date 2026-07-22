@@ -8,12 +8,10 @@ import { describe, expect, it } from "vitest";
 
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
+import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/bust.ts";
+import type { BustOutcome } from "../src/lint-cli/bust.ts";
 import { normalizePath, openCache } from "../src/lint-cli/cache.ts";
-import {
-	applyConfigDriftBust,
-	computeConfigHash,
-	configHashStatePath,
-} from "../src/lint-cli/config-hash.ts";
+import { computeConfigHash } from "../src/lint-cli/config-hash.ts";
 import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
 import { resolveCacheKey } from "../src/lint-cli/context.ts";
 import type { RunContext } from "../src/lint-cli/context.ts";
@@ -873,6 +871,17 @@ function configHashFor(directory: string): string | undefined {
 	return computeConfigHash(directory, configBustFiles(directory));
 }
 
+/**
+ * Apply the config-drift bust to a run, hashing the fixture's config closure
+ * the way the planner does.
+ *
+ * @param run - The run whose variant is busted.
+ * @returns The bust outcome.
+ */
+function bustConfig(run: RunContext): BustOutcome {
+	return applyHashBust(run, CONFIG_DRIFT, configHashFor(run.cwd));
+}
+
 function seedAllCaches(directory: string, key: string): void {
 	for (const name of ALL_CACHE_FILES) {
 		fs.writeFileSync(path.join(directory, cacheFileFor(name, key)), "{}");
@@ -905,7 +914,7 @@ describe("applyConfigDriftBust", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			const outcome = bustConfig(runFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
 			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
@@ -916,11 +925,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			bustConfig(runFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			editRules(directory);
 
-			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			const outcome = bustConfig(runFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
 			// Unlike the package.json bust, the fast (syntactic) cache is dropped
@@ -933,11 +942,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			bustConfig(runFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			touch(path.join(directory, "eslint-rules.ts"));
 
-			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			const outcome = bustConfig(runFor(directory));
 
 			// Content-addressed, so an mtime bump with identical content is a
 			// no-op.
@@ -950,40 +959,25 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(runFor(directory), configHashFor(directory));
-			applyConfigDriftBust(runFor(directory, AGENT_ENVIRONMENT), configHashFor(directory));
+			bustConfig(runFor(directory));
+			bustConfig(runFor(directory, AGENT_ENVIRONMENT));
 			seedAllCaches(directory, TEST_KEY);
 			seedAllCaches(directory, AGENT_KEY);
 			editRules(directory);
 
-			expect(applyConfigDriftBust(runFor(directory), configHashFor(directory))).toStrictEqual(
-				{
-					busted: true,
-					firstRun: false,
-				},
-			);
+			expect(bustConfig(runFor(directory))).toStrictEqual({
+				busted: true,
+				firstRun: false,
+			});
 			// The no-agent run must not consume the drift on the agent's behalf.
 			expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
 
-			expect(
-				applyConfigDriftBust(
-					runFor(directory, AGENT_ENVIRONMENT),
-					configHashFor(directory),
-				),
-			).toStrictEqual({
+			expect(bustConfig(runFor(directory, AGENT_ENVIRONMENT))).toStrictEqual({
 				busted: true,
 				firstRun: false,
 			});
 			expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
 		});
-	});
-
-	it("stores each variant's hash under its own state file", () => {
-		expect.hasAssertions();
-
-		expect(configHashStatePath(runFor("/project"))).not.toBe(
-			configHashStatePath(runFor("/project", AGENT_ENVIRONMENT)),
-		);
 	});
 
 	it("no-ops when there is no config entry point", () => {
@@ -992,8 +986,9 @@ describe("applyConfigDriftBust", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyConfigDriftBust(
+			const outcome = applyHashBust(
 				runFor(directory),
+				CONFIG_DRIFT,
 				computeConfigHash(directory, []),
 			);
 
@@ -1012,7 +1007,7 @@ describe("applyConfigDriftBust", () => {
 
 			expect(computeConfigHash(directory, roots)).toBeUndefined();
 			expect(
-				applyConfigDriftBust(runFor(directory), computeConfigHash(directory, roots)),
+				applyHashBust(runFor(directory), CONFIG_DRIFT, computeConfigHash(directory, roots)),
 			).toStrictEqual({
 				busted: false,
 				firstRun: false,

@@ -6,6 +6,7 @@ import { availableParallelism } from "node:os";
 import path from "node:path";
 import process from "node:process";
 
+import { applyHashBust, CONFIG_DRIFT, PACKAGE_RESOLUTION } from "./bust.ts";
 import type { DirtyCache } from "./cache.ts";
 import { isCacheStale, maxMtimeMs, normalizePath, openCache, sweepStaleCaches } from "./cache.ts";
 import {
@@ -15,7 +16,7 @@ import {
 	formatCommandLine,
 } from "./command.ts";
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
-import { applyConfigDriftBust, computeConfigHash } from "./config-hash.ts";
+import { computeConfigHash } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
 import { resolveRunContext } from "./context.ts";
 import type { RunContext } from "./context.ts";
@@ -25,7 +26,7 @@ import { resolveOxlintRun } from "./hybrid.ts";
 import { resolveIgnoredFiles } from "./ignored.ts";
 import { applyTypeAwareInvalidation } from "./invalidation.ts";
 import { parseArguments } from "./options.ts";
-import { applyPackageJsonBust } from "./package-hash.ts";
+import { computePackageJsonHash } from "./package-hash.ts";
 import { maxWorkersFor, selectPasses, TYPED_PASS } from "./passes.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { resolveAgentsFormatter, resolveLocalBin } from "./resolve.ts";
@@ -204,11 +205,11 @@ export function plan(options: LintCliOptions, run: RunContext): RunPlan {
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyConfigDriftBust(run, configHash);
+		applyHashBust(run, CONFIG_DRIFT, configHash);
 	}
 
 	if (canMutateCaches && hasTypeAwarePass) {
-		applyPackageJsonBust(run);
+		applyHashBust(run, PACKAGE_RESOLUTION, computePackageJsonHash(cwd));
 	}
 
 	const clearedCaches = new Set(canMutateCaches ? sweepStaleCaches(cwd, newestBustMtime) : []);

@@ -8,6 +8,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
+import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/bust.ts";
+import type { BustOutcome } from "../src/lint-cli/bust.ts";
 import { isCacheStale, maxMtimeMs, openCache, sweepStaleCaches } from "../src/lint-cli/cache.ts";
 import {
 	buildShellCommand,
@@ -30,6 +32,7 @@ import {
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/constants.ts";
 import { resolveCacheKey } from "../src/lint-cli/context.ts";
+import type { RunContext } from "../src/lint-cli/context.ts";
 import { collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
 import {
@@ -39,11 +42,7 @@ import {
 	resolveOxlintRun,
 } from "../src/lint-cli/hybrid.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
-import {
-	applyPackageJsonBust,
-	computePackageJsonHash,
-	packageHashStatePath,
-} from "../src/lint-cli/package-hash.ts";
+import { computePackageJsonHash } from "../src/lint-cli/package-hash.ts";
 import { FAST_PASS, FULL_PASS, maxWorkersFor, TYPED_PASS } from "../src/lint-cli/passes.ts";
 import { plan, runConcurrent, runLint } from "../src/lint-cli/run.ts";
 import type { ChildCommand, ComposeContext, LintCliOptions } from "../src/lint-cli/types.ts";
@@ -957,6 +956,17 @@ describe("applyPackageJsonBust", () => {
 		});
 	}
 
+	/**
+	 * Apply the package-resolution bust to a run, hashing its `package.json`
+	 * the way the planner does.
+	 *
+	 * @param run - The run whose variant is busted.
+	 * @returns The bust outcome.
+	 */
+	function bustPackage(run: RunContext): BustOutcome {
+		return applyHashBust(run, PACKAGE_RESOLUTION, computePackageJsonHash(run.cwd));
+	}
+
 	it("stores the hash without busting on the first run", () => {
 		expect.hasAssertions();
 
@@ -964,7 +974,7 @@ describe("applyPackageJsonBust", () => {
 			writePackageJson(directory, { exports: "./index.js" });
 			seedCaches(directory);
 
-			const outcome = applyPackageJsonBust(runContext(directory));
+			const outcome = bustPackage(runContext(directory));
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
 			expect(everyCacheExists(directory)).toBe(true);
@@ -976,11 +986,11 @@ describe("applyPackageJsonBust", () => {
 
 		withTemporaryDirectory((directory) => {
 			writePackageJson(directory, { exports: "./index.js" });
-			applyPackageJsonBust(runContext(directory));
+			bustPackage(runContext(directory));
 			seedCaches(directory);
 
 			writePackageJson(directory, { exports: "./other.js" });
-			const outcome = applyPackageJsonBust(runContext(directory));
+			const outcome = bustPackage(runContext(directory));
 
 			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
 			expect(
@@ -1000,7 +1010,7 @@ describe("applyPackageJsonBust", () => {
 
 		withTemporaryDirectory((directory) => {
 			writePackageJson(directory, { exports: "./index.js", scripts: { build: "tsc" } });
-			applyPackageJsonBust(runContext(directory));
+			bustPackage(runContext(directory));
 			seedCaches(directory);
 
 			writePackageJson(directory, {
@@ -1008,7 +1018,7 @@ describe("applyPackageJsonBust", () => {
 				scripts: { build: "tsc --noEmit" },
 				version: "9.9.9",
 			});
-			const outcome = applyPackageJsonBust(runContext(directory));
+			const outcome = bustPackage(runContext(directory));
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
 			expect(everyCacheExists(directory)).toBe(true);
@@ -1023,8 +1033,8 @@ describe("applyPackageJsonBust", () => {
 			const agentKey = resolveCacheKey(agentEnvironment);
 			const agentRun = runContext(directory, { environment: agentEnvironment });
 			writePackageJson(directory, { exports: "./index.js" });
-			applyPackageJsonBust(runContext(directory));
-			applyPackageJsonBust(agentRun);
+			bustPackage(runContext(directory));
+			bustPackage(agentRun);
 
 			seedCaches(directory);
 			for (const name of ALL_CACHE_FILES) {
@@ -1037,7 +1047,7 @@ describe("applyPackageJsonBust", () => {
 			// consume the bump on the agent variant's behalf: a shared state file
 			// would make the second call a no-op and leave the agent's type-aware
 			// caches permanently stale.
-			expect(applyPackageJsonBust(runContext(directory))).toStrictEqual({
+			expect(bustPackage(runContext(directory))).toStrictEqual({
 				busted: true,
 				firstRun: false,
 			});
@@ -1045,7 +1055,7 @@ describe("applyPackageJsonBust", () => {
 				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
 			).toBe(true);
 
-			expect(applyPackageJsonBust(agentRun)).toStrictEqual({
+			expect(bustPackage(agentRun)).toStrictEqual({
 				busted: true,
 				firstRun: false,
 			});
@@ -1053,14 +1063,6 @@ describe("applyPackageJsonBust", () => {
 				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
 			).toBe(false);
 		});
-	});
-
-	it("stores each variant's hash under its own state file", () => {
-		expect.hasAssertions();
-
-		expect(packageHashStatePath(runContext("/project"))).not.toBe(
-			packageHashStatePath(runContext("/project", { environment: { CLAUDECODE: "1" } })),
-		);
 	});
 
 	it("hashes resolution fields independent of key order", () => {
