@@ -407,6 +407,23 @@ export function isInAgentSession(environment: NodeJS.ProcessEnv = process.env): 
 	});
 }
 
+/**
+ * Whether autofixes that rewrite code an agent just wrote should be withheld.
+ *
+ * Opt-in, and deliberately not tied to {@link isInAgentSession}: merely being
+ * an agent is no reason to lint differently — an agent that runs the linter
+ * wants the same fixes a human would get. The case this exists for is the
+ * wrapper that fixes without anyone reading the diff (an edit hook, a
+ * fix-on-save daemon), which knows it is that and can say so.
+ *
+ * @param environment - The environment variables to inspect.
+ * @returns Whether fix suppression was requested.
+ */
+export function isAgentAutofixDisabled(environment: NodeJS.ProcessEnv = process.env): boolean {
+	const value = environment["ESLINT_AGENT_NO_AUTOFIX"];
+	return value === "true" || value === "1";
+}
+
 export function isInEditorEnvironment(environment: NodeJS.ProcessEnv = process.env): boolean {
 	// Allow explicit override via environment variable
 	const explicitValue = environment["ESLINT_IN_EDITOR"];

@@ -8,6 +8,7 @@ import { resolvePrettierSettings } from "../prettier-config.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
 	getOverrides,
+	isAgentAutofixDisabled,
 	isInAgentSession,
 	isInEditorEnvironment,
 	mergeGlobs,
@@ -687,7 +688,9 @@ export async function isentinel(
 		});
 	}
 
-	if (isInEditor || inAgentSession) {
+	const suppressAgentAutofix = isAgentAutofixDisabled();
+
+	if (isInEditor || suppressAgentAutofix) {
 		const disableAutofixRules: Array<keyof RuleOptions> = [];
 
 		if (isInEditor) {
@@ -702,7 +705,7 @@ export async function isentinel(
 			}
 		}
 
-		if (inAgentSession) {
+		if (suppressAgentAutofix) {
 			disableAutofixRules.push("ts/consistent-type-imports");
 		}
 

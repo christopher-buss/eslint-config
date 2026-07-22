@@ -500,7 +500,7 @@ describe("cache helpers", () => {
 	});
 
 	describe("resolveCacheKey", () => {
-		it("separates the agent, editor, CI and default variants", () => {
+		it("separates the agent, editor, CI, no-autofix and default variants", () => {
 			expect.hasAssertions();
 
 			const keys = [
@@ -508,6 +508,7 @@ describe("cache helpers", () => {
 				resolveCacheKey({ CLAUDECODE: "1" }),
 				resolveCacheKey({ VSCODE_PID: "1" }),
 				resolveCacheKey({ CI: "true" }),
+				resolveCacheKey({ ESLINT_AGENT_NO_AUTOFIX: "1" }),
 			];
 
 			const unique = new Set(keys);

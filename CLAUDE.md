@@ -106,6 +106,12 @@ The config auto-detects editor environments and adjusts rules (e.g., downgrades
 unused import errors to warnings). Override with `ESLINT_IN_EDITOR=true|false`
 or `isInEditor` option.
 
+## Agent Sessions
+
+Agent detection (`isInAgentSession`) only promotes warnings to errors; it never
+withholds auto-fixes. Fix suppression is opt-in via `ESLINT_AGENT_NO_AUTOFIX=1`,
+for wrappers that fix without anyone reading the diff (edit hooks, fix-on-save).
+
 ## Key Dependencies
 
 - Uses pnpm catalogs for dependency versioning (see `pnpm-workspace.yaml`)

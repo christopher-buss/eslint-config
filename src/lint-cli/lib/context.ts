@@ -1,6 +1,11 @@
 import crypto from "node:crypto";
 
-import { isCi, isInAgentSession, isInEditorEnvironment } from "../../utils.ts";
+import {
+	isAgentAutofixDisabled,
+	isCi,
+	isInAgentSession,
+	isInEditorEnvironment,
+} from "../../utils.ts";
 
 /** Length of the hex digest slice used to suffix cache and state files. */
 export const CACHE_KEY_LENGTH = 8;
@@ -75,6 +80,7 @@ export interface RunContext {
 export function resolveCacheKey(environment: NodeJS.ProcessEnv): string {
 	const parts = [
 		isInAgentSession(environment),
+		isAgentAutofixDisabled(environment),
 		isInEditorEnvironment(environment),
 		isCi(environment),
 		environment[CACHE_KEY_OVERRIDE] ?? "",

@@ -1,7 +1,7 @@
 import process from "node:process";
 import { describe, expect, it } from "vitest";
 
-import { isInAgentSession } from "../src/utils.ts";
+import { isAgentAutofixDisabled, isInAgentSession } from "../src/utils.ts";
 
 /**
  * Run `run` with `process.stdout.isTTY` forced, which the kiro probe consults
@@ -83,5 +83,24 @@ describe("isInAgentSession", () => {
 		expect(isInAgentSession({ AI_AGENT: "claude", npm_lifecycle_script: "lint-staged" })).toBe(
 			false,
 		);
+	});
+});
+
+describe("isAgentAutofixDisabled", () => {
+	it("is off unless asked for", () => {
+		expect.hasAssertions();
+
+		expect(isAgentAutofixDisabled({})).toBe(false);
+		expect(isAgentAutofixDisabled({ CLAUDECODE: "1" })).toBe(false);
+		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "0" })).toBe(false);
+		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "" })).toBe(false);
+	});
+
+	it("takes effect without an agent session, for hooks", () => {
+		expect.hasAssertions();
+
+		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "1" })).toBe(true);
+		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "true" })).toBe(true);
+		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "1", GIT_HOOK: "1" })).toBe(true);
 	});
 });

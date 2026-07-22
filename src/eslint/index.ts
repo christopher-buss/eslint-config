@@ -1,4 +1,5 @@
 export * from "../globs.ts";
+export { isAgentAutofixDisabled } from "../utils.ts";
 export { isInEditorEnvironment } from "../utils.ts";
 export { isInAgentSession } from "../utils.ts";
 export { isInGitHooksOrLintStaged } from "../utils.ts";
