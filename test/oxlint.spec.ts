@@ -102,6 +102,22 @@ function disablesBarrelFileForDts(
 	);
 }
 
+/**
+ * Collect every override glob (files and excludeFiles) from a config.
+ *
+ * @param config - The oxlint config to inspect.
+ * @returns Every glob referenced by an override.
+ */
+function collectOverrideGlobs(config: OxlintConfig): Array<string> {
+	const globs: Array<string> = [];
+	const overrides = config.overrides ?? [];
+	for (const override of overrides) {
+		globs.push(...override.files, ...(override.excludeFiles ?? []));
+	}
+
+	return globs;
+}
+
 const baseOptions = {
 	gitignore: false,
 	isAgent: false,
@@ -283,6 +299,25 @@ describe("oxlint config snapshots", () => {
 		});
 
 		expect(serializeOxlintConfig(config)).toMatchSnapshot();
+	});
+
+	it("should anchor slash-less override globs to the config root", ({ expect }) => {
+		expect.hasAssertions();
+
+		// Oxlint matches a slash-less override glob gitignore-style at any
+		// depth, so an unanchored root glob such as `*` would apply a root-only
+		// relaxation to the whole tree (#617). ESLint anchors these to the
+		// config root; a leading `./` makes oxlint do the same.
+		const config = oxlintIsentinel({
+			name: "test/oxlint-anchored-globs",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+		});
+
+		const unanchored = collectOverrideGlobs(config).filter((glob) => !glob.includes("/"));
+
+		expect(unanchored).toEqual([]);
 	});
 });
 

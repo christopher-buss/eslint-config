@@ -87,6 +87,22 @@ export function jsPluginKey(entry: ExternalPluginEntry): string {
 }
 
 /**
+ * Anchor a slash-less override glob to the config directory.
+ *
+ * ESLint matches a flat-config `files` pattern without a `/` against
+ * root-level entries only, while oxlint matches it gitignore-style at any
+ * depth — a root-only relaxation such as `*` would silently apply to the
+ * whole tree (#617). A leading `./` keeps oxlint's matching anchored without
+ * changing what the pattern matches under ESLint semantics.
+ *
+ * @param glob - An override glob in ESLint `files` semantics.
+ * @returns The glob, anchored when it has no path separator.
+ */
+export function anchorOxlintGlob(glob: string): string {
+	return glob.includes("/") ? glob : `./${glob}`;
+}
+
+/**
  * Drop every rule whose plugin prefix is not registered on the generated
  * config, mutating the overrides in place. Oxlint fails the whole config build
  * on a rule naming an unknown plugin, so entries left behind by a plugin that

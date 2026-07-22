@@ -47,7 +47,12 @@ import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type { OxlintFactoryOptions, OxlintSettings, TypedOxlintConfigItem } from "./types.ts";
-import { createOxlintConfigs, jsPluginKey, stripUnregisteredPluginRules } from "./utils.ts";
+import {
+	anchorOxlintGlob,
+	createOxlintConfigs,
+	jsPluginKey,
+	stripUnregisteredPluginRules,
+} from "./utils.ts";
 
 /**
  * The preset enables its rules explicitly, so every category is disabled to
@@ -412,6 +417,11 @@ export function isentinel(
 		}
 
 		const { name: _name, plugins: _plugins, settings: _settings, ...override } = config;
+		override.files = override.files.map(anchorOxlintGlob);
+		if (override.excludeFiles !== undefined) {
+			override.excludeFiles = override.excludeFiles.map(anchorOxlintGlob);
+		}
+
 		overrides.push(override);
 	}
 
