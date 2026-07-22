@@ -32,6 +32,13 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/require-async-suffix",
+		files: ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
+		rules: {
+			"small-rules/require-async-suffix": "off",
+		},
+	},
+	{
 		name: "local/formatter",
 		files: ["src/formatter-agents.ts"],
 		rules: {

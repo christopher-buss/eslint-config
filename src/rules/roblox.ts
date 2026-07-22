@@ -31,10 +31,12 @@ export function robloxRules({
 		"roblox/prefer-get-players": "error",
 		"roblox/prefer-task-library": "error",
 		"small-rules/no-array-size-assignment": "error",
+		"small-rules/no-recursive": "error",
 
 		...(stylistic !== false
 			? {
 					"sentinel/prefer-math-min-max": "error",
+					"small-rules/array-type-generic": "error",
 					"small-rules/no-array-constructor-elements": "error",
 				}
 			: {}),

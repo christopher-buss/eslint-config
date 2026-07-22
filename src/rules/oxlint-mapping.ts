@@ -572,15 +572,18 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 
 	// Part: Small-rules (run via jsPlugin; the type-aware read-only-props rule
 	// lives in eslint-plugin-flawless and stays in ESLint)
+	"small-rules/array-type-generic": "js-plugin",
 	"small-rules/no-array-constructor-elements": "js-plugin",
 	"small-rules/no-array-size-assignment": "js-plugin",
 	"small-rules/no-async-constructor": "js-plugin",
 	"small-rules/no-commented-code": "js-plugin",
+	"small-rules/no-recursive": "js-plugin",
 	"small-rules/prefer-class-properties": "js-plugin",
 	"small-rules/prefer-early-return": "js-plugin",
 	"small-rules/prefer-module-scope-constants": "js-plugin",
 	"small-rules/prefer-singular-enums": "js-plugin",
 	"small-rules/react-hooks-strict-return": "js-plugin",
+	"small-rules/require-async-suffix": "js-plugin",
 	"small-rules/strict-component-boundaries": "js-plugin",
 
 	// Part: Flawless syntax rules (run via jsPlugin); the type-aware flawless

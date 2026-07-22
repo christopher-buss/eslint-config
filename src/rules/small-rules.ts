@@ -25,6 +25,7 @@ export function smallRulesRules({
 			? {
 					"small-rules/prefer-module-scope-constants": "error",
 					"small-rules/prefer-singular-enums": "error",
+					"small-rules/require-async-suffix": "error",
 				}
 			: {}),
 	};
