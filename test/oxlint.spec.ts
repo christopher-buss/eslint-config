@@ -315,9 +315,7 @@ describe("oxlint config snapshots", () => {
 			isInEditor: false,
 		});
 
-		const unanchored = collectOverrideGlobs(config).filter(
-			(glob) => !glob.replace(/^!/, "").includes("/"),
-		);
+		const unanchored = collectOverrideGlobs(config).filter((glob) => !glob.includes("/"));
 
 		expect(unanchored).toEqual([]);
 	});

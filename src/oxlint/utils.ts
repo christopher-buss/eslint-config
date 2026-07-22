@@ -99,11 +99,6 @@ export function jsPluginKey(entry: ExternalPluginEntry): string {
  * @returns The glob, anchored when it has no path separator.
  */
 export function anchorOxlintGlob(glob: string): string {
-	if (glob.startsWith("!")) {
-		const body = glob.slice(1);
-		return body.includes("/") ? glob : `!./${body}`;
-	}
-
 	return glob.includes("/") ? glob : `./${glob}`;
 }
 
