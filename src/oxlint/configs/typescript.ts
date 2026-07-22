@@ -10,6 +10,7 @@ import {
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
+	OptionsHasRoblox,
 	OptionsOverrides,
 	OptionsStylistic,
 	OptionsTypeScriptErasableOnly,
@@ -21,14 +22,20 @@ import { createOxlintConfigs } from "../utils.ts";
 export function oxlintTypescript(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
+		OptionsHasRoblox &
 		OptionsOverrides &
 		OptionsStylistic &
-		OptionsTypeScriptErasableOnly & { typeAware?: boolean } = {},
+		OptionsTypeScriptErasableOnly & {
+			excludeFiles?: Array<string>;
+			typeAware?: boolean;
+		} = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		erasableOnly = false,
+		excludeFiles,
 		overrides = {},
+		roblox = true,
 		stylistic = true,
 		typeAware = true,
 	} = options;
@@ -39,7 +46,7 @@ export function oxlintTypescript(
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
-	const typeAwareRules = typescriptTypeAwareRules() ?? {};
+	const typeAwareRules = typescriptTypeAwareRules({ roblox }) ?? {};
 	const gatedTypeAwareRules = typeAware
 		? typeAwareRules
 		: (Object.fromEntries(
@@ -48,6 +55,7 @@ export function oxlintTypescript(
 
 	return createOxlintConfigs({
 		name: "isentinel/typescript",
+		...(excludeFiles ? { excludeFiles } : {}),
 		files,
 		rules: {
 			...typescriptRecommendedOverrides(),

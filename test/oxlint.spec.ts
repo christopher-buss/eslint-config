@@ -509,6 +509,47 @@ describe("scoped roblox complement", () => {
 		}
 	});
 
+	function floatingPromiseOverrides(
+		config: OxlintConfig,
+	): NonNullable<OxlintConfig["overrides"]> {
+		return (config.overrides ?? []).filter((override) => {
+			return override.rules?.["typescript/no-floating-promises"] !== undefined;
+		});
+	}
+
+	it("turns off checkThenables for the complement only", ({ expect }) => {
+		expect.hasAssertions();
+
+		const config = oxlintIsentinel({
+			name: "test/scoped-roblox",
+			gitignore: false,
+			roblox: { files: ["src/**"] },
+			spellCheck: false,
+		});
+
+		const overrides = floatingPromiseOverrides(config);
+
+		expect(overrides).toHaveLength(2);
+		expect(overrides[0]).not.toHaveProperty("excludeFiles");
+		expect(overrides[0]).toMatchObject({
+			rules: {
+				"typescript/no-floating-promises": [
+					"error",
+					{ checkThenables: true, ignoreVoid: true },
+				],
+			},
+		});
+		expect(overrides[1]).toMatchObject({
+			excludeFiles: ["src/**"],
+			rules: {
+				"typescript/no-floating-promises": [
+					"error",
+					{ checkThenables: false, ignoreVoid: true },
+				],
+			},
+		});
+	});
+
 	it("adds no node rules to the default roblox config", ({ expect }) => {
 		expect.hasAssertions();
 

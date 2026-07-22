@@ -14,6 +14,7 @@ import {
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
+	OptionsHasRoblox,
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptErasableOnly,
@@ -25,13 +26,22 @@ import type {
 export async function typescript(
 	options: OptionsComponentExtensions &
 		OptionsFiles &
+		OptionsHasRoblox &
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptErasableOnly &
 		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+		OptionsTypeScriptWithTypes & {
+			/**
+			 * When set, re-apply the non-roblox type-aware rules to every
+			 * type-aware file except these globs (the roblox scope), so the
+			 * complement is linted as standard-TS/Node land.
+			 */
+			complementIgnores?: Array<string>;
+		} = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
+		complementIgnores,
 		componentExts: componentExtensions = [],
 		erasableOnly = false,
 		outOfProjectFiles,
@@ -40,6 +50,7 @@ export async function typescript(
 		parserOptions = {},
 		parserOptionsNonTypeAware = {},
 		parserOptionsTypeAware = {},
+		roblox = true,
 		stylistic = true,
 		typeAware = true,
 	} = options;
@@ -55,7 +66,7 @@ export async function typescript(
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = typescriptTypeAwareRules();
+	const typeAwareRules: TypedFlatConfigItem["rules"] = typescriptTypeAwareRules({ roblox });
 
 	const [parserTs, pluginTs, pluginAntfu] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
@@ -134,6 +145,22 @@ export async function typescript(
 						ignores: ignoresTypeAware,
 						rules: {
 							...typeAwareRules,
+							...overridesTypeAware,
+						},
+					},
+				]
+			: []),
+		// The complement re-applies the non-roblox type-aware rules last, so it
+		// wins for files outside the roblox scope. `overridesTypeAware` is
+		// re-spread so user overrides still beat it.
+		...(isTypeAware && complementIgnores
+			? [
+					{
+						name: "isentinel/typescript/rules-type-aware/complement",
+						files: filesTypeAware,
+						ignores: [...ignoresTypeAware, ...complementIgnores],
+						rules: {
+							...typescriptTypeAwareRules({ roblox: false }),
 							...overridesTypeAware,
 						},
 					},

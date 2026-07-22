@@ -2018,6 +2018,7 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
         "typescript/no-floating-promises": [
           "error",
           {
+            "checkThenables": true,
             "ignoreVoid": true,
           },
         ],
@@ -5730,6 +5731,7 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "typescript/no-floating-promises": [
           "error",
           {
+            "checkThenables": false,
             "ignoreVoid": true,
           },
         ],

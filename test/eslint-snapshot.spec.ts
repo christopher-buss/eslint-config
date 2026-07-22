@@ -42,6 +42,22 @@ describe("config snapshots", () => {
 		expect(serializeConfigs([...configs])).toMatchSnapshot();
 	});
 
+	it("should match scoped roblox config", async () => {
+		expect.hasAssertions();
+
+		const configs = await isentinel({
+			name: "test/scoped-roblox",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			pnpm: false,
+			roblox: { files: ["src/**"], filesTypeAware: ["src/**"] },
+			spellCheck: false,
+		});
+
+		expect(serializeConfigs([...configs])).toMatchSnapshot();
+	});
+
 	it("should enable non-roblox unicorn rules for package configs", async () => {
 		expect.hasAssertions();
 
@@ -112,6 +128,24 @@ describe("config snapshots", () => {
 		const baseUnicorn = findUnicornRules(configs);
 
 		expect(baseUnicorn).not.toHaveProperty("unicorn/no-accidental-bitwise-operator");
+
+		// `checkThenables` is roblox-only, so the complement turns it back off.
+		const baseTypeAware = configs.find(
+			(config) => config.name === "isentinel/typescript/rules-type-aware",
+		);
+		const complementTypeAware = configs.find(
+			(config) => config.name === "isentinel/typescript/rules-type-aware/complement",
+		);
+
+		expect(baseTypeAware?.rules?.["ts/no-floating-promises"]).toStrictEqual([
+			"error",
+			{ checkThenables: true, ignoreVoid: true },
+		]);
+		expect(complementTypeAware?.ignores).toContain("src/**");
+		expect(complementTypeAware?.rules?.["ts/no-floating-promises"]).toStrictEqual([
+			"error",
+			{ checkThenables: false, ignoreVoid: true },
+		]);
 	});
 
 	it("should not add node rules to the default roblox config", async () => {

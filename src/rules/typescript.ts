@@ -1,4 +1,4 @@
-import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 /**
  * TypeScript rules shared between the ESLint and oxlint factories.
@@ -102,9 +102,12 @@ export function typescriptRules({
  * In hybrid mode these are executed by oxlint-tsgolint (`oxlint
  * --type-aware`).
  *
+ * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function typescriptTypeAwareRules(): TypedFlatConfigItem["rules"] {
+export function typescriptTypeAwareRules({
+	roblox = true,
+}: OptionsHasRoblox = {}): TypedFlatConfigItem["rules"] {
 	return {
 		"dot-notation": "off",
 		"no-implied-eval": "off",
@@ -123,6 +126,7 @@ export function typescriptTypeAwareRules(): TypedFlatConfigItem["rules"] {
 		"ts/no-floating-promises": [
 			"error",
 			{
+				checkThenables: roblox,
 				ignoreVoid: true,
 			},
 		],
@@ -212,7 +216,6 @@ export function typescriptRecommendedOverrides(): TypedFlatConfigItem["rules"] {
 		"no-with": "off",
 		"prefer-const": "error",
 		"prefer-rest-params": "error",
-
 		"prefer-spread": "error",
 	};
 }
