@@ -30,7 +30,7 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	 * object are resolved against. Defaults to the location ESLint derives the
 	 * config from. Added in ESLint 9.30.
 	 *
-	 * @see [basePath](https://eslint.org/docs/latest/use/configure/configuration-files#specifying-basepath)
+	 * @see {@link https://eslint.org/docs/latest/use/configure/configuration-files#specifying-basepath|basePath}
 	 */
 	basePath?: string;
 
@@ -39,7 +39,7 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	 * objects. When `files` is specified, these plugins are only available to
 	 * the matching files.
 	 *
-	 * @see [Using plugins in your configuration](https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration)
+	 * @see {@link https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration|Using plugins in your configuration}
 	 */
 	plugins?: Record<string, any>;
 

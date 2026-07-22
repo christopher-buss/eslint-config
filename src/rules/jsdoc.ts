@@ -92,6 +92,7 @@ export function jsdocRules({
 					"jsdoc/no-blank-block-descriptions": "warn",
 					"jsdoc/no-blank-blocks": "warn",
 					"jsdoc/no-multi-asterisks": "warn",
+					"jsdoc/normalize-see-links": "warn",
 					"jsdoc/require-asterisk-prefix": "warn",
 					"jsdoc/require-hyphen-before-param-description": "warn",
 				}
