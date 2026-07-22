@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "./constants.ts";
+import type { RunContext } from "./context.ts";
 import { readFileIfPresent, statePath, swapState } from "./state.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
 
@@ -45,12 +46,11 @@ export interface PackageJsonBustOutcome {
  * variant to run absorb the dependency bump on behalf of all of them, leaving
  * every cache it did not delete permanently stale with respect to that bump.
  *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
+ * @param run - The run context.
  * @returns The absolute path to the stored-hash file.
  */
-export function packageHashStatePath(cwd: string, key: string): string {
-	return statePath(cwd, "package-json-hash", key);
+export function packageHashStatePath(run: RunContext): string {
+	return statePath(run.cwd, "package-json-hash", run.key);
 }
 
 /**
@@ -95,17 +95,17 @@ export function computePackageJsonHash(cwd: string): string | undefined {
  * too: each variant observes the bump independently on its own first run after
  * it (see {@link packageHashStatePath}).
  *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
+ * @param run - The run context.
  * @returns The bust outcome.
  */
-export function applyPackageJsonBust(cwd: string, key: string): PackageJsonBustOutcome {
+export function applyPackageJsonBust(run: RunContext): PackageJsonBustOutcome {
+	const { key, cwd } = run;
 	const hash = computePackageJsonHash(cwd);
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}
 
-	const swap = swapState(packageHashStatePath(cwd, key), hash);
+	const swap = swapState(packageHashStatePath(run), hash);
 	if (swap !== "changed") {
 		return { busted: false, firstRun: swap === "first" };
 	}

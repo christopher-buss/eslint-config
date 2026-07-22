@@ -5,14 +5,11 @@ import { computeAffectedFiles } from "./affected.ts";
 import type { DirtyCache } from "./cache.ts";
 import { normalizePath } from "./cache.ts";
 import { resolveAffectedBustThreshold } from "./constants.ts";
+import type { RunContext } from "./context.ts";
 import type { TypeAwareMode } from "./types.ts";
 
 /** Inputs to one type-aware invalidation pass. */
 export interface InvalidationRequest {
-	/**
-	 * The config-variant key from `resolveCacheKey`; keys the builder state.
-	 */
-	key: string;
 	/** Normalised paths already dirty by mtime/checksum. */
 	alreadyDirty: ReadonlySet<string>;
 	/**
@@ -24,10 +21,6 @@ export interface InvalidationRequest {
 	cache: DirtyCache | undefined;
 	/** Absolute path to the mode's ESLint cache file. */
 	cacheLocation: string;
-	/** The consumer project root. */
-	cwd: string;
-	/** Environment variables (for the bust-threshold override). */
-	environment: NodeJS.ProcessEnv;
 	/** The active ESLint type-aware mode (never `"off"`). */
 	mode: TypeAwareMode | undefined;
 	/** The lint-target files for this run. */
@@ -62,20 +55,15 @@ export interface InvalidationOutcome {
  *
  * Never throws: a skipped/failed builder yields a no-op outcome.
  *
+ * @param run - The run context.
  * @param request - The invalidation inputs.
  * @returns The invalidation outcome.
  */
-export function applyTypeAwareInvalidation({
-	key,
-	alreadyDirty,
-	cache,
-	cacheLocation,
-	cwd,
-	environment,
-	mode,
-	targetFiles,
-}: InvalidationRequest): InvalidationOutcome {
-	const result = computeAffectedFiles(cwd, mode, key);
+export function applyTypeAwareInvalidation(
+	run: RunContext,
+	{ alreadyDirty, cache, cacheLocation, mode, targetFiles }: InvalidationRequest,
+): InvalidationOutcome {
+	const result = computeAffectedFiles(run, mode);
 	if (result === undefined) {
 		return { busted: false, firstRun: false, invalidated: [], skipped: true };
 	}
@@ -100,7 +88,7 @@ export function applyTypeAwareInvalidation({
 		}
 	}
 
-	const threshold = resolveAffectedBustThreshold(environment);
+	const threshold = resolveAffectedBustThreshold(run.environment);
 	if (affectedTargets.length > threshold) {
 		fs.rmSync(cacheLocation, { force: true });
 		return { busted: true, firstRun: false, invalidated: [], skipped: false };

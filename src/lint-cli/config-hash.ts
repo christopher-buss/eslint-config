@@ -5,6 +5,7 @@ import path from "node:path";
 import type * as TypeScript from "typescript";
 
 import { ALL_CACHE_FILES, cacheFileFor } from "./constants.ts";
+import type { RunContext } from "./context.ts";
 import { readFileIfPresent, statePath, swapState } from "./state.ts";
 import { loadTypescript } from "./typescript.ts";
 
@@ -48,12 +49,11 @@ interface ClosureResolver {
  * `packageHashStatePath`: the stored hash is consumed once, so a shared file
  * would let the first variant to run absorb the drift for all of them.
  *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
+ * @param run - The run context.
  * @returns The absolute path to the stored-hash file.
  */
-export function configHashStatePath(cwd: string, key: string): string {
-	return statePath(cwd, "config-hash", key);
+export function configHashStatePath(run: RunContext): string {
+	return statePath(run.cwd, "config-hash", run.key);
 }
 
 /**
@@ -117,28 +117,26 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
  * "unavailable" (no config entry point, or no resolvable TypeScript) rather
  * than "the caller did not supply one".
  *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
+ * @param run - The run context.
  * @param hash - The config hash from {@link computeConfigHash}, or `undefined`
  *   when it could not be computed (the check is then a no-op).
  * @returns The drift outcome.
  */
 export function applyConfigDriftBust(
-	cwd: string,
-	key: string,
+	run: RunContext,
 	hash: string | undefined,
 ): ConfigDriftOutcome {
 	if (hash === undefined) {
 		return { busted: false, firstRun: false };
 	}
 
-	const swap = swapState(configHashStatePath(cwd, key), hash);
+	const swap = swapState(configHashStatePath(run), hash);
 	if (swap !== "changed") {
 		return { busted: false, firstRun: swap === "first" };
 	}
 
 	for (const base of ALL_CACHE_FILES) {
-		fs.rmSync(path.resolve(cwd, cacheFileFor(base, key)), { force: true });
+		fs.rmSync(path.resolve(run.cwd, cacheFileFor(base, run.key)), { force: true });
 	}
 
 	return { busted: true, firstRun: false };

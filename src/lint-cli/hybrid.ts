@@ -5,6 +5,7 @@ import process from "node:process";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../hybrid-status.ts";
 import type { HybridStatus } from "../hybrid-status.ts";
 import { maxMtimeMs } from "./cache.ts";
+import type { RunContext } from "./context.ts";
 import type { RepoFiles } from "./files.ts";
 import { resolveLocalBin } from "./resolve.ts";
 
@@ -36,14 +37,8 @@ export type HybridProbe = (cwd: string, target: string) => HybridStatus | undefi
 
 /** Inputs to {@link resolveOxlintRun}, assembled once in the plan phase. */
 export interface OxlintRunInput {
-	/** The project root. */
-	cwd: string;
 	/** The collected repo file lists (config-file subset + a probe target). */
 	files: RepoFiles;
-	/**
-	 * Whether the plan may mutate (false for `--print`: never probe or write).
-	 */
-	mutate: boolean;
 	/** Whether ESLint would run (false for `--oxlint`). */
 	runEslint: boolean;
 	/** Whether oxlint would run (false for `--eslint`). */
@@ -96,11 +91,13 @@ export function parseHybridPrintConfig(stdout: string): HybridStatus | undefined
  * actively probed (unless `mutate` is false, e.g. `--print`, which never probes
  * and assumes hybrid). A probe failure fails open: both engines run.
  *
+ * @param run - The run context.
  * @param input - The assembled plan-phase inputs.
  * @param probe - The config prober (injected in tests).
  * @returns The oxlint run decision.
  */
 export function resolveOxlintRun(
+	run: RunContext,
 	input: OxlintRunInput,
 	probe: HybridProbe = probeHybridConfig,
 ): OxlintRunDecision {
@@ -111,7 +108,7 @@ export function resolveOxlintRun(
 		return { reason: undefined, run: input.runOxlint };
 	}
 
-	const status = resolveHybridStatus(input, probe);
+	const status = resolveHybridStatus(run, input, probe);
 	if (status === undefined) {
 		// Could not determine the status (probe failed): fail open.
 		return { reason: HYBRID_UNKNOWN_WARNING, run: true };
@@ -162,12 +159,14 @@ function readFreshHybridStatus(
  * Resolve the hybrid status, trusting a fresh cache file and otherwise probing.
  * Returns `undefined` only when a probe was attempted and failed.
  *
+ * @param run - The run context.
  * @param input - The assembled plan-phase inputs.
  * @param probe - The config prober.
  * @returns The hybrid status, or `undefined` when a probe failed.
  */
 function resolveHybridStatus(
-	{ cwd, files, mutate }: OxlintRunInput,
+	{ cwd, mutate }: RunContext,
+	{ files }: OxlintRunInput,
 	probe: HybridProbe,
 ): HybridStatus | undefined {
 	const configMtime = maxMtimeMs(files.configFiles);

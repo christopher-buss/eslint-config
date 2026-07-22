@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
-import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
 import { normalizePath, openCache } from "../src/lint-cli/cache.ts";
 import {
 	applyConfigDriftBust,
@@ -16,11 +15,13 @@ import {
 	configHashStatePath,
 } from "../src/lint-cli/config-hash.ts";
 import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
+import { resolveCacheKey } from "../src/lint-cli/context.ts";
+import type { RunContext } from "../src/lint-cli/context.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { plan } from "../src/lint-cli/run.ts";
 import type { CommandPlan, PassPlan } from "../src/lint-cli/run.ts";
-import { composeInDirectory } from "./lint-cli-helpers.ts";
+import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 /**
@@ -150,6 +151,19 @@ function composeInFixture(directory: string, argv: Array<string> = []): CommandP
 	return composeInDirectory(argv, directory, { mutate: true });
 }
 
+/**
+ * Describe a mutating run against a fixture, for the variant the environment
+ * selects. The fixtures here drive the modules directly rather than through
+ * `plan`, so each needs the same run context the planner would have built.
+ *
+ * @param directory - The fixture project root.
+ * @param environment - The environment identifying the config variant.
+ * @returns The run context.
+ */
+function runFor(directory: string, environment: NodeJS.ProcessEnv = {}): RunContext {
+	return runContext(directory, { environment, mutate: true });
+}
+
 function seedCache(cacheFile: string, files: Array<string>): void {
 	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
 	for (const file of files) {
@@ -181,15 +195,12 @@ function invalidate(
 	environment: NodeJS.ProcessEnv = {},
 ): ReturnType<typeof applyTypeAwareInvalidation> {
 	const cacheLocation = path.join(cwd, ".eslintcache");
-	return applyTypeAwareInvalidation({
-		key: TEST_KEY,
+	return applyTypeAwareInvalidation(runFor(cwd, environment), {
 		alreadyDirty,
 		// The runner always hands over the handle it opened for the dirty
 		// query; `undefined` when the cache file does not exist yet.
 		cache: openCache(cacheLocation, false),
 		cacheLocation,
-		cwd,
-		environment,
 		mode: undefined,
 		targetFiles,
 	});
@@ -207,12 +218,12 @@ describe("computeAffectedFiles", () => {
 				"tsconfig.json": TSCONFIG,
 			},
 			(directory) => {
-				const first = computeAffectedFiles(directory, undefined, TEST_KEY);
+				const first = computeAffectedFiles(runFor(directory), undefined);
 
 				expect(first?.firstRun).toBe(true);
 				expect(first?.affected.size).toBeGreaterThan(0);
 
-				const second = computeAffectedFiles(directory, undefined, TEST_KEY);
+				const second = computeAffectedFiles(runFor(directory), undefined);
 
 				expect(second?.firstRun).toBe(false);
 				expect(second?.affected.size).toBe(0);
@@ -224,7 +235,7 @@ describe("computeAffectedFiles", () => {
 		expect.hasAssertions();
 
 		withFixture({ "src/a.ts": "export const a = 1;\n" }, (directory) => {
-			expect(computeAffectedFiles(directory, undefined, TEST_KEY)).toBeUndefined();
+			expect(computeAffectedFiles(runFor(directory), undefined)).toBeUndefined();
 		});
 	});
 
@@ -232,7 +243,7 @@ describe("computeAffectedFiles", () => {
 		expect.hasAssertions();
 
 		withFixture(SOLUTION_FIXTURE, (directory) => {
-			const first = computeAffectedFiles(directory, undefined, TEST_KEY);
+			const first = computeAffectedFiles(runFor(directory), undefined);
 
 			expect(first?.firstRun).toBe(true);
 			// The entry tsconfig owns no files; both of these come from a
@@ -247,7 +258,7 @@ describe("computeAffectedFiles", () => {
 		expect.hasAssertions();
 
 		withFixture(SOLUTION_FIXTURE, (directory) => {
-			computeAffectedFiles(directory, "only", TEST_KEY);
+			computeAffectedFiles(runFor(directory), "only");
 
 			// One per file-owning project (lib + app); the file-less entry
 			// tsconfig contributes no state of its own.
@@ -264,7 +275,7 @@ describe("computeAffectedFiles", () => {
 			// Warm every project, then drop one project's state so it looks newly
 			// added while its siblings stay warm — the shape of a solution that
 			// gains a reference.
-			computeAffectedFiles(directory, "only", TEST_KEY);
+			computeAffectedFiles(runFor(directory), "only");
 			const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
 			const prefix = `tsbuildinfo-typeaware-${TEST_KEY}`;
 			const stateFiles = builderStateFiles(directory, prefix);
@@ -274,7 +285,7 @@ describe("computeAffectedFiles", () => {
 			const [firstState = ""] = stateFiles;
 			fs.rmSync(path.join(stateDirectory, firstState));
 
-			const result = computeAffectedFiles(directory, "only", TEST_KEY);
+			const result = computeAffectedFiles(runFor(directory), "only");
 
 			// The run is first-run only when NO project had prior state.
 			// Reporting it here (as an OR-fold across projects would) would make
@@ -303,7 +314,7 @@ describe("applyTypeAwareInvalidation", () => {
 				const fileA = path.join(directory, "src/a.ts");
 				const fileB = path.join(directory, "src/b.ts");
 				const fileC = path.join(directory, "src/c.ts");
-				computeAffectedFiles(directory, undefined, TEST_KEY);
+				computeAffectedFiles(runFor(directory), undefined);
 				seedCache(cacheFile, [fileA, fileB, fileC]);
 				fs.writeFileSync(fileA, "export function a(): number { return 42; }\n");
 				touch(fileA);
@@ -336,7 +347,7 @@ describe("applyTypeAwareInvalidation", () => {
 				const fileA = path.join(directory, "src/a.ts");
 				const fileB = path.join(directory, "src/b.ts");
 				const fileC = path.join(directory, "src/c.ts");
-				computeAffectedFiles(directory, undefined, TEST_KEY);
+				computeAffectedFiles(runFor(directory), undefined);
 				seedCache(cacheFile, [fileA, fileB, fileC]);
 				fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
 				touch(fileA);
@@ -360,7 +371,7 @@ describe("applyTypeAwareInvalidation", () => {
 			const cacheFile = path.join(directory, ".eslintcache");
 			const fileA = path.join(directory, "src/a.ts");
 			const fileB = path.join(directory, "app/b.ts");
-			computeAffectedFiles(directory, undefined, TEST_KEY);
+			computeAffectedFiles(runFor(directory), undefined);
 			seedCache(cacheFile, [fileA, fileB]);
 			fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
 			touch(fileA);
@@ -391,7 +402,7 @@ describe("applyTypeAwareInvalidation", () => {
 				const fileA = path.join(directory, "src/a.ts");
 				const fileB = path.join(directory, "src/b.ts");
 				const fileGlobals = path.join(directory, "src/globals.ts");
-				computeAffectedFiles(directory, undefined, TEST_KEY);
+				computeAffectedFiles(runFor(directory), undefined);
 				seedCache(cacheFile, [fileA, fileB, fileGlobals]);
 				fs.writeFileSync(
 					fileGlobals,
@@ -427,7 +438,7 @@ describe("applyTypeAwareInvalidation", () => {
 				const cacheFile = path.join(directory, ".eslintcache");
 				const fileA = path.join(directory, "src/a.ts");
 				const fileB = path.join(directory, "src/b.ts");
-				computeAffectedFiles(directory, undefined, TEST_KEY);
+				computeAffectedFiles(runFor(directory), undefined);
 				seedCache(cacheFile, [fileA, fileB]);
 				fs.writeFileSync(fileA, "export function a() { return 'string now'; }\n");
 				touch(fileA);
@@ -548,7 +559,7 @@ describe("typed-pass skip", () => {
 				const fileA = path.join(directory, "src/a.ts");
 				// Establish builder state and seed the cache so a.ts is neither
 				// mtime-dirty nor builder-affected on the next run.
-				computeAffectedFiles(directory, "only", TEST_KEY);
+				computeAffectedFiles(runFor(directory), "only");
 				seedCache(cacheFile, [fileA]);
 
 				const { commands, notice } = composeInFixture(directory);
@@ -582,7 +593,7 @@ describe("typed-pass skip", () => {
 				// target of the git listing but ESLint never lints it, so it
 				// has no cache entry and reads as dirty on every run — the
 				// phantom-dirty file that used to make the skip unreachable.
-				computeAffectedFiles(directory, "only", TEST_KEY);
+				computeAffectedFiles(runFor(directory), "only");
 				seedCache(cacheFile, [
 					path.join(directory, "src/a.ts"),
 					path.join(directory, "eslint.config.mjs"),
@@ -607,7 +618,7 @@ describe("typed-pass skip", () => {
 			(directory) => {
 				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(directory, "only", TEST_KEY);
+				computeAffectedFiles(runFor(directory), "only");
 				seedCache(cacheFile, [fileA]);
 
 				// "src" is in-cwd and clean, but "../elsewhere" escapes cwd, so
@@ -632,7 +643,7 @@ describe("typed-pass skip", () => {
 			(directory) => {
 				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(directory, "only", TEST_KEY);
+				computeAffectedFiles(runFor(directory), "only");
 				seedCache(cacheFile, [fileA]);
 
 				const { commands, notice } = composeInFixture(directory, ["--type-aware=only"]);
@@ -661,7 +672,7 @@ describe("plan mutation", () => {
 				seedCache(cacheFile, [fileA]);
 
 				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([], {}), directory, {}, false);
+					return plan(parseArguments([], {}), runContext(directory));
 				});
 
 				expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
@@ -673,7 +684,9 @@ describe("plan mutation", () => {
 				expect(fs.existsSync(cacheFile)).toBe(true);
 
 				// The mutating plan, by contrast, runs the builder.
-				withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, true));
+				withoutGitEnvironment(() => {
+					return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+				});
 
 				expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
 			},
@@ -691,11 +704,11 @@ describe("plan mutation", () => {
 			(directory) => {
 				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(directory, "only", TEST_KEY);
+				computeAffectedFiles(runFor(directory), "only");
 				seedCache(cacheFile, [fileA]);
 
 				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([], {}), directory, {}, true);
+					return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
 				});
 				const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
 
@@ -718,7 +731,7 @@ describe("per-variant cache isolation", () => {
 	function seedVariant(directory: string, environment: NodeJS.ProcessEnv): string {
 		const key = resolveCacheKey(environment);
 		const cacheFile = path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, key));
-		computeAffectedFiles(directory, "only", key);
+		computeAffectedFiles(runFor(directory, environment), "only");
 		seedCache(cacheFile, [path.join(directory, "src/a.ts")]);
 		return cacheFile;
 	}
@@ -731,9 +744,15 @@ describe("per-variant cache isolation", () => {
 			const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
 			withoutGitEnvironment(() => {
-				plan(parseArguments([], {}), directory, AGENT_ENVIRONMENT, true);
-				plan(parseArguments([], {}), directory, {}, true);
-				plan(parseArguments([], {}), directory, AGENT_ENVIRONMENT, true);
+				plan(
+					parseArguments([], {}),
+					runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+				);
+				plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+				plan(
+					parseArguments([], {}),
+					runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+				);
 			});
 
 			// Before the split, each run rewrote the single cache with its own
@@ -755,7 +774,9 @@ describe("per-variant cache isolation", () => {
 			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 			fs.utimesSync(humanCache, configSeconds + 60, configSeconds + 60);
 
-			withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, true));
+			withoutGitEnvironment(() => {
+				return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+			});
 
 			expect(fs.existsSync(agentCache)).toBe(false);
 			expect(fs.existsSync(humanCache)).toBe(true);
@@ -770,7 +791,7 @@ describe("per-variant cache isolation", () => {
 			const configSeconds = Date.now() / 1000 + 60;
 			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 
-			withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, false));
+			withoutGitEnvironment(() => plan(parseArguments([], {}), runContext(directory)));
 
 			expect(fs.existsSync(agentCache)).toBe(true);
 		});
@@ -780,8 +801,8 @@ describe("per-variant cache isolation", () => {
 		expect.hasAssertions();
 
 		withFixture(VARIANT_FIXTURE, (directory) => {
-			computeAffectedFiles(directory, "only", TEST_KEY);
-			computeAffectedFiles(directory, "only", AGENT_KEY);
+			computeAffectedFiles(runFor(directory), "only");
+			computeAffectedFiles(runFor(directory, AGENT_ENVIRONMENT), "only");
 
 			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(
 				1,
@@ -808,7 +829,7 @@ describe("resolveJsonModule invalidation", () => {
 				const cacheFile = path.join(directory, ".eslintcache");
 				const fileB = path.join(directory, "src/b.ts");
 				const fileData = path.join(directory, "src/data.json");
-				computeAffectedFiles(directory, undefined, TEST_KEY);
+				computeAffectedFiles(runFor(directory), undefined);
 				seedCache(cacheFile, [fileB]);
 				fs.writeFileSync(fileData, '{ "value": "now a string" }\n');
 				touch(fileData);
@@ -884,7 +905,7 @@ describe("applyConfigDriftBust", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
 			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
@@ -895,11 +916,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			applyConfigDriftBust(runFor(directory), configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			editRules(directory);
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
 
 			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
 			// Unlike the package.json bust, the fast (syntactic) cache is dropped
@@ -912,11 +933,11 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			applyConfigDriftBust(runFor(directory), configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			touch(path.join(directory, "eslint-rules.ts"));
 
-			const outcome = applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
+			const outcome = applyConfigDriftBust(runFor(directory), configHashFor(directory));
 
 			// Content-addressed, so an mtime bump with identical content is a
 			// no-op.
@@ -929,23 +950,26 @@ describe("applyConfigDriftBust", () => {
 		expect.hasAssertions();
 
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory));
-			applyConfigDriftBust(directory, AGENT_KEY, configHashFor(directory));
+			applyConfigDriftBust(runFor(directory), configHashFor(directory));
+			applyConfigDriftBust(runFor(directory, AGENT_ENVIRONMENT), configHashFor(directory));
 			seedAllCaches(directory, TEST_KEY);
 			seedAllCaches(directory, AGENT_KEY);
 			editRules(directory);
 
-			expect(
-				applyConfigDriftBust(directory, TEST_KEY, configHashFor(directory)),
-			).toStrictEqual({
-				busted: true,
-				firstRun: false,
-			});
+			expect(applyConfigDriftBust(runFor(directory), configHashFor(directory))).toStrictEqual(
+				{
+					busted: true,
+					firstRun: false,
+				},
+			);
 			// The no-agent run must not consume the drift on the agent's behalf.
 			expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
 
 			expect(
-				applyConfigDriftBust(directory, AGENT_KEY, configHashFor(directory)),
+				applyConfigDriftBust(
+					runFor(directory, AGENT_ENVIRONMENT),
+					configHashFor(directory),
+				),
 			).toStrictEqual({
 				busted: true,
 				firstRun: false,
@@ -957,8 +981,8 @@ describe("applyConfigDriftBust", () => {
 	it("stores each variant's hash under its own state file", () => {
 		expect.hasAssertions();
 
-		expect(configHashStatePath("/project", "aaaa1111")).not.toBe(
-			configHashStatePath("/project", "bbbb2222"),
+		expect(configHashStatePath(runFor("/project"))).not.toBe(
+			configHashStatePath(runFor("/project", AGENT_ENVIRONMENT)),
 		);
 	});
 
@@ -969,8 +993,7 @@ describe("applyConfigDriftBust", () => {
 			seedAllCaches(directory, TEST_KEY);
 
 			const outcome = applyConfigDriftBust(
-				directory,
-				TEST_KEY,
+				runFor(directory),
 				computeConfigHash(directory, []),
 			);
 
@@ -989,7 +1012,7 @@ describe("applyConfigDriftBust", () => {
 
 			expect(computeConfigHash(directory, roots)).toBeUndefined();
 			expect(
-				applyConfigDriftBust(directory, TEST_KEY, computeConfigHash(directory, roots)),
+				applyConfigDriftBust(runFor(directory), computeConfigHash(directory, roots)),
 			).toStrictEqual({
 				busted: false,
 				firstRun: false,
@@ -1092,9 +1115,11 @@ describe("config drift sizing", () => {
 			const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 			const fileA = path.join(directory, "src/a.ts");
 			const args = parseArguments(["src"], {});
-			computeAffectedFiles(directory, "only", TEST_KEY);
+			computeAffectedFiles(runFor(directory), "only");
 			seedCache(cacheFile, [fileA]);
-			const warm = withoutGitEnvironment(() => plan(args, directory, {}, true));
+			const warm = withoutGitEnvironment(() => {
+				return plan(args, runContext(directory, { mutate: true }));
+			});
 
 			expect(typedPass(warm)?.shouldRun).toBe(false);
 
@@ -1102,7 +1127,9 @@ describe("config drift sizing", () => {
 			// hashOfConfig) shifts, so the drift bust must delete the caches and
 			// the typed pass must run at full size.
 			editRules(directory);
-			const drifted = withoutGitEnvironment(() => plan(args, directory, {}, true));
+			const drifted = withoutGitEnvironment(() => {
+				return plan(args, runContext(directory, { mutate: true }));
+			});
 
 			expect(typedPass(drifted)?.shouldRun).toBe(true);
 		});

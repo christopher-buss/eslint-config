@@ -6,8 +6,6 @@ import { availableParallelism } from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-import { isCi } from "../utils.ts";
-import { resolveCacheKey } from "./cache-key.ts";
 import type { DirtyCache } from "./cache.ts";
 import { isCacheStale, maxMtimeMs, normalizePath, openCache, sweepStaleCaches } from "./cache.ts";
 import {
@@ -19,6 +17,8 @@ import {
 import { computeWorkerCount, resolveWorkerLimits } from "./concurrency.ts";
 import { applyConfigDriftBust, computeConfigHash } from "./config-hash.ts";
 import { cacheFileFor } from "./constants.ts";
+import { resolveRunContext } from "./context.ts";
+import type { RunContext } from "./context.ts";
 import { collectRepoFiles, oxlintTargets, withoutIgnored } from "./files.ts";
 import type { RepoFiles } from "./files.ts";
 import { resolveOxlintRun } from "./hybrid.ts";
@@ -110,24 +110,20 @@ export interface CommandPlan {
 	notice: string | undefined;
 }
 
-/** Shared inputs threaded into {@link sizePass}. */
+/** Shared inputs threaded into {@link sizePass}, alongside the run context. */
 interface SizePassContext {
-	/** The config-variant key for this run. */
-	key: string;
 	/**
 	 * The cache files the up-front stale sweep deleted (absolute paths). A pass
 	 * whose cache is in here counts every file as dirty and skips the builder —
 	 * everything re-lints regardless.
 	 */
 	clearedCaches: ReadonlySet<string>;
-	cwd: string;
-	environment: NodeJS.ProcessEnv;
 	files: RepoFiles;
 	limits: ReturnType<typeof resolveWorkerLimits>;
 	multiPass: boolean;
-	mutate: boolean;
 	newestBustMtime: number | undefined;
 	options: LintCliOptions;
+	run: RunContext;
 }
 
 /**
@@ -139,19 +135,11 @@ interface SizePassContext {
  * on-disk caches. The returned value is plain data.
  *
  * @param options - The parsed CLI options.
- * @param cwd - The working directory.
- * @param environment - The process environment.
- * @param mutate - Whether the plan may mutate (false for `--print`).
+ * @param run - The run context (cwd, variant key, environment, mutate).
  * @returns The run plan.
  */
-export function plan(
-	options: LintCliOptions,
-	cwd: string,
-	environment: NodeJS.ProcessEnv,
-	mutate: boolean,
-): RunPlan {
-	const ci = isCi(environment);
-	const key = resolveCacheKey(environment);
+export function plan(options: LintCliOptions, run: RunContext): RunPlan {
+	const { ci, cwd, environment, mutate } = run;
 	const runEslint = !options.oxlint;
 	const oxlintTypeAware = resolveOxlintTypeAware(options);
 	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
@@ -185,7 +173,7 @@ export function plan(
 	// ESLint config is hybrid (`oxlint: true`); otherwise the two engines would
 	// double-lint every mapped rule. Decided here (before any child spawns) so
 	// `--fix` never runs oxlint's fixes against a non-hybrid config.
-	const oxlintDecision = resolveOxlintRun({ cwd, files, mutate, runEslint, runOxlint });
+	const oxlintDecision = resolveOxlintRun(run, { files, runEslint, runOxlint });
 
 	// Evaluate every bust up front, before sizing any pass, then clear once. This
 	// ordering is load-bearing: a per-pass staleness check that cleared caches
@@ -216,11 +204,11 @@ export function plan(
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyConfigDriftBust(cwd, key, configHash);
+		applyConfigDriftBust(run, configHash);
 	}
 
 	if (canMutateCaches && hasTypeAwarePass) {
-		applyPackageJsonBust(cwd, key);
+		applyPackageJsonBust(run);
 	}
 
 	const clearedCaches = new Set(canMutateCaches ? sweepStaleCaches(cwd, newestBustMtime) : []);
@@ -229,22 +217,19 @@ export function plan(
 	// they never enter a cache, so they would otherwise read as dirty forever
 	// and hold the typed pass's dirty count above zero (see
 	// `resolveIgnoredFiles`).
-	const ignored = resolveIgnoredFiles({ key, configHash, cwd, mutate, targets: files.lintable });
+	const ignored = resolveIgnoredFiles(run, configHash, files.lintable);
 	const sizingFiles = withoutIgnored(files, ignored);
 
 	const multiPass = descriptors.length > 1;
 	const passes = descriptors.map((descriptor) => {
 		return sizePass(descriptor, {
-			key,
 			clearedCaches,
-			cwd,
-			environment,
 			files: sizingFiles,
 			limits,
 			multiPass,
-			mutate,
 			newestBustMtime,
 			options,
+			run,
 		});
 	});
 
@@ -372,7 +357,8 @@ export async function runLint(
 ): Promise<number> {
 	const options = parseArguments(argv, environment);
 
-	const { commands, notice } = compose(plan(options, cwd, environment, !options.print), options);
+	const run = resolveRunContext(cwd, environment, !options.print);
+	const { commands, notice } = compose(plan(options, run), options);
 
 	if (options.print) {
 		for (const command of commands) {
@@ -428,7 +414,7 @@ function mutatingDirtyCount(
 	descriptor: PassDescriptor,
 	cacheLocation: string,
 	targetFiles: Array<string>,
-	{ key, clearedCaches, cwd, environment }: SizePassContext,
+	{ clearedCaches, run }: SizePassContext,
 ): number {
 	if (clearedCaches.has(cacheLocation)) {
 		// The up-front sweep already deleted this pass's cache (see `plan`), so
@@ -437,19 +423,16 @@ function mutatingDirtyCount(
 		return targetFiles.length;
 	}
 
-	const cache: DirtyCache | undefined = openCache(cacheLocation, isCi(environment));
+	const cache: DirtyCache | undefined = openCache(cacheLocation, run.ci);
 	const dirty = new Set(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);
 
 	if (descriptor.invalidation !== "none") {
-		const outcome = applyTypeAwareInvalidation({
-			key,
+		const outcome = applyTypeAwareInvalidation(run, {
 			alreadyDirty: dirty,
 			cache,
 			cacheLocation,
-			cwd,
-			environment,
 			mode: descriptor.invalidation === "only" ? "only" : undefined,
 			targetFiles,
 		});
@@ -477,13 +460,13 @@ function mutatingDirtyCount(
 function readOnlyDirtyCount(
 	cacheLocation: string,
 	targetFiles: Array<string>,
-	{ environment, newestBustMtime }: SizePassContext,
+	{ newestBustMtime, run }: SizePassContext,
 ): number {
 	if (isCacheStale(cacheLocation, newestBustMtime)) {
 		return targetFiles.length;
 	}
 
-	const cache = openCache(cacheLocation, isCi(environment));
+	const cache = openCache(cacheLocation, run.ci);
 	return (cache?.getUpdatedFiles(targetFiles) ?? targetFiles).length;
 }
 
@@ -508,8 +491,8 @@ function passDirtyCount(
 		return targetFiles.length;
 	}
 
-	const cacheLocation = path.resolve(context.cwd, cacheFile);
-	return context.mutate
+	const cacheLocation = path.resolve(context.run.cwd, cacheFile);
+	return context.run.mutate
 		? mutatingDirtyCount(descriptor, cacheLocation, targetFiles, context)
 		: readOnlyDirtyCount(cacheLocation, targetFiles, context);
 }
@@ -524,10 +507,10 @@ function passDirtyCount(
  * @returns The planned pass.
  */
 function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPlan {
-	const cacheFile = cacheFileFor(descriptor.cacheFileBase, context.key);
+	const cacheFile = cacheFileFor(descriptor.cacheFileBase, context.run.key);
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
 	const conservative = context.files.targetsOutsideCwd;
-	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.environment);
+	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.run.environment);
 	const maxWorkers = maxWorkersFor(descriptor, context.limits);
 
 	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
@@ -549,7 +532,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	// misses (dynamic `import()`, non-file config inputs): touch the config, or
 	// run with `--no-cache`.
 	const canSkip =
-		context.mutate && context.multiPass && descriptor === TYPED_PASS && !conservative;
+		context.run.mutate && context.multiPass && descriptor === TYPED_PASS && !conservative;
 	if (canSkip && dirtyCount === 0) {
 		return {
 			cacheFile,

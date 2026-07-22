@@ -6,6 +6,7 @@ import path from "node:path";
 import process from "node:process";
 
 import { normalizePath } from "./cache.ts";
+import type { RunContext } from "./context.ts";
 import { classifyIgnored } from "./ignored-predicate.ts";
 import type { IgnoredPayload } from "./ignored-predicate.ts";
 import { resolveIgnoredHelper } from "./resolve.ts";
@@ -37,33 +38,15 @@ interface IgnoredState {
 /** Reused for every miss, so callers never allocate on the no-op path. */
 const EMPTY: ReadonlySet<string> = new Set<string>();
 
-/** Inputs to {@link resolveIgnoredFiles}. */
-export interface IgnoredFilesContext {
-	/** The config-variant key from `resolveCacheKey`. */
-	key: string;
-	/** The config hash for this run, or `undefined` when unavailable. */
-	configHash: string | undefined;
-	/** The consumer project root. */
-	cwd: string;
-	/**
-	 * Whether the run may spawn the helper and write state (`--print` may
-	 * not).
-	 */
-	mutate: boolean;
-	/** Every lintable target, absolute (see `RepoFiles.lintable`). */
-	targets: Array<string>;
-}
-
 /**
  * Resolve the persisted ignore-set file for a config variant, keyed by the same
  * variant as the config hash it stores.
  *
- * @param cwd - The consumer project root.
- * @param key - The config-variant key from `resolveCacheKey`.
+ * @param run - The run context.
  * @returns The absolute path to the stored ignore-set file.
  */
-export function ignoredStatePath(cwd: string, key: string): string {
-	return statePath(cwd, "ignored", key);
+export function ignoredStatePath(run: RunContext): string {
+	return statePath(run.cwd, "ignored", run.key);
 }
 
 /**
@@ -103,21 +86,23 @@ export function ignoredStatePath(cwd: string, key: string): string {
  * keeps the old residual — targets absent from it read as not-ignored, which
  * over-counts dirty files rather than skipping work.
  *
- * @param context - The cwd, variant key, config hash, targets and mutate flag.
+ * @param run - The run context.
+ * @param configHash - The config hash for this run, or `undefined` when
+ *   unavailable (the memo is then unusable and no filtering happens).
+ * @param targets - Every lintable target, absolute (see `RepoFiles.lintable`).
  * @returns The ignored subset of `targets`, or an empty set when unavailable.
  */
-export function resolveIgnoredFiles({
-	key,
-	configHash,
-	cwd,
-	mutate,
-	targets,
-}: IgnoredFilesContext): ReadonlySet<string> {
+export function resolveIgnoredFiles(
+	run: RunContext,
+	configHash: string | undefined,
+	targets: Array<string>,
+): ReadonlySet<string> {
 	if (configHash === undefined || targets.length === 0) {
 		return EMPTY;
 	}
 
-	const stateFile = ignoredStatePath(cwd, key);
+	const { cwd, mutate } = run;
+	const stateFile = ignoredStatePath(run);
 	const stored = readState<IgnoredState>(stateFile);
 	const fresh = stored?.hash === configHash ? stored : undefined;
 

@@ -6,7 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import type * as TypeScript from "typescript";
 
-import { CACHE_KEY_LENGTH } from "./cache-key.ts";
+import { CACHE_KEY_LENGTH } from "./context.ts";
+import type { RunContext } from "./context.ts";
 import { toPosix } from "./paths.ts";
 import { stateDirectory, statePath } from "./state.ts";
 import type { TypeAwareMode } from "./types.ts";
@@ -69,15 +70,13 @@ const warned = new Set<string>();
  * `typescript` unresolvable, parse/build error) — callers then lint without
  * invalidation. Never throws.
  *
- * @param cwd - The consumer project root.
+ * @param run - The run context.
  * @param mode - The active ESLint type-aware mode.
- * @param key - The config-variant key from `resolveCacheKey`.
  * @returns The affected result, or `undefined` when skipped.
  */
 export function computeAffectedFiles(
-	cwd: string,
+	{ key, cwd }: RunContext,
 	mode: TypeAwareMode | undefined,
-	key: string,
 ): AffectedResult | undefined {
 	const ts = loadTypescript(cwd);
 	if (ts === undefined) {
