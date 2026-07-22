@@ -46,6 +46,7 @@ sonarjs
 stylua
 sxzz
 textnodes
+thenables
 tsdoc
 tsgolint
 typecheck

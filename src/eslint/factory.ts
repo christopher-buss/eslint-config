@@ -387,7 +387,9 @@ export async function isentinel(
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
+			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			componentExts: componentExtensions,
+			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
 		unicorn({

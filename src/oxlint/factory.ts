@@ -208,6 +208,7 @@ export function isentinel(
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
 			componentExts: componentExtensions,
+			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 			typeAware,
 		}),
@@ -239,10 +240,19 @@ export function isentinel(
 		);
 	}
 
-	// Re-apply the non-roblox JS and unicorn rules to the complement (files
+	// Re-apply the non-roblox JS, TS and unicorn rules to the complement (files
 	// outside the roblox scope), overriding the roblox-flavored base there.
 	if (needsComplementOverlay) {
 		configs.push(
+			oxlintTypescript({
+				...resolveSubOptions(options, "typescript"),
+				...getOverrides(options, "typescript"),
+				componentExts: componentExtensions,
+				excludeFiles: robloxScopedFiles,
+				roblox: false,
+				stylistic: stylisticOptions,
+				typeAware,
+			}),
 			oxlintJavascript({
 				...getOverrides(options, "javascript"),
 				excludeFiles: robloxScopedFiles,

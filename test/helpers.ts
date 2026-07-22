@@ -209,10 +209,14 @@ function serializeLanguageOptions(
 }
 
 /**
- * Serialize rules object to sorted array of rule names.
+ * Serialize rules object to sorted array of rule entries.
+ *
+ * Severity and options are kept so that changing either shows up in the
+ * snapshot: disabled rules are prefixed with "-", warnings are tagged
+ * `(warn)`, and any rule options follow as compact JSON.
  *
  * @param rules - The rules record from a config item.
- * @returns Sorted rule names, disabled rules prefixed with "-".
+ * @returns Sorted rule entries.
  */
 function serializeRules(rules: Record<string, unknown>): Array<string> {
 	const result: Array<string> = [];
@@ -222,9 +226,21 @@ function serializeRules(rules: Record<string, unknown>): Array<string> {
 			continue;
 		}
 
-		const severity: unknown = Array.isArray(ruleValue) ? ruleValue[0] : ruleValue;
+		const isArray = Array.isArray(ruleValue);
+		const severity: unknown = isArray ? ruleValue[0] : ruleValue;
 		const isOff = severity === "off" || severity === 0;
-		result.push(isOff ? `-${ruleName}` : ruleName);
+		const options = isArray ? (ruleValue as Array<unknown>).slice(1) : [];
+
+		let entry = isOff ? `-${ruleName}` : ruleName;
+		if (!isOff && (severity === "warn" || severity === 1)) {
+			entry += " (warn)";
+		}
+
+		if (options.length > 0) {
+			entry += ` ${JSON.stringify(options)}`;
+		}
+
+		result.push(entry);
 	}
 
 	result.sort();
