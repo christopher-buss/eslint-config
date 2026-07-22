@@ -2,10 +2,10 @@
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../hybrid-status.ts";
+import type { HybridStatus } from "../hybrid-status.ts";
 import { maxMtimeMs } from "./cache.ts";
 import type { RepoFiles } from "./files.ts";
-import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "./hybrid-status.ts";
-import type { HybridStatus } from "./hybrid-status.ts";
 import { resolveLocalBin } from "./resolve.ts";
 
 /**

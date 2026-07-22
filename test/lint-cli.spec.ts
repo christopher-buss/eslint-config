@@ -6,6 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import { describe, expect, it, vi } from "vitest";
 
+import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
+import type { HybridStatus } from "../src/hybrid-status.ts";
 import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
 import {
 	clearAllCaches,
@@ -35,12 +37,6 @@ import {
 } from "../src/lint-cli/constants.ts";
 import { collectLintableFiles, collectRepoFiles } from "../src/lint-cli/files.ts";
 import type { RepoFiles } from "../src/lint-cli/files.ts";
-import {
-	hybridStatusPath,
-	readHybridStatus,
-	writeHybridStatus,
-} from "../src/lint-cli/hybrid-status.ts";
-import type { HybridStatus } from "../src/lint-cli/hybrid-status.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
 	NON_HYBRID_WARNING,

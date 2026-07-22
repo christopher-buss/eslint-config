@@ -3,7 +3,7 @@ import { findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
-import { writeHybridStatusForCwd } from "../lint-cli/hybrid-status.ts";
+import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {

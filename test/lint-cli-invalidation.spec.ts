@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { computeAffectedFiles } from "../src/lint-cli/affected.ts";
 import { resolveCacheKey } from "../src/lint-cli/cache-key.ts";
 import { normalizePath, removeCacheEntries } from "../src/lint-cli/cache.ts";
@@ -15,7 +16,6 @@ import {
 	configHashStatePath,
 } from "../src/lint-cli/config-hash.ts";
 import { ALL_CACHE_FILES, CACHE_FILE_TYPE_AWARE, cacheFileFor } from "../src/lint-cli/constants.ts";
-import { writeHybridStatus } from "../src/lint-cli/hybrid-status.ts";
 import { applyTypeAwareInvalidation } from "../src/lint-cli/invalidation.ts";
 import { parseArguments } from "../src/lint-cli/options.ts";
 import { composeCommands, plan } from "../src/lint-cli/run.ts";
