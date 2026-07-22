@@ -53,6 +53,15 @@ export interface OptionsOverridesTypeAware extends OptionsOverrides {
 
 export interface NamingConfig extends OptionsOverridesTypeAware {
 	/**
+	 * Whether the project targets Roblox. Enables `@rbxts/react`
+	 * type-reference matchers in the TSX config so React components and
+	 * contexts may use PascalCase without inline disables.
+	 *
+	 * @default true
+	 */
+	roblox?: boolean;
+
+	/**
 	 * Extra `flawless/naming-convention` selector entries, prepended before the
 	 * built-in defaults in both the TS and TSX configs.
 	 *

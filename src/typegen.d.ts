@@ -621,82 +621,82 @@ export interface RuleOptions {
   'eslint-plugin/unique-test-case-names'?: Linter.RuleEntry<[]>
   /**
    * Enforce arrow function return style based on line length
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/arrow-return-style/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/arrow-return-style/documentation.md
    */
   'flawless/arrow-return-style'?: Linter.RuleEntry<FlawlessArrowReturnStyle>
   /**
    * Disallow shorthand boolean JSX attributes
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/jsx-shorthand-boolean/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/jsx-shorthand-boolean/documentation.md
    */
   'flawless/jsx-shorthand-boolean'?: Linter.RuleEntry<[]>
   /**
    * Enforce a consistent fragment form: the shorthand `<>...</>` or a named fragment
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/jsx-shorthand-fragment/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/jsx-shorthand-fragment/documentation.md
    */
   'flawless/jsx-shorthand-fragment'?: Linter.RuleEntry<FlawlessJsxShorthandFragment>
   /**
    * Enforce a maximum number of lines of code in a function
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/max-lines-per-function/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/max-lines-per-function/documentation.md
    */
   'flawless/max-lines-per-function'?: Linter.RuleEntry<FlawlessMaxLinesPerFunction>
   /**
    * Enforce naming conventions for everything across a codebase
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/naming-convention/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/naming-convention/documentation.md
    */
   'flawless/naming-convention'?: Linter.RuleEntry<FlawlessNamingConvention>
   /**
    * Disallow anonymous arrow functions as export default declarations
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/no-export-default-arrow/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/no-export-default-arrow/documentation.md
    */
   'flawless/no-export-default-arrow'?: Linter.RuleEntry<[]>
   /**
    * Disallow tsconfig options that redundantly re-set a value already provided by an extended config
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/no-redundant-tsconfig-options/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/no-redundant-tsconfig-options/documentation.md
    */
   'flawless/no-redundant-tsconfig-options'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary usage of 'useCallback'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/no-unnecessary-use-callback/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/no-unnecessary-use-callback/documentation.md
    */
   'flawless/no-unnecessary-use-callback'?: Linter.RuleEntry<[]>
   /**
    * Disallow unnecessary usage of 'useMemo'
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/no-unnecessary-use-memo/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/no-unnecessary-use-memo/documentation.md
    */
   'flawless/no-unnecessary-use-memo'?: Linter.RuleEntry<[]>
   /**
    * Enforce a blank line after `expect.assertions` and `expect.hasAssertions`
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/padding-after-expect-assertions/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/padding-after-expect-assertions/documentation.md
    */
   'flawless/padding-after-expect-assertions'?: Linter.RuleEntry<[]>
   /**
    * Enforce destructuring assignment for component props
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/prefer-destructuring-assignment/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/prefer-destructuring-assignment/documentation.md
    */
   'flawless/prefer-destructuring-assignment'?: Linter.RuleEntry<[]>
   /**
    * Enforce destructuring parameters in the function signature
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/prefer-parameter-destructuring/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/prefer-parameter-destructuring/documentation.md
    */
   'flawless/prefer-parameter-destructuring'?: Linter.RuleEntry<FlawlessPreferParameterDestructuring>
   /**
    * Enforce that function component props are read-only
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/prefer-read-only-props/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/prefer-read-only-props/documentation.md
    */
   'flawless/prefer-read-only-props'?: Linter.RuleEntry<FlawlessPreferReadOnlyProps>
   /**
    * Disallow impure calls such as `math.random` or `os.clock` during render
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/purity/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/purity/documentation.md
    */
   'flawless/purity'?: Linter.RuleEntry<FlawlessPurity>
   /**
    * Enforce a configured sort order for TOML keys and tables
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/toml-sort-keys/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/toml-sort-keys/documentation.md
    */
   'flawless/toml-sort-keys'?: Linter.RuleEntry<FlawlessTomlSortKeys>
   /**
    * Enforce blank lines around top-level YAML block collection keys
-   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.0.0/src/rules/yaml-block-key-blank-lines/documentation.md
+   * @see https://github.com/christopher-buss/eslint-plugin-flawless/blob/v1.1.0/src/rules/yaml-block-key-blank-lines/documentation.md
    */
   'flawless/yaml-block-key-blank-lines'?: Linter.RuleEntry<[]>
   /**
@@ -10322,7 +10322,34 @@ type _FlawlessNamingConventionFormatOptionsConfig = (_FlawlessNamingConventionPr
 type _FlawlessNamingConventionPredefinedFormats = ("camelCase" | "strictCamelCase" | "PascalCase" | "StrictPascalCase" | "snake_case" | "UPPER_CASE")
 type _FlawlessNamingConventionUnderscoreOptions = ("forbid" | "allow" | "require" | "requireDouble" | "allowDouble" | "allowSingleOrDouble")
 type _FlawlessNamingConvention_PrefixSuffixConfig = string[]
-type _FlawlessNamingConventionTypeModifiers = ("boolean" | "string" | "number" | "function" | "array")
+type _FlawlessNamingConventionTypeMatcher = (("boolean" | "string" | "number" | "function" | "array") | _FlawlessNamingConvention_TypeReferenceMatcher)
+type _FlawlessNamingConvention_TypeReferenceMatcher = (_FlawlessNamingConventionTypeReferenceMatcher & {
+  
+  name?: string
+  
+  from?: string
+  returns?: _FlawlessNamingConvention_TypeReferenceMatcher
+})
+type _FlawlessNamingConventionTypeReferenceMatcher = ({
+  [k: string]: unknown | undefined
+} | {
+  [k: string]: unknown | undefined
+})
+type _FlawlessNamingConvention_TypeReferenceMatcher = (({
+  [k: string]: unknown | undefined
+} | {
+  [k: string]: unknown | undefined
+}) & {
+  
+  name?: string
+  
+  from?: string
+  returns?: ({
+    [k: string]: unknown | undefined
+  } | {
+    [k: string]: unknown | undefined
+  })
+})
 type FlawlessNamingConvention = ({
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10334,7 +10361,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   modifiers?: ("const" | "readonly" | "static" | "public" | "protected" | "private" | "#private" | "abstract" | "destructured" | "global" | "exported" | "unused" | "requiresQuotes" | "override" | "async" | "default" | "namespace")[]
   selector: ("default" | "variableLike" | "memberLike" | "typeLike" | "method" | "property" | "accessor" | "variable" | "function" | "parameter" | "objectStyleEnum" | "parameterProperty" | "classicAccessor" | "enumMember" | "classMethod" | "objectLiteralMethod" | "typeMethod" | "classProperty" | "objectLiteralProperty" | "typeProperty" | "autoAccessor" | "class" | "interface" | "typeAlias" | "enum" | "typeParameter" | "import")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10368,7 +10395,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "variable"
   modifiers?: ("const" | "destructured" | "exported" | "global" | "unused" | "async")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10380,6 +10407,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "function"
   modifiers?: ("exported" | "global" | "unused" | "async")[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10391,7 +10419,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "parameter"
   modifiers?: ("destructured" | "unused")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10425,7 +10453,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "classProperty"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10437,7 +10465,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "objectLiteralProperty"
   modifiers?: ("public" | "requiresQuotes")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10449,7 +10477,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "typeProperty"
   modifiers?: ("public" | "readonly" | "requiresQuotes")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10461,7 +10489,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "parameterProperty"
   modifiers?: ("private" | "protected" | "public" | "readonly")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10473,7 +10501,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "property"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "readonly" | "requiresQuotes" | "static" | "override" | "async")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10485,6 +10513,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "classMethod"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10496,6 +10525,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "objectLiteralMethod"
   modifiers?: ("public" | "requiresQuotes" | "async")[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10507,6 +10537,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "typeMethod"
   modifiers?: ("public" | "requiresQuotes")[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10518,6 +10549,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "method"
   modifiers?: ("abstract" | "private" | "#private" | "protected" | "public" | "requiresQuotes" | "static" | "override" | "async")[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10529,7 +10561,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "classicAccessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10541,7 +10573,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "autoAccessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string
@@ -10553,7 +10585,7 @@ type FlawlessNamingConvention = ({
   filter?: (string | _FlawlessNamingConvention_MatchRegexConfig)
   selector: "accessor"
   modifiers?: ("abstract" | "private" | "protected" | "public" | "requiresQuotes" | "static" | "override")[]
-  types?: _FlawlessNamingConventionTypeModifiers[]
+  types?: _FlawlessNamingConventionTypeMatcher[]
 } | {
   custom?: _FlawlessNamingConvention_MatchRegexConfig
   failureMessage?: string

@@ -402,6 +402,7 @@ export async function isentinel(
 	if (options.naming !== undefined && options.naming !== false) {
 		configs.push(
 			naming({
+				roblox: enableRoblox,
 				...getOverrides(options, "naming"),
 				...resolveSubOptions(options, "naming"),
 			}),

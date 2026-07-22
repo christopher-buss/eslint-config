@@ -7,11 +7,14 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
+const RBXTS_REACT = "@rbxts/react";
+
 export async function naming(
 	options: NamingConfig & OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		overridesTypeAware = {},
+		roblox: isRoblox = true,
 		selectors = [],
 		selectorsTsx = [],
 		typeAware = true,
@@ -211,6 +214,52 @@ export async function naming(
 									leadingUnderscore: "allow",
 									selector: "variable",
 								},
+								...(isRoblox
+									? [
+											{
+												// React components and contexts
+												// conventionally use PascalCase
+												format: ["StrictPascalCase"],
+												selector: ["parameter", "variable"],
+												types: [
+													{ name: "Context", from: RBXTS_REACT },
+													{ name: "FC", from: RBXTS_REACT },
+													{
+														name: "FunctionComponent",
+														from: RBXTS_REACT,
+													},
+												],
+											},
+											{
+												// components typed as anonymous
+												// functions (e.g. `() =>
+												// React.ReactNode`) have no
+												// symbol name to match, so match
+												// by return type instead;
+												// permissive since camelCase
+												// helpers can also return
+												// elements. typeMethod covers
+												// function-typed interface
+												// members
+												format: ["strictCamelCase", "StrictPascalCase"],
+												selector: ["parameter", "typeMethod", "variable"],
+												types: [
+													{
+														returns: {
+															name: "Element",
+															from: RBXTS_REACT,
+														},
+													},
+													{
+														returns: {
+															name: "ReactNode",
+															from: RBXTS_REACT,
+														},
+													},
+												],
+											},
+										]
+									: []),
 
 								{
 									format: null,
