@@ -137,25 +137,25 @@ describe("parseArguments", () => {
 	it("defaults paths to '.'", () => {
 		expect.hasAssertions();
 
-		expect(parseArguments([]).paths).toStrictEqual(["."]);
+		expect(parseArguments([], {}).paths).toStrictEqual(["."]);
 	});
 
 	it("keeps explicit paths", () => {
 		expect.hasAssertions();
 
-		expect(parseArguments(["src", "test"]).paths).toStrictEqual(["src", "test"]);
+		expect(parseArguments(["src", "test"], {}).paths).toStrictEqual(["src", "test"]);
 	});
 
 	it("errors when --eslint and --oxlint are combined", () => {
 		expect.hasAssertions();
 
-		expect(() => parseArguments(["--eslint", "--oxlint"])).toThrow(CliError);
+		expect(() => parseArguments(["--eslint", "--oxlint"], {})).toThrow(CliError);
 	});
 
 	it("errors when --fix is combined with --type-aware", () => {
 		expect.hasAssertions();
 
-		expect(() => parseArguments(["--fix", "--type-aware=only"])).toThrow(
+		expect(() => parseArguments(["--fix", "--type-aware=only"], {})).toThrow(
 			/Cannot combine --fix with --type-aware/,
 		);
 	});
@@ -163,50 +163,50 @@ describe("parseArguments", () => {
 	it("errors on unknown flags", () => {
 		expect.hasAssertions();
 
-		expect(() => parseArguments(["--nope"])).toThrow(CliError);
+		expect(() => parseArguments(["--nope"], {})).toThrow(CliError);
 	});
 
 	it("errors on invalid --concurrency", () => {
 		expect.hasAssertions();
 
-		expect(() => parseArguments(["--concurrency", "banana"])).toThrow(/Invalid --concurrency/);
+		expect(() => parseArguments(["--concurrency", "banana"], {})).toThrow(
+			/Invalid --concurrency/,
+		);
 	});
 
 	it("accepts numeric and off concurrency overrides", () => {
 		expect.hasAssertions();
 
-		expect(parseArguments(["--concurrency", "6"]).concurrency).toBe(6);
-		expect(parseArguments(["--concurrency", "off"]).concurrency).toBe("off");
+		expect(parseArguments(["--concurrency", "6"], {}).concurrency).toBe(6);
+		expect(parseArguments(["--concurrency", "off"], {}).concurrency).toBe("off");
 	});
 
 	it("errors when bare -- passthrough is used without a single tool", () => {
 		expect.hasAssertions();
 
-		expect(() => parseArguments(["--", "--foo"])).toThrow(/single tool/);
-		expect(() => parseArguments(["--eslint", "--oxlint", "--", "--foo"])).toThrow(CliError);
+		expect(() => parseArguments(["--", "--foo"], {})).toThrow(/single tool/);
+		expect(() => parseArguments(["--eslint", "--oxlint", "--", "--foo"], {})).toThrow(CliError);
 	});
 
 	it("forwards -- passthrough to the selected tool", () => {
 		expect.hasAssertions();
 
-		expect(parseArguments(["--oxlint", "--", "--deny", "all"]).oxlintArgs).toStrictEqual([
+		expect(parseArguments(["--oxlint", "--", "--deny", "all"], {}).oxlintArgs).toStrictEqual([
 			"--deny",
 			"all",
 		]);
-		expect(parseArguments(["--eslint", "--", "--max-warnings", "0"]).eslintArgs).toStrictEqual([
-			"--max-warnings",
-			"0",
-		]);
+		expect(
+			parseArguments(["--eslint", "--", "--max-warnings", "0"], {}).eslintArgs,
+		).toStrictEqual(["--max-warnings", "0"]);
 	});
 
 	it("splits dash-prefixed per-tool extra args", () => {
 		expect.hasAssertions();
 
-		const parsed = parseArguments([
-			"--eslint-args",
-			"--max-warnings 0",
-			"--oxlint-args=--quiet",
-		]);
+		const parsed = parseArguments(
+			["--eslint-args", "--max-warnings 0", "--oxlint-args=--quiet"],
+			{},
+		);
 
 		expect(parsed.eslintArgs).toStrictEqual(["--max-warnings", "0"]);
 		expect(parsed.oxlintArgs).toStrictEqual(["--quiet"]);
@@ -215,11 +215,29 @@ describe("parseArguments", () => {
 	it("parses cache and type-aware toggles", () => {
 		expect.hasAssertions();
 
-		const parsed = parseArguments(["--no-cache", "--no-oxlint-type-aware", "--type-aware=off"]);
+		const parsed = parseArguments(
+			["--no-cache", "--no-oxlint-type-aware", "--type-aware=off"],
+			{},
+		);
 
 		expect(parsed.cache).toBe(false);
 		expect(parsed.oxlintTypeAware).toBe(false);
 		expect(parsed.typeAware).toBe("off");
+	});
+
+	it("defaults --agents to the detected agent session", () => {
+		expect.hasAssertions();
+
+		expect(parseArguments([], {}).agents).toBe(false);
+		expect(parseArguments([], { CLAUDECODE: "1" }).agents).toBe(true);
+		expect(parseArguments([], { CLAUDECODE: "1", GIT_HOOK: "1" }).agents).toBe(false);
+	});
+
+	it("lets --agents and --no-agents override the detection", () => {
+		expect.hasAssertions();
+
+		expect(parseArguments(["--agents"], {}).agents).toBe(true);
+		expect(parseArguments(["--no-agents"], { CLAUDECODE: "1" }).agents).toBe(false);
 	});
 });
 
@@ -718,7 +736,7 @@ function printLines(
 	environment: NodeJS.ProcessEnv = {},
 ): Array<string> {
 	return withoutGitEnvironment(() => {
-		const { commands } = composeCommands(parseArguments(argv), {
+		const { commands } = composeCommands(parseArguments(argv, environment), {
 			cwd: directory,
 			dryRun: true,
 			environment,
@@ -763,6 +781,22 @@ describe("composeCommands --print", () => {
 				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 					"--no-warn-ignored --concurrency off .",
 			]);
+		});
+	});
+
+	it("composes the agent formatters from the environment alone", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			const lines = printLines([], directory, { CLAUDECODE: "1" });
+
+			expect(lines[0]).toContain("--format agent");
+			expect(
+				lines.slice(1).every((line) => /--format \S*formatter-agents\.mjs/.test(line)),
+			).toBe(true);
+			expect(
+				printLines(["--no-agents"], directory, { CLAUDECODE: "1" }).join("\n"),
+			).not.toContain("--format");
 		});
 	});
 
@@ -829,7 +863,7 @@ describe("plan", () => {
 
 		withTemporaryDirectory((directory) => {
 			const runPlan = withoutGitEnvironment(() => {
-				return plan(parseArguments([]), directory, {}, false);
+				return plan(parseArguments([], {}), directory, {}, false);
 			});
 
 			expect(runPlan.oxlint).toBe(true);
@@ -848,7 +882,7 @@ describe("plan", () => {
 
 		withTemporaryDirectory((directory) => {
 			const runPlan = withoutGitEnvironment(() => {
-				return plan(parseArguments(["--oxlint"]), directory, {}, false);
+				return plan(parseArguments(["--oxlint"], {}), directory, {}, false);
 			});
 
 			expect(runPlan.oxlint).toBe(true);
@@ -861,10 +895,10 @@ describe("plan", () => {
 
 		withTemporaryDirectory((directory) => {
 			const fast = withoutGitEnvironment(() => {
-				return plan(parseArguments(["--type-aware=off"]), directory, {}, false);
+				return plan(parseArguments(["--type-aware=off"], {}), directory, {}, false);
 			});
 			const full = withoutGitEnvironment(() => {
-				return plan(parseArguments([]), directory, { CI: "true" }, false);
+				return plan(parseArguments([], {}), directory, { CI: "true" }, false);
 			});
 
 			expect(fast.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
@@ -883,7 +917,7 @@ describe("fast pass sizing", () => {
 			}
 
 			const { commands } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([]), {
+				return composeCommands(parseArguments([], {}), {
 					cwd: directory,
 					dryRun: true,
 					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
@@ -1421,7 +1455,7 @@ describe("plan hybrid integration", () => {
 			writeHybridStatus(directory, false);
 
 			const { commands, notice } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([]), {
+				return composeCommands(parseArguments([], {}), {
 					cwd: directory,
 					dryRun: false,
 					environment: {},
@@ -1719,7 +1753,7 @@ describe("bust-before-size ordering", () => {
 			fs.utimesSync(fastCache, now, now);
 
 			const { commands } = withoutGitEnvironment(() => {
-				return composeCommands(parseArguments([]), {
+				return composeCommands(parseArguments([], {}), {
 					cwd: directory,
 					dryRun: false,
 					environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },

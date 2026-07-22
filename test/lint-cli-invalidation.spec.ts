@@ -150,7 +150,7 @@ function composeInFixture(
 	argv: Array<string> = [],
 ): ReturnType<typeof composeCommands> {
 	return withoutGitEnvironment(() => {
-		return composeCommands(parseArguments(argv), {
+		return composeCommands(parseArguments(argv, {}), {
 			cwd: directory,
 			dryRun: false,
 			environment: {},
@@ -663,7 +663,7 @@ describe("plan mutation", () => {
 				seedCache(cacheFile, [fileA]);
 
 				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([]), directory, {}, false);
+					return plan(parseArguments([], {}), directory, {}, false);
 				});
 
 				expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
@@ -675,7 +675,7 @@ describe("plan mutation", () => {
 				expect(fs.existsSync(cacheFile)).toBe(true);
 
 				// The mutating plan, by contrast, runs the builder.
-				withoutGitEnvironment(() => plan(parseArguments([]), directory, {}, true));
+				withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, true));
 
 				expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
 			},
@@ -697,7 +697,7 @@ describe("plan mutation", () => {
 				seedCache(cacheFile, [fileA]);
 
 				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([]), directory, {}, true);
+					return plan(parseArguments([], {}), directory, {}, true);
 				});
 				const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
 
@@ -733,9 +733,9 @@ describe("per-variant cache isolation", () => {
 			const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
 			withoutGitEnvironment(() => {
-				plan(parseArguments([]), directory, AGENT_ENVIRONMENT, true);
-				plan(parseArguments([]), directory, {}, true);
-				plan(parseArguments([]), directory, AGENT_ENVIRONMENT, true);
+				plan(parseArguments([], {}), directory, AGENT_ENVIRONMENT, true);
+				plan(parseArguments([], {}), directory, {}, true);
+				plan(parseArguments([], {}), directory, AGENT_ENVIRONMENT, true);
 			});
 
 			// Before the split, each run rewrote the single cache with its own
@@ -757,7 +757,7 @@ describe("per-variant cache isolation", () => {
 			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 			fs.utimesSync(humanCache, configSeconds + 60, configSeconds + 60);
 
-			withoutGitEnvironment(() => plan(parseArguments([]), directory, {}, true));
+			withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, true));
 
 			expect(fs.existsSync(agentCache)).toBe(false);
 			expect(fs.existsSync(humanCache)).toBe(true);
@@ -772,7 +772,7 @@ describe("per-variant cache isolation", () => {
 			const configSeconds = Date.now() / 1000 + 60;
 			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 
-			withoutGitEnvironment(() => plan(parseArguments([]), directory, {}, false));
+			withoutGitEnvironment(() => plan(parseArguments([], {}), directory, {}, false));
 
 			expect(fs.existsSync(agentCache)).toBe(true);
 		});
@@ -1093,7 +1093,7 @@ describe("config drift sizing", () => {
 		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
 			const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 			const fileA = path.join(directory, "src/a.ts");
-			const args = parseArguments(["src"]);
+			const args = parseArguments(["src"], {});
 			computeAffectedFiles(directory, "only", TEST_KEY);
 			seedCache(cacheFile, [fileA]);
 			const warm = withoutGitEnvironment(() => plan(args, directory, {}, true));

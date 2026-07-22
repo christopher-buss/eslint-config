@@ -13,7 +13,8 @@ Flags:
   --eslint                 Run only ESLint.
   --oxlint                 Run only oxlint.
   --fix                    Apply fixes: oxlint --fix then eslint --fix.
-  --agents                 Emit agent-friendly output.
+  --agents, --no-agents    Emit agent-friendly output. On by default when an AI
+                           agent session is detected (AI_AGENT, CLAUDECODE, ...).
   --type-aware=off|only|full
                            Force a single ESLint pass. Default runs the fast and
                            type-aware passes concurrently; full is the escape hatch.

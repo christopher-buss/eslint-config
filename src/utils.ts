@@ -23,6 +23,10 @@ interface DevelopmentEngineRuntime {
 	version?: string;
 }
 
+type AgentMatcher = (environment: NodeJS.ProcessEnv) => boolean;
+
+type AgentCheck = AgentMatcher | string;
+
 type ModuleImport<T> = Promise<T | { default: T }>;
 
 interface PackageJsonEngines {
@@ -336,19 +340,71 @@ export function isInGitHooksOrLintStaged(environment: NodeJS.ProcessEnv = proces
 	].some(Boolean);
 }
 
+/**
+ * Agent probes, mirroring `unjs/std-env`'s `src/agents.ts` (@50dc652) so the
+ * two stay diffable. An entry is either an environment variable that is truthy
+ * only inside that agent, or a matcher for the agents that hide in a shared
+ * variable. Entries run in std-env's order, one agent per line group.
+ *
+ * `CLAUDE_CODE_ENTRYPOINT` has no std-env counterpart; it predates this port
+ * and stays for the Claude Code versions that set only it.
+ */
+const AGENT_CHECKS: Array<AgentCheck> = [
+	// claude
+	"CLAUDECODE",
+	"CLAUDE_CODE",
+	"CLAUDE_CODE_ENTRYPOINT",
+	// replit
+	"REPL_ID",
+	// gemini
+	"GEMINI_CLI",
+	// codex
+	"CODEX_SANDBOX",
+	"CODEX_THREAD_ID",
+	// opencode
+	"OPENCODE",
+	// pi
+	environmentMatcher("PATH", /\.pi[/\\]agent/),
+	// auggie
+	"AUGMENT_AGENT",
+	// goose
+	"GOOSE_PROVIDER",
+	// junie
+	"JUNIE_DATA",
+	"JUNIE_SHIM_PATH",
+	// devin
+	environmentMatcher("EDITOR", /devin/),
+	// cursor
+	"CURSOR_AGENT",
+	// kiro
+	environmentMatcher("TERM_PROGRAM", /kiro/, { noTty: true }),
+];
+
+/**
+ * Whether the process runs inside an AI coding agent session.
+ *
+ * `AI_AGENT` forces detection on, matching std-env's explicit override. Git
+ * hook and lint-staged runs are excluded even under an agent: those are
+ * human-initiated commits whose output a person reads.
+ *
+ * Not a pure function of `environment` — the kiro check also consults
+ * `process.stdout.isTTY` (see {@link environmentMatcher}).
+ *
+ * @param environment - The environment variables to inspect.
+ * @returns Whether an agent session was detected.
+ */
 export function isInAgentSession(environment: NodeJS.ProcessEnv = process.env): boolean {
 	if (isInGitHooksOrLintStaged(environment)) {
 		return false;
 	}
 
-	return [
-		environment["CLAUDECODE"],
-		environment["CLAUDE_CODE_ENTRYPOINT"],
-		environment["CODEX_THREAD_ID"],
-		environment["CURSOR_AGENT"],
-		environment["GEMINI_CLI"],
-		environment["OPENCODE"],
-	].some(Boolean);
+	if (environment["AI_AGENT"] !== undefined && environment["AI_AGENT"] !== "") {
+		return true;
+	}
+
+	return AGENT_CHECKS.some((check) => {
+		return typeof check === "string" ? Boolean(environment[check]) : check(environment);
+	});
 }
 
 export function isInEditorEnvironment(environment: NodeJS.ProcessEnv = process.env): boolean {
@@ -528,6 +584,35 @@ export function renamePluginInConfigs(
 
 		return clone;
 	});
+}
+
+/**
+ * Build a probe that regex-tests one environment variable, for the agents that
+ * announce themselves inside a variable a human also sets.
+ *
+ * `noTty` marks a variable an interactive user shares with the agent (kiro's
+ * `TERM_PROGRAM` is set in its terminal too): an attached stdout TTY means a
+ * person is watching, so the probe declines.
+ *
+ * @param name - The environment variable to test.
+ * @param pattern - The pattern the value must match.
+ * @param options - Probe options.
+ * @param options.noTty - Whether an attached stdout TTY disqualifies the match.
+ * @returns The probe.
+ */
+function environmentMatcher(
+	name: string,
+	pattern: RegExp,
+	{ noTty = false }: { noTty?: boolean } = {},
+): AgentMatcher {
+	return (environment) => {
+		if (noTty && process.stdout.isTTY) {
+			return false;
+		}
+
+		const value = environment[name];
+		return value !== undefined && pattern.test(value);
+	};
 }
 
 const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];

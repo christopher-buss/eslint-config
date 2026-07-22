@@ -392,7 +392,7 @@ export async function runLint(
 	cwd: string = process.cwd(),
 	environment: NodeJS.ProcessEnv = process.env,
 ): Promise<number> {
-	const options = parseArguments(argv);
+	const options = parseArguments(argv, environment);
 
 	const { commands, notice } = compose(plan(options, cwd, environment, !options.print), options);
 

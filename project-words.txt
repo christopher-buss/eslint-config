@@ -1,7 +1,10 @@
 antfu
+auggie
 canparse
 changelogithub
+claudecode
 cves
+diffable
 dprint
 editmsg
 ependencies
@@ -11,7 +14,9 @@ ghsas
 gypfile
 isentinel
 johnnymorganz
+junie
 kilocode
+kiro
 libc
 lockb
 lockfiles
@@ -33,6 +38,7 @@ pico
 pobammer
 rbxts
 redactions
+replit
 rojo
 setstate
 slsa
@@ -43,5 +49,6 @@ textnodes
 tsdoc
 tsgolint
 typecheck
+unjs
 unthrown
 worktree

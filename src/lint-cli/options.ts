@@ -1,5 +1,7 @@
+import process from "node:process";
 import yargs from "yargs";
 
+import { isInAgentSession } from "../utils.ts";
 import { splitArgs } from "./command.ts";
 import { parseBoundedInteger } from "./parse.ts";
 import type { LintCliOptions } from "./types.ts";
@@ -14,10 +16,18 @@ interface ExtractResult {
  * Parse and validate an `isentinel-lint` argv slice (without the node/bin
  * prefix). Throws {@link CliError} on any invalid combination.
  *
+ * `--agents` is tri-state: absent it follows {@link isInAgentSession}, so an
+ * agent gets agent-shaped output without passing the flag and `--no-agents`
+ * forces it back off.
+ *
  * @param argv - The argument slice to parse.
+ * @param environment - The process environment (defaults to `process.env`).
  * @returns The parsed and validated options.
  */
-export function parseArguments(argv: Array<string>): LintCliOptions {
+export function parseArguments(
+	argv: Array<string>,
+	environment: NodeJS.ProcessEnv = process.env,
+): LintCliOptions {
 	// Everything after a bare `--` is verbatim passthrough; never scan it for
 	// the per-tool arg options.
 	const separator = argv.indexOf("--");
@@ -33,7 +43,10 @@ export function parseArguments(argv: Array<string>): LintCliOptions {
 		.option("eslint", { description: "Run only ESLint.", type: "boolean" })
 		.option("oxlint", { description: "Run only oxlint.", type: "boolean" })
 		.option("fix", { description: "Apply fixes (oxlint then ESLint).", type: "boolean" })
-		.option("agents", { description: "Agent-friendly output.", type: "boolean" })
+		.option("agents", {
+			description: "Agent-friendly output (default: on in an agent session).",
+			type: "boolean",
+		})
 		.option("print", { description: "Print the composed commands.", type: "boolean" })
 		.option("cache", {
 			default: true,
@@ -95,7 +108,7 @@ export function parseArguments(argv: Array<string>): LintCliOptions {
 	const paths = parsed._.map(String).filter((value) => value.length > 0);
 
 	return {
-		agents: parsed.agents === true,
+		agents: parsed.agents ?? isInAgentSession(environment),
 		cache: parsed.cache,
 		concurrency: parseConcurrency(parsed.concurrency),
 		eslint: eslintOnly,

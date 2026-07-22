@@ -308,7 +308,7 @@ Any trailing positional arguments are treated as paths to lint (default `.`).
 | `--eslint`                     | Run only ESLint.                                                                                                                   |
 | `--oxlint`                     | Run only oxlint.                                                                                                                   |
 | `--fix`                        | Apply fixes: `oxlint --fix` then `eslint --fix` (sequential).                                                                      |
-| `--agents`                     | Emit agent-friendly output from both linters.                                                                                      |
+| `--agents`, `--no-agents`      | Force agent-friendly output from both linters on or off (default: on in an agent session).                                         |
 | `--type-aware=off\|only\|full` | Force a single ESLint pass: `off` fast-only, `only` type-aware-only, `full` the whole config in one pass. Cannot mix with `--fix`. |
 | `--no-oxlint-type-aware`       | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).                                                                      |
 | `--no-cache`                   | Disable ESLint's on-disk cache.                                                                                                    |
@@ -359,6 +359,14 @@ contents rather than timestamps, which are unreliable across fresh checkouts.
 `--format agent`, and ESLint uses the formatter shipped at
 `@isentinel/eslint-config/formatter-agents`, which the runner resolves and
 passes to `eslint --format` for you.
+
+It is on by default whenever an AI coding agent session is detected, so agents
+get agent-shaped output without passing the flag. Detection follows
+[`std-env`](https://github.com/unjs/std-env)'s agent table (Claude Code, Codex,
+Cursor, Gemini CLI, opencode, replit, auggie, goose, junie, devin, kiro, pi),
+plus the `AI_AGENT` variable as an explicit override. Git hook and lint-staged
+runs are excluded — those are human-initiated. Pass `--no-agents` to force human
+output, or set `AI_AGENT` to force detection on.
 
 ### Known limitations
 
