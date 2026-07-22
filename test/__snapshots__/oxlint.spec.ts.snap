@@ -1801,22 +1801,66 @@ exports[`oxlint config snapshots > should match the default roblox game config 1
     },
     {
       "files": [
-        "src/**/*.{,c,m}[jt]s{,x}",
-      ],
-      "jsPlugins": [
-        {
-          "name": "eslint-js",
-          "specifier": "<pkg>:oxlint-plugin-eslint",
-        },
+        "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
-        "eslint-js/no-restricted-syntax": [
-          "error",
-          {
-            "message": "Prefer named exports",
-            "selector": "ExportDefaultDeclaration",
-          },
-        ],
+        "import/consistent-type-specifier-style": "error",
+        "import/default": "error",
+        "import/export": "error",
+        "import/namespace": "error",
+        "import/no-absolute-path": "error",
+        "import/no-cycle": "error",
+        "import/no-duplicates": "error",
+        "import/no-empty-named-blocks": "error",
+        "import/no-named-as-default": "error",
+        "import/no-nodejs-modules": "error",
+        "import/no-self-import": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/*.js",
+        "**/*.cjs",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-commonjs": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/bin/**/*",
+        "**/bin.{,c,m}[jt]s{,x}",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-unassigned-import": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/*.d.{,c,m}ts",
+        "**/.husky/**/*",
+        "**/config/**/*.{,c,m}[jt]s{,x}",
+        "**/*config.{,c,m}[jt]s{,x}",
+        "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/build/**/*.{,c,m}[jt]s{,x}",
+        "**/tools/**/*.{,c,m}[jt]s{,x}",
+        "**/setup/**/*.{,c,m}[jt]s{,x}",
+        "**/dev/**/*.{,c,m}[jt]s{,x}",
+        "**/tasks/**/*.{,c,m}[jt]s{,x}",
+        "**/.github/scripts/**/*",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-anonymous-default-export": "error",
+        "import/no-default-export": "error",
       },
     },
     {
@@ -5528,6 +5572,74 @@ exports[`oxlint config snapshots > should match the package config 1`] = `
         "antfu/import-dedupe": "error",
         "antfu/no-import-dist": "error",
         "antfu/no-import-node-modules-by-path": "error",
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/consistent-type-specifier-style": "error",
+        "import/default": "error",
+        "import/export": "error",
+        "import/extensions": [
+          "error",
+          "ignorePackages",
+        ],
+        "import/namespace": "error",
+        "import/no-absolute-path": "error",
+        "import/no-cycle": "error",
+        "import/no-duplicates": "error",
+        "import/no-empty-named-blocks": "error",
+        "import/no-named-as-default": "error",
+        "import/no-nodejs-modules": "off",
+        "import/no-self-import": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/*.js",
+        "**/*.cjs",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-commonjs": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/bin/**/*",
+        "**/bin.{,c,m}[jt]s{,x}",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-unassigned-import": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "**/*.d.{,c,m}ts",
+        "**/.husky/**/*",
+        "**/config/**/*.{,c,m}[jt]s{,x}",
+        "**/*config.{,c,m}[jt]s{,x}",
+        "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/build/**/*.{,c,m}[jt]s{,x}",
+        "**/tools/**/*.{,c,m}[jt]s{,x}",
+        "**/setup/**/*.{,c,m}[jt]s{,x}",
+        "**/dev/**/*.{,c,m}[jt]s{,x}",
+        "**/tasks/**/*.{,c,m}[jt]s{,x}",
+        "**/.github/scripts/**/*",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "import/no-anonymous-default-export": "error",
+        "import/no-default-export": "error",
       },
     },
     {

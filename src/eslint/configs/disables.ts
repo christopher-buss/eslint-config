@@ -1,4 +1,5 @@
 import {
+	GLOB_BIN,
 	GLOB_BUILD_TOOLS,
 	GLOB_DTS,
 	GLOB_JSX,
@@ -44,7 +45,7 @@ export async function disables({
 		},
 		{
 			name: "isentinel/disables/bin",
-			files: ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`],
+			files: GLOB_BIN,
 			rules: {
 				"antfu/no-import-dist": "off",
 				"antfu/no-import-node-modules-by-path": "off",

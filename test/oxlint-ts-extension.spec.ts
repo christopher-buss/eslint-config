@@ -1,7 +1,7 @@
 import { describe, it } from "vitest";
 
-import { splitOxlintRules } from "../src/oxlint/utils";
-import type { Rules } from "../src/types";
+import { splitOxlintRules } from "../src/oxlint/utils.ts";
+import type { Rules } from "../src/types.ts";
 
 const TS_EXTENSION_PAIRS = [
 	"default-param-last",

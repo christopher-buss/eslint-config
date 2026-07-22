@@ -1,16 +1,16 @@
 import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
-import { isentinel } from "../src";
+import { isentinel } from "../src/index.ts";
 import {
 	isOxlintCovered,
 	isentinel as oxlintIsentinel,
 	oxlintJsPlugins,
 	translateRuleToOxlint,
-} from "../src/oxlint";
-import type { OxlintConfig } from "../src/oxlint";
-import type { Severity } from "./oxlint-helpers";
-import { effectiveEslintRules, effectiveOxlintRules } from "./oxlint-helpers";
+} from "../src/oxlint/index.ts";
+import type { OxlintConfig } from "../src/oxlint/index.ts";
+import type { Severity } from "./oxlint-helpers.ts";
+import { effectiveEslintRules, effectiveOxlintRules } from "./oxlint-helpers.ts";
 
 interface PluginRuleMeta {
 	meta?: { docs?: Record<string, unknown> };

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { isentinel } from "../src";
+import { isentinel } from "../src/index.ts";
 import { toPosix } from "../src/lint-cli/paths.ts";
 
 /**

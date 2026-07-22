@@ -3,7 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it } from "vitest";
 
-import { type FixtureOptions, FIXTURES_TEMP, runFixtureLint } from "./helpers";
+import { FIXTURES_TEMP, runFixtureLint } from "./helpers.ts";
+import type { FixtureOptions } from "./helpers.ts";
 
 const isWindows = os.platform() === "win32";
 const timeout = isWindows ? 300_000 : 120_000;

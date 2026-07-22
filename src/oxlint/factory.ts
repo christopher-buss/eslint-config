@@ -201,7 +201,7 @@ export function isentinel(
 			roblox: enableRoblox,
 			stylistic: stylisticOptions,
 		}),
-		oxlintImports({ stylistic: stylisticOptions, type: projectType }),
+		oxlintImports({ roblox: enableRoblox, stylistic: stylisticOptions }),
 		oxlintPromise(),
 		oxlintSonarjs({ isInEditor, roblox: enableRoblox }),
 		oxlintTypescript({
@@ -262,6 +262,11 @@ export function isentinel(
 			}),
 			oxlintUnicorn({
 				...resolveSubOptions(options, "unicorn"),
+				excludeFiles: robloxScopedFiles,
+				roblox: false,
+				stylistic: stylisticOptions,
+			}),
+			oxlintImports({
 				excludeFiles: robloxScopedFiles,
 				roblox: false,
 				stylistic: stylisticOptions,

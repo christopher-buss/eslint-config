@@ -3,21 +3,21 @@ import path from "node:path";
 import process from "node:process";
 import { describe, it } from "vitest";
 
-import { isentinel } from "../src";
-import type { TypedFlatConfigItem } from "../src";
+import { isentinel } from "../src/index.ts";
+import type { TypedFlatConfigItem } from "../src/index.ts";
 import {
 	isOxlintCovered,
 	isentinel as oxlintIsentinel,
 	oxlintRuleMapping,
 	translateRuleToOxlint,
-} from "../src/oxlint";
-import type { OxlintConfig } from "../src/oxlint";
+} from "../src/oxlint/index.ts";
+import type { OxlintConfig } from "../src/oxlint/index.ts";
 import {
 	effectiveEslintRules,
 	enabledEslintRules,
 	enabledFromEffective,
 	enabledOxlintRules,
-} from "./oxlint-helpers";
+} from "./oxlint-helpers.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 

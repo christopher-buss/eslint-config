@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { isentinel } from "../src";
-import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types";
+import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
+import { isentinel } from "../src/index.ts";
 
 const baseOptions = {
 	gitignore: false,

@@ -1,9 +1,9 @@
 import { describe, it } from "vitest";
 
-import { dropOxlintCoveredRules } from "../src/eslint/oxlint-drop";
-import type { TypedFlatConfigItem } from "../src/eslint/types";
-import { isentinel as oxlintIsentinel } from "../src/oxlint";
-import type { OxlintConfig } from "../src/oxlint";
+import { dropOxlintCoveredRules } from "../src/eslint/oxlint-drop.ts";
+import type { TypedFlatConfigItem } from "../src/eslint/types.ts";
+import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
+import type { OxlintConfig } from "../src/oxlint/index.ts";
 
 function typeAwareRulesConfig(): TypedFlatConfigItem {
 	return {

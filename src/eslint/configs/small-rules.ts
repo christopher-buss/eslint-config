@@ -1,4 +1,5 @@
-import { eslintCompatPlugin, type Plugin as OxlintPlugin } from "@oxlint/plugins";
+import { eslintCompatPlugin } from "@oxlint/plugins";
+import type { Plugin as OxlintPlugin } from "@oxlint/plugins";
 
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { smallRulesRules } from "../../rules/small-rules.ts";

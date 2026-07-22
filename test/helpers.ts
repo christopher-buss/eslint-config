@@ -1,9 +1,10 @@
-import { ESLint, type Linter } from "eslint";
+import { ESLint } from "eslint";
+import type { Linter } from "eslint";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { isentinel } from "../src";
-import type { OptionsConfig, TypedFlatConfigItem } from "../src";
+import { isentinel } from "../src/index.ts";
+import type { OptionsConfig, TypedFlatConfigItem } from "../src/index.ts";
 
 /** Factory options accepted by the fixture helpers. */
 export type FixtureOptions = Partial<Omit<OptionsConfig, "ignores" | "namedConfigs">>;

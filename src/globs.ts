@@ -58,6 +58,8 @@ export const GLOB_TS = "**/*.{,c,m}ts";
 export const GLOB_TSX = "**/*.{,c,m}tsx";
 export const GLOB_DTS = "**/*.d.{,c,m}ts";
 
+export const GLOB_BIN: Array<string> = ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`];
+
 export const GLOB_STYLE = "**/*.{c,le,sc}ss";
 export const GLOB_CSS = "**/*.css";
 export const GLOB_POSTCSS = "**/*.{p,post}css";

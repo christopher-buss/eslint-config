@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { isentinel } from "../src";
-import { isentinel as oxlintIsentinel } from "../src/oxlint";
-import type { OxlintConfig } from "../src/oxlint";
+import { isentinel } from "../src/index.ts";
+import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
+import type { OxlintConfig } from "../src/oxlint/index.ts";
 import { jsPluginKey } from "../src/oxlint/utils.ts";
 import {
 	isJsPluginRule,
 	isOxlintCovered,
 	oxlintRuleMapping,
 	translateRuleToOxlint,
-} from "../src/rules/oxlint-mapping";
+} from "../src/rules/oxlint-mapping.ts";
 import {
 	effectiveEslintRules,
 	enabledEslintRules,
 	enabledFromEffective,
 	enabledOxlintRules,
-} from "./oxlint-helpers";
+} from "./oxlint-helpers.ts";
 
 const baseOptions = {
 	gitignore: false,

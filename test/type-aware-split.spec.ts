@@ -1,10 +1,10 @@
 import process from "node:process";
 import { describe, it } from "vitest";
 
-import { isentinel } from "../src";
-import type { TypedFlatConfigItem } from "../src";
-import type { Severity } from "./oxlint-helpers";
-import { effectiveEslintRules } from "./oxlint-helpers";
+import { isentinel } from "../src/index.ts";
+import type { TypedFlatConfigItem } from "../src/index.ts";
+import type { Severity } from "./oxlint-helpers.ts";
+import { effectiveEslintRules } from "./oxlint-helpers.ts";
 
 interface PluginRuleMeta {
 	meta?: { docs?: Record<string, unknown> };

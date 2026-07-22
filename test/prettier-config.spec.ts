@@ -3,9 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { isentinel } from "../src";
-import { isentinel as oxlint } from "../src/oxlint";
-import { PRETTIER_DEFAULTS, resolvePrettierSettings } from "../src/prettier-config";
+import { isentinel } from "../src/index.ts";
+import { isentinel as oxlint } from "../src/oxlint/index.ts";
+import { PRETTIER_DEFAULTS, resolvePrettierSettings } from "../src/prettier-config.ts";
 
 /**
  * Resolve settings against a throwaway project directory containing the given

@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it } from "vitest";
 
-import { isentinel as oxlintIsentinel } from "../src/oxlint";
-import { FIXTURES_TEMP } from "./helpers";
+import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
+import { FIXTURES_TEMP } from "./helpers.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const FIXTURES_INPUT = path.resolve(PROJECT_ROOT, "fixtures", "input");

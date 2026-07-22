@@ -4,8 +4,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, it } from "vitest";
 
-import { isentinel } from "../src";
-import { GLOB_SRC } from "../src/globs";
+import { GLOB_SRC } from "../src/globs.ts";
+import { isentinel } from "../src/index.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const MARKDOWN_FIXTURE = path.resolve(PROJECT_ROOT, "fixtures", "input", "markdown.md");

@@ -32,6 +32,23 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/entrypoint-overrides",
+		files: [
+			"src/index.ts",
+			"src/eslint/index.ts",
+			"src/oxlint/index.ts",
+			"src/formatter-agents.ts",
+		],
+		rules: {
+			// `export *` does not re-export `default`, so the barrel's single
+			// default export is not a duplicate. See oxc-project/oxc.
+			"import/export": "off",
+			// The published entrypoints and the ESLint formatter API are
+			// default-export contracts.
+			"import/no-default-export": "off",
+		},
+	},
+	{
 		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {

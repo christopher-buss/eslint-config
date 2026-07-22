@@ -1,6 +1,6 @@
 import styleMigrate from "@stylistic/eslint-plugin-migrate";
 
-import { isentinel } from "./src";
+import { isentinel } from "./src/index.ts";
 
 export default isentinel(
 	{

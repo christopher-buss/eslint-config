@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { isentinel } from "../src";
-import { serializeConfigs } from "./helpers";
+import { isentinel } from "../src/index.ts";
+import { serializeConfigs } from "./helpers.ts";
 
 function findUnicornRules(
 	configs: Array<{ name?: string; rules?: Record<string, unknown> }>,

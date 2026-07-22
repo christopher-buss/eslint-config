@@ -1,7 +1,7 @@
 import picomatch from "picomatch";
 
-import type { TypedFlatConfigItem } from "../src";
-import type { OxlintConfig } from "../src/oxlint";
+import type { TypedFlatConfigItem } from "../src/index.ts";
+import type { OxlintConfig } from "../src/oxlint/index.ts";
 
 export type Severity = "enabled" | "off";
 
