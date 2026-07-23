@@ -18,6 +18,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
+				"small-rules/require-async-suffix": "off",
 				"ts/explicit-function-return-type": "off",
 			},
 		}),
@@ -35,6 +36,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
+				"small-rules/require-async-suffix": "off",
 				"ts/explicit-function-return-type": "off",
 			},
 		}),
@@ -45,6 +47,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 				"antfu/no-import-dist": "off",
 				"antfu/no-import-node-modules-by-path": "off",
 				"antfu/no-top-level-await": "off",
+				"small-rules/require-async-suffix": "off",
 			},
 		}),
 		...createOxlintConfigs({
