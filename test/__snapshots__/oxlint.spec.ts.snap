@@ -2763,6 +2763,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "libs/*/*/*",
       ],
       "rules": {
+        "import/no-default-export": "off",
         "unicorn/filename-case": "off",
       },
     },
@@ -6464,6 +6465,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "libs/*/*/*",
       ],
       "rules": {
+        "import/no-default-export": "off",
         "unicorn/filename-case": "off",
       },
     },
@@ -10262,6 +10264,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "libs/*/*/*",
       ],
       "rules": {
+        "import/no-default-export": "off",
         "unicorn/filename-case": "off",
       },
     },
@@ -16445,6 +16448,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "libs/*/*/*",
       ],
       "rules": {
+        "import/no-default-export": "off",
         "unicorn/filename-case": "off",
       },
     },

@@ -400,6 +400,8 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	// Part: Imports (import-lite; native ports)
 	"import/first": "native",
 	"import/newline-after-import": "native",
+	"import/no-anonymous-default-export": "native",
+	"import/no-default-export": "native",
 	"import/no-mutable-exports": "native",
 	"import/no-named-default": "native",
 
