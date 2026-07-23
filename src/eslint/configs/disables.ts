@@ -94,6 +94,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 			name: "isentinel/disables/root",
 			files: [...root, `*.md/${GLOB_SRC}`],
 			rules: {
+				"small-rules/require-async-suffix": "off",
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
 			},

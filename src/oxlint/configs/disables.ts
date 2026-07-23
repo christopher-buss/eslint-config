@@ -107,6 +107,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			name: "isentinel/disables/root",
 			files: [...root],
 			rules: {
+				"small-rules/require-async-suffix": "off",
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
 			},
