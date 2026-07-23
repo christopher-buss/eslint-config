@@ -573,8 +573,11 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
  * This will become the default in a future major version.
  * @see {@link OptionsConfig.namedConfigs}
  */
-export type NamedOptionsConfig = OptionsConfig &
-	TypedFlatConfigItem & {
+// `ignores` is omitted from `TypedFlatConfigItem` (a plain `Array<string>`) so
+// the intersection keeps `OptionsConfig`'s richer union instead of collapsing
+// it.
+export type NamedOptionsConfig = Omit<TypedFlatConfigItem, "ignores"> &
+	OptionsConfig & {
 		name: string;
 		namedConfigs: true;
 	};
