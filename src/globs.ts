@@ -107,7 +107,7 @@ export const GLOB_GRAPHQL = "**/*.{g,graph}ql";
  * Type tests (`expectTypeOf` / `assertType`), run by Vitest's `typecheck`
  * mode. They are test files, but assert nothing at runtime.
  */
-export const GLOB_TYPE_TESTS = `**/*.test-d.${GLOB_SRC_EXT}`;
+export const GLOB_TYPE_TESTS = `**/*.{test,spec}-d.${GLOB_SRC_EXT}`;
 
 export const GLOB_TESTS: Array<string> = [
 	`**/__tests__/**/*.${GLOB_SRC_EXT}`,
