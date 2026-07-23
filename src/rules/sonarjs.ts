@@ -79,12 +79,17 @@ export function sonarjsRules({
  * both exclude vitest by design, since vitest awaits the suite callback and
  * does not support the `done` callback, so neither reports in a vitest file.
  *
+ * `super-linear-regex` is turned off for test files (mirroring its `!roblox`
+ * gating in {@link sonarjsRules}): test files carry adversarial/edge-case
+ * patterns and are not attack surface, so its ReDoS warning is noise there.
+ *
  * @param options - Which test framework the rules are being enabled for.
  * @returns The rule map.
  */
 export function sonarjsTestRules({
 	jest = false,
-}: { jest?: boolean } = {}): TypedFlatConfigItem["rules"] {
+	roblox = true,
+}: { jest?: boolean; roblox?: boolean } = {}): TypedFlatConfigItem["rules"] {
 	return {
 		"sonar/no-incompatible-assertion-types": "error",
 		"sonar/no-trivial-assertions": "error",
@@ -94,5 +99,6 @@ export function sonarjsTestRules({
 					"sonar/synchronous-suite-callback": "error",
 				}
 			: {}),
+		...(!roblox ? { "sonar/super-linear-regex": "off" } : {}),
 	};
 }

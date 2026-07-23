@@ -93,7 +93,7 @@ export async function test({
 						roblox: isRoblox,
 						stylistic,
 					}),
-					...sonarjsTestRules({ jest: true }),
+					...sonarjsTestRules({ jest: true, roblox: isRoblox }),
 
 					...overrides,
 					...jestOptions.overrides,
@@ -156,7 +156,7 @@ export async function test({
 						isInEditor,
 						stylistic,
 					}),
-					...sonarjsTestRules(),
+					...sonarjsTestRules({ roblox: isRoblox }),
 
 					...overrides,
 					...vitestOptions.overrides,

@@ -83,6 +83,34 @@ export async function runFixtureLint(
 }
 
 /**
+ * `JSON.stringify` replacer that maps machine-specific absolute `file:///` URLs
+ * (cspell dictionary paths, resolved jsPlugin specifiers) back to stable
+ * package/dictionary tokens, so snapshots that capture rule options stay
+ * machine-independent. Shared by the ESLint and oxlint snapshot serializers.
+ *
+ * @param _key - The property key (unused).
+ * @param value - The candidate value.
+ * @returns The redacted value, or the input unchanged.
+ */
+export function redactMachinePaths(_key: string, value: unknown): unknown {
+	if (typeof value === "string" && value.startsWith("file:///")) {
+		const index = value.lastIndexOf("/node_modules/");
+		if (index !== -1) {
+			const segments = value.slice(index + "/node_modules/".length).split("/");
+			const name =
+				segments[0]?.startsWith("@") === true
+					? `${segments[0]}/${segments[1]}`
+					: segments[0];
+			return `<pkg>:${name}`;
+		}
+
+		return `<dict>/${path.posix.basename(value)}`;
+	}
+
+	return value;
+}
+
+/**
  * Serialize a flat config array for snapshot comparison.
  *
  * @param configs - The resolved flat config items.
@@ -248,7 +276,7 @@ function serializeRules(rules: Record<string, unknown>): Array<string> {
 		}
 
 		if (options.length > 0) {
-			entry += ` ${JSON.stringify(options)}`;
+			entry += ` ${JSON.stringify(options, redactMachinePaths)}`;
 		}
 
 		result.push(entry);

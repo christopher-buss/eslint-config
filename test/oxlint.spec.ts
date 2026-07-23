@@ -13,12 +13,14 @@ import {
 	translateRuleToOxlint,
 } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
+import { redactMachinePaths } from "./helpers.ts";
 import {
 	effectiveEslintRules,
 	enabledEslintRules,
 	enabledFromEffective,
 	enabledOxlintRules,
 } from "./oxlint-helpers.ts";
+import { snapshotFixtures } from "./snapshot-fixtures.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -291,33 +293,14 @@ describe("hybrid marker", () => {
 });
 
 describe("oxlint config snapshots", () => {
-	it("should match the default roblox game config", ({ expect }) => {
-		expect.hasAssertions();
+	describe.for(snapshotFixtures)("$name", ({ name, options }) => {
+		it("should match the config snapshot", ({ expect }) => {
+			expect.hasAssertions();
 
-		const config = oxlintIsentinel({
-			name: "test/oxlint-roblox-game",
-			gitignore: false,
-			isAgent: false,
-			isInEditor: false,
+			const config = oxlintIsentinel({ name: `test/oxlint-${name}`, ...options });
+
+			expect(serializeOxlintConfig(config)).toMatchSnapshot();
 		});
-
-		expect(serializeOxlintConfig(config)).toMatchSnapshot();
-	});
-
-	it("should match the package config", ({ expect }) => {
-		expect.hasAssertions();
-
-		const config = oxlintIsentinel({
-			name: "test/oxlint-package",
-			gitignore: false,
-			isAgent: false,
-			isInEditor: false,
-			roblox: false,
-			test: { jest: true },
-			type: "package",
-		});
-
-		expect(serializeOxlintConfig(config)).toMatchSnapshot();
 	});
 
 	it("should anchor slash-less override globs to the config root", ({ expect }) => {
@@ -625,26 +608,5 @@ describe("scoped roblox complement", () => {
  * @returns A JSON-safe structure.
  */
 function serializeOxlintConfig(config: OxlintConfig): unknown {
-	return JSON.parse(
-		JSON.stringify(config, (_key, value: unknown) => {
-			if (typeof value === "string" && value.startsWith("file:///")) {
-				// jsPlugin specifiers are resolved to absolute URLs inside the
-				// installed tree; map them back to the package name so snapshots
-				// stay meaningful and machine-independent.
-				const index = value.lastIndexOf("/node_modules/");
-				if (index !== -1) {
-					const segments = value.slice(index + "/node_modules/".length).split("/");
-					const name =
-						segments[0]?.startsWith("@") === true
-							? `${segments[0]}/${segments[1]}`
-							: segments[0];
-					return `<pkg>:${name}`;
-				}
-
-				return `<dict>/${path.posix.basename(value)}`;
-			}
-
-			return value;
-		}),
-	);
+	return JSON.parse(JSON.stringify(config, redactMachinePaths));
 }
