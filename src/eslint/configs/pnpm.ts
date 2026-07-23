@@ -68,6 +68,7 @@ export async function pnpm(
 						},
 					},
 				],
+				"pnpm/yaml-no-anonymous-catalog": ["error"],
 				"pnpm/yaml-no-duplicate-catalog-item": "error",
 				"pnpm/yaml-no-unused-catalog-item": "error",
 			},
