@@ -14,7 +14,7 @@ export interface VitestRuleOptions extends OptionsIsInEditor, OptionsStylistic {
 }
 
 /**
- * Rules that make no sense in a type test (`*.test-d.ts`): these files assert
+ * Rules that make no sense in a type test (`*.spec-d.ts`): these files assert
  * with `expectTypeOf`/`assertType` at compile time, run no expectations, and
  * name their blocks after the types under test.
  *
@@ -23,6 +23,18 @@ export interface VitestRuleOptions extends OptionsIsInEditor, OptionsStylistic {
  */
 export function typeTestRules(prefix: "jest" | "vitest"): TypedFlatConfigItem["rules"] {
 	return {
+		...(prefix === "vitest"
+			? {
+					"flawless/prefer-ending-with-an-expect": "off",
+					"vitest/consistent-test-filename": [
+						"error",
+						{
+							allTestPattern: ".*\\.(test|spec)-d\\.[tj]sx?$",
+							pattern: ".*\\.spec-d\\.[tj]sx?$",
+						},
+					],
+				}
+			: {}),
 		[`${prefix}/expect-expect`]: "off",
 		[`${prefix}/prefer-expect-assertions`]: "off",
 		[`${prefix}/prefer-lowercase-title`]: "off",

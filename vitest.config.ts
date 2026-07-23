@@ -6,7 +6,7 @@ export default defineConfig({
 		testTimeout: 120_000,
 		typecheck: {
 			enabled: true,
-			include: ["test/**/*.test-d.ts"],
+			include: ["test/**/*.spec-d.ts"],
 		},
 	},
 });
