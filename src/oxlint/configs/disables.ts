@@ -92,6 +92,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 				"ts/no-empty-function": "off",
 				"ts/no-extraneous-class": "off",
 				"ts/no-non-null-assertion": "off",
+				"ts/require-await": "off",
 				"ts/unbound-method": "off",
 				"unicorn/consistent-function-scoping": "off",
 			},
@@ -107,6 +108,7 @@ export function oxlintDisables({ root }: { root: Array<string> }): Array<TypedOx
 			name: "isentinel/disables/root",
 			files: [...root],
 			rules: {
+				"import/no-default-export": "off",
 				"small-rules/require-async-suffix": "off",
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",

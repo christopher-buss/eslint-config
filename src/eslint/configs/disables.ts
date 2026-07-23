@@ -79,6 +79,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 				"ts/no-extraneous-class": "off",
 				"ts/no-non-null-assertion": "off",
 				"ts/no-unused-expressions": "off",
+				"ts/require-await": "off",
 				"ts/unbound-method": "off",
 				"unicorn/consistent-function-scoping": "off",
 			},
@@ -94,6 +95,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 			name: "isentinel/disables/root",
 			files: [...root, `*.md/${GLOB_SRC}`],
 			rules: {
+				"import/no-default-export": "off",
 				"small-rules/require-async-suffix": "off",
 				"sonar/file-name-differ-from-class": "off",
 				"unicorn/filename-case": "off",
