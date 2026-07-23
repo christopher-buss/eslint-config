@@ -78,14 +78,22 @@ export async function naming(
 									selector: "enumMember",
 								},
 								{
-									// Enforce that all top-level variables are
+									// Enforce that all top-level constants are
 									// in UPPER_CASE
 									format: ["UPPER_CASE"],
 									leadingUnderscore: "forbid",
-									modifiers: ["global"],
+									modifiers: ["const", "global"],
 									selector: "variable",
 									trailingUnderscore: "forbid",
 									types: ["boolean", "number", "string"],
+								},
+								{
+									// Const-asserted data objects (`as const
+									// satisfies T`) are frozen constants; pin
+									// one casing to match global primitives
+									format: ["UPPER_CASE"],
+									modifiers: ["constAsserted", "global"],
+									selector: "variable",
 								},
 								{
 									// Enforce that boolean variables are in
@@ -96,12 +104,21 @@ export async function naming(
 										regex: "^success$",
 									},
 									format: ["PascalCase"],
-									prefix: ["is", "should", "has", "can", "did", "will"],
+									prefix: [
+										"is",
+										"should",
+										"has",
+										"can",
+										"did",
+										"will",
+										"was",
+										"are",
+									],
 									selector: "variable",
 									types: ["boolean"],
 								},
 								{
-									// Enforce that global boolean variables are
+									// Enforce that global boolean constants are
 									// in UPPER_CASE and are prefixed with an
 									// allowed verb like "is", "should",
 									filter: {
@@ -109,8 +126,17 @@ export async function naming(
 										regex: "^success$",
 									},
 									format: ["UPPER_CASE"],
-									modifiers: ["global"],
-									prefix: ["IS_", "SHOULD_", "HAS_", "CAN_", "DID_", "WILL_"],
+									modifiers: ["const", "global"],
+									prefix: [
+										"IS_",
+										"SHOULD_",
+										"HAS_",
+										"CAN_",
+										"DID_",
+										"WILL_",
+										"WAS_",
+										"ARE_",
+									],
 									selector: "variable",
 									types: ["boolean"],
 								},
@@ -276,14 +302,22 @@ export async function naming(
 									selector: "enumMember",
 								},
 								{
-									// Enforce that all top-level variables are
+									// Enforce that all top-level constants are
 									// in UPPER_CASE
 									format: ["UPPER_CASE"],
 									leadingUnderscore: "forbid",
-									modifiers: ["global"],
+									modifiers: ["const", "global"],
 									selector: "variable",
 									trailingUnderscore: "forbid",
 									types: ["boolean", "number", "string"],
+								},
+								{
+									// Const-asserted data objects (`as const
+									// satisfies T`) are frozen constants; pin
+									// one casing to match global primitives
+									format: ["UPPER_CASE"],
+									modifiers: ["constAsserted", "global"],
+									selector: "variable",
 								},
 								{
 									// Enforce that boolean variables are in
@@ -294,12 +328,21 @@ export async function naming(
 										regex: "^success$",
 									},
 									format: ["PascalCase"],
-									prefix: ["is", "should", "has", "can", "did", "will"],
+									prefix: [
+										"is",
+										"should",
+										"has",
+										"can",
+										"did",
+										"will",
+										"was",
+										"are",
+									],
 									selector: "variable",
 									types: ["boolean"],
 								},
 								{
-									// Enforce that global boolean variables are
+									// Enforce that global boolean constants are
 									// in UPPER_CASE and are prefixed with an
 									// allowed verb like "is", "should",
 									filter: {
@@ -307,8 +350,17 @@ export async function naming(
 										regex: "^success$",
 									},
 									format: ["UPPER_CASE"],
-									modifiers: ["global"],
-									prefix: ["IS_", "SHOULD_", "HAS_", "CAN_", "DID_", "WILL_"],
+									modifiers: ["const", "global"],
+									prefix: [
+										"IS_",
+										"SHOULD_",
+										"HAS_",
+										"CAN_",
+										"DID_",
+										"WILL_",
+										"WAS_",
+										"ARE_",
+									],
 									selector: "variable",
 									types: ["boolean"],
 								},
