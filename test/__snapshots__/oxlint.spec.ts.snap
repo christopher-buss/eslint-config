@@ -1911,13 +1911,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "no-var": "error",
         "no-with": "off",
         "prefer-const": "error",
-        "prefer-destructuring": [
-          "error",
-          {
-            "array": false,
-            "object": true,
-          },
-        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -4833,13 +4826,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "no-var": "error",
         "no-with": "off",
         "prefer-const": "error",
-        "prefer-destructuring": [
-          "error",
-          {
-            "array": false,
-            "object": true,
-          },
-        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -8861,13 +8847,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "no-var": "error",
         "no-with": "off",
         "prefer-const": "error",
-        "prefer-destructuring": [
-          "error",
-          {
-            "array": false,
-            "object": true,
-          },
-        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -12669,13 +12648,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "no-var": "error",
         "no-with": "off",
         "prefer-const": "error",
-        "prefer-destructuring": [
-          "error",
-          {
-            "array": false,
-            "object": true,
-          },
-        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -13255,13 +13227,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "no-var": "error",
         "no-with": "off",
         "prefer-const": "error",
-        "prefer-destructuring": [
-          "error",
-          {
-            "array": false,
-            "object": true,
-          },
-        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",

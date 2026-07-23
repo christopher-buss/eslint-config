@@ -43,7 +43,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise, ts/prefer-destructuring (also has no native oxlint port)",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"unicorn/no-useless-coercion":
@@ -192,7 +192,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"ts/no-unused-expressions": "native",
 	"ts/no-unused-private-class-members": "native",
 	"ts/no-useless-constructor": "native",
-	"ts/prefer-destructuring": "native",
 
 	// Part: TypeScript (native, no type information required)
 	"ts/array-type": "native",
@@ -891,6 +890,9 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"sonar/no-redundant-optional",
 	"sonar/no-try-promise",
 	"sonar/prefer-immediate-return",
+	// Type-aware (meta.docs.requiresTypeChecking) and, unlike the other ts
+	// extension rules, has no native oxlint port, so it stays in ESLint.
+	"ts/prefer-destructuring",
 	"unicorn/no-non-function-verb-prefix",
 ]);
 
@@ -954,7 +956,6 @@ const TS_EXTENSION_TO_CORE = new Set([
 	"no-unused-expressions",
 	"no-unused-private-class-members",
 	"no-useless-constructor",
-	"prefer-destructuring",
 ]);
 
 /** Unicorn rules renamed in eslint-plugin-unicorn v70 but not in oxlint. */

@@ -10,7 +10,6 @@ const TS_EXTENSION_PAIRS = [
 	"no-unused-expressions",
 	"no-unused-private-class-members",
 	"no-useless-constructor",
-	"prefer-destructuring",
 ];
 
 function buildRules(order: Array<string>, extension: string): Rules {
