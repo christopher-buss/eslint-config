@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, it } from "vitest";
+import { describe, it, onTestFinished } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
 
@@ -93,29 +93,29 @@ describe("no-duplicate-imports allowSeparateTypeImports parity", () => {
 	it("allows split type/value imports and flags true duplicates on both engines", async ({
 		expect,
 	}) => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const directory = await fs.mkdtemp(path.join(os.tmpdir(), "no-dup-imports-"));
-		try {
-			await fs.writeFile(path.join(directory, "split.ts"), SPLIT_FIXTURE);
-			await fs.writeFile(path.join(directory, "dup.ts"), DUPLICATE_FIXTURE);
-			await fs.writeFile(path.join(directory, "m.ts"), MODULE_FIXTURE);
-			await fs.writeFile(path.join(directory, "n.ts"), MODULE_FIXTURE);
-			await fs.writeFile(
-				path.join(directory, ".oxlintrc.json"),
-				JSON.stringify({ categories: {}, plugins: [], rules: { [RULE]: RULE_ENTRY } }),
-			);
-
-			const oxlintFlagged = runOxlint(directory).sort();
-			const eslintResults = await runEslint(directory);
-			const eslintFlagged = eslintResults.sort();
-
-			// The true duplicate is flagged; the split type/value import is not.
-			expect(oxlintFlagged).toStrictEqual(["dup.ts"]);
-			expect(eslintFlagged).toStrictEqual(["dup.ts"]);
-			expect(oxlintFlagged).toStrictEqual(eslintFlagged);
-		} finally {
+		onTestFinished(async () => {
 			await fs.rm(directory, { force: true, recursive: true });
-		}
+		});
+
+		await fs.writeFile(path.join(directory, "split.ts"), SPLIT_FIXTURE);
+		await fs.writeFile(path.join(directory, "dup.ts"), DUPLICATE_FIXTURE);
+		await fs.writeFile(path.join(directory, "m.ts"), MODULE_FIXTURE);
+		await fs.writeFile(path.join(directory, "n.ts"), MODULE_FIXTURE);
+		await fs.writeFile(
+			path.join(directory, ".oxlintrc.json"),
+			JSON.stringify({ categories: {}, plugins: [], rules: { [RULE]: RULE_ENTRY } }),
+		);
+
+		const oxlintFlagged = runOxlint(directory).sort();
+		const eslintResults = await runEslint(directory);
+		const eslintFlagged = eslintResults.sort();
+
+		// The true duplicate is flagged; the split type/value import is not.
+		expect(oxlintFlagged).toStrictEqual(["dup.ts"]);
+		expect(eslintFlagged).toStrictEqual(["dup.ts"]);
+		expect(oxlintFlagged).toStrictEqual(eslintFlagged);
 	});
 });

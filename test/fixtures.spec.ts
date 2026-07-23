@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, it } from "vitest";
+import { describe, it, onTestFinished } from "vitest";
 
 import { FIXTURES_TEMP, runFixtureLint } from "./helpers.ts";
 import type { FixtureOptions } from "./helpers.ts";
@@ -33,7 +33,16 @@ describe.for(configs)("$name", (config: FixtureConfig) => {
 	it(
 		"should produce expected lint output",
 		async ({ expect }) => {
-			expect.hasAssertions();
+			// The input fixtures are a fixed set of 11 files, so this is 11
+			// soft assertions from the loop plus the trailing size check.
+			expect.assertions(12);
+
+			onTestFinished(async () => {
+				await fs.rm(path.resolve(FIXTURES_TEMP, config.name), {
+					force: true,
+					recursive: true,
+				});
+			});
 
 			const results = await runFixtureLint(config.name, config.options);
 
@@ -48,10 +57,7 @@ describe.for(configs)("$name", (config: FixtureConfig) => {
 				await expect.soft(content).toMatchFileSnapshot(snapshotPath);
 			}
 
-			await fs.rm(path.resolve(FIXTURES_TEMP, config.name), {
-				force: true,
-				recursive: true,
-			});
+			expect(results.size).toBe(11);
 		},
 		timeout,
 	);

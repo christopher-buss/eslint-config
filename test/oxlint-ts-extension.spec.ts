@@ -25,7 +25,7 @@ describe("splitOxlintRules ts-extension precedence", () => {
 	it.for(TS_EXTENSION_PAIRS)(
 		"should let the ts extension of %s win over its core rule regardless of order",
 		(core, { expect }) => {
-			expect.hasAssertions();
+			expect.assertions(2);
 
 			const extension = `ts/${core}`;
 			const coreFirst = splitOxlintRules(buildRules([core, extension], extension));

@@ -61,19 +61,19 @@ const DATA: ESLint.LintResultData = { cwd: ROOT, rulesMeta: {} };
 
 describe("eslintFormatterAgents", () => {
 	it("returns an empty string when nothing was reported", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(eslintFormatterAgents([makeResult("clean.ts", [])], DATA)).toBe("");
 	});
 
 	it("returns an empty string for empty result lists", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(eslintFormatterAgents([], DATA)).toBe("");
 	});
 
 	it("formats errors and warnings sorted by position within a file", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
 			[
@@ -105,7 +105,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("labels fatal parse errors as errors under the eslint rule id", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
 			[
@@ -130,7 +130,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("sorts messages across multiple files by relative path", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
 			[
@@ -152,7 +152,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("breaks position ties by severity then rule id", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
 			[
@@ -174,7 +174,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("collapses message whitespace onto a single line", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
 			[
@@ -198,7 +198,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("ignores suppressed messages and fixable counts", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const result = makeResult(
 			"suppressed.ts",
@@ -210,7 +210,7 @@ describe("eslintFormatterAgents", () => {
 	});
 
 	it("relativizes against process.cwd() when no run data is provided", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const output = eslintFormatterAgents([
 			makeResult("fallback.ts", [

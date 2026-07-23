@@ -1,11 +1,11 @@
-// cspell:words typeaware lintable mtimes CLAUDECODE
+// cspell:words typeaware lintable mtimes CLAUDECODE extensionless
 import fileEntryCache from "file-entry-cache";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
@@ -95,14 +95,14 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 	};
 }
 
-function withTemporaryDirectory(run: (directory: string) => void): void {
+function temporaryDirectory(): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-"));
 
-	try {
-		run(directory);
-	} finally {
+	onTestFinished(() => {
 		fs.rmSync(directory, { force: true, recursive: true });
-	}
+	});
+
+	return directory;
 }
 
 function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
@@ -139,25 +139,25 @@ function concurrencyArgument(commands: Array<ChildCommand>, label: string): stri
 
 describe("parseArguments", () => {
 	it("defaults paths to '.'", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(parseArguments([], {}).paths).toStrictEqual(["."]);
 	});
 
 	it("keeps explicit paths", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(parseArguments(["src", "test"], {}).paths).toStrictEqual(["src", "test"]);
 	});
 
 	it("errors when --eslint and --oxlint are combined", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(() => parseArguments(["--eslint", "--oxlint"], {})).toThrow(CliError);
 	});
 
 	it("errors when --fix is combined with --type-aware", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(() => parseArguments(["--fix", "--type-aware=only"], {})).toThrow(
 			/Cannot combine --fix with --type-aware/,
@@ -165,13 +165,13 @@ describe("parseArguments", () => {
 	});
 
 	it("errors on unknown flags", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(() => parseArguments(["--nope"], {})).toThrow(CliError);
 	});
 
 	it("errors on invalid --concurrency", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(() => parseArguments(["--concurrency", "banana"], {})).toThrow(
 			/Invalid --concurrency/,
@@ -179,21 +179,21 @@ describe("parseArguments", () => {
 	});
 
 	it("accepts numeric and off concurrency overrides", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(parseArguments(["--concurrency", "6"], {}).concurrency).toBe(6);
 		expect(parseArguments(["--concurrency", "off"], {}).concurrency).toBe("off");
 	});
 
 	it("errors when bare -- passthrough is used without a single tool", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(() => parseArguments(["--", "--foo"], {})).toThrow(/single tool/);
 		expect(() => parseArguments(["--eslint", "--oxlint", "--", "--foo"], {})).toThrow(CliError);
 	});
 
 	it("forwards -- passthrough to the selected tool", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(parseArguments(["--oxlint", "--", "--deny", "all"], {}).oxlintArgs).toStrictEqual([
 			"--deny",
@@ -205,7 +205,7 @@ describe("parseArguments", () => {
 	});
 
 	it("splits dash-prefixed per-tool extra args", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const parsed = parseArguments(
 			["--eslint-args", "--max-warnings 0", "--oxlint-args=--quiet"],
@@ -217,7 +217,7 @@ describe("parseArguments", () => {
 	});
 
 	it("parses cache and type-aware toggles", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const parsed = parseArguments(
 			["--no-cache", "--no-oxlint-type-aware", "--type-aware=off"],
@@ -230,7 +230,7 @@ describe("parseArguments", () => {
 	});
 
 	it("defaults --agents to the detected agent session", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		expect(parseArguments([], {}).agents).toBe(false);
 		expect(parseArguments([], { CLAUDECODE: "1" }).agents).toBe(true);
@@ -238,7 +238,7 @@ describe("parseArguments", () => {
 	});
 
 	it("lets --agents and --no-agents override the detection", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(parseArguments(["--agents"], {}).agents).toBe(true);
 		expect(parseArguments(["--no-agents"], { CLAUDECODE: "1" }).agents).toBe(false);
@@ -247,27 +247,27 @@ describe("parseArguments", () => {
 
 describe("computeWorkerCount", () => {
 	it("returns off for zero or single-worker workloads", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(workerCount(0, 350, 8)).toBe("off");
 		expect(workerCount(350, 350, 8)).toBe("off");
 	});
 
 	it("scales with the dirty count", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(workerCount(400, 350, 8)).toBe(2);
 		expect(workerCount(1400, 350, 8)).toBe(4);
 	});
 
 	it("caps at maxWorkers", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(workerCount(100_000, 350, 3)).toBe(3);
 	});
 
 	it("returns off when the cap is below two", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(workerCount(100_000, 350, 1)).toBe("off");
 	});
@@ -275,7 +275,7 @@ describe("computeWorkerCount", () => {
 
 describe("per-pass worker caps", () => {
 	it("caps the program-building passes below the shared cap", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const limits = resolveWorkerLimits({}, 64, false);
 
@@ -286,7 +286,7 @@ describe("per-pass worker caps", () => {
 	});
 
 	it("leaves the shared cap alone when it is already the tighter one", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const limits = resolveWorkerLimits({}, 16, false);
 
@@ -294,7 +294,7 @@ describe("per-pass worker caps", () => {
 	});
 
 	it("never overrides an explicit LINT_MAX_WORKERS", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "12" }, 64, false);
 
@@ -305,7 +305,7 @@ describe("per-pass worker caps", () => {
 
 describe("resolveWorkerLimits", () => {
 	it("defaults to 300 files per worker and a quarter of the CPUs", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(resolveWorkerLimits({}, 16, false)).toStrictEqual({
 			filesPerWorker: 300,
@@ -315,7 +315,7 @@ describe("resolveWorkerLimits", () => {
 	});
 
 	it("honours env overrides", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const limits = resolveWorkerLimits(
 			{ FILES_PER_WORKER: "200", LINT_MAX_WORKERS: "6" },
@@ -331,7 +331,7 @@ describe("resolveWorkerLimits", () => {
 	});
 
 	it("ignores invalid env overrides", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const limits = resolveWorkerLimits(
 			{ FILES_PER_WORKER: "0", LINT_MAX_WORKERS: "x" },
@@ -347,7 +347,7 @@ describe("resolveWorkerLimits", () => {
 	});
 
 	it("uses the full parallelism in CI", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(resolveWorkerLimits({}, 4, true)).toStrictEqual({
 			filesPerWorker: 300,
@@ -357,7 +357,7 @@ describe("resolveWorkerLimits", () => {
 	});
 
 	it("still caps the program-building passes in CI", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const limits = resolveWorkerLimits({}, 16, true);
 
@@ -366,7 +366,7 @@ describe("resolveWorkerLimits", () => {
 	});
 
 	it("prefers an explicit LINT_MAX_WORKERS over the CI sizing", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const limits = resolveWorkerLimits({ LINT_MAX_WORKERS: "2" }, 16, true);
 
@@ -377,78 +377,72 @@ describe("resolveWorkerLimits", () => {
 
 describe("cache helpers", () => {
 	it("detects a bust file newer than the cache", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const cacheFile = path.join(directory, ".eslintcache");
-			const configFile = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(cacheFile, "{}");
-			fs.writeFileSync(configFile, "export default []");
-			const future = Date.now() / 1000 + 60;
-			fs.utimesSync(configFile, future, future);
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const configFile = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(cacheFile, "{}");
+		fs.writeFileSync(configFile, "export default []");
+		const future = Date.now() / 1000 + 60;
+		fs.utimesSync(configFile, future, future);
 
-			expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(true);
-		});
+		expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(true);
 	});
 
 	it("returns false when the cache is newer than every bust file", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const cacheFile = path.join(directory, ".eslintcache");
-			const configFile = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(configFile, "export default []");
-			const past = Date.now() / 1000 - 60;
-			fs.utimesSync(configFile, past, past);
-			fs.writeFileSync(cacheFile, "{}");
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const configFile = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(configFile, "export default []");
+		const past = Date.now() / 1000 - 60;
+		fs.utimesSync(configFile, past, past);
+		fs.writeFileSync(cacheFile, "{}");
 
-			expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(false);
-		});
+		expect(isCacheStale(cacheFile, maxMtimeMs([configFile]))).toBe(false);
 	});
 
 	it("returns false when the cache file is missing", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(isCacheStale(path.join(directory, "missing"), maxMtimeMs([]))).toBe(false);
-		});
+		const directory = temporaryDirectory();
+
+		expect(isCacheStale(path.join(directory, "missing"), maxMtimeMs([]))).toBe(false);
 	});
 
 	it("sweeps every managed cache file when all are stale", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			for (const name of ALL_CACHE_FILES) {
-				fs.writeFileSync(path.join(directory, name), "{}");
-			}
+		const directory = temporaryDirectory();
+		for (const name of ALL_CACHE_FILES) {
+			fs.writeFileSync(path.join(directory, name), "{}");
+		}
 
-			// A bust newer than every cache makes all of them stale.
-			sweepStaleCaches(directory, Date.now() + 60_000);
+		// A bust newer than every cache makes all of them stale.
+		sweepStaleCaches(directory, Date.now() + 60_000);
 
-			for (const name of ALL_CACHE_FILES) {
-				expect(fs.existsSync(path.join(directory, name))).toBe(false);
-			}
-		});
+		expect(ALL_CACHE_FILES.every((name) => !fs.existsSync(path.join(directory, name)))).toBe(
+			true,
+		);
 	});
 
 	it("sweeps keyed cache variants, not just the base names", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const variants = ALL_CACHE_FILES.flatMap((name) => [
-				cacheFileFor(name, "aaaa1111"),
-				cacheFileFor(name, "bbbb2222"),
-			]);
-			for (const name of variants) {
-				fs.writeFileSync(path.join(directory, name), "{}");
-			}
+		const directory = temporaryDirectory();
+		const variants = ALL_CACHE_FILES.flatMap((name) => [
+			cacheFileFor(name, "aaaa1111"),
+			cacheFileFor(name, "bbbb2222"),
+		]);
+		for (const name of variants) {
+			fs.writeFileSync(path.join(directory, name), "{}");
+		}
 
-			sweepStaleCaches(directory, Date.now() + 60_000);
+		sweepStaleCaches(directory, Date.now() + 60_000);
 
-			for (const name of variants) {
-				expect(fs.existsSync(path.join(directory, name))).toBe(false);
-			}
-		});
+		expect(variants.every((name) => !fs.existsSync(path.join(directory, name)))).toBe(true);
 	});
 
 	describe("sweepStaleCaches", () => {
@@ -466,43 +460,41 @@ describe("cache helpers", () => {
 		}
 
 		it("deletes only the individually stale variants", () => {
-			expect.hasAssertions();
+			expect.assertions(3);
 
-			withTemporaryDirectory((directory) => {
-				const configFile = path.join(directory, "eslint.config.ts");
-				const bustSeconds = Date.now() / 1000;
-				fs.writeFileSync(configFile, "export default [];");
-				fs.utimesSync(configFile, bustSeconds, bustSeconds);
+			const directory = temporaryDirectory();
+			const configFile = path.join(directory, "eslint.config.ts");
+			const bustSeconds = Date.now() / 1000;
+			fs.writeFileSync(configFile, "export default [];");
+			fs.utimesSync(configFile, bustSeconds, bustSeconds);
 
-				const stale = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
-				const fresh = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "bbbb2222"));
-				writeCacheAt(stale, bustSeconds - 60);
-				writeCacheAt(fresh, bustSeconds + 60);
+			const stale = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
+			const fresh = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "bbbb2222"));
+			writeCacheAt(stale, bustSeconds - 60);
+			writeCacheAt(fresh, bustSeconds + 60);
 
-				const removed = sweepStaleCaches(directory, bustSeconds * 1000);
+			const removed = sweepStaleCaches(directory, bustSeconds * 1000);
 
-				expect(removed).toStrictEqual([stale]);
-				expect(fs.existsSync(stale)).toBe(false);
-				expect(fs.existsSync(fresh)).toBe(true);
-			});
+			expect(removed).toStrictEqual([stale]);
+			expect(fs.existsSync(stale)).toBe(false);
+			expect(fs.existsSync(fresh)).toBe(true);
 		});
 
 		it("deletes nothing when there is no bust file", () => {
-			expect.hasAssertions();
+			expect.assertions(2);
 
-			withTemporaryDirectory((directory) => {
-				const cacheFile = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
-				fs.writeFileSync(cacheFile, "{}");
+			const directory = temporaryDirectory();
+			const cacheFile = path.join(directory, cacheFileFor(CACHE_FILE_FAST, "aaaa1111"));
+			fs.writeFileSync(cacheFile, "{}");
 
-				expect(sweepStaleCaches(directory, undefined)).toStrictEqual([]);
-				expect(fs.existsSync(cacheFile)).toBe(true);
-			});
+			expect(sweepStaleCaches(directory, undefined)).toStrictEqual([]);
+			expect(fs.existsSync(cacheFile)).toBe(true);
 		});
 	});
 
 	describe("resolveCacheKey", () => {
 		it("separates the agent, editor, CI, no-autofix and default variants", () => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const keys = [
 				resolveCacheKey({}),
@@ -518,7 +510,7 @@ describe("cache helpers", () => {
 		});
 
 		it("pins a git-hook run to the same variant as a plain run", () => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			// `isInAgentSession` and `isInEditorEnvironment` both return false
 			// under GIT_HOOK, so a hook run shares the no-agent cache rather than
@@ -527,7 +519,7 @@ describe("cache helpers", () => {
 		});
 
 		it("honours the ISENTINEL_LINT_CACHE_KEY escape hatch", () => {
-			expect.hasAssertions();
+			expect.assertions(2);
 
 			expect(resolveCacheKey({ ISENTINEL_LINT_CACHE_KEY: "strict" })).not.toBe(
 				resolveCacheKey({}),
@@ -551,143 +543,137 @@ describe("cache helpers", () => {
 	}
 
 	it("counts all files when the cache is missing", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const fileA = path.join(directory, "a.ts");
-			const fileB = path.join(directory, "b.ts");
-			fs.writeFileSync(fileA, "const a = 1;");
-			fs.writeFileSync(fileB, "const b = 2;");
+		const directory = temporaryDirectory();
+		const fileA = path.join(directory, "a.ts");
+		const fileB = path.join(directory, "b.ts");
+		fs.writeFileSync(fileA, "const a = 1;");
+		fs.writeFileSync(fileB, "const b = 2;");
 
-			expect(dirtyFiles(path.join(directory, "missing"), [fileA, fileB])).toHaveLength(2);
-		});
+		expect(dirtyFiles(path.join(directory, "missing"), [fileA, fileB])).toHaveLength(2);
 	});
 
 	it("counts only changed and uncached files", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			const cacheFile = path.join(directory, ".eslintcache");
-			const fileA = path.join(directory, "a.ts");
-			const fileB = path.join(directory, "b.ts");
-			fs.writeFileSync(fileA, "const a = 1;");
-			fs.writeFileSync(fileB, "const b = 2;");
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "a.ts");
+		const fileB = path.join(directory, "b.ts");
+		fs.writeFileSync(fileA, "const a = 1;");
+		fs.writeFileSync(fileB, "const b = 2;");
 
-			const cache = fileEntryCache.createFromFile(cacheFile, false);
-			cache.getFileDescriptor(fileA);
-			cache.reconcile();
+		const cache = fileEntryCache.createFromFile(cacheFile, false);
+		cache.getFileDescriptor(fileA);
+		cache.reconcile();
 
-			// fileA is cached and unchanged; fileB was never seen.
-			expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(1);
+		// fileA is cached and unchanged; fileB was never seen.
+		expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(1);
 
-			fs.writeFileSync(fileA, "const a = 42;");
-			const future = Date.now() / 1000 + 60;
-			fs.utimesSync(fileA, future, future);
+		fs.writeFileSync(fileA, "const a = 42;");
+		const future = Date.now() / 1000 + 60;
+		fs.utimesSync(fileA, future, future);
 
-			expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(2);
-		});
+		expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(2);
 	});
 });
 
 describe("collectRepoFiles lintable set", () => {
 	it("collects the TS/JS family plus JSONC, YAML, TOML, Markdown and Lua", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const lintable = [
-				"a.ts",
-				"b.tsx",
-				"c.js",
-				"config.json",
-				"tsconfig.jsonc",
-				"data.json5",
-				"ci.yaml",
-				"pnpm-workspace.yml",
-				"Cargo.toml",
-				"README.md",
-				"init.lua",
-			];
-			const excluded = ["notes.txt", "styles.css"];
-			for (const name of [...lintable, ...excluded]) {
-				fs.writeFileSync(path.join(directory, name), "");
-			}
+		const directory = temporaryDirectory();
+		const lintable = [
+			"a.ts",
+			"b.tsx",
+			"c.js",
+			"config.json",
+			"tsconfig.jsonc",
+			"data.json5",
+			"ci.yaml",
+			"pnpm-workspace.yml",
+			"Cargo.toml",
+			"README.md",
+			"init.lua",
+		];
+		const excluded = ["notes.txt", "styles.css"];
+		for (const name of [...lintable, ...excluded]) {
+			fs.writeFileSync(path.join(directory, name), "");
+		}
 
-			const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["."]).lintable);
-			const collected = files.map((file) => path.basename(file));
+		const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["."]).lintable);
+		const collected = files.map((file) => path.basename(file));
 
-			expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
-		});
+		expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
 	});
 });
 
 describe("oxlintTargets", () => {
 	it("keeps the TS/JS family, directories and extensionless paths", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "src"));
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "src"));
 
-			expect(
-				oxlintTargets(directory, ["a.ts", "b.tsx", "c.js", "src", "Makefile"]),
-			).toStrictEqual(["a.ts", "b.tsx", "c.js", "src", "Makefile"]);
-		});
+		expect(
+			oxlintTargets(directory, ["a.ts", "b.tsx", "c.js", "src", "Makefile"]),
+		).toStrictEqual(["a.ts", "b.tsx", "c.js", "src", "Makefile"]);
 	});
 
 	it("drops non-TS/JS file extensions", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(oxlintTargets(directory, ["pnpm-lock.yaml", "README.md"])).toStrictEqual([]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(oxlintTargets(directory, ["pnpm-lock.yaml", "README.md"])).toStrictEqual([]);
 	});
 
 	it("drops a gitignored file oxlint would refuse, collapsing an all-ignored set", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			execFileSync("git", ["init", "-q"], { cwd: directory });
-			fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
+		const directory = temporaryDirectory();
+		execFileSync("git", ["init", "-q"], { cwd: directory });
+		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
-			// The only oxlint-eligible target is the one git ignores, so the set
-			// collapses to empty rather than handing oxlint an all-ignored run it
-			// exits non-zero on.
-			expect(
-				withoutGitEnvironment(() => {
-					return oxlintTargets(directory, ["pnpm-lock.yaml", "src/typegen.d.ts"]);
-				}),
-			).toStrictEqual([]);
-		});
+		// The only oxlint-eligible target is the one git ignores, so the set
+		// collapses to empty rather than handing oxlint an all-ignored run it
+		// exits non-zero on.
+		expect(
+			withoutGitEnvironment(() => {
+				return oxlintTargets(directory, ["pnpm-lock.yaml", "src/typegen.d.ts"]);
+			}),
+		).toStrictEqual([]);
 	});
 
 	it("keeps non-ignored targets alongside an ignored one", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			execFileSync("git", ["init", "-q"], { cwd: directory });
-			fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
+		const directory = temporaryDirectory();
+		execFileSync("git", ["init", "-q"], { cwd: directory });
+		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
-			expect(
-				withoutGitEnvironment(() => {
-					return oxlintTargets(directory, ["src/typegen.d.ts", "src/index.ts"]);
-				}),
-			).toStrictEqual(["src/index.ts"]);
-		});
+		expect(
+			withoutGitEnvironment(() => {
+				return oxlintTargets(directory, ["src/typegen.d.ts", "src/index.ts"]);
+			}),
+		).toStrictEqual(["src/index.ts"]);
 	});
 
 	it("filters nothing outside a git repository", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(
-				withoutGitEnvironment(() => oxlintTargets(directory, ["a.ts", "b.ts"])),
-			).toStrictEqual(["a.ts", "b.ts"]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(
+			withoutGitEnvironment(() => oxlintTargets(directory, ["a.ts", "b.ts"])),
+		).toStrictEqual(["a.ts", "b.ts"]);
 	});
 });
 
 describe("splitArgs", () => {
 	it("splits on whitespace and respects quotes", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		expect(splitArgs("--max-warnings 0")).toStrictEqual(["--max-warnings", "0"]);
 		expect(splitArgs("--rule 'no-console: error'")).toStrictEqual([
@@ -700,7 +686,7 @@ describe("splitArgs", () => {
 
 describe("command composition", () => {
 	it("composes the oxlint command with type-aware, agents and fix", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const command = composeOxlintCommand(options({ agents: true, fix: true }), {
 			oxlintTypeAware: true,
@@ -712,7 +698,7 @@ describe("command composition", () => {
 	});
 
 	it("omits --type-aware from oxlint when disabled", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const command = composeOxlintCommand(options(), { oxlintTypeAware: false, paths: ["."] });
 
@@ -720,7 +706,7 @@ describe("command composition", () => {
 	});
 
 	it("composes the ESLint command with cache location and concurrency", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const command = composeEslintCommand(
 			options(),
@@ -747,7 +733,7 @@ describe("command composition", () => {
 	});
 
 	it("adds the content cache strategy in CI", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const command = composeEslintCommand(options(), baseContext({ ci: true, concurrency: 2 }));
 		const strategyIndex = command.args.indexOf("--cache-strategy");
@@ -757,7 +743,7 @@ describe("command composition", () => {
 	});
 
 	it("drops cache flags when caching is disabled", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const command = composeEslintCommand(options({ cache: false }), baseContext({ ci: true }));
 
@@ -766,7 +752,7 @@ describe("command composition", () => {
 	});
 
 	it("points ESLint at the agents formatter", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const command = composeEslintCommand(
 			options({ agents: true }),
@@ -780,7 +766,7 @@ describe("command composition", () => {
 
 describe("formatCommandLine", () => {
 	it("renders a shell-equivalent line with an env prefix", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const command = composeEslintCommand(
 			options(),
@@ -799,7 +785,7 @@ describe("formatCommandLine", () => {
 	});
 
 	it("renders oxlint without an env prefix", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const command = composeOxlintCommand(options(), { oxlintTypeAware: true, paths: ["."] });
 
@@ -809,7 +795,7 @@ describe("formatCommandLine", () => {
 
 describe("buildShellCommand", () => {
 	it("quotes tokens with spaces per platform", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		expect(buildShellCommand("node", "/path/eslint.js", ["."], "linux")).toBe(
 			"node /path/eslint.js .",
@@ -823,7 +809,7 @@ describe("buildShellCommand", () => {
 	});
 
 	it("doubles trailing backslashes so they do not escape the closing quote", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		// `.\src\` naively quotes to `".\src\"`, whose trailing `\"` cmd.exe
 		// reads as an escaped quote — ESLint then receives the literal `.\src"`.
@@ -836,7 +822,7 @@ describe("buildShellCommand", () => {
 	});
 
 	it("doubles backslashes that precede an embedded quote", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(buildShellCommand("node", "C:/eslint.js", [String.raw`a\"b`], "win32")).toBe(
 			String.raw`node C:/eslint.js "a\\\"b"`,
@@ -855,193 +841,188 @@ function printLines(
 
 describe("compose --print", () => {
 	it("composes the default concurrent two-pass mode plus oxlint", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines([], directory)).toStrictEqual([
-				"oxlint --type-aware .",
-				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
-					"--no-warn-ignored --concurrency off .",
-				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
-					"--no-warn-ignored --concurrency off .",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines([], directory)).toStrictEqual([
+			"oxlint --type-aware .",
+			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+				"--no-warn-ignored --concurrency off .",
+			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+				"--no-warn-ignored --concurrency off .",
+		]);
 	});
 
 	it("composes only the fast pass for --type-aware=off", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
-				"oxlint .",
-				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
-					"--no-warn-ignored --concurrency off .",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
+			"oxlint .",
+			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+				"--no-warn-ignored --concurrency off .",
+		]);
 	});
 
 	it("composes only the typed pass for --type-aware=only", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
-				"oxlint --type-aware .",
-				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
-					"--no-warn-ignored --concurrency off .",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
+			"oxlint --type-aware .",
+			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+				"--no-warn-ignored --concurrency off .",
+		]);
 	});
 
 	it("composes the agent formatters from the environment alone", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withTemporaryDirectory((directory) => {
-			const lines = printLines([], directory, { CLAUDECODE: "1" });
+		const directory = temporaryDirectory();
+		const lines = printLines([], directory, { CLAUDECODE: "1" });
 
-			expect(lines[0]).toContain("--format agent");
-			expect(
-				lines.slice(1).every((line) => /--format \S*formatter-agents\.mjs/.test(line)),
-			).toBe(true);
-			expect(
-				printLines(["--no-agents"], directory, { CLAUDECODE: "1" }).join("\n"),
-			).not.toContain("--format");
-		});
+		expect(lines[0]).toContain("--format agent");
+		expect(lines.slice(1).every((line) => /--format \S*formatter-agents\.mjs/.test(line))).toBe(
+			true,
+		);
+		expect(
+			printLines(["--no-agents"], directory, { CLAUDECODE: "1" }).join("\n"),
+		).not.toContain("--format");
 	});
 
 	it("composes the full config for the --type-aware=full escape hatch", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
-				"oxlint --type-aware .",
-				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
+			"oxlint --type-aware .",
+			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
+		]);
 	});
 
 	it("composes a single full pass with the content cache strategy in CI", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines([], directory, { CI: "true" })).toStrictEqual([
-				"oxlint --type-aware .",
-				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines([], directory, { CI: "true" })).toStrictEqual([
+			"oxlint --type-aware .",
+			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
+		]);
 	});
 
 	it("drops oxlint when no target is a file it can lint", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["package.json"], directory)).toStrictEqual([
-				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
-					"--no-warn-ignored --concurrency off package.json",
-				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
-					"--no-warn-ignored --concurrency off package.json",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["package.json"], directory)).toStrictEqual([
+			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+				"--no-warn-ignored --concurrency off package.json",
+			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+				"--no-warn-ignored --concurrency off package.json",
+		]);
 	});
 
 	it("passes oxlint only the targets it can lint", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["package.json", "src/index.ts", "docs"], directory)[0]).toBe(
-				"oxlint --type-aware src/index.ts docs",
-			);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["package.json", "src/index.ts", "docs"], directory)[0]).toBe(
+			"oxlint --type-aware src/index.ts docs",
+		);
 	});
 
 	it("composes the sequential full-config fix pass", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--fix"], directory)).toStrictEqual([
-				"oxlint --type-aware --fix .",
-				`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off --fix .`,
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--fix"], directory)).toStrictEqual([
+			"oxlint --type-aware --fix .",
+			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off --fix .`,
+		]);
 	});
 });
 
 describe("plan", () => {
 	it("returns the default fast + typed passes as data", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withTemporaryDirectory((directory) => {
-			const runPlan = withoutGitEnvironment(() => {
-				return plan(parseArguments([], {}), runContext(directory));
-			});
-
-			expect(runPlan.oxlint).toBe(true);
-			expect(runPlan.oxlintTypeAware).toBe(true);
-			expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
-				"fast",
-				"typed",
-			]);
-			// A read-only plan never auto-skips the typed pass.
-			expect(runPlan.passes.every((pass) => pass.shouldRun)).toBe(true);
+		const directory = temporaryDirectory();
+		const runPlan = withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory));
 		});
+
+		expect(runPlan.oxlint).toBe(true);
+		expect(runPlan.oxlintTypeAware).toBe(true);
+		expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+			"fast",
+			"typed",
+		]);
+		// A read-only plan never auto-skips the typed pass.
+		expect(runPlan.passes.every((pass) => pass.shouldRun)).toBe(true);
 	});
 
 	it("plans no ESLint passes for an oxlint-only run", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			const runPlan = withoutGitEnvironment(() => {
-				return plan(parseArguments(["--oxlint"], {}), runContext(directory));
-			});
-
-			expect(runPlan.oxlint).toBe(true);
-			expect(runPlan.passes).toStrictEqual([]);
+		const directory = temporaryDirectory();
+		const runPlan = withoutGitEnvironment(() => {
+			return plan(parseArguments(["--oxlint"], {}), runContext(directory));
 		});
+
+		expect(runPlan.oxlint).toBe(true);
+		expect(runPlan.passes).toStrictEqual([]);
 	});
 
 	it("collapses to a single pass for the explicit modes", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			const fast = withoutGitEnvironment(() => {
-				return plan(parseArguments(["--type-aware=off"], {}), runContext(directory));
-			});
-			const full = withoutGitEnvironment(() => {
-				return plan(
-					parseArguments([], {}),
-					runContext(directory, { environment: { CI: "true" } }),
-				);
-			});
-
-			expect(fast.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
-			expect(full.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
+		const directory = temporaryDirectory();
+		const fast = withoutGitEnvironment(() => {
+			return plan(parseArguments(["--type-aware=off"], {}), runContext(directory));
 		});
+		const full = withoutGitEnvironment(() => {
+			return plan(
+				parseArguments([], {}),
+				runContext(directory, { environment: { CI: "true" } }),
+			);
+		});
+
+		expect(fast.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
+		expect(full.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
 	});
 });
 
 describe("fast pass sizing", () => {
 	it("sizes the fast pass from FAST_FILES_PER_WORKER and the typed pass from 300", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			for (const name of ["a.ts", "b.ts", "c.ts"]) {
-				fs.writeFileSync(path.join(directory, name), "export const x = 1;\n");
-			}
+		const directory = temporaryDirectory();
+		for (const name of ["a.ts", "b.ts", "c.ts"]) {
+			fs.writeFileSync(path.join(directory, name), "export const x = 1;\n");
+		}
 
-			const { commands } = composeInDirectory([], directory, {
-				environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
-			});
-
-			// Three dirty files: FAST_FILES_PER_WORKER=1 => 3 fast workers; the
-			// typed pass keeps the 300-file default => a single worker (off).
-			expect(concurrencyArgument(commands, "fast")).toBe("3");
-			expect(concurrencyArgument(commands, "typed")).toBe("off");
+		const { commands } = composeInDirectory([], directory, {
+			environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
 		});
+
+		// Three dirty files: FAST_FILES_PER_WORKER=1 => 3 fast workers; the
+		// typed pass keeps the 300-file default => a single worker (off).
+		expect(concurrencyArgument(commands, "fast")).toBe("3");
+		expect(concurrencyArgument(commands, "typed")).toBe("off");
 	});
 });
 
 describe("resolveFastFilesPerWorker", () => {
 	it("defaults to 800 and honours FAST_FILES_PER_WORKER", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		expect(resolveFastFilesPerWorker({})).toBe(800);
 		expect(resolveFastFilesPerWorker({ FAST_FILES_PER_WORKER: "200" })).toBe(200);
@@ -1080,187 +1061,178 @@ describe("applyPackageJsonBust", () => {
 	}
 
 	it("stores the hash without busting on the first run", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			writePackageJson(directory, { exports: "./index.js" });
-			seedCaches(directory);
+		const directory = temporaryDirectory();
+		writePackageJson(directory, { exports: "./index.js" });
+		seedCaches(directory);
 
-			const outcome = bustPackage(runContext(directory));
+		const outcome = bustPackage(runContext(directory));
 
-			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
-			expect(everyCacheExists(directory)).toBe(true);
-		});
+		expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+		expect(everyCacheExists(directory)).toBe(true);
 	});
 
 	it("deletes the type-aware caches but keeps the fast cache when exports change", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withTemporaryDirectory((directory) => {
-			writePackageJson(directory, { exports: "./index.js" });
-			bustPackage(runContext(directory));
-			seedCaches(directory);
+		const directory = temporaryDirectory();
+		writePackageJson(directory, { exports: "./index.js" });
+		bustPackage(runContext(directory));
+		seedCaches(directory);
 
-			writePackageJson(directory, { exports: "./other.js" });
-			const outcome = bustPackage(runContext(directory));
+		writePackageJson(directory, { exports: "./other.js" });
+		const outcome = bustPackage(runContext(directory));
 
-			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
-			expect(
-				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, key))),
-			).toBe(false);
-			expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_DEFAULT, key)))).toBe(
-				false,
-			);
-			expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_FAST, key)))).toBe(
-				true,
-			);
-		});
+		expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+		expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, key)))).toBe(
+			false,
+		);
+		expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_DEFAULT, key)))).toBe(
+			false,
+		);
+		expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_FAST, key)))).toBe(true);
 	});
 
 	it("does not bust when only unrelated fields change", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			writePackageJson(directory, { exports: "./index.js", scripts: { build: "tsc" } });
-			bustPackage(runContext(directory));
-			seedCaches(directory);
+		const directory = temporaryDirectory();
+		writePackageJson(directory, { exports: "./index.js", scripts: { build: "tsc" } });
+		bustPackage(runContext(directory));
+		seedCaches(directory);
 
-			writePackageJson(directory, {
-				exports: "./index.js",
-				scripts: { build: "tsc --noEmit" },
-				version: "9.9.9",
-			});
-			const outcome = bustPackage(runContext(directory));
-
-			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
-			expect(everyCacheExists(directory)).toBe(true);
+		writePackageJson(directory, {
+			exports: "./index.js",
+			scripts: { build: "tsc --noEmit" },
+			version: "9.9.9",
 		});
+		const outcome = bustPackage(runContext(directory));
+
+		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(everyCacheExists(directory)).toBe(true);
 	});
 
 	it("lets each variant observe the same bump independently", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withTemporaryDirectory((directory) => {
-			const agentEnvironment = { CLAUDECODE: "1" };
-			const agentKey = resolveCacheKey(agentEnvironment);
-			const agentRun = runContext(directory, { environment: agentEnvironment });
-			writePackageJson(directory, { exports: "./index.js" });
-			bustPackage(runContext(directory));
-			bustPackage(agentRun);
+		const directory = temporaryDirectory();
+		const agentEnvironment = { CLAUDECODE: "1" };
+		const agentKey = resolveCacheKey(agentEnvironment);
+		const agentRun = runContext(directory, { environment: agentEnvironment });
+		writePackageJson(directory, { exports: "./index.js" });
+		bustPackage(runContext(directory));
+		bustPackage(agentRun);
 
-			seedCaches(directory);
-			for (const name of ALL_CACHE_FILES) {
-				fs.writeFileSync(path.join(directory, cacheFileFor(name, agentKey)), "{}");
-			}
+		seedCaches(directory);
+		for (const name of ALL_CACHE_FILES) {
+			fs.writeFileSync(path.join(directory, cacheFileFor(name, agentKey)), "{}");
+		}
 
-			writePackageJson(directory, { exports: "./other.js" });
+		writePackageJson(directory, { exports: "./other.js" });
 
-			// The no-agent run busts only its own caches, and crucially does not
-			// consume the bump on the agent variant's behalf: a shared state file
-			// would make the second call a no-op and leave the agent's type-aware
-			// caches permanently stale.
-			expect(bustPackage(runContext(directory))).toStrictEqual({
-				busted: true,
-				firstRun: false,
-			});
-			expect(
-				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
-			).toBe(true);
-
-			expect(bustPackage(agentRun)).toStrictEqual({
-				busted: true,
-				firstRun: false,
-			});
-			expect(
-				fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
-			).toBe(false);
+		// The no-agent run busts only its own caches, and crucially does not
+		// consume the bump on the agent variant's behalf: a shared state file
+		// would make the second call a no-op and leave the agent's type-aware
+		// caches permanently stale.
+		expect(bustPackage(runContext(directory))).toStrictEqual({
+			busted: true,
+			firstRun: false,
 		});
+		expect(
+			fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
+		).toBe(true);
+
+		expect(bustPackage(agentRun)).toStrictEqual({
+			busted: true,
+			firstRun: false,
+		});
+		expect(
+			fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, agentKey))),
+		).toBe(false);
 	});
 
 	it("hashes resolution fields independent of key order", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const dependencies = { a: "1", b: "2" };
-			writePackageJson(directory, { dependencies, exports: "./index.js" });
-			const first = computePackageJsonHash(directory);
+		const directory = temporaryDirectory();
+		const dependencies = { a: "1", b: "2" };
+		writePackageJson(directory, { dependencies, exports: "./index.js" });
+		const first = computePackageJsonHash(directory);
 
-			// Reverse the insertion order programmatically so the hash, not the
-			// literal, is what proves order-independence.
-			const reversed = Object.fromEntries(Object.entries(dependencies).reverse());
-			writePackageJson(directory, { dependencies: reversed, exports: "./index.js" });
-			const second = computePackageJsonHash(directory);
+		// Reverse the insertion order programmatically so the hash, not the
+		// literal, is what proves order-independence.
+		const reversed = Object.fromEntries(Object.entries(dependencies).reverse());
+		writePackageJson(directory, { dependencies: reversed, exports: "./index.js" });
+		const second = computePackageJsonHash(directory);
 
-			expect(first).toBe(second);
-		});
+		expect(first).toBe(second);
 	});
 
 	it("folds a workspace-root dependency bump into the sub-package hash", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-ph-"));
-		try {
-			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
-			writePackageJson(root, { dependencies: { shared: "1.0.0" } });
-			const app = path.join(root, "packages", "app");
-			fs.mkdirSync(app, { recursive: true });
-			writePackageJson(app, { exports: "./index.js" });
-
-			const before = computePackageJsonHash(app);
-
-			// The sub-package package.json is untouched; only the hoisted root
-			// dependency changes — the combined hash must still move.
-			writePackageJson(root, { dependencies: { shared: "2.0.0" } });
-			const after = computePackageJsonHash(app);
-
-			expect(before).not.toBe(after);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(root, { force: true, recursive: true });
-		}
+		});
+		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+		writePackageJson(root, { dependencies: { shared: "1.0.0" } });
+		const app = path.join(root, "packages", "app");
+		fs.mkdirSync(app, { recursive: true });
+		writePackageJson(app, { exports: "./index.js" });
+
+		const before = computePackageJsonHash(app);
+
+		// The sub-package package.json is untouched; only the hoisted root
+		// dependency changes — the combined hash must still move.
+		writePackageJson(root, { dependencies: { shared: "2.0.0" } });
+		const after = computePackageJsonHash(app);
+
+		expect(before).not.toBe(after);
 	});
 });
 
 describe("execute", () => {
 	it("runs every child to completion and aggregates a non-zero exit", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-run-"));
-		try {
-			const oxcMarker = path.join(directory, "oxc-ran");
-			const eslintMarker = path.join(directory, "eslint-ran");
-
-			// oxlint succeeds but only after a delay; eslint fails immediately. A
-			// kill-on-failure would kill oxlint before it writes its marker.
-			writeFakeToolBin(
-				directory,
-				"oxlint",
-				`const fs=require("node:fs");setTimeout(()=>{fs.writeFileSync(${JSON.stringify(
-					oxcMarker,
-				)},"ran");process.exit(0);},250);`,
-			);
-			writeFakeToolBin(
-				directory,
-				"eslint",
-				`const fs=require("node:fs");fs.writeFileSync(${JSON.stringify(
-					eslintMarker,
-				)},"ran");process.exit(1);`,
-			);
-
-			const code = await execute(
-				[
-					{ args: [], bin: "oxlint", env: {}, label: "oxc" },
-					{ args: [], bin: "eslint", env: {}, label: "eslint" },
-				],
-				directory,
-				false,
-			);
-
-			expect(code).toBe(1);
-			expect(fs.existsSync(eslintMarker)).toBe(true);
-			expect(fs.existsSync(oxcMarker)).toBe(true);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(directory, { force: true, recursive: true });
-		}
+		});
+		const oxcMarker = path.join(directory, "oxc-ran");
+		const eslintMarker = path.join(directory, "eslint-ran");
+
+		// oxlint succeeds but only after a delay; eslint fails immediately. A
+		// kill-on-failure would kill oxlint before it writes its marker.
+		writeFakeToolBin(
+			directory,
+			"oxlint",
+			`const fs=require("node:fs");setTimeout(()=>{fs.writeFileSync(${JSON.stringify(
+				oxcMarker,
+			)},"ran");process.exit(0);},250);`,
+		);
+		writeFakeToolBin(
+			directory,
+			"eslint",
+			`const fs=require("node:fs");fs.writeFileSync(${JSON.stringify(
+				eslintMarker,
+			)},"ran");process.exit(1);`,
+		);
+
+		const code = await execute(
+			[
+				{ args: [], bin: "oxlint", env: {}, label: "oxc" },
+				{ args: [], bin: "eslint", env: {}, label: "eslint" },
+			],
+			directory,
+			false,
+		);
+
+		expect(code).toBe(1);
+		expect(fs.existsSync(eslintMarker)).toBe(true);
+		expect(fs.existsSync(oxcMarker)).toBe(true);
 	}, 15_000);
 });
 
@@ -1287,69 +1259,65 @@ function setMtimeInFuture(filePath: string): void {
 
 describe("hybrid status file", () => {
 	it("only writes when node_modules exists", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			writeHybridStatus(directory, true);
+		const directory = temporaryDirectory();
+		writeHybridStatus(directory, true);
 
-			expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
+		expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
 
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			writeHybridStatus(directory, true);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		writeHybridStatus(directory, true);
 
-			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
-		});
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
 	});
 
 	it("refreshes the mtime on identical content and rewrites on change", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			writeHybridStatus(directory, false);
-			setMtimeInPast(hybridStatusPath(directory));
-			const before = fs.statSync(hybridStatusPath(directory)).mtimeMs;
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		writeHybridStatus(directory, false);
+		setMtimeInPast(hybridStatusPath(directory));
+		const before = fs.statSync(hybridStatusPath(directory)).mtimeMs;
 
-			// Identical content: the file is not rewritten, but its mtime is
-			// refreshed so the CLI's freshness check keeps passing after a config
-			// touch (otherwise the ~3s probe would run on every later lint).
-			writeHybridStatus(directory, false);
+		// Identical content: the file is not rewritten, but its mtime is
+		// refreshed so the CLI's freshness check keeps passing after a config
+		// touch (otherwise the ~3s probe would run on every later lint).
+		writeHybridStatus(directory, false);
 
-			expect(fs.statSync(hybridStatusPath(directory)).mtimeMs).toBeGreaterThan(before);
-			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
+		expect(fs.statSync(hybridStatusPath(directory)).mtimeMs).toBeGreaterThan(before);
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
 
-			// Changed content: the file is rewritten.
-			writeHybridStatus(directory, true);
+		// Changed content: the file is rewritten.
+		writeHybridStatus(directory, true);
 
-			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
-		});
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
 	});
 
 	it("swallows write failures", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			// `.cache` as a file makes creating the isentinel-lint subdir throw.
-			fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		// `.cache` as a file makes creating the isentinel-lint subdir throw.
+		fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
 
-			expect(() => {
-				writeHybridStatus(directory, true);
-			}).not.toThrow();
-			expect(readHybridStatus(directory)).toBeUndefined();
-		});
+		expect(() => {
+			writeHybridStatus(directory, true);
+		}).not.toThrow();
+		expect(readHybridStatus(directory)).toBeUndefined();
 	});
 
 	it("returns undefined for malformed status content", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const statusPath = hybridStatusPath(directory);
-			fs.mkdirSync(path.dirname(statusPath), { recursive: true });
-			fs.writeFileSync(statusPath, "not json");
+		const directory = temporaryDirectory();
+		const statusPath = hybridStatusPath(directory);
+		fs.mkdirSync(path.dirname(statusPath), { recursive: true });
+		fs.writeFileSync(statusPath, "not json");
 
-			expect(readHybridStatus(directory)).toBeUndefined();
-		});
+		expect(readHybridStatus(directory)).toBeUndefined();
 	});
 });
 
@@ -1362,193 +1330,186 @@ describe("resolveOxlintRun", () => {
 	}
 
 	it("drops oxlint with a warning when a fresh status is non-hybrid", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			const config = freshConfig(directory);
-			writeHybridStatus(directory, false);
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, false);
 
-			let probeCalls = 0;
-			function probe(): HybridStatus {
-				probeCalls += 1;
-				return { oxlint: false };
-			}
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: false };
+		}
 
-			const decision = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
-				probe,
-			);
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			probe,
+		);
 
-			expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
-			expect(probeCalls).toBe(0);
-		});
+		expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
+		expect(probeCalls).toBe(0);
 	});
 
 	it("runs both engines when a fresh status is hybrid, without probing", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			const config = freshConfig(directory);
-			writeHybridStatus(directory, true);
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, true);
 
-			let probeCalls = 0;
-			function probe(): HybridStatus {
-				probeCalls += 1;
-				return { oxlint: false };
-			}
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: false };
+		}
 
-			const decision = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
-				probe,
-			);
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			probe,
+		);
 
-			expect(decision).toStrictEqual({ reason: undefined, run: true });
-			expect(probeCalls).toBe(0);
-		});
+		expect(decision).toStrictEqual({ reason: undefined, run: true });
+		expect(probeCalls).toBe(0);
 	});
 
 	it("probes when the status is stale and persists the probe result", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			// Status first (older), then a newer config makes it stale.
-			writeHybridStatus(directory, true);
-			const config = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(config, "export default []");
-			setMtimeInFuture(config);
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		// Status first (older), then a newer config makes it stale.
+		writeHybridStatus(directory, true);
+		const config = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(config, "export default []");
+		setMtimeInFuture(config);
 
-			let probeCalls = 0;
-			function probe(): HybridStatus {
-				probeCalls += 1;
-				return { oxlint: false };
-			}
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: false };
+		}
 
-			const decision = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{
-					files: repoFiles({
-						configFiles: [config],
-						typeAware: [path.join(directory, "a.ts")],
-					}),
-					runEslint: true,
-					runOxlint: true,
-				},
-				probe,
-			);
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{
+				files: repoFiles({
+					configFiles: [config],
+					typeAware: [path.join(directory, "a.ts")],
+				}),
+				runEslint: true,
+				runOxlint: true,
+			},
+			probe,
+		);
 
-			expect(probeCalls).toBe(1);
-			expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
-			expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
-		});
+		expect(probeCalls).toBe(1);
+		expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
 	});
 
 	it("fails open when the probe cannot determine the status", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
 
-			const decision = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{
-					files: repoFiles({ typeAware: [path.join(directory, "a.ts")] }),
-					runEslint: true,
-					runOxlint: true,
-				},
-				() => {},
-			);
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{
+				files: repoFiles({ typeAware: [path.join(directory, "a.ts")] }),
+				runEslint: true,
+				runOxlint: true,
+			},
+			() => {},
+		);
 
-			expect(decision).toStrictEqual({ reason: HYBRID_UNKNOWN_WARNING, run: true });
-		});
+		expect(decision).toStrictEqual({ reason: HYBRID_UNKNOWN_WARNING, run: true });
 	});
 
 	it("skips the check for explicit single-tool runs", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withTemporaryDirectory((directory) => {
-			let probeCalls = 0;
-			function probe(): HybridStatus {
-				probeCalls += 1;
-				return { oxlint: false };
-			}
+		const directory = temporaryDirectory();
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: false };
+		}
 
-			// --oxlint leaves runEslint false; --eslint leaves runOxlint false.
-			const oxlintOnly = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{ files: repoFiles(), runEslint: false, runOxlint: true },
-				probe,
-			);
-			const eslintOnly = resolveOxlintRun(
-				runContext(directory, { mutate: true }),
-				{ files: repoFiles(), runEslint: true, runOxlint: false },
-				probe,
-			);
+		// --oxlint leaves runEslint false; --eslint leaves runOxlint false.
+		const oxlintOnly = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{ files: repoFiles(), runEslint: false, runOxlint: true },
+			probe,
+		);
+		const eslintOnly = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{ files: repoFiles(), runEslint: true, runOxlint: false },
+			probe,
+		);
 
-			expect(oxlintOnly).toStrictEqual({ reason: undefined, run: true });
-			expect(eslintOnly).toStrictEqual({ reason: undefined, run: false });
-			expect(probeCalls).toBe(0);
-		});
+		expect(oxlintOnly).toStrictEqual({ reason: undefined, run: true });
+		expect(eslintOnly).toStrictEqual({ reason: undefined, run: false });
+		expect(probeCalls).toBe(0);
 	});
 
 	it("never probes or writes for a read-only (--print) plan", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			const config = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(config, "export default []");
-			setMtimeInFuture(config);
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(config, "export default []");
+		setMtimeInFuture(config);
 
-			let probeCalls = 0;
-			function probe(): HybridStatus {
-				probeCalls += 1;
-				return { oxlint: false };
-			}
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: false };
+		}
 
-			const decision = resolveOxlintRun(
-				runContext(directory, { mutate: false }),
-				{
-					files: repoFiles({
-						configFiles: [config],
-						typeAware: [path.join(directory, "a.ts")],
-					}),
-					runEslint: true,
-					runOxlint: true,
-				},
-				probe,
-			);
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: false }),
+			{
+				files: repoFiles({
+					configFiles: [config],
+					typeAware: [path.join(directory, "a.ts")],
+				}),
+				runEslint: true,
+				runOxlint: true,
+			},
+			probe,
+		);
 
-			// Stale status, but --print never probes: assume hybrid, print
-			// unchanged.
-			expect(decision).toStrictEqual({ reason: undefined, run: true });
-			expect(probeCalls).toBe(0);
-			expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
-		});
+		// Stale status, but --print never probes: assume hybrid, print
+		// unchanged.
+		expect(decision).toStrictEqual({ reason: undefined, run: true });
+		expect(probeCalls).toBe(0);
+		expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
 	});
 });
 
 describe("plan hybrid integration", () => {
 	it("drops the oxlint child for a fresh non-hybrid status", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "node_modules"));
-			const config = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(config, "export default []");
-			fs.writeFileSync(path.join(directory, "a.ts"), "export const x = 1;\n");
-			setMtimeInPast(config);
-			writeHybridStatus(directory, false);
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(config, "export default []");
+		fs.writeFileSync(path.join(directory, "a.ts"), "export const x = 1;\n");
+		setMtimeInPast(config);
+		writeHybridStatus(directory, false);
 
-			const { commands, notice } = composeInDirectory([], directory, { mutate: true });
+		const { commands, notice } = composeInDirectory([], directory, { mutate: true });
 
-			expect(commands.some((command) => command.label === "oxc")).toBe(false);
-			expect(notice).toContain(NON_HYBRID_WARNING);
-		});
+		expect(commands.some((command) => command.label === "oxc")).toBe(false);
+		expect(notice).toContain(NON_HYBRID_WARNING);
 	});
 });
 
@@ -1569,189 +1530,175 @@ const NOOP_ESLINT_BIN = "process.exit(0);";
 
 describe("runLint tsgolint check ordering", () => {
 	it("does not error without oxlint-tsgolint when the hybrid gate drops oxlint", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
-		try {
-			fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
-			writeFakeToolBin(directory, "eslint", NOOP_ESLINT_BIN);
-			// A fresh non-hybrid status drops oxlint, so no oxlint child carries
-			// --type-aware and the check must not fire.
-			writeHybridStatus(directory, false);
-
-			const code = await withoutGitEnvironment(async () => runLint([], directory, {}));
-
-			expect(code).toBe(0);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(directory, { force: true, recursive: true });
-		}
+		});
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+		writeFakeToolBin(directory, "eslint", NOOP_ESLINT_BIN);
+		// A fresh non-hybrid status drops oxlint, so no oxlint child carries
+		// --type-aware and the check must not fire.
+		writeHybridStatus(directory, false);
+
+		const code = await withoutGitEnvironment(async () => runLint([], directory, {}));
+
+		expect(code).toBe(0);
 	});
 
 	it("still errors for an explicit --oxlint run without oxlint-tsgolint", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
-		try {
-			await expect(
-				withoutGitEnvironment(async () => runLint(["--oxlint"], directory, {})),
-			).rejects.toThrow(/oxlint-tsgolint is not installed/);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(directory, { force: true, recursive: true });
-		}
+		});
+
+		await expect(
+			withoutGitEnvironment(async () => runLint(["--oxlint"], directory, {})),
+		).rejects.toThrow(/oxlint-tsgolint is not installed/);
 	});
 
 	it("prints without erroring when oxlint-tsgolint is absent", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
 		const spy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
-		try {
-			const code = await withoutGitEnvironment(async () => {
-				return runLint(["--print"], directory, {});
-			});
-
-			expect(code).toBe(0);
-
-			// --print returns before the check, so it never throws even though
-			// the composed oxlint child carries --type-aware.
-			const printed = spy.mock.calls.map((call) => String(call[0])).join("");
-
-			expect(printed).toContain("oxlint --type-aware");
-		} finally {
+		onTestFinished(() => {
 			spy.mockRestore();
 			fs.rmSync(directory, { force: true, recursive: true });
-		}
+		});
+		const code = await withoutGitEnvironment(async () => runLint(["--print"], directory, {}));
+
+		expect(code).toBe(0);
+
+		// --print returns before the check, so it never throws even though
+		// the composed oxlint child carries --type-aware.
+		const printed = spy.mock.calls.map((call) => String(call[0])).join("");
+
+		expect(printed).toContain("oxlint --type-aware");
 	});
 });
 
 describe("target normalization", () => {
 	it("relativizes an absolute target under cwd and matches its files", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "src"));
-			fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
-			fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "src"));
+		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
+		fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
 
-			const files = withoutGitEnvironment(() => {
-				return collectRepoFiles(directory, [path.join(directory, "src")]);
-			});
-
-			expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
-			expect(files.targetsOutsideCwd).toBe(false);
+		const files = withoutGitEnvironment(() => {
+			return collectRepoFiles(directory, [path.join(directory, "src")]);
 		});
+
+		expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
+		expect(files.targetsOutsideCwd).toBe(false);
 	});
 
 	it("flags a relative target that escapes cwd", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			fs.writeFileSync(path.join(directory, "a.ts"), "export const a = 1;\n");
+		const directory = temporaryDirectory();
+		fs.writeFileSync(path.join(directory, "a.ts"), "export const a = 1;\n");
 
-			const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["../sibling"]));
+		const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["../sibling"]));
 
-			expect(files.targetsOutsideCwd).toBe(true);
-		});
+		expect(files.targetsOutsideCwd).toBe(true);
 	});
 
 	it("flags an absolute target outside cwd", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const outside = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-outside-"));
-			try {
-				const files = withoutGitEnvironment(() => collectRepoFiles(directory, [outside]));
+		const directory = temporaryDirectory();
+		const outside = temporaryDirectory();
 
-				expect(files.targetsOutsideCwd).toBe(true);
-			} finally {
-				fs.rmSync(outside, { force: true, recursive: true });
-			}
-		});
+		const files = withoutGitEnvironment(() => collectRepoFiles(directory, [outside]));
+
+		expect(files.targetsOutsideCwd).toBe(true);
 	});
 
 	it("still treats './' and trailing slashes as match-all in-cwd targets", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withTemporaryDirectory((directory) => {
-			fs.mkdirSync(path.join(directory, "src"));
-			fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "src"));
+		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
 
-			const dot = withoutGitEnvironment(() => collectRepoFiles(directory, ["./"]));
-			const trailing = withoutGitEnvironment(() => collectRepoFiles(directory, ["src/"]));
+		const dot = withoutGitEnvironment(() => collectRepoFiles(directory, ["./"]));
+		const trailing = withoutGitEnvironment(() => collectRepoFiles(directory, ["src/"]));
 
-			expect(dot.lintable).toHaveLength(1);
-			expect(dot.targetsOutsideCwd).toBe(false);
-			expect(trailing.lintable).toHaveLength(1);
-			expect(trailing.targetsOutsideCwd).toBe(false);
-		});
+		expect(dot.lintable).toHaveLength(1);
+		expect(dot.targetsOutsideCwd).toBe(false);
+		expect(trailing.lintable).toHaveLength(1);
+		expect(trailing.targetsOutsideCwd).toBe(false);
 	});
 });
 
 describe("workspace root", () => {
 	it("returns the nearest ancestor bearing a marker", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-ws-"));
-		try {
-			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
-			const app = path.join(root, "packages", "app");
-			fs.mkdirSync(app, { recursive: true });
-
-			expect(findWorkspaceRoot(app)).toBe(root);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(root, { force: true, recursive: true });
-		}
+		});
+		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+		const app = path.join(root, "packages", "app");
+		fs.mkdirSync(app, { recursive: true });
+
+		expect(findWorkspaceRoot(app)).toBe(root);
 	});
 });
 
 describe("ancestor cache-bust collection", () => {
 	it("folds workspace-root bust files into a sub-package run", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-anc-"));
-		try {
-			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
-			fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
-			fs.writeFileSync(path.join(root, "tsconfig.json"), "{}");
-			const app = path.join(root, "packages", "app");
-			fs.mkdirSync(app, { recursive: true });
-			fs.writeFileSync(path.join(app, "a.ts"), "export const a = 1;\n");
-
-			const files = withoutGitEnvironment(() => collectRepoFiles(app, ["."]));
-
-			expect(files.bustFiles).toContain(path.join(root, "pnpm-lock.yaml"));
-			expect(files.bustFiles).toContain(path.join(root, "tsconfig.json"));
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(root, { force: true, recursive: true });
-		}
+		});
+		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+		fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+		fs.writeFileSync(path.join(root, "tsconfig.json"), "{}");
+		const app = path.join(root, "packages", "app");
+		fs.mkdirSync(app, { recursive: true });
+		fs.writeFileSync(path.join(app, "a.ts"), "export const a = 1;\n");
+
+		const files = withoutGitEnvironment(() => collectRepoFiles(app, ["."]));
+
+		expect(files.bustFiles).toContain(path.join(root, "pnpm-lock.yaml"));
+		expect(files.bustFiles).toContain(path.join(root, "tsconfig.json"));
 	});
 
 	it("collects nothing extra when cwd is itself the workspace root", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-anc-"));
-		try {
-			fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
-			fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
-
-			const files = withoutGitEnvironment(() => collectRepoFiles(root, ["."]));
-
-			// The root lockfile comes from the in-cwd scan, not doubled by the
-			// ancestor walk.
-			const lockfiles = files.bustFiles.filter(
-				(file) => path.basename(file) === "pnpm-lock.yaml",
-			);
-
-			expect(lockfiles).toHaveLength(1);
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(root, { force: true, recursive: true });
-		}
+		});
+		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+		fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+
+		const files = withoutGitEnvironment(() => collectRepoFiles(root, ["."]));
+
+		// The root lockfile comes from the in-cwd scan, not doubled by the
+		// ancestor walk.
+		const lockfiles = files.bustFiles.filter(
+			(file) => path.basename(file) === "pnpm-lock.yaml",
+		);
+
+		expect(lockfiles).toHaveLength(1);
 	});
 });
 
 describe("full-pass env hygiene", () => {
 	it("explicitly clears ESLINT_TYPE_AWARE for the full pass so an inherited value cannot leak", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const command = composeEslintCommand(
 			options({ typeAware: "full" }),
@@ -1772,7 +1719,7 @@ describe("full-pass env hygiene", () => {
 	});
 
 	it("keeps setting ESLINT_TYPE_AWARE for the fast and typed passes", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(
 			composeEslintCommand(options(), baseContext({ typeAwareEnv: "off" })).env,
@@ -1785,74 +1732,73 @@ describe("full-pass env hygiene", () => {
 
 describe("explicit --type-aware selection in CI", () => {
 	it("keeps an explicit --type-aware=only pass in CI with the content cache strategy", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
-				"oxlint --type-aware .",
-				`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
-					"--no-warn-ignored --concurrency off --cache-strategy content .",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
+			"oxlint --type-aware .",
+			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
+				"--no-warn-ignored --concurrency off --cache-strategy content .",
+		]);
 	});
 
 	it("keeps an explicit --type-aware=off pass in CI", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
-				"oxlint .",
-				`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
-					"--no-warn-ignored --concurrency off --cache-strategy content .",
-			]);
-		});
+		const directory = temporaryDirectory();
+
+		expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
+			"oxlint .",
+			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
+				"--no-warn-ignored --concurrency off --cache-strategy content .",
+		]);
 	});
 });
 
 describe("bust-before-size ordering", () => {
 	it("clears every cache up front so an earlier pass is not under-provisioned", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withTemporaryDirectory((directory) => {
-			const sources = ["a.ts", "b.ts", "c.ts"].map((name) => path.join(directory, name));
-			for (const source of sources) {
-				fs.writeFileSync(source, "export const x = 1;\n");
-			}
+		const directory = temporaryDirectory();
+		const sources = ["a.ts", "b.ts", "c.ts"].map((name) => path.join(directory, name));
+		for (const source of sources) {
+			fs.writeFileSync(source, "export const x = 1;\n");
+		}
 
-			const configFile = path.join(directory, "eslint.config.ts");
-			fs.writeFileSync(configFile, "export default []");
+		const configFile = path.join(directory, "eslint.config.ts");
+		fs.writeFileSync(configFile, "export default []");
 
-			const fastCache = path.join(directory, CACHE_FILE_FAST);
-			const typedCache = path.join(directory, CACHE_FILE_TYPE_AWARE);
-			seedFileCache(fastCache, sources);
-			seedFileCache(typedCache, sources);
+		const fastCache = path.join(directory, CACHE_FILE_FAST);
+		const typedCache = path.join(directory, CACHE_FILE_TYPE_AWARE);
+		seedFileCache(fastCache, sources);
+		seedFileCache(typedCache, sources);
 
-			// Order mtimes: typed cache oldest, config in the middle (the bust
-			// reference), fast cache newest. So the fast cache is fresh and only
-			// the typed cache is stale — yet the fix must clear BOTH before
-			// sizing so the fast pass is provisioned for all the re-linted files.
-			const now = Date.now() / 1000;
-			fs.utimesSync(typedCache, now - 120, now - 120);
-			fs.utimesSync(configFile, now - 60, now - 60);
-			fs.utimesSync(fastCache, now, now);
+		// Order mtimes: typed cache oldest, config in the middle (the bust
+		// reference), fast cache newest. So the fast cache is fresh and only
+		// the typed cache is stale — yet the fix must clear BOTH before
+		// sizing so the fast pass is provisioned for all the re-linted files.
+		const now = Date.now() / 1000;
+		fs.utimesSync(typedCache, now - 120, now - 120);
+		fs.utimesSync(configFile, now - 60, now - 60);
+		fs.utimesSync(fastCache, now, now);
 
-			const { commands } = composeInDirectory([], directory, {
-				environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
-				mutate: true,
-			});
-
-			// Every lintable file (three sources plus eslint.config.ts) is dirty
-			// after the up-front clear => four fast workers at one file per
-			// worker. Without the fix the fast pass reads its fresh cache, sees
-			// only the uncached config file (one dirty) and sizes to "off".
-			expect(concurrencyArgument(commands, "fast")).toBe("4");
+		const { commands } = composeInDirectory([], directory, {
+			environment: { FAST_FILES_PER_WORKER: "1", LINT_MAX_WORKERS: "8" },
+			mutate: true,
 		});
+
+		// Every lintable file (three sources plus eslint.config.ts) is dirty
+		// after the up-front clear => four fast workers at one file per
+		// worker. Without the fix the fast pass reads its fresh cache, sees
+		// only the uncached config file (one dirty) and sizes to "off".
+		expect(concurrencyArgument(commands, "fast")).toBe("4");
 	});
 });
 
 describe("parseHybridPrintConfig", () => {
 	it("reads the marker through leading log noise", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(
 			parseHybridPrintConfig('startup log\n{"settings":{"isentinel/oxlint":true}}'),
@@ -1863,7 +1809,7 @@ describe("parseHybridPrintConfig", () => {
 	});
 
 	it("returns undefined when there is no JSON object", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(parseHybridPrintConfig("not json at all")).toBeUndefined();
 		expect(parseHybridPrintConfig("")).toBeUndefined();
@@ -1872,7 +1818,7 @@ describe("parseHybridPrintConfig", () => {
 
 describe("buildShellCommand percent guard", () => {
 	it("refuses a % token on the Windows shell path but quotes it on POSIX", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		expect(() => buildShellCommand("node", "/path/eslint.js", ["%PATH%"], "win32")).toThrow(
 			CliError,

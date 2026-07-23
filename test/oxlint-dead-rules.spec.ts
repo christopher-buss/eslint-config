@@ -36,7 +36,7 @@ async function collectDeadWarnings(
 
 describe("oxlint hybrid dead-rule warnings", () => {
 	it("should warn when a trailing user config references a mapped rule", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: true },
@@ -52,7 +52,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should warn for options-level rules as an unnamed config", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const warnings = await collectDeadWarnings({
 			...baseOptions,
@@ -66,7 +66,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should warn for the oxfmt formatting rule", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: true },
@@ -81,7 +81,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should not warn for Markdown-scoped user configs", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: true },
@@ -96,7 +96,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should not warn for rules that stay in ESLint", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: true },
@@ -111,7 +111,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should not warn when oxlint hybrid mode is disabled", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: false },
@@ -125,7 +125,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 	});
 
 	it("should be suppressible via oxlintWarnDeadRules", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
 			{ ...baseOptions, oxlint: true, oxlintWarnDeadRules: false },

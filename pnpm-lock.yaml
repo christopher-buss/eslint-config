@@ -180,8 +180,8 @@ catalogs:
       specifier: 2.1.3
       version: 2.1.3
     eslint-plugin-flawless:
-      specifier: 1.2.1
-      version: 1.2.1
+      specifier: 1.3.0
+      version: 1.3.0
     eslint-plugin-format-lua:
       specifier: 2.0.0
       version: 2.0.0
@@ -354,7 +354,7 @@ importers:
         version: 2.1.3(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-flawless:
         specifier: catalog:prod
-        version: 1.2.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+        version: 1.3.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-format-lua:
         specifier: catalog:prod
         version: 2.0.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -2677,8 +2677,8 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0'
 
-  eslint-plugin-flawless@1.2.1:
-    resolution: {integrity: sha512-rBvFgirRIqs9A+4Uyt/Eu64HsBFpvHNeg+cT2jhatt+9ZH7fzxW6g5qbl8pMPQRN9kgpDQGMhTJaVA7Ivm01GA==}
+  eslint-plugin-flawless@1.3.0:
+    resolution: {integrity: sha512-C60mYs1eYFrIBcebQ4GMgWuJ2/UbtCKLPUFt4cpVYtIfUInfT0zTZOr9VPIrlcaQJCSpWebuaqx+3OZAhBGlIA==}
     engines: {node: '>=24.12.0'}
     peerDependencies:
       eslint: '>=9.15.0'
@@ -5947,7 +5947,7 @@ snapshots:
       eslint: 10.7.0(jiti@2.7.0)(supports-color@10.2.2)
       estraverse: 5.3.0
 
-  eslint-plugin-flawless@1.2.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
+  eslint-plugin-flawless@1.3.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
     dependencies:
       '@eslint-react/core': 5.10.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       '@oxlint/plugins': 1.73.0

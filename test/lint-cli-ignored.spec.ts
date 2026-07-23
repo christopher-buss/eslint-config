@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 
 import { normalizePath } from "../src/lint-cli/lib/cache/entries.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
@@ -38,17 +38,18 @@ const FUNCTION_CONFIG =
 	'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
 	"{ ignores: [filePath => filePath.endsWith('.generated.ts')] }];\n";
 
-function withFixture(config: string, run: (directory: string) => void): void {
+function createFixture(config: string): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-ignored-"));
 
-	try {
-		fs.writeFileSync(path.join(directory, "eslint.config.mjs"), config);
-		fs.mkdirSync(path.join(directory, "src"));
-		fs.writeFileSync(path.join(directory, "src/a.ts"), "export const a = 1;\n");
-		run(fs.realpathSync(directory));
-	} finally {
+	onTestFinished(() => {
 		fs.rmSync(directory, { force: true, recursive: true });
-	}
+	});
+
+	fs.writeFileSync(path.join(directory, "eslint.config.mjs"), config);
+	fs.mkdirSync(path.join(directory, "src"));
+	fs.writeFileSync(path.join(directory, "src/a.ts"), "export const a = 1;\n");
+
+	return fs.realpathSync(directory);
 }
 
 /**
@@ -106,72 +107,66 @@ function storedMode(directory: string): string | undefined {
 
 describe("resolveIgnoredFiles", () => {
 	it("classifies files added after the set was stored, without re-spawning", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(GLOB_CONFIG, (directory) => {
-			expect(has(resolveAndStore(directory, ["src/a.ts"]), directory, "src/a.ts")).toBe(
-				false,
-			);
-			expect(storedMode(directory)).toBe("predicate");
+		const directory = createFixture(GLOB_CONFIG);
 
-			const second = resolveReadOnly(directory, ["src/a.ts", "generated/b.ts"]);
+		expect(has(resolveAndStore(directory, ["src/a.ts"]), directory, "src/a.ts")).toBe(false);
+		expect(storedMode(directory)).toBe("predicate");
 
-			expect(has(second, directory, "generated/b.ts")).toBe(true);
-			expect(has(second, directory, "src/a.ts")).toBe(false);
-		});
+		const second = resolveReadOnly(directory, ["src/a.ts", "generated/b.ts"]);
+
+		expect(has(second, directory, "generated/b.ts")).toBe(true);
+		expect(has(second, directory, "src/a.ts")).toBe(false);
 	});
 
 	it("keeps a config's own ignores from becoming a global ignore", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withFixture(GLOB_CONFIG, (directory) => {
-			// `src/b.ts` is ignored *by one config*, which only excludes it from
-			// that config's rules. ESLint still lints it.
-			const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.ts"]);
+		const directory = createFixture(GLOB_CONFIG);
+		// `src/b.ts` is ignored *by one config*, which only excludes it from
+		// that config's rules. ESLint still lints it.
+		const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.ts"]);
 
-			expect(has(ignored, directory, "src/b.ts")).toBe(false);
-		});
+		expect(has(ignored, directory, "src/b.ts")).toBe(false);
 	});
 
 	it("treats a file no config matches as ignored", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withFixture(GLOB_CONFIG, (directory) => {
-			// `getConfigStatus` calls this "unconfigured" rather than "ignored",
-			// but ESLint declines to lint it either way, so it must not count as
-			// dirty.
-			const ignored = resolveAndStore(directory, ["src/a.ts", "notes.txt"]);
+		const directory = createFixture(GLOB_CONFIG);
+		// `getConfigStatus` calls this "unconfigured" rather than "ignored",
+		// but ESLint declines to lint it either way, so it must not count as
+		// dirty.
+		const ignored = resolveAndStore(directory, ["src/a.ts", "notes.txt"]);
 
-			expect(has(ignored, directory, "notes.txt")).toBe(true);
-		});
+		expect(has(ignored, directory, "notes.txt")).toBe(true);
 	});
 
 	it("falls back to per-target answers when a matcher is a function", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(FUNCTION_CONFIG, (directory) => {
-			const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.generated.ts"]);
+		const directory = createFixture(FUNCTION_CONFIG);
+		const ignored = resolveAndStore(directory, ["src/a.ts", "src/b.generated.ts"]);
 
-			expect(storedMode(directory)).toBe("answers");
-			expect(has(ignored, directory, "src/b.generated.ts")).toBe(true);
-			expect(has(ignored, directory, "src/a.ts")).toBe(false);
+		expect(storedMode(directory)).toBe("answers");
+		expect(has(ignored, directory, "src/b.generated.ts")).toBe(true);
+		expect(has(ignored, directory, "src/a.ts")).toBe(false);
 
-			// The residual the answers payload keeps: a file it was never asked
-			// about reads as not-ignored rather than being matched.
-			const later = resolveReadOnly(directory, ["src/c.generated.ts"]);
+		// The residual the answers payload keeps: a file it was never asked
+		// about reads as not-ignored rather than being matched.
+		const later = resolveReadOnly(directory, ["src/c.generated.ts"]);
 
-			expect(has(later, directory, "src/c.generated.ts")).toBe(false);
-		});
+		expect(has(later, directory, "src/c.generated.ts")).toBe(false);
 	});
 
 	it("reports nothing when the stored hash does not match and the run may not mutate", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(GLOB_CONFIG, (directory) => {
-			const ignored = resolveReadOnly(directory, ["generated/b.ts"]);
+		const directory = createFixture(GLOB_CONFIG);
+		const ignored = resolveReadOnly(directory, ["generated/b.ts"]);
 
-			expect(ignored.size).toBe(0);
-			expect(storedMode(directory)).toBeUndefined();
-		});
+		expect(ignored.size).toBe(0);
+		expect(storedMode(directory)).toBeUndefined();
 	});
 });

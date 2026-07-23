@@ -252,7 +252,7 @@ function enablesProjectService(config: TypedFlatConfigItem): boolean {
 describe("type-aware split", () => {
 	describe.for(variants)("$name", (variant: SplitVariant) => {
 		it("should partition effective severities exactly", async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const { fast, full, slow } = await buildSplitConfigs(variant.options);
 
@@ -272,7 +272,7 @@ describe("type-aware split", () => {
 		});
 
 		it("should never build a TS program in the non-type-aware pass", async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(2);
 
 			const { fast, slow } = await buildSplitConfigs(variant.options);
 
@@ -283,7 +283,7 @@ describe("type-aware split", () => {
 		it("should keep rules that require type checking out of the fast pass", async ({
 			expect,
 		}) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const { fast } = await buildSplitConfigs(variant.options);
 			const registry = collectRuleRegistry(fast);
@@ -299,7 +299,7 @@ describe("type-aware split", () => {
 		it("should drop non-JS/TS-language configs in the type-aware-only pass", async ({
 			expect,
 		}) => {
-			expect.hasAssertions();
+			expect.assertions(3);
 
 			const { slow } = await buildSplitConfigs(variant.options);
 
@@ -319,7 +319,7 @@ describe("type-aware split", () => {
 		});
 
 		it("should silence unused disable directives in both passes", async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(3);
 
 			const { fast, full, slow } = await buildSplitConfigs(variant.options);
 
@@ -334,7 +334,7 @@ describe("type-aware split", () => {
 	});
 
 	it("should classify rules listed in typeAwareRules as type-aware", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const options = { ...baseOptions, typeAwareRules: ["no-console"] };
 		const [fast, slow] = await Promise.all([
@@ -350,7 +350,7 @@ describe("type-aware split", () => {
 	});
 
 	it("should register every JS/TS plugin in both passes", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		// A rule name only resolves in a pass whose configs registered its
 		// plugin, so a module targeting JS/TS files that is composed in one
@@ -367,7 +367,7 @@ describe("type-aware split", () => {
 	});
 
 	it("should reject typeAware 'only' without type-aware linting", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		await expect(
 			isentinel({
@@ -463,7 +463,7 @@ describe("eslint_type_aware environment variable", () => {
 	it.for(environmentCases)(
 		"env=$env option=$option -> $expected",
 		async ({ env, expected, option }, { expect }) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			expect(await resolveSplitOutcome(env, option)).toBe(expected);
 		},

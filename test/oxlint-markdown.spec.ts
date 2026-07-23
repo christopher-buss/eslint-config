@@ -62,7 +62,7 @@ describe("oxlint hybrid markdown linting", () => {
 		it("should lint markdown files (and their fences) without fatal errors", async ({
 			expect,
 		}) => {
-			expect.hasAssertions();
+			expect.assertions(3);
 
 			const composer = await isentinel({
 				name: "test/hybrid-markdown",

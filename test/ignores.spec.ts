@@ -44,7 +44,7 @@ async function prepare(): Promise<{ eslint: ESLint; projectDirectory: string }> 
 
 describe("ignores", () => {
 	it("should not ignore .claude/settings.json", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const { eslint, projectDirectory } = await prepare();
 
@@ -54,7 +54,7 @@ describe("ignores", () => {
 	});
 
 	it("should still ignore other .claude files", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const { eslint, projectDirectory } = await prepare();
 
@@ -69,7 +69,7 @@ describe("ignores", () => {
 	});
 
 	it("should lint .claude/settings.json when linting the directory", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const { eslint, projectDirectory } = await prepare();
 		const results = await eslint.lintFiles(".");

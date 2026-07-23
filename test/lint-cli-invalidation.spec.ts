@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/lib/cache/bust.ts";
@@ -59,41 +59,41 @@ const DOM_TSCONFIG = JSON.stringify({
 	include: ["src"],
 });
 
-function withFixture(files: Record<string, string>, run: (directory: string) => void): void {
+function createFixture(files: Record<string, string>): string {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-fx-"));
 
-	try {
-		// A sibling `node_modules/typescript` junction lets the CLI resolve the
-		// real typescript from the fixture cwd. Sources stay outside any
-		// node_modules path: TS never reports node_modules files affected.
-		const typescriptDirectory = path.dirname(
-			createRequire(import.meta.url).resolve("typescript/package.json"),
-		);
-		fs.mkdirSync(path.join(root, "node_modules"), { recursive: true });
-		fs.symlinkSync(
-			fs.realpathSync(typescriptDirectory),
-			path.join(root, "node_modules", "typescript"),
-			"junction",
-		);
-
-		const directory = path.join(root, "project");
-		for (const [relative, content] of Object.entries(files)) {
-			const absolute = path.join(directory, relative);
-			fs.mkdirSync(path.dirname(absolute), { recursive: true });
-			fs.writeFileSync(absolute, content);
-		}
-
-		// Seed a fresh hybrid status so the CLI's hybrid check trusts it rather
-		// than probing a (here absent) ESLint binary. These fixtures ship no
-		// eslint config file, so the status is always fresh; the seed keeps the
-		// runner's oxlint/notice behaviour identical to a real hybrid project.
-		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
-		writeHybridStatus(directory, true);
-
-		run(directory);
-	} finally {
+	onTestFinished(() => {
 		fs.rmSync(root, { force: true, recursive: true });
+	});
+
+	// A sibling `node_modules/typescript` junction lets the CLI resolve the
+	// real typescript from the fixture cwd. Sources stay outside any
+	// node_modules path: TS never reports node_modules files affected.
+	const typescriptDirectory = path.dirname(
+		createRequire(import.meta.url).resolve("typescript/package.json"),
+	);
+	fs.mkdirSync(path.join(root, "node_modules"), { recursive: true });
+	fs.symlinkSync(
+		fs.realpathSync(typescriptDirectory),
+		path.join(root, "node_modules", "typescript"),
+		"junction",
+	);
+
+	const directory = path.join(root, "project");
+	for (const [relative, content] of Object.entries(files)) {
+		const absolute = path.join(directory, relative);
+		fs.mkdirSync(path.dirname(absolute), { recursive: true });
+		fs.writeFileSync(absolute, content);
 	}
+
+	// Seed a fresh hybrid status so the CLI's hybrid check trusts it rather
+	// than probing a (here absent) ESLint binary. These fixtures ship no
+	// eslint config file, so the status is always fresh; the seed keeps the
+	// runner's oxlint/notice behaviour identical to a real hybrid project.
+	fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+	writeHybridStatus(directory, true);
+
+	return directory;
 }
 
 /**
@@ -211,329 +211,298 @@ function invalidate(
 
 describe("computeAffectedFiles", () => {
 	it("reports every file on the first run, then nothing when unchanged", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"src/b.ts":
-					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const first = computeAffectedFiles(runFor(directory), undefined);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"src/b.ts":
+				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				expect(first?.firstRun).toBe(true);
-				expect(first?.affected.size).toBeGreaterThan(0);
+		const first = computeAffectedFiles(runFor(directory), undefined);
 
-				const second = computeAffectedFiles(runFor(directory), undefined);
+		expect(first!.firstRun).toBe(true);
+		expect(first!.affected.size).toBeGreaterThan(0);
 
-				expect(second?.firstRun).toBe(false);
-				expect(second?.affected.size).toBe(0);
-			},
-		);
+		const second = computeAffectedFiles(runFor(directory), undefined);
+
+		expect(second!.firstRun).toBe(false);
+		expect(second!.affected.size).toBe(0);
 	});
 
 	it("skips gracefully when no tsconfig is present", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withFixture({ "src/a.ts": "export const a = 1;\n" }, (directory) => {
-			expect(computeAffectedFiles(runFor(directory), undefined)).toBeUndefined();
-		});
+		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" });
+
+		expect(computeAffectedFiles(runFor(directory), undefined)).toBeUndefined();
 	});
 
 	it("resolves files through a nested solution-style reference graph", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withFixture(SOLUTION_FIXTURE, (directory) => {
-			const first = computeAffectedFiles(runFor(directory), undefined);
+		const directory = createFixture(SOLUTION_FIXTURE);
+		const first = computeAffectedFiles(runFor(directory), undefined);
 
-			expect(first?.firstRun).toBe(true);
-			// The entry tsconfig owns no files; both of these come from a
-			// referenced project, `app/b.ts` via a nested solution-style one.
-			// `affected` holds OS-normalised paths, so compare in that form.
-			expect(first?.affected).toContain(path.normalize(path.join(directory, "src/a.ts")));
-			expect(first?.affected).toContain(path.normalize(path.join(directory, "app/b.ts")));
-		});
+		expect(first!.firstRun).toBe(true);
+		// The entry tsconfig owns no files; both of these come from a
+		// referenced project, `app/b.ts` via a nested solution-style one.
+		// `affected` holds OS-normalised paths, so compare in that form.
+		expect(first!.affected).toContain(path.normalize(path.join(directory, "src/a.ts")));
+		expect(first!.affected).toContain(path.normalize(path.join(directory, "app/b.ts")));
 	});
 
 	it("keeps builder state per referenced project", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withFixture(SOLUTION_FIXTURE, (directory) => {
-			computeAffectedFiles(runFor(directory), "only");
+		const directory = createFixture(SOLUTION_FIXTURE);
+		computeAffectedFiles(runFor(directory), "only");
 
-			// One per file-owning project (lib + app); the file-less entry
-			// tsconfig contributes no state of its own.
-			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(
-				2,
-			);
-		});
+		// One per file-owning project (lib + app); the file-less entry
+		// tsconfig contributes no state of its own.
+		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(2);
 	});
 
 	it("does not report first-run when only some projects are new", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(SOLUTION_FIXTURE, (directory) => {
-			// Warm every project, then drop one project's state so it looks newly
-			// added while its siblings stay warm — the shape of a solution that
-			// gains a reference.
-			computeAffectedFiles(runFor(directory), "only");
-			const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
-			const prefix = `tsbuildinfo-typeaware-${TEST_KEY}`;
-			const stateFiles = builderStateFiles(directory, prefix);
+		const directory = createFixture(SOLUTION_FIXTURE);
+		// Warm every project, then drop one project's state so it looks newly
+		// added while its siblings stay warm — the shape of a solution that
+		// gains a reference.
+		computeAffectedFiles(runFor(directory), "only");
+		const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
+		const prefix = `tsbuildinfo-typeaware-${TEST_KEY}`;
+		const stateFiles = builderStateFiles(directory, prefix);
 
-			expect(stateFiles.length).toBeGreaterThan(1);
+		expect(stateFiles.length).toBeGreaterThan(1);
 
-			const [firstState = ""] = stateFiles;
-			fs.rmSync(path.join(stateDirectory, firstState));
+		const [firstState = ""] = stateFiles;
+		fs.rmSync(path.join(stateDirectory, firstState));
 
-			const result = computeAffectedFiles(runFor(directory), "only");
+		const result = computeAffectedFiles(runFor(directory), "only");
 
-			// The run is first-run only when NO project had prior state.
-			// Reporting it here (as an OR-fold across projects would) would make
-			// the caller discard the warm projects' drained affected sets while
-			// their builder state had already advanced — the stale-cache defect.
-			expect(result?.firstRun).toBe(false);
-		});
+		// The run is first-run only when NO project had prior state.
+		// Reporting it here (as an OR-fold across projects would) would make
+		// the caller discard the warm projects' drained affected sets while
+		// their builder state had already advanced — the stale-cache defect.
+		expect(result!.firstRun).toBe(false);
 	});
 });
 
 describe("applyTypeAwareInvalidation", () => {
 	it("does not invalidate importers on an implementation-only edit", () => {
-		expect.hasAssertions();
+		expect.assertions(5);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"src/b.ts":
-					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-				"src/c.ts":
-					"import { b } from './b';\nexport function c(): number { return b() + 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				const fileC = path.join(directory, "src/c.ts");
-				computeAffectedFiles(runFor(directory), undefined);
-				seedCache(cacheFile, [fileA, fileB, fileC]);
-				fs.writeFileSync(fileA, "export function a(): number { return 42; }\n");
-				touch(fileA);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"src/b.ts":
+				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+			"src/c.ts":
+				"import { b } from './b';\nexport function c(): number { return b() + 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const dirty = new Set([normalizePath(fileA)]);
-				const outcome = invalidate(directory, [fileA, fileB, fileC], dirty);
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		const fileC = path.join(directory, "src/c.ts");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileA, fileB, fileC]);
+		fs.writeFileSync(fileA, "export function a(): number { return 42; }\n");
+		touch(fileA);
 
-				expect(outcome.busted).toBe(false);
-				expect(outcome.firstRun).toBe(false);
-				expect(outcome.invalidated).toStrictEqual([]);
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
-				expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
-			},
-		);
+		const dirty = new Set([normalizePath(fileA)]);
+		const outcome = invalidate(directory, [fileA, fileB, fileC], dirty);
+
+		expect(outcome.busted).toBe(false);
+		expect(outcome.firstRun).toBe(false);
+		expect(outcome.invalidated).toStrictEqual([]);
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
+		expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
 	});
 
 	it("invalidates transitive importers on an exported-type change", () => {
-		expect.hasAssertions();
+		expect.assertions(5);
 
-		withFixture(
-			{
-				// Inferred return types so a's shape change propagates into c.
-				"src/a.ts": "export function a() { return 1; }\n",
-				"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
-				"src/c.ts": "import { b } from './b';\nexport function c() { return b(); }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				const fileC = path.join(directory, "src/c.ts");
-				computeAffectedFiles(runFor(directory), undefined);
-				seedCache(cacheFile, [fileA, fileB, fileC]);
-				fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
-				touch(fileA);
+		const directory = createFixture({
+			// Inferred return types so a's shape change propagates into c.
+			"src/a.ts": "export function a() { return 1; }\n",
+			"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
+			"src/c.ts": "import { b } from './b';\nexport function c() { return b(); }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const dirty = new Set([normalizePath(fileA)]);
-				const outcome = invalidate(directory, [fileA, fileB, fileC], dirty);
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		const fileC = path.join(directory, "src/c.ts");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileA, fileB, fileC]);
+		fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
+		touch(fileA);
 
-				expect(outcome.busted).toBe(false);
-				expect(outcome.invalidated).toContain(normalizePath(fileB));
-				expect(outcome.invalidated).toContain(normalizePath(fileC));
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
-				expect(cacheHasEntry(cacheFile, fileC)).toBe(false);
-			},
-		);
+		const dirty = new Set([normalizePath(fileA)]);
+		const outcome = invalidate(directory, [fileA, fileB, fileC], dirty);
+
+		expect(outcome.busted).toBe(false);
+		expect(outcome.invalidated).toContain(normalizePath(fileB));
+		expect(outcome.invalidated).toContain(normalizePath(fileC));
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
+		expect(cacheHasEntry(cacheFile, fileC)).toBe(false);
 	});
 
 	it("invalidates an importer in another referenced project", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withFixture(SOLUTION_FIXTURE, (directory) => {
-			const cacheFile = path.join(directory, ".eslintcache");
-			const fileA = path.join(directory, "src/a.ts");
-			const fileB = path.join(directory, "app/b.ts");
-			computeAffectedFiles(runFor(directory), undefined);
-			seedCache(cacheFile, [fileA, fileB]);
-			fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
-			touch(fileA);
+		const directory = createFixture(SOLUTION_FIXTURE);
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "app/b.ts");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileA, fileB]);
+		fs.writeFileSync(fileA, "export function a() { return 'now a string'; }\n");
+		touch(fileA);
 
-			const dirty = new Set([normalizePath(fileA)]);
-			const outcome = invalidate(directory, [fileA, fileB], dirty);
+		const dirty = new Set([normalizePath(fileA)]);
+		const outcome = invalidate(directory, [fileA, fileB], dirty);
 
-			expect(outcome.busted).toBe(false);
-			expect(outcome.invalidated).toContain(normalizePath(fileB));
-			expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
-		});
+		expect(outcome.busted).toBe(false);
+		expect(outcome.invalidated).toContain(normalizePath(fileB));
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 	});
 
 	it("invalidates everything on a global-augmentation edit", () => {
-		expect.hasAssertions();
+		expect.assertions(5);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"src/b.ts":
-					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-				"src/globals.ts":
-					"declare global { interface Window { foo: number; } }\nexport {};\n",
-				"tsconfig.json": DOM_TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				const fileGlobals = path.join(directory, "src/globals.ts");
-				computeAffectedFiles(runFor(directory), undefined);
-				seedCache(cacheFile, [fileA, fileB, fileGlobals]);
-				fs.writeFileSync(
-					fileGlobals,
-					"declare global { interface Window { foo: number; bar: string; } }\nexport {};\n",
-				);
-				touch(fileGlobals);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"src/b.ts":
+				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+			"src/globals.ts": "declare global { interface Window { foo: number; } }\nexport {};\n",
+			"tsconfig.json": DOM_TSCONFIG,
+		});
 
-				const outcome = invalidate(
-					directory,
-					[fileA, fileB, fileGlobals],
-					new Set([normalizePath(fileGlobals)]),
-				);
-
-				expect(outcome.busted).toBe(false);
-				expect(outcome.invalidated).toContain(normalizePath(fileA));
-				expect(outcome.invalidated).toContain(normalizePath(fileB));
-				expect(cacheHasEntry(cacheFile, fileA)).toBe(false);
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
-			},
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		const fileGlobals = path.join(directory, "src/globals.ts");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileA, fileB, fileGlobals]);
+		fs.writeFileSync(
+			fileGlobals,
+			"declare global { interface Window { foo: number; bar: string; } }\nexport {};\n",
 		);
+		touch(fileGlobals);
+
+		const outcome = invalidate(
+			directory,
+			[fileA, fileB, fileGlobals],
+			new Set([normalizePath(fileGlobals)]),
+		);
+
+		expect(outcome.busted).toBe(false);
+		expect(outcome.invalidated).toContain(normalizePath(fileA));
+		expect(outcome.invalidated).toContain(normalizePath(fileB));
+		expect(cacheHasEntry(cacheFile, fileA)).toBe(false);
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 	});
 
 	it("deletes the whole cache file when the affected set exceeds the threshold", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a() { return 1; }\n",
-				"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				computeAffectedFiles(runFor(directory), undefined);
-				seedCache(cacheFile, [fileA, fileB]);
-				fs.writeFileSync(fileA, "export function a() { return 'string now'; }\n");
-				touch(fileA);
+		const directory = createFixture({
+			"src/a.ts": "export function a() { return 1; }\n",
+			"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				// Threshold 0: any affected file trips the escape valve.
-				const dirty = new Set([normalizePath(fileA)]);
-				const outcome = invalidate(directory, [fileA, fileB], dirty, {
-					LINT_AFFECTED_BUST_THRESHOLD: "0",
-				});
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileA, fileB]);
+		fs.writeFileSync(fileA, "export function a() { return 'string now'; }\n");
+		touch(fileA);
 
-				expect(outcome.busted).toBe(true);
-				expect(outcome.invalidated).toStrictEqual([]);
-				expect(fs.existsSync(cacheFile)).toBe(false);
-			},
-		);
+		// Threshold 0: any affected file trips the escape valve.
+		const dirty = new Set([normalizePath(fileA)]);
+		const outcome = invalidate(directory, [fileA, fileB], dirty, {
+			LINT_AFFECTED_BUST_THRESHOLD: "0",
+		});
+
+		expect(outcome.busted).toBe(true);
+		expect(outcome.invalidated).toStrictEqual([]);
+		expect(fs.existsSync(cacheFile)).toBe(false);
 	});
 
 	it("persists state but invalidates nothing on the first run", () => {
-		expect.hasAssertions();
+		expect.assertions(6);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"src/b.ts":
-					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				seedCache(cacheFile, [fileA, fileB]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"src/b.ts":
+				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const outcome = invalidate(directory, [fileA, fileB], new Set());
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		seedCache(cacheFile, [fileA, fileB]);
 
-				expect(outcome.firstRun).toBe(true);
-				expect(outcome.busted).toBe(false);
-				expect(outcome.invalidated).toStrictEqual([]);
-				expect(builderStateFiles(directory, `tsbuildinfo-full-${TEST_KEY}`)).toHaveLength(
-					1,
-				);
-				expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
-			},
-		);
+		const outcome = invalidate(directory, [fileA, fileB], new Set());
+
+		expect(outcome.firstRun).toBe(true);
+		expect(outcome.busted).toBe(false);
+		expect(outcome.invalidated).toStrictEqual([]);
+		expect(builderStateFiles(directory, `tsbuildinfo-full-${TEST_KEY}`)).toHaveLength(1);
+		expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
 	});
 
 	it("skips when there is no tsconfig", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withFixture({ "src/a.ts": "export const a = 1;\n" }, (directory) => {
-			const cacheFile = path.join(directory, ".eslintcache");
-			const fileA = path.join(directory, "src/a.ts");
-			seedCache(cacheFile, [fileA]);
+		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" });
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		seedCache(cacheFile, [fileA]);
 
-			const outcome = invalidate(directory, [fileA], new Set());
+		const outcome = invalidate(directory, [fileA], new Set());
 
-			expect(outcome.skipped).toBe(true);
-			expect(outcome.invalidated).toStrictEqual([]);
-			expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
-		});
+		expect(outcome.skipped).toBe(true);
+		expect(outcome.invalidated).toStrictEqual([]);
+		expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
 	});
 });
 
 describe("dirtyCache.removeEntries", () => {
 	it("removes only the named entries and keeps the rest", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(
-			{
-				"src/a.ts": "export const a = 1;\n",
-				"src/b.ts": "export const b = 2;\n",
-				"src/c.ts": "export const c = 3;\n",
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileA = path.join(directory, "src/a.ts");
-				const fileB = path.join(directory, "src/b.ts");
-				const fileC = path.join(directory, "src/c.ts");
-				seedCache(cacheFile, [fileA, fileB, fileC]);
+		const directory = createFixture({
+			"src/a.ts": "export const a = 1;\n",
+			"src/b.ts": "export const b = 2;\n",
+			"src/c.ts": "export const c = 3;\n",
+		});
 
-				// Forward-slash path proves separator-insensitive matching.
-				const removed = openCache(cacheFile, false)?.removeEntries([
-					fileB.split(path.sep).join("/"),
-				]);
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "src/a.ts");
+		const fileB = path.join(directory, "src/b.ts");
+		const fileC = path.join(directory, "src/c.ts");
+		seedCache(cacheFile, [fileA, fileB, fileC]);
 
-				expect(removed).toBe(1);
-				expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
-				expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
-			},
-		);
+		// Forward-slash path proves separator-insensitive matching.
+		const removed = openCache(cacheFile, false)?.removeEntries([
+			fileB.split(path.sep).join("/"),
+		]);
+
+		expect(removed).toBe(1);
+		expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
+		expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
 	});
 });
 
@@ -550,111 +519,99 @@ const JSON_TSCONFIG = JSON.stringify({
 
 describe("typed-pass skip", () => {
 	it("skips the typed pass in default mode when nothing type-relevant changed", () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				const fileA = path.join(directory, "src/a.ts");
-				// Establish builder state and seed the cache so a.ts is neither
-				// mtime-dirty nor builder-affected on the next run.
-				computeAffectedFiles(runFor(directory), "only");
-				seedCache(cacheFile, [fileA]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const { commands, notice } = composeInFixture(directory);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		// Establish builder state and seed the cache so a.ts is neither
+		// mtime-dirty nor builder-affected on the next run.
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
 
-				const labels = commands.map((command) => command.label);
+		const { commands, notice } = composeInFixture(directory);
 
-				expect(labels).toContain("fast");
-				expect(labels).not.toContain("typed");
-				expect(notice).toMatch(/skipping the type-aware/);
-			},
-		);
+		const labels = commands.map((command) => command.label);
+
+		expect(labels).toContain("fast");
+		expect(labels).not.toContain("typed");
+		expect(notice).toMatch(/skipping the type-aware/);
 	});
 
 	it("skips the typed pass when the only uncached files are ESLint-ignored", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				// A `.mjs` config so ESLint loads it without a TypeScript loader
-				// in the fixture's bare node_modules.
-				"eslint.config.mjs":
-					'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
-					'{ ignores: ["src/ignored.ts"] }];\n',
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"src/ignored.ts": "export function ignored(): number { return 2; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				// Seed every file ESLint actually lints. `src/ignored.ts` is a
-				// target of the git listing but ESLint never lints it, so it
-				// has no cache entry and reads as dirty on every run — the
-				// phantom-dirty file that used to make the skip unreachable.
-				computeAffectedFiles(runFor(directory), "only");
-				seedCache(cacheFile, [
-					path.join(directory, "src/a.ts"),
-					path.join(directory, "eslint.config.mjs"),
-				]);
+		const directory = createFixture({
+			// A `.mjs` config so ESLint loads it without a TypeScript loader
+			// in the fixture's bare node_modules.
+			"eslint.config.mjs":
+				'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
+				'{ ignores: ["src/ignored.ts"] }];\n',
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"src/ignored.ts": "export function ignored(): number { return 2; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const { commands, notice } = composeInFixture(directory);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		// Seed every file ESLint actually lints. `src/ignored.ts` is a
+		// target of the git listing but ESLint never lints it, so it
+		// has no cache entry and reads as dirty on every run — the
+		// phantom-dirty file that used to make the skip unreachable.
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [
+			path.join(directory, "src/a.ts"),
+			path.join(directory, "eslint.config.mjs"),
+		]);
 
-				expect(commands.map((command) => command.label)).not.toContain("typed");
-				expect(notice).toMatch(/skipping the type-aware/);
-			},
-		);
+		const { commands, notice } = composeInFixture(directory);
+
+		expect(commands.map((command) => command.label)).not.toContain("typed");
+		expect(notice).toMatch(/skipping the type-aware/);
 	});
 
 	it("never skips the typed pass when a target resolves outside cwd", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(runFor(directory), "only");
-				seedCache(cacheFile, [fileA]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				// "src" is in-cwd and clean, but "../elsewhere" escapes cwd, so
-				// the dirty count is unknowable: the typed pass must not
-				// auto-skip and a notice is emitted.
-				const { commands, notice } = composeInFixture(directory, ["src", "../elsewhere"]);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
 
-				expect(commands.map((command) => command.label)).toContain("typed");
-				expect(notice).toMatch(/resolves outside the working directory/);
-			},
-		);
+		// "src" is in-cwd and clean, but "../elsewhere" escapes cwd, so
+		// the dirty count is unknowable: the typed pass must not
+		// auto-skip and a notice is emitted.
+		const { commands, notice } = composeInFixture(directory, ["src", "../elsewhere"]);
+
+		expect(commands.map((command) => command.label)).toContain("typed");
+		expect(notice).toMatch(/resolves outside the working directory/);
 	});
 
 	it("never skips the typed pass when --type-aware=only is explicit", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(runFor(directory), "only");
-				seedCache(cacheFile, [fileA]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const { commands, notice } = composeInFixture(directory, ["--type-aware=only"]);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
 
-				expect(commands.map((command) => command.label)).toContain("typed");
-				expect(notice).toBeUndefined();
-			},
-		);
+		const { commands, notice } = composeInFixture(directory, ["--type-aware=only"]);
+
+		expect(commands.map((command) => command.label)).toContain("typed");
+		expect(notice).toBeUndefined();
 	});
 });
 
@@ -662,63 +619,57 @@ describe("plan mutation", () => {
 	const buildInfo = `tsbuildinfo-typeaware-${TEST_KEY}`;
 
 	it("performs no I/O mutation in read-only (print) mode", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				const fileA = path.join(directory, "src/a.ts");
-				seedCache(cacheFile, [fileA]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([], {}), runContext(directory));
-				});
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		seedCache(cacheFile, [fileA]);
 
-				expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
-					"fast",
-					"typed",
-				]);
-				// Read-only planning never runs the builder or deletes caches.
-				expect(builderStateFiles(directory, buildInfo)).toHaveLength(0);
-				expect(fs.existsSync(cacheFile)).toBe(true);
+		const runPlan = withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory));
+		});
 
-				// The mutating plan, by contrast, runs the builder.
-				withoutGitEnvironment(() => {
-					return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-				});
+		expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+			"fast",
+			"typed",
+		]);
+		// Read-only planning never runs the builder or deletes caches.
+		expect(builderStateFiles(directory, buildInfo)).toHaveLength(0);
+		expect(fs.existsSync(cacheFile)).toBe(true);
 
-				expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
-			},
-		);
+		// The mutating plan, by contrast, runs the builder.
+		withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+		});
+
+		expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
 	});
 
 	it("marks the typed pass skipped in the plan when nothing type-relevant changed", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"src/a.ts": "export function a(): number { return 1; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-				const fileA = path.join(directory, "src/a.ts");
-				computeAffectedFiles(runFor(directory), "only");
-				seedCache(cacheFile, [fileA]);
+		const directory = createFixture({
+			"src/a.ts": "export function a(): number { return 1; }\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				const runPlan = withoutGitEnvironment(() => {
-					return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-				});
-				const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
 
-				expect(typed?.shouldRun).toBe(false);
-				expect(typed?.skipReason).toMatch(/skipping the type-aware/);
-			},
-		);
+		const runPlan = withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+		});
+		const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+
+		expect(typed!.shouldRun).toBe(false);
+		expect(typed!.skipReason).toMatch(/skipping the type-aware/);
 	});
 });
 
@@ -740,113 +691,102 @@ describe("per-variant cache isolation", () => {
 	}
 
 	it("keeps both caches warm when agent and non-agent runs alternate", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(VARIANT_FIXTURE, (directory) => {
-			const humanCache = seedVariant(directory, {});
-			const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
+		const directory = createFixture(VARIANT_FIXTURE);
+		const humanCache = seedVariant(directory, {});
+		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
-			withoutGitEnvironment(() => {
-				plan(
-					parseArguments([], {}),
-					runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
-				);
-				plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-				plan(
-					parseArguments([], {}),
-					runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
-				);
-			});
-
-			// Before the split, each run rewrote the single cache with its own
-			// resolved config, so the other variant re-linted everything.
-			expect(fs.existsSync(humanCache)).toBe(true);
-			expect(fs.existsSync(agentCache)).toBe(true);
+		withoutGitEnvironment(() => {
+			plan(
+				parseArguments([], {}),
+				runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+			);
+			plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+			plan(
+				parseArguments([], {}),
+				runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+			);
 		});
+
+		// Before the split, each run rewrote the single cache with its own
+		// resolved config, so the other variant re-linted everything.
+		expect(fs.existsSync(humanCache)).toBe(true);
+		expect(fs.existsSync(agentCache)).toBe(true);
 	});
 
 	it("busts only the stale variant when the config changes", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(VARIANT_FIXTURE, (directory) => {
-			const humanCache = seedVariant(directory, {});
-			const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
+		const directory = createFixture(VARIANT_FIXTURE);
+		const humanCache = seedVariant(directory, {});
+		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
-			// The config now post-dates the agent cache but not the human one.
-			const configSeconds = Date.now() / 1000 + 60;
-			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
-			fs.utimesSync(humanCache, configSeconds + 60, configSeconds + 60);
+		// The config now post-dates the agent cache but not the human one.
+		const configSeconds = Date.now() / 1000 + 60;
+		fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
+		fs.utimesSync(humanCache, configSeconds + 60, configSeconds + 60);
 
-			withoutGitEnvironment(() => {
-				return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-			});
-
-			expect(fs.existsSync(agentCache)).toBe(false);
-			expect(fs.existsSync(humanCache)).toBe(true);
+		withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
 		});
+
+		expect(fs.existsSync(agentCache)).toBe(false);
+		expect(fs.existsSync(humanCache)).toBe(true);
 	});
 
 	it("never deletes a stale cache in read-only (print) mode", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
-		withFixture(VARIANT_FIXTURE, (directory) => {
-			const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
-			const configSeconds = Date.now() / 1000 + 60;
-			fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
+		const directory = createFixture(VARIANT_FIXTURE);
+		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
+		const configSeconds = Date.now() / 1000 + 60;
+		fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 
-			withoutGitEnvironment(() => plan(parseArguments([], {}), runContext(directory)));
+		withoutGitEnvironment(() => plan(parseArguments([], {}), runContext(directory)));
 
-			expect(fs.existsSync(agentCache)).toBe(true);
-		});
+		expect(fs.existsSync(agentCache)).toBe(true);
 	});
 
 	it("keys the builder state per variant", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(VARIANT_FIXTURE, (directory) => {
-			computeAffectedFiles(runFor(directory), "only");
-			computeAffectedFiles(runFor(directory, AGENT_ENVIRONMENT), "only");
+		const directory = createFixture(VARIANT_FIXTURE);
+		computeAffectedFiles(runFor(directory), "only");
+		computeAffectedFiles(runFor(directory, AGENT_ENVIRONMENT), "only");
 
-			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(
-				1,
-			);
-			expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${AGENT_KEY}`)).toHaveLength(
-				1,
-			);
-		});
+		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(1);
+		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${AGENT_KEY}`)).toHaveLength(1);
 	});
 });
 
 describe("resolveJsonModule invalidation", () => {
 	it("invalidates a .ts importer when an imported .json changes shape", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"src/b.ts":
-					"import data from './data.json';\nexport function b() { return data.value; }\n",
-				"src/data.json": '{ "value": 1 }\n',
-				"tsconfig.json": JSON_TSCONFIG,
-			},
-			(directory) => {
-				const cacheFile = path.join(directory, ".eslintcache");
-				const fileB = path.join(directory, "src/b.ts");
-				const fileData = path.join(directory, "src/data.json");
-				computeAffectedFiles(runFor(directory), undefined);
-				seedCache(cacheFile, [fileB]);
-				fs.writeFileSync(fileData, '{ "value": "now a string" }\n');
-				touch(fileData);
+		const directory = createFixture({
+			"src/b.ts":
+				"import data from './data.json';\nexport function b() { return data.value; }\n",
+			"src/data.json": '{ "value": 1 }\n',
+			"tsconfig.json": JSON_TSCONFIG,
+		});
 
-				const outcome = invalidate(
-					directory,
-					[fileData, fileB],
-					new Set([normalizePath(fileData)]),
-				);
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileB = path.join(directory, "src/b.ts");
+		const fileData = path.join(directory, "src/data.json");
+		computeAffectedFiles(runFor(directory), undefined);
+		seedCache(cacheFile, [fileB]);
+		fs.writeFileSync(fileData, '{ "value": "now a string" }\n');
+		touch(fileData);
 
-				expect(outcome.invalidated).toContain(normalizePath(fileB));
-				expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
-			},
+		const outcome = invalidate(
+			directory,
+			[fileData, fileB],
+			new Set([normalizePath(fileData)]),
 		);
+
+		expect(outcome.invalidated).toContain(normalizePath(fileB));
+		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 	});
 });
 
@@ -914,188 +854,173 @@ function editRules(directory: string): void {
 
 describe("applyConfigDriftBust", () => {
 	it("stores the hash without busting on the first run", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			seedAllCaches(directory, TEST_KEY);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		seedAllCaches(directory, TEST_KEY);
 
-			const outcome = bustConfig(runFor(directory));
+		const outcome = bustConfig(runFor(directory));
 
-			expect(outcome).toStrictEqual({ busted: false, firstRun: true });
-			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
-		});
+		expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
 	it("busts every cache when an imported config module changes", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			bustConfig(runFor(directory));
-			seedAllCaches(directory, TEST_KEY);
-			editRules(directory);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		bustConfig(runFor(directory));
+		seedAllCaches(directory, TEST_KEY);
+		editRules(directory);
 
-			const outcome = bustConfig(runFor(directory));
+		const outcome = bustConfig(runFor(directory));
 
-			expect(outcome).toStrictEqual({ busted: true, firstRun: false });
-			// Unlike the package.json bust, the fast (syntactic) cache is dropped
-			// too: a rule-severity change alters a syntactic lint.
-			expect(anyCacheExists(directory, TEST_KEY)).toBe(false);
-		});
+		expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+		// Unlike the package.json bust, the fast (syntactic) cache is dropped
+		// too: a rule-severity change alters a syntactic lint.
+		expect(anyCacheExists(directory, TEST_KEY)).toBe(false);
 	});
 
 	it("does not bust when an imported module is only touched", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			bustConfig(runFor(directory));
-			seedAllCaches(directory, TEST_KEY);
-			touch(path.join(directory, "eslint-rules.ts"));
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		bustConfig(runFor(directory));
+		seedAllCaches(directory, TEST_KEY);
+		touch(path.join(directory, "eslint-rules.ts"));
 
-			const outcome = bustConfig(runFor(directory));
+		const outcome = bustConfig(runFor(directory));
 
-			// Content-addressed, so an mtime bump with identical content is a
-			// no-op.
-			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
-			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
-		});
+		// Content-addressed, so an mtime bump with identical content is a
+		// no-op.
+		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
 	it("lets each variant observe the same drift independently", () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			bustConfig(runFor(directory));
-			bustConfig(runFor(directory, AGENT_ENVIRONMENT));
-			seedAllCaches(directory, TEST_KEY);
-			seedAllCaches(directory, AGENT_KEY);
-			editRules(directory);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		bustConfig(runFor(directory));
+		bustConfig(runFor(directory, AGENT_ENVIRONMENT));
+		seedAllCaches(directory, TEST_KEY);
+		seedAllCaches(directory, AGENT_KEY);
+		editRules(directory);
 
-			expect(bustConfig(runFor(directory))).toStrictEqual({
-				busted: true,
-				firstRun: false,
-			});
-			// The no-agent run must not consume the drift on the agent's behalf.
-			expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
-
-			expect(bustConfig(runFor(directory, AGENT_ENVIRONMENT))).toStrictEqual({
-				busted: true,
-				firstRun: false,
-			});
-			expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
+		expect(bustConfig(runFor(directory))).toStrictEqual({
+			busted: true,
+			firstRun: false,
 		});
+		// The no-agent run must not consume the drift on the agent's behalf.
+		expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
+
+		expect(bustConfig(runFor(directory, AGENT_ENVIRONMENT))).toStrictEqual({
+			busted: true,
+			firstRun: false,
+		});
+		expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
 	});
 
 	it("no-ops when there is no config entry point", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			seedAllCaches(directory, TEST_KEY);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		seedAllCaches(directory, TEST_KEY);
 
-			const outcome = applyHashBust(
-				runFor(directory),
-				CONFIG_DRIFT,
-				computeConfigHash(directory, []),
-			);
+		const outcome = applyHashBust(
+			runFor(directory),
+			CONFIG_DRIFT,
+			computeConfigHash(directory, []),
+		);
 
-			expect(outcome).toStrictEqual({ busted: false, firstRun: false });
-			expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
-		});
+		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
 	it("no-ops when typescript cannot be resolved", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-cfg-"));
-		try {
-			fs.writeFileSync(path.join(directory, "eslint.config.ts"), "export default [];\n");
-			const roots = [path.join(directory, "eslint.config.ts")];
-
-			expect(computeConfigHash(directory, roots)).toBeUndefined();
-			expect(
-				applyHashBust(runFor(directory), CONFIG_DRIFT, computeConfigHash(directory, roots)),
-			).toStrictEqual({
-				busted: false,
-				firstRun: false,
-			});
-		} finally {
+		onTestFinished(() => {
 			fs.rmSync(directory, { force: true, recursive: true });
-		}
+		});
+		fs.writeFileSync(path.join(directory, "eslint.config.ts"), "export default [];\n");
+		const roots = [path.join(directory, "eslint.config.ts")];
+
+		expect(computeConfigHash(directory, roots)).toBeUndefined();
+		expect(
+			applyHashBust(runFor(directory), CONFIG_DRIFT, computeConfigHash(directory, roots)),
+		).toStrictEqual({
+			busted: false,
+			firstRun: false,
+		});
 	});
 });
 
 describe("computeConfigHash discovery", () => {
 	it("follows transitive imports and re-exports", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"a.ts": "export * from './b';\n",
-				"b.ts": "export const b = 1;\n",
-				"eslint.config.ts": "import './a';\nexport default [];\n",
-				"tsconfig.json": TSCONFIG,
-			},
-			(directory) => {
-				const before = computeConfigHash(directory, configBustFiles(directory));
-				fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
-				const after = computeConfigHash(directory, configBustFiles(directory));
+		const directory = createFixture({
+			"a.ts": "export * from './b';\n",
+			"b.ts": "export const b = 1;\n",
+			"eslint.config.ts": "import './a';\nexport default [];\n",
+			"tsconfig.json": TSCONFIG,
+		});
 
-				expect(before).toBeDefined();
-				expect(after).not.toBe(before);
-			},
-		);
+		const before = computeConfigHash(directory, configBustFiles(directory));
+		fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
+		const after = computeConfigHash(directory, configBustFiles(directory));
+
+		expect(before).toBeDefined();
+		expect(after).not.toBe(before);
 	});
 
 	it("resolves tsconfig path aliases", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"config/rules.ts": "export const rules = {};\n",
-				"eslint.config.ts": "import '@rules';\nexport default [];\n",
-				"tsconfig.json": JSON.stringify({
-					compilerOptions: {
-						baseUrl: ".",
-						module: "commonjs",
-						paths: { "@rules": ["./config/rules"] },
-						strict: true,
-						target: "es2020",
-					},
-					include: ["src"],
-				}),
-			},
-			(directory) => {
-				const before = computeConfigHash(directory, configBustFiles(directory));
-				fs.writeFileSync(
-					path.join(directory, "config/rules.ts"),
-					"export const rules = { x: 1 };\n",
-				);
-				const after = computeConfigHash(directory, configBustFiles(directory));
+		const directory = createFixture({
+			"config/rules.ts": "export const rules = {};\n",
+			"eslint.config.ts": "import '@rules';\nexport default [];\n",
+			"tsconfig.json": JSON.stringify({
+				compilerOptions: {
+					baseUrl: ".",
+					module: "commonjs",
+					paths: { "@rules": ["./config/rules"] },
+					strict: true,
+					target: "es2020",
+				},
+				include: ["src"],
+			}),
+		});
 
-				expect(before).toBeDefined();
-				expect(after).not.toBe(before);
-			},
+		const before = computeConfigHash(directory, configBustFiles(directory));
+		fs.writeFileSync(
+			path.join(directory, "config/rules.ts"),
+			"export const rules = { x: 1 };\n",
 		);
+		const after = computeConfigHash(directory, configBustFiles(directory));
+
+		expect(before).toBeDefined();
+		expect(after).not.toBe(before);
 	});
 
 	it("ignores files the config does not import", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
-		withFixture(
-			{
-				"eslint.config.ts": "import './rules';\nexport default [];\n",
-				"rules.ts": "export const rules = {};\n",
-				"tsconfig.json": TSCONFIG,
-				"unrelated.ts": "export const x = 1;\n",
-			},
-			(directory) => {
-				const before = computeConfigHash(directory, configBustFiles(directory));
-				fs.writeFileSync(path.join(directory, "unrelated.ts"), "export const x = 2;\n");
-				const after = computeConfigHash(directory, configBustFiles(directory));
+		const directory = createFixture({
+			"eslint.config.ts": "import './rules';\nexport default [];\n",
+			"rules.ts": "export const rules = {};\n",
+			"tsconfig.json": TSCONFIG,
+			"unrelated.ts": "export const x = 1;\n",
+		});
 
-				expect(before).toBeDefined();
-				expect(after).toBe(before);
-			},
-		);
+		const before = computeConfigHash(directory, configBustFiles(directory));
+		fs.writeFileSync(path.join(directory, "unrelated.ts"), "export const x = 2;\n");
+		const after = computeConfigHash(directory, configBustFiles(directory));
+
+		expect(before).toBeDefined();
+		expect(after).toBe(before);
 	});
 });
 
@@ -1105,33 +1030,32 @@ describe("config drift sizing", () => {
 	}
 
 	it("un-skips the typed pass when a module the config imports changed", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		// Lint only `src`; the imported `eslint-rules.ts` sits at the root, so it
 		// is neither a lint target nor a cache-bust file. Editing it therefore
 		// changes nothing the mtime dirty count can see — only the config-drift
 		// bust can trigger the re-lint, isolating the fix.
-		withFixture(CONFIG_IMPORT_FIXTURE, (directory) => {
-			const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
-			const fileA = path.join(directory, "src/a.ts");
-			const args = parseArguments(["src"], {});
-			computeAffectedFiles(runFor(directory), "only");
-			seedCache(cacheFile, [fileA]);
-			const warm = withoutGitEnvironment(() => {
-				return plan(args, runContext(directory, { mutate: true }));
-			});
-
-			expect(typedPass(warm)?.shouldRun).toBe(false);
-
-			// No bust file changes on disk, but the resolved config (and ESLint's
-			// hashOfConfig) shifts, so the drift bust must delete the caches and
-			// the typed pass must run at full size.
-			editRules(directory);
-			const drifted = withoutGitEnvironment(() => {
-				return plan(args, runContext(directory, { mutate: true }));
-			});
-
-			expect(typedPass(drifted)?.shouldRun).toBe(true);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		const args = parseArguments(["src"], {});
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
+		const warm = withoutGitEnvironment(() => {
+			return plan(args, runContext(directory, { mutate: true }));
 		});
+
+		expect(typedPass(warm)?.shouldRun).toBe(false);
+
+		// No bust file changes on disk, but the resolved config (and ESLint's
+		// hashOfConfig) shifts, so the drift bust must delete the caches and
+		// the typed pass must run at full size.
+		editRules(directory);
+		const drifted = withoutGitEnvironment(() => {
+			return plan(args, runContext(directory, { mutate: true }));
+		});
+
+		expect(typedPass(drifted)?.shouldRun).toBe(true);
 	});
 });

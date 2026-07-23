@@ -64,7 +64,7 @@ function mustStayInEslint(rule: string): boolean {
 
 describe("oxlint native-only hybrid mode", () => {
 	it("should load only the directive jsPlugin when jsPlugins is false", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const config = oxlintIsentinel({
 			name: "test/oxlint-native-only",
@@ -90,7 +90,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should keep the oxlint-comments rules enabled in native-only mode", () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const enabled = enabledOxlintRules(nativeOnlyOxlintConfig());
 		const directiveRules = [...enabled].filter((rule) => rule.startsWith("oxlint-comments/"));
@@ -100,7 +100,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should keep jsPlugin-mapped rules in ESLint", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const eslintOnly = await eslintRules({});
 		const full = await eslintRules({ oxlint: true });
@@ -122,7 +122,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should still hand the native rules to oxlint", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const eslintOnly = await eslintRules({});
 		const native = await eslintRules({ oxlint: "native" });
@@ -144,7 +144,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should keep formatting of real TS files in ESLint", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		// Full hybrid leaves real JS/TS files to oxlint's oxfmt jsPlugin and
 		// only formats Markdown code blocks; native-only loads no jsPlugin, so
@@ -165,7 +165,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should stamp the hybrid marker", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const composer = await isentinel({
 			name: "test/native-only-marker",
@@ -180,7 +180,7 @@ describe("oxlint native-only hybrid mode", () => {
 	});
 
 	it("should not double-lint a rule in both engines", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const native = await eslintRules({ oxlint: "native" });
 		const oxlintEnabled = enabledOxlintRules(nativeOnlyOxlintConfig());

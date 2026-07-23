@@ -154,7 +154,7 @@ describe("oxlint per-file severity parity", () => {
 		it("should agree with the ESLint-only config on effective severities", async ({
 			expect,
 		}) => {
-			expect.hasAssertions();
+			expect.assertions(2);
 
 			const eslintOnly = [
 				...(await isentinel({ name: "test/parity-eslint", ...variant.options })),
@@ -328,7 +328,7 @@ async function findTypeAwareEmissions(config: OxlintConfig): Promise<Array<strin
 
 describe("oxlint options-level rules", () => {
 	it("should let options.rules override the preset for source files", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		// no-console is enabled by the preset's javascript config
 		const config = oxlintIsentinel({
@@ -345,7 +345,7 @@ describe("oxlint options-level rules", () => {
 	});
 
 	it("should let explicit user configs win over options.rules", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel(
 			{
@@ -368,7 +368,7 @@ describe("oxlint options-level rules", () => {
 	});
 
 	it("should translate and register jsPlugin rules from options.rules", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const config = oxlintIsentinel({
 			name: "test/options-js-plugin",
@@ -389,7 +389,7 @@ describe("oxlint options-level rules", () => {
 	});
 
 	it("should preserve unmapped off entries from options.rules", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/options-unmapped-off",
@@ -407,7 +407,7 @@ describe("oxlint options-level rules", () => {
 
 describe("oxlint linter options", () => {
 	it("should enable typeAware by default", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/linter-options",
@@ -420,7 +420,7 @@ describe("oxlint linter options", () => {
 	});
 
 	it("should merge user options over the defaults", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/linter-options",
@@ -436,7 +436,7 @@ describe("oxlint linter options", () => {
 
 describe("oxlint env and globals", () => {
 	it("should pass env and globals through to the top level", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const config = oxlintIsentinel({
 			name: "test/env-globals",
@@ -452,7 +452,7 @@ describe("oxlint env and globals", () => {
 	});
 
 	it("should emit user globals as a trailing override that beats the preset", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const config = oxlintIsentinel({
 			name: "test/env-globals",
@@ -510,7 +510,7 @@ describe("oxlint jsdoc parity", () => {
 	// Variant coverage matters: the in-repo consumer uses neither jsdoc:full
 	// nor package mode, so this asymmetry only surfaced on a real project.
 	it("should enable the full jsdoc tier on both engines under jsdoc:full", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const { eslint, oxlint } = await jsdocRuleSets({ ...baseOptions, jsdoc: { full: true } });
 
@@ -521,7 +521,7 @@ describe("oxlint jsdoc parity", () => {
 	});
 
 	it("should omit the full jsdoc tier on both engines by default (game)", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const { eslint, oxlint } = await jsdocRuleSets({ ...baseOptions });
 
@@ -547,7 +547,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 	];
 
 	it("should never emit a jsPlugin rule that requires type information", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const problems: Array<string> = [];
 		for (const options of jsPluginVariants) {
@@ -559,10 +559,13 @@ describe("oxlint jsPlugin type-awareness", () => {
 	});
 
 	it("should register a resolvable jsPlugin for every emitted prefixed rule", ({ expect }) => {
+		// Assertion count depends on how many jsPlugins each variant registers
+		// (varies as jsPlugins are added), so it can't be pinned to a literal.
 		expect.hasAssertions();
 
 		expect(Object.keys(oxlintJsPlugins).length).toBeGreaterThan(20);
 
+		const unresolvedByVariant: Array<Array<string>> = [];
 		for (const options of jsPluginVariants) {
 			const config = oxlintIsentinel({ name: "test/js-plugin-prefixes", ...options });
 
@@ -588,8 +591,10 @@ describe("oxlint jsPlugin type-awareness", () => {
 				...registered.keys(),
 			]);
 
-			expect(unresolvedPrefixedRules(config, knownPrefixes)).toStrictEqual([]);
+			unresolvedByVariant.push(unresolvedPrefixedRules(config, knownPrefixes));
 		}
+
+		expect(unresolvedByVariant).toStrictEqual(jsPluginVariants.map(() => []));
 	});
 });
 

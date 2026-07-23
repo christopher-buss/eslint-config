@@ -35,19 +35,19 @@ function settingsFor(
 
 describe("resolvePrettierSettings", () => {
 	it("falls back to the preset defaults", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(settingsFor({})).toStrictEqual({ ...PRETTIER_DEFAULTS });
 	});
 
 	it("reads .prettierrc as JSON", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		expect(settingsFor({ ".prettierrc": '{"printWidth": 80}' })["printWidth"]).toBe(80);
 	});
 
 	it("reads .prettierrc.yaml", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({ ".prettierrc.yaml": "printWidth: 70\ntabWidth: 2\n" });
 
@@ -55,7 +55,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("reads the package.json prettier key", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({
 			"package.json": '{"name": "x", "prettier": {"printWidth": 60}}',
@@ -65,7 +65,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("ignores a package.json prettier key naming a shareable config", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({
 			"package.json": '{"name": "x", "prettier": "@company/prettier-config"}',
@@ -75,7 +75,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("translates EditorConfig properties", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({
 			".editorconfig": [
@@ -98,7 +98,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("applies EditorConfig sections matching source files", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({
 			".editorconfig": [
@@ -116,7 +116,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("lets a Prettier config win over EditorConfig", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({
 			".editorconfig": "root = true\n\n[*]\nmax_line_length = 90\n",
@@ -127,7 +127,7 @@ describe("resolvePrettierSettings", () => {
 	});
 
 	it("lets explicit factory options win over everything", () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const settings = settingsFor({ ".prettierrc": '{"printWidth": 80}' }, { printWidth: 55 });
 
@@ -148,7 +148,7 @@ function arrowOptions(rules: unknown): unknown {
 
 describe("factory parity", () => {
 	it("gives both engines the same arrow-return-style options", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const eslintConfigs = await isentinel({ roblox: false, type: "package" });
 		const eslintRules = eslintConfigs.find(

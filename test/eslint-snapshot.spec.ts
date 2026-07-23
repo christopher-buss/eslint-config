@@ -32,7 +32,7 @@ function findUnicornRules(
 describe("config snapshots", () => {
 	describe.for(snapshotFixtures)("$name", ({ name, options }) => {
 		it("should match the config snapshot", async () => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const configs = await isentinel({ name: `test/${name}`, ...options });
 
@@ -41,7 +41,7 @@ describe("config snapshots", () => {
 	});
 
 	it("should enable non-roblox unicorn rules for package configs", async () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const packageConfigs = await isentinel({
 			name: "test/package-unicorn",
@@ -73,7 +73,7 @@ describe("config snapshots", () => {
 	});
 
 	it("should scope roblox rules and apply node rules to the complement", async () => {
-		expect.hasAssertions();
+		expect.assertions(9);
 
 		const configs = [
 			...(await isentinel({
@@ -131,7 +131,7 @@ describe("config snapshots", () => {
 	});
 
 	it("should not add node rules to the default roblox config", async () => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const configs = [
 			...(await isentinel({
@@ -148,7 +148,7 @@ describe("config snapshots", () => {
 	});
 
 	it("should prepend naming selectors before the defaults", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const variableSelector = { format: ["snake_case" as const], selector: "variable" as const };
 		const functionSelector = {

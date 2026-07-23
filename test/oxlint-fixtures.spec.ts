@@ -97,7 +97,7 @@ describe("oxlint standalone fixtures", () => {
 	it(
 		"should produce the expected diagnostics",
 		async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const temporaryDirectory = path.resolve(FIXTURES_TEMP, "oxlint-standalone");
 			await fs.cp(FIXTURES_INPUT, temporaryDirectory, { recursive: true });
@@ -115,9 +115,9 @@ describe("oxlint standalone fixtures", () => {
 
 			const diagnostics = runOxlint(temporaryDirectory);
 
-			expect(diagnostics).toMatchSnapshot();
-
 			await fs.rm(temporaryDirectory, { force: true, recursive: true });
+
+			expect(diagnostics).toMatchSnapshot();
 		},
 		timeout,
 	);
@@ -125,7 +125,7 @@ describe("oxlint standalone fixtures", () => {
 	it(
 		"should run the cspell jsPlugin end-to-end",
 		async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const temporaryDirectory = path.resolve(FIXTURES_TEMP, "oxlint-spellcheck");
 			await fs.mkdir(temporaryDirectory, { recursive: true });
@@ -147,11 +147,11 @@ describe("oxlint standalone fixtures", () => {
 
 			const diagnostics = runOxlint(temporaryDirectory);
 
+			await fs.rm(temporaryDirectory, { force: true, recursive: true });
+
 			expect(diagnostics.some((diagnostic) => diagnostic.includes("spellchecker"))).toBe(
 				true,
 			);
-
-			await fs.rm(temporaryDirectory, { force: true, recursive: true });
 		},
 		timeout,
 	);

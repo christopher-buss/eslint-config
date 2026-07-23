@@ -169,6 +169,10 @@ export function vitestRules({
 	stylistic = true,
 }: VitestRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/prefer-ending-with-an-expect": [
+			"warn",
+			{ assertFunctionNames: ["expect", "expectTypeOf", "assertType"] },
+		],
 		"vitest/consistent-each-for": [
 			"error",
 			{

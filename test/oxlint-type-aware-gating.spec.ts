@@ -43,7 +43,7 @@ function allRuleNames(config: OxlintConfig): Set<string> {
 
 describe("oxlint tsgolint gating", () => {
 	it("should emit tsgolint rules when type-aware is enabled", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const config = oxlintIsentinel({
 			name: "test/type-aware-on",
@@ -58,7 +58,7 @@ describe("oxlint tsgolint gating", () => {
 	it("should drop tsgolint rules but keep native rules when type-aware is disabled", ({
 		expect,
 	}) => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const config = oxlintIsentinel({
 			name: "test/type-aware-off",
@@ -75,7 +75,7 @@ describe("oxlint tsgolint gating", () => {
 
 describe("hybrid tsgolint drop gating", () => {
 	it("should keep tsgolint rules in ESLint when oxlint-tsgolint is absent", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const configs = [typeAwareRulesConfig()];
 		dropOxlintCoveredRules(configs, false);
@@ -85,7 +85,7 @@ describe("hybrid tsgolint drop gating", () => {
 	});
 
 	it("should drop tsgolint rules from ESLint when oxlint-tsgolint is present", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const configs = [typeAwareRulesConfig()];
 		dropOxlintCoveredRules(configs, true);

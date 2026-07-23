@@ -5,7 +5,7 @@ import { LINT_SCRIPTS, mergeLintScripts } from "../src/cli/stages/update-package
 
 describe("mergeLintScripts", () => {
 	it("adds both lint scripts when absent", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const scripts: Record<string, string> = {};
 
@@ -17,7 +17,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("adds only the missing script alongside unrelated scripts", async () => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const scripts: Record<string, string> = { build: "tsc" };
 
@@ -32,7 +32,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("leaves identical existing scripts untouched without prompting", async () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const scripts: Record<string, string> = { ...LINT_SCRIPTS };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>();
@@ -49,7 +49,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("preserves differing scripts in skip-prompt mode and never prompts", async () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const scripts: Record<string, string> = {
 			"lint": "eslint",
@@ -69,7 +69,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("adds missing scripts but preserves differing ones in skip-prompt mode", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const scripts: Record<string, string> = { lint: "eslint" };
 
@@ -81,7 +81,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("overwrites a differing script when the user confirms", async () => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		const scripts: Record<string, string> = { "lint": "eslint", "lint:fix": "eslint --fix" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(true);
@@ -97,7 +97,7 @@ describe("mergeLintScripts", () => {
 	});
 
 	it("keeps a differing script when the user declines", async () => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const scripts: Record<string, string> = { lint: "eslint" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(false);

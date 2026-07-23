@@ -199,7 +199,7 @@ const variants: Array<HybridVariant> = [
 describe("oxlint hybrid coverage", () => {
 	describe.for(variants)("$name", (variant: HybridVariant) => {
 		it("should keep every dropped rule enabled in the oxlint config", async ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(5);
 
 			const eslintOnly = await isentinel({
 				name: "test/eslint-only",
@@ -254,7 +254,7 @@ describe("oxlint hybrid coverage", () => {
 	});
 
 	it("should only map to native and type-aware rules that exist in oxlint", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const nativeRules = getOxlintNativeRules();
 		const problems = Object.entries(oxlintRuleMapping)
@@ -278,7 +278,7 @@ function hasOxlintMarker(configs: Array<TypedFlatConfigItem>): boolean {
 
 describe("hybrid marker", () => {
 	it("stamps the oxlint marker only when hybrid mode is enabled", async ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const hybrid = await isentinel({
 			name: "test/marker-hybrid",
@@ -295,7 +295,7 @@ describe("hybrid marker", () => {
 describe("oxlint config snapshots", () => {
 	describe.for(snapshotFixtures)("$name", ({ name, options }) => {
 		it("should match the config snapshot", ({ expect }) => {
-			expect.hasAssertions();
+			expect.assertions(1);
 
 			const config = oxlintIsentinel({ name: `test/oxlint-${name}`, ...options });
 
@@ -304,7 +304,7 @@ describe("oxlint config snapshots", () => {
 	});
 
 	it("should anchor slash-less override globs to the config root", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		// Oxlint matches a slash-less override glob gitignore-style at any
 		// depth, so an unanchored root glob such as `*` would apply a root-only
@@ -335,7 +335,7 @@ const ALL_CATEGORIES_OFF = {
 
 describe("oxlint categories", () => {
 	it("should disable every category by default", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({ name: "test/oxlint-categories-default" });
 
@@ -343,7 +343,7 @@ describe("oxlint categories", () => {
 	});
 
 	it("should merge a user category over the defaults", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/oxlint-categories-merge",
@@ -354,7 +354,7 @@ describe("oxlint categories", () => {
 	});
 
 	it("should let a user value win over a default of the same key", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/oxlint-categories-override",
@@ -402,7 +402,7 @@ function enabledOxcRules(config: OxlintConfig): Array<string> {
 
 describe("oxc rules", () => {
 	it("should enable the global oxc set for a roblox game config", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({ name: "test/oxc-game", ...baseOptions });
 
@@ -410,7 +410,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should add the non-roblox oxc rules for a package config", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			...baseOptions,
@@ -425,7 +425,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should register the oxc native plugin when enabled", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({ name: "test/oxc-plugin", ...baseOptions });
 
@@ -433,7 +433,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should omit every oxc rule when oxc is disabled", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({ ...baseOptions, name: "test/oxc-off", oxc: false });
 
@@ -441,7 +441,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should route a user oxc rule override to the native side", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(3);
 
 		function build(): OxlintConfig {
 			return oxlintIsentinel({
@@ -463,7 +463,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should disable oxc/no-barrel-file for declaration files", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({ name: "test/oxc-dts", ...baseOptions });
 
@@ -473,7 +473,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should preserve a user oxc rule disable", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			...baseOptions,
@@ -489,7 +489,7 @@ describe("oxc rules", () => {
 	});
 
 	it("should treat rules covered by a native oxc rule as oxlint-covered", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		expect(isOxlintCovered("sonar/no-all-duplicated-branches")).toBe(true);
 		expect(isOxlintCovered("unicorn/no-accidental-bitwise-operator")).toBe(true);
@@ -504,7 +504,7 @@ describe("oxc rules", () => {
 	it("should drop an oxc-covered rule from ESLint in hybrid mode but keep it otherwise", async ({
 		expect,
 	}) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const options = { ...baseOptions, roblox: false, type: "package" } as const;
 		const eslintOnly = await isentinel({ name: "test/oxc-cover-eslint", ...options });
@@ -528,7 +528,7 @@ describe("scoped roblox complement", () => {
 	}
 
 	it("applies node rules to the complement with the roblox scope excluded", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(2);
 
 		const config = oxlintIsentinel({
 			name: "test/scoped-roblox",
@@ -541,9 +541,9 @@ describe("scoped roblox complement", () => {
 
 		expect(overrides.length).toBeGreaterThan(0);
 
-		for (const override of overrides) {
-			expect(override.excludeFiles).toStrictEqual(["src/**"]);
-		}
+		expect(overrides.map((override) => override.excludeFiles)).toStrictEqual(
+			overrides.map(() => ["src/**"]),
+		);
 	});
 
 	function floatingPromiseOverrides(
@@ -555,7 +555,7 @@ describe("scoped roblox complement", () => {
 	}
 
 	it("turns off checkThenables for the complement only", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(4);
 
 		const config = oxlintIsentinel({
 			name: "test/scoped-roblox",
@@ -588,7 +588,7 @@ describe("scoped roblox complement", () => {
 	});
 
 	it("adds no node rules to the default roblox config", ({ expect }) => {
-		expect.hasAssertions();
+		expect.assertions(1);
 
 		const config = oxlintIsentinel({
 			name: "test/default-roblox",
