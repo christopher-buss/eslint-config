@@ -1,5 +1,6 @@
 // cspell:words typeaware lintable mtimes CLAUDECODE
 import fileEntryCache from "file-entry-cache";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -36,7 +37,7 @@ import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import { execute } from "../src/lint-cli/lib/exec/execute.ts";
 import { buildShellCommand, formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
-import { collectRepoFiles } from "../src/lint-cli/lib/files/collect.ts";
+import { collectRepoFiles, oxlintTargets } from "../src/lint-cli/lib/files/collect.ts";
 import type { RepoFiles } from "../src/lint-cli/lib/files/collect.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/lib/files/workspace.ts";
 import {
@@ -615,6 +616,71 @@ describe("collectRepoFiles lintable set", () => {
 			const collected = files.map((file) => path.basename(file));
 
 			expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
+		});
+	});
+});
+
+describe("oxlintTargets", () => {
+	it("keeps the TS/JS family, directories and extensionless paths", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			fs.mkdirSync(path.join(directory, "src"));
+
+			expect(
+				oxlintTargets(directory, ["a.ts", "b.tsx", "c.js", "src", "Makefile"]),
+			).toStrictEqual(["a.ts", "b.tsx", "c.js", "src", "Makefile"]);
+		});
+	});
+
+	it("drops non-TS/JS file extensions", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(oxlintTargets(directory, ["pnpm-lock.yaml", "README.md"])).toStrictEqual([]);
+		});
+	});
+
+	it("drops a gitignored file oxlint would refuse, collapsing an all-ignored set", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			execFileSync("git", ["init", "-q"], { cwd: directory });
+			fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
+
+			// The only oxlint-eligible target is the one git ignores, so the set
+			// collapses to empty rather than handing oxlint an all-ignored run it
+			// exits non-zero on.
+			expect(
+				withoutGitEnvironment(() => {
+					return oxlintTargets(directory, ["pnpm-lock.yaml", "src/typegen.d.ts"]);
+				}),
+			).toStrictEqual([]);
+		});
+	});
+
+	it("keeps non-ignored targets alongside an ignored one", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			execFileSync("git", ["init", "-q"], { cwd: directory });
+			fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
+
+			expect(
+				withoutGitEnvironment(() => {
+					return oxlintTargets(directory, ["src/typegen.d.ts", "src/index.ts"]);
+				}),
+			).toStrictEqual(["src/index.ts"]);
+		});
+	});
+
+	it("filters nothing outside a git repository", () => {
+		expect.hasAssertions();
+
+		withTemporaryDirectory((directory) => {
+			expect(
+				withoutGitEnvironment(() => oxlintTargets(directory, ["a.ts", "b.ts"])),
+			).toStrictEqual(["a.ts", "b.ts"]);
 		});
 	});
 });

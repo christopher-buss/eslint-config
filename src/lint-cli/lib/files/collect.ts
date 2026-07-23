@@ -141,12 +141,17 @@ export function withoutIgnored(files: RepoFiles, ignored: ReadonlySet<string>): 
  * lint. A path is kept when its extension is type-aware, when it has no
  * extension, or when it is an existing directory (either may hold TS/JS files).
  *
+ * Surviving targets are then dropped when oxlint's own ignore matching would
+ * skip them (see {@link gitIgnoredTargets}): a hook stages a `.gitignore`d yet
+ * git-tracked file (a committed generated `*.d.ts`, say), which passes the
+ * extension test but is the exact all-ignored set oxlint exits non-zero on.
+ *
  * @param cwd - The working directory to resolve targets against.
  * @param targets - The explicit lint target paths.
  * @returns The subset oxlint should receive.
  */
 export function oxlintTargets(cwd: string, targets: Array<string>): Array<string> {
-	return targets.filter((target) => {
+	const candidates = targets.filter((target) => {
 		const extension = path.extname(target).toLowerCase();
 		if (extension === "" || TYPE_AWARE_EXTENSION_SET.has(extension)) {
 			return true;
@@ -158,6 +163,13 @@ export function oxlintTargets(cwd: string, targets: Array<string>): Array<string
 			return false;
 		}
 	});
+
+	if (candidates.length === 0) {
+		return candidates;
+	}
+
+	const ignored = gitIgnoredTargets(cwd, candidates);
+	return candidates.filter((target) => !ignored.has(target));
 }
 
 /**
@@ -343,4 +355,46 @@ function listFiles(cwd: string, targets: Array<string>): Array<string> {
 
 function retained(files: Array<string>, ignored: ReadonlySet<string>): Array<string> {
 	return files.filter((file) => !ignored.has(normalizePath(file)));
+}
+
+/**
+ * The subset of `targets` oxlint's own ignore matching would skip, echoed back
+ * verbatim by `git check-ignore`. Empty when git cannot answer (outside a repo,
+ * git absent) or when nothing matches — either way the caller drops nothing,
+ * the behaviour before this existed.
+ *
+ * Oxlint matches `.gitignore` rules through the `ignore` crate, which never
+ * consults git's index — so a file that is `.gitignore`d yet git-*tracked* is
+ * ignored by oxlint all the same. `--no-index` is the flag that makes git
+ * agree: without it, git reports a tracked file as not-ignored and we keep
+ * handing oxlint a path it refuses. `check-ignore` exits 1 (printing nothing)
+ * when no path matches, which `execFileSync` raises as a throw —
+ * indistinguishable here from git being absent, and correctly so: both mean
+ * "drop nothing"..
+ *
+ * @param cwd - The working directory to resolve targets against.
+ * @param targets - The candidate target paths, passed verbatim on stdin.
+ * @returns The ignored subset, matched against the original target strings.
+ */
+function gitIgnoredTargets(cwd: string, targets: Array<string>): ReadonlySet<string> {
+	try {
+		const output = execFileSync("git", ["check-ignore", "--no-index", "--stdin"], {
+			cwd,
+			encoding: "utf8",
+			input: targets.join("\n"),
+			maxBuffer: 64 * 1024 * 1024,
+			// Pipe stdin/stdout, silence stderr: outside a repo git prints
+			// "fatal: not a git repository", which the catch already handles as
+			// no filtering.
+			stdio: ["pipe", "pipe", "ignore"],
+		});
+		return new Set(
+			output
+				.split("\n")
+				.map((line) => line.trim())
+				.filter(Boolean),
+		);
+	} catch {
+		return new Set();
+	}
 }
