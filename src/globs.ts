@@ -178,6 +178,7 @@ export const GLOB_EXCLUDE = [
 	"**/temp",
 	"**/tmp",
 	"**/vite.config.*.timestamp-*",
+	"**/eslint-suppressions.json",
 
 	"**/*.min.*",
 	"**/CHANGELOG*.md",
