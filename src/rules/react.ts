@@ -132,6 +132,7 @@ export function reactRules({
 					"flawless/jsx-shorthand-boolean": "warn",
 					"flawless/jsx-shorthand-fragment": "warn",
 					"flawless/prefer-destructuring-assignment": "error",
+					"flawless/react-namespace": "error",
 
 					"one-var": "off",
 
