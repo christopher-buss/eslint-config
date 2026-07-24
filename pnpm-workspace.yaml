@@ -109,7 +109,7 @@ catalogs:
     oxfmt: 0.59.0
     oxlint-plugin-eslint: 1.74.0
     oxlint-plugin-oxlint-comments: 0.1.0
-    prettier: 3.9.5
+    prettier: 3.9.6
     semver: 7.8.5
     toml-eslint-parser: 1.0.3
     yaml-eslint-parser: 2.1.0
