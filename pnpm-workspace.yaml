@@ -45,7 +45,7 @@ catalogs:
     publint: 0.3.21
     tsdown: 0.22.12
     type-fest: 5.8.0
-    typescript: 6.0.3
+    typescript: 7.0.2
     unplugin-unused: 0.5.7
     vitest: 4.1.10
   peer:
