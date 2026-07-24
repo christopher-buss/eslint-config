@@ -111,8 +111,8 @@ catalogs:
       version: 0.25.0
   prod:
     '@antfu/install-pkg':
-      specifier: 1.1.0
-      version: 1.1.0
+      specifier: 2.0.1
+      version: 2.0.1
     '@clack/prompts':
       specifier: 1.7.0
       version: 1.7.0
@@ -285,7 +285,7 @@ importers:
     dependencies:
       '@antfu/install-pkg':
         specifier: catalog:prod
-        version: 1.1.0
+        version: 2.0.1
       '@clack/prompts':
         specifier: catalog:prod
         version: 1.7.0
@@ -554,8 +554,8 @@ packages:
   '@altano/repository-tools@2.0.3':
     resolution: {integrity: sha512-cSR/ZYDF6Wp9OeAJMyLYYN1GenAAhV17W+w38ELP+3c5Ltsy9jkkCymi33nz/qnXyef3n6Fbr1h2yt3dvUN5sQ==}
 
-  '@antfu/install-pkg@1.1.0':
-    resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
+  '@antfu/install-pkg@2.0.1':
+    resolution: {integrity: sha512-iCKVQcIC0e3oDxEfs3SHQGW+ovhBMZmS1TE+bTk50rVyMCBmCfClv7Qi3HQKlumYwvjb/iIMeWCW2i67q6kFfQ==}
 
   '@antfu/ni@30.2.0':
     resolution: {integrity: sha512-/FOdAP1w8COnANVD3TtNj/tnpt/36RkU/ysKZTqx86x9acdhCqTFjDXNYVDyBg6UzcrTwWPUeY75ng7CWLNr+g==}
@@ -4193,7 +4193,7 @@ snapshots:
 
   '@altano/repository-tools@2.0.3': {}
 
-  '@antfu/install-pkg@1.1.0':
+  '@antfu/install-pkg@2.0.1':
     dependencies:
       package-manager-detector: 1.7.0
       tinyexec: 1.2.4
