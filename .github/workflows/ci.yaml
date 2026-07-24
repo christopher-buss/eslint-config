@@ -65,7 +65,7 @@ jobs:
         run: nr build
 
       - name: Lint
-        run: nr lint:ci
+        run: nr lint
 
       - name: Validate oxlint config
         run: nr validate:oxlint
