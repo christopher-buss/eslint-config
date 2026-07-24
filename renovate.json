@@ -10,6 +10,22 @@
 	"vulnerabilityAlerts": {
 		"enabled": true
 	},
+	"customManagers": [
+		{
+			"customType": "regex",
+			"description": "Keep the hk pkl package in hk.pkl in sync with the hk release",
+			"managerFilePatterns": ["/(^|/)hk\\.pkl$/", "/(^|/)\\.hkrc\\.pkl$/"],
+			"matchStrings": [
+				"github\\.com/jdx/hk/releases/download/v(?<currentValue>\\d+\\.\\d+\\.\\d+)/",
+				"/hk@(?<currentValue>\\d+\\.\\d+\\.\\d+)#"
+			],
+			"depNameTemplate": "hk",
+			"packageNameTemplate": "jdx/hk",
+			"datasourceTemplate": "github-releases",
+			"extractVersionTemplate": "^v(?<version>.+)$",
+			"versioningTemplate": "semver"
+		}
+	],
 	"packageRules": [
 		{
 			"matchUpdateTypes": ["patch"],
@@ -29,6 +45,11 @@
 		{
 			"matchPackageNames": ["/@types/node/"],
 			"enabled": false
+		},
+		{
+			"matchPackageNames": ["hk", "jdx/hk"],
+			"groupName": "hk",
+			"groupSlug": "hk"
 		}
 	]
 }
