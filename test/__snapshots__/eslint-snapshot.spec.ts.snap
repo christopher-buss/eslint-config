@@ -2493,7 +2493,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "jest/valid-describe-callback",
       "jest/valid-expect",
       "jest/valid-expect-in-promise",
-      "jest/valid-expect-with-promise",
+      "jest/valid-expect-with-promise [{"checkThenables":true}]",
       "jest/valid-title [{"ignoreTypeOfDescribeName":true,"mustMatch":{"it":["^should","Test title must start with \\"should\\""]}}]",
       "sonar/no-incompatible-assertion-types",
       "sonar/no-mixed-completion-style",

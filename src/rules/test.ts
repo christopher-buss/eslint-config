@@ -131,7 +131,7 @@ export function jestRules({
 		// Doesn't allow roblox deviations
 		"jest/valid-expect": isRoblox ? "off" : "error",
 		"jest/valid-expect-in-promise": "error",
-		"jest/valid-expect-with-promise": "error",
+		"jest/valid-expect-with-promise": ["error", { checkThenables: true }],
 		"jest/valid-title": [
 			"error",
 			{
