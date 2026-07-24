@@ -60,7 +60,7 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     oxlint: 1.74.0
-    oxlint-tsgolint: 0.25.0
+    oxlint-tsgolint: 7.0.2001
   prod:
     "@antfu/install-pkg": 2.0.1
     "@clack/prompts": 1.7.0
