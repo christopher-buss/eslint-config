@@ -2919,12 +2919,12 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "specifier": "<pkg>:eslint-plugin-n",
     },
     {
-      "name": "jest-js",
-      "specifier": "<pkg>:eslint-plugin-jest",
-    },
-    {
       "name": "flawless",
       "specifier": "<pkg>:eslint-plugin-flawless",
+    },
+    {
+      "name": "jest-js",
+      "specifier": "<pkg>:eslint-plugin-jest",
     },
     {
       "name": "perfectionist",
@@ -5472,12 +5472,12 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       ],
       "jsPlugins": [
         {
-          "name": "jest-js",
-          "specifier": "<pkg>:eslint-plugin-jest",
-        },
-        {
           "name": "flawless",
           "specifier": "<pkg>:eslint-plugin-flawless",
+        },
+        {
+          "name": "jest-js",
+          "specifier": "<pkg>:eslint-plugin-jest",
         },
         {
           "name": "sonar",
@@ -5486,6 +5486,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       ],
       "rules": {
         "flawless/padding-after-expect-assertions": "warn",
+        "flawless/prefer-expect-assertions-count": "error",
         "jest-js/consistent-test-it": "error",
         "jest-js/expect-expect": "warn",
         "jest-js/max-expects": "error",

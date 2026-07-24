@@ -90,13 +90,13 @@ describe("config snapshots", () => {
 		// Roblox plugin rules bind only to the scoped files.
 		const robloxConfig = configs.find((config) => config.name === "isentinel/roblox");
 
-		expect(robloxConfig?.files).toStrictEqual(["src/**"]);
+		expect(robloxConfig!.files).toStrictEqual(["src/**"]);
 
 		// The complement (everything outside src/**) gets node rules.
 		const nodeConfig = configs.find((config) => config.name === "isentinel/node/rules");
 
 		expect(nodeConfig).toBeDefined();
-		expect(nodeConfig?.ignores).toStrictEqual(["src/**"]);
+		expect(nodeConfig!.ignores).toStrictEqual(["src/**"]);
 
 		// The complement gets the non-roblox unicorn rules; the roblox base does
 		// not.
@@ -104,8 +104,8 @@ describe("config snapshots", () => {
 			(config) => config.name === "isentinel/unicorn/complement",
 		);
 
-		expect(complementUnicorn?.ignores).toStrictEqual(["src/**"]);
-		expect(complementUnicorn?.rules).toHaveProperty("unicorn/no-accidental-bitwise-operator");
+		expect(complementUnicorn!.ignores).toStrictEqual(["src/**"]);
+		expect(complementUnicorn!.rules).toHaveProperty("unicorn/no-accidental-bitwise-operator");
 
 		const baseUnicorn = findUnicornRules(configs);
 
@@ -119,12 +119,12 @@ describe("config snapshots", () => {
 			(config) => config.name === "isentinel/typescript/rules-type-aware/complement",
 		);
 
-		expect(baseTypeAware?.rules?.["ts/no-floating-promises"]).toStrictEqual([
+		expect(baseTypeAware!.rules!["ts/no-floating-promises"]).toStrictEqual([
 			"error",
 			{ checkThenables: true, ignoreVoid: true },
 		]);
-		expect(complementTypeAware?.ignores).toContain("src/**");
-		expect(complementTypeAware?.rules?.["ts/no-floating-promises"]).toStrictEqual([
+		expect(complementTypeAware!.ignores).toContain("src/**");
+		expect(complementTypeAware!.rules!["ts/no-floating-promises"]).toStrictEqual([
 			"error",
 			{ checkThenables: false, ignoreVoid: true },
 		]);
@@ -171,8 +171,8 @@ describe("config snapshots", () => {
 		const tsRule = findNamingRule(configs, "isentinel/naming/ts/rules-type-aware");
 		const tsxRule = findNamingRule(configs, "isentinel/naming/tsx/rules-type-aware");
 
-		expect(tsRule?.[1]).toStrictEqual(variableSelector);
-		expect(tsxRule?.[1]).toStrictEqual(functionSelector);
-		expect(tsxRule?.[2]).toStrictEqual(variableSelector);
+		expect(tsRule![1]).toStrictEqual(variableSelector);
+		expect(tsxRule![1]).toStrictEqual(functionSelector);
+		expect(tsxRule![2]).toStrictEqual(variableSelector);
 	});
 });

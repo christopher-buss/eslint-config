@@ -153,13 +153,13 @@ describe("factory parity", () => {
 		const eslintConfigs = await isentinel({ roblox: false, type: "package" });
 		const eslintRules = eslintConfigs.find(
 			(config) => config.name === "isentinel/flawless/rules",
-		)?.rules;
+		)!.rules;
 
 		// Emitted overrides carry no name, so the rule itself is the anchor.
 		const oxlintConfig = oxlint({ name: "test/parity", roblox: false, type: "package" });
-		const oxlintRules = oxlintConfig.overrides?.find(
-			(override) => override.rules?.["flawless/arrow-return-style"] !== undefined,
-		)?.rules;
+		const oxlintRules = oxlintConfig.overrides!.find(
+			(override) => override.rules!["flawless/arrow-return-style"] !== undefined,
+		)!.rules;
 
 		const fromEslint = arrowOptions(eslintRules);
 

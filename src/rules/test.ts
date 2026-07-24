@@ -74,6 +74,7 @@ export function jestRules({
 	stylistic = true,
 }: JestRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/prefer-expect-assertions-count": "error",
 		"jest/consistent-test-it": "error",
 		"jest/expect-expect": "warn",
 		"jest/max-expects": "error",
@@ -169,10 +170,12 @@ export function vitestRules({
 	stylistic = true,
 }: VitestRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/no-conditional-in-test": ["error", { allowOptionalChaining: false }],
 		"flawless/prefer-ending-with-an-expect": [
 			"warn",
 			{ assertFunctionNames: ["expect", "expectTypeOf", "assertType"] },
 		],
+		"flawless/prefer-expect-assertions-count": "warn",
 		"vitest/consistent-each-for": [
 			"error",
 			{
@@ -197,7 +200,6 @@ export function vitestRules({
 		"vitest/no-alias-methods": "error",
 		"vitest/no-commented-out-tests": "warn",
 		"vitest/no-conditional-expect": "error",
-		"vitest/no-conditional-in-test": "error",
 		"vitest/no-conditional-tests": "error",
 		"vitest/no-disabled-tests": isInEditor ? "off" : "error",
 		"vitest/no-duplicate-hooks": "error",

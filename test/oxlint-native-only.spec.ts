@@ -80,7 +80,7 @@ describe("oxlint native-only hybrid mode", () => {
 		// `oxlint-comments` is the documented exception: it lints the
 		// `oxlint-disable` directives that native rules still need, and ESLint
 		// cannot run it (its rules use oxlint's `createOnce` API).
-		expect(config.jsPlugins?.map((entry) => jsPluginKey(entry))).toStrictEqual([
+		expect(config.jsPlugins!.map((entry) => jsPluginKey(entry))).toStrictEqual([
 			"oxlint-comments",
 		]);
 
@@ -172,11 +172,9 @@ describe("oxlint native-only hybrid mode", () => {
 			...baseOptions,
 			oxlint: "native",
 		});
-		const marked = [...composer].some(
-			(config) => config.settings?.["isentinel/oxlint"] === true,
-		);
+		const marker = [...composer].find((config) => config.name === "isentinel/oxlint-marker");
 
-		expect(marked).toBe(true);
+		expect(marker!.settings!["isentinel/oxlint"]).toBe(true);
 	});
 
 	it("should not double-lint a rule in both engines", async () => {

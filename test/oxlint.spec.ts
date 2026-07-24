@@ -455,7 +455,7 @@ describe("oxc rules", () => {
 
 		const config = build();
 		const emitted = config.overrides!.some(
-			(override) => override.rules?.["oxc/no-const-enum"] === "error",
+			(override) => override.rules!["oxc/no-const-enum"] === "error",
 		);
 
 		expect(config.plugins).toContain("oxc");
@@ -482,7 +482,7 @@ describe("oxc rules", () => {
 		});
 
 		const disabled = config.overrides!.some(
-			(override) => override.rules?.["oxc/no-barrel-file"] === "off",
+			(override) => override.rules!["oxc/no-barrel-file"] === "off",
 		);
 
 		expect(disabled).toBe(true);

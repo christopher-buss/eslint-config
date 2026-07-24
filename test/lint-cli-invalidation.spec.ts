@@ -495,7 +495,7 @@ describe("dirtyCache.removeEntries", () => {
 		seedCache(cacheFile, [fileA, fileB, fileC]);
 
 		// Forward-slash path proves separator-insensitive matching.
-		const removed = openCache(cacheFile, false)?.removeEntries([
+		const removed = openCache(cacheFile, false)!.removeEntries([
 			fileB.split(path.sep).join("/"),
 		]);
 
@@ -1046,7 +1046,7 @@ describe("config drift sizing", () => {
 			return plan(args, runContext(directory, { mutate: true }));
 		});
 
-		expect(typedPass(warm)?.shouldRun).toBe(false);
+		expect(typedPass(warm)!.shouldRun).toBe(false);
 
 		// No bust file changes on disk, but the resolved config (and ESLint's
 		// hashOfConfig) shifts, so the drift bust must delete the caches and
@@ -1056,6 +1056,6 @@ describe("config drift sizing", () => {
 			return plan(args, runContext(directory, { mutate: true }));
 		});
 
-		expect(typedPass(drifted)?.shouldRun).toBe(true);
+		expect(typedPass(drifted)!.shouldRun).toBe(true);
 	});
 });

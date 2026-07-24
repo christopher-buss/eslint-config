@@ -51,7 +51,7 @@ describe("oxlint tsgolint gating", () => {
 			options: { typeAware: true },
 		});
 
-		expect(config.options?.typeAware).toBe(true);
+		expect(config.options!.typeAware).toBe(true);
 		expect(allRuleNames(config).has("typescript/no-floating-promises")).toBe(true);
 	});
 
@@ -67,7 +67,7 @@ describe("oxlint tsgolint gating", () => {
 		});
 		const names = allRuleNames(config);
 
-		expect(config.options?.typeAware).toBe(false);
+		expect(config.options!.typeAware).toBe(false);
 		expect(names.has("typescript/no-floating-promises")).toBe(false);
 		expect(names.has("typescript/consistent-type-assertions")).toBe(true);
 	});
@@ -80,8 +80,8 @@ describe("hybrid tsgolint drop gating", () => {
 		const configs = [typeAwareRulesConfig()];
 		dropOxlintCoveredRules(configs, false);
 
-		expect(configs[0]?.rules?.["ts/no-floating-promises"]).toBe("error");
-		expect(configs[0]?.rules?.["no-console"]).toBeUndefined();
+		expect(configs[0]!.rules!["ts/no-floating-promises"]).toBe("error");
+		expect(configs[0]!.rules!["no-console"]).toBeUndefined();
 	});
 
 	it("should drop tsgolint rules from ESLint when oxlint-tsgolint is present", ({ expect }) => {
@@ -90,6 +90,6 @@ describe("hybrid tsgolint drop gating", () => {
 		const configs = [typeAwareRulesConfig()];
 		dropOxlintCoveredRules(configs, true);
 
-		expect(configs[0]?.rules?.["ts/no-floating-promises"]).toBeUndefined();
+		expect(configs[0]!.rules!["ts/no-floating-promises"]).toBeUndefined();
 	});
 });

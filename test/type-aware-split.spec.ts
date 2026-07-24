@@ -314,8 +314,8 @@ describe("type-aware split", () => {
 				(config) => config.name === "isentinel/type-aware-split/ignores",
 			);
 
-			expect(globalIgnores?.ignores).toContain("**/*.json{,5,c}");
-			expect(globalIgnores?.ignores).toContain("**/*.y{,a}ml");
+			expect(globalIgnores!.ignores).toContain("**/*.json{,5,c}");
+			expect(globalIgnores!.ignores).toContain("**/*.y{,a}ml");
 		});
 
 		it("should silence unused disable directives in both passes", async ({ expect }) => {
@@ -323,13 +323,11 @@ describe("type-aware split", () => {
 
 			const { fast, full, slow } = await buildSplitConfigs(variant.options);
 
-			expect(fast.at(-1)?.linterOptions?.reportUnusedDisableDirectives).toBe("off");
-			expect(slow.at(-1)?.linterOptions?.reportUnusedDisableDirectives).toBe("off");
+			expect(fast.at(-1)!.linterOptions!.reportUnusedDisableDirectives).toBe("off");
+			expect(slow.at(-1)!.linterOptions!.reportUnusedDisableDirectives).toBe("off");
 			expect(
-				full.some(
-					(config) => config.linterOptions?.reportUnusedDisableDirectives === "off",
-				),
-			).toBe(false);
+				full.find((config) => config.name === "isentinel/type-aware-split/disables"),
+			).toBeUndefined();
 		});
 	});
 

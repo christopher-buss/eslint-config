@@ -28,7 +28,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
-		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, max-lines-per-function, no-export-default-arrow, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/no-redundant-tsconfig-options, flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
+		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, max-lines-per-function, no-conditional-in-test, no-export-default-arrow, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-expect-assertions-count, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) are mapped and run in oxlint. flawless/no-redundant-tsconfig-options, flawless/toml-* and flawless/yaml-* lint non-JS files and stay in ESLint",
 	"flawless/prefer-read-only-props":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"format-lua/*": "Oxlint cannot lint Lua files",
@@ -604,12 +604,14 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"flawless/jsx-shorthand-boolean": "js-plugin",
 	"flawless/jsx-shorthand-fragment": "js-plugin",
 	"flawless/max-lines-per-function": "js-plugin",
+	"flawless/no-conditional-in-test": "js-plugin",
 	"flawless/no-export-default-arrow": "js-plugin",
 	"flawless/no-unnecessary-use-callback": "js-plugin",
 	"flawless/no-unnecessary-use-memo": "js-plugin",
 	"flawless/padding-after-expect-assertions": "js-plugin",
 	"flawless/prefer-destructuring-assignment": "js-plugin",
 	"flawless/prefer-ending-with-an-expect": "js-plugin",
+	"flawless/prefer-expect-assertions-count": "js-plugin",
 	"flawless/prefer-parameter-destructuring": "js-plugin",
 	"flawless/purity": "js-plugin",
 
@@ -748,7 +750,6 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"vitest/no-alias-methods": "native",
 	"vitest/no-commented-out-tests": "native",
 	"vitest/no-conditional-expect": "native",
-	"vitest/no-conditional-in-test": "native",
 	"vitest/no-conditional-tests": "native",
 	"vitest/no-disabled-tests": "native",
 	"vitest/no-duplicate-hooks": "native",

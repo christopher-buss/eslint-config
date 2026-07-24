@@ -464,12 +464,21 @@ describe("oxlint env and globals", () => {
 
 		const overrides = config.overrides!;
 		const withWindow = overrides
-			.map((override, index) => ({ index, value: override.globals?.["window"] }))
-			.filter((entry) => entry.value !== undefined);
+			.filter(
+				(
+					override,
+				): override is (typeof overrides)[number] & {
+					globals: Record<string, unknown>;
+				} => {
+					return override.globals !== undefined;
+				},
+			)
+			.map((override) => override.globals["window"])
+			.filter((value) => value !== undefined);
 
 		expect(withWindow.length).toBeGreaterThanOrEqual(2);
-		expect(withWindow[0]?.value).toBe("readonly");
-		expect(withWindow.at(-1)?.value).toBe("off");
+		expect(withWindow[0]).toBe("readonly");
+		expect(withWindow.at(-1)).toBe("off");
 	});
 });
 
