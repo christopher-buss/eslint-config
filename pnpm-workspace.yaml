@@ -6,7 +6,7 @@ minimumReleaseAgeExclude:
   - eslint-plugin-flawless
   - eslint-plugin-jest@29.16.0
 
-saveExact: true
+savePrefix: ""
 shellEmulator: true
 strictPeerDependencies: false
 trustPolicy: no-downgrade
