@@ -43,7 +43,7 @@ catalogs:
     picomatch: 4.0.5
     pnpm-workspace-yaml: 1.7.0
     publint: 0.3.21
-    tsdown: 0.22.12
+    tsdown: 0.22.13
     type-fest: 5.8.0
     typescript: 6.0.3
     unplugin-unused: 0.5.7
