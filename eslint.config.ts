@@ -48,6 +48,23 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/pnpm-plugin",
+		files: ["pnpm-plugin/**/*.mjs"],
+		rules: {
+			// The plugin ships as plain JavaScript, so JSDoc carries its types.
+			"jsdoc/no-types": "off",
+			"jsdoc/no-undefined-types": "off",
+		},
+	},
+	{
+		name: "local/pnpm-plugin-manifest",
+		files: ["pnpm-plugin/package.json"],
+		rules: {
+			// pnpm loads the plugin by path; nothing imports it as a library.
+			"package-json/require-types": "off",
+		},
+	},
+	{
 		name: "local/style-migrate",
 		files: ["src/eslint/configs/*.ts"],
 		plugins: {

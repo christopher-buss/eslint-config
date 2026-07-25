@@ -464,6 +464,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"dedupePeerDependents",
 								"dedupePeers",
 								"deployAllFiles",
+								"enableGlobalVirtualStore",
 								"enablePrePostScripts",
 								"engineStrict",
 								"extendNodePath",

@@ -9,11 +9,13 @@ dprint
 editmsg
 ependencies
 extglob
+fdir
 fromcharcode
 ghsas
 gypfile
 isentinel
 johnnymorganz
+jsdoccomment
 junie
 kilocode
 kiro
@@ -35,6 +37,7 @@ oxfmtrc
 oxlint
 oxlintrc
 pico
+pnpmfile
 pobammer
 rbxts
 redactions

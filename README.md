@@ -864,6 +864,37 @@ mise use hk pkl # or see https://hk.jdx.dev for other install methods
 hk install
 ```
 
+### pnpm's global virtual store
+
+Only relevant if you have set
+[`enableGlobalVirtualStore: true`](https://pnpm.io/global-virtual-store).
+Otherwise pnpm's hoisting hides the problem and there is nothing to do.
+
+With the setting on, a package's real location moves out of your project, so
+TypeScript resolves each dependency's imports from its own declared dependencies
+alone. Several packages in this preset's tree import types they never declare —
+`eslint-flat-config-utils` imports from `eslint` without declaring it at all.
+`skipLibCheck` hides the resulting `TS2307`, but the type still degrades to
+`any`, which surfaces as misleading reports elsewhere:
+
+```text
+typescript(no-unsafe-argument): Unsafe argument of type Linter.Config[]
+  assigned to a parameter of type TypedFlatConfigItem[]
+```
+
+Since `isentinel()` returns a `FlatConfigComposer` from that package, this hits
+your `eslint.config.ts` directly. Add the companion pnpm plugin, which declares
+the missing imports for you:
+
+```bash
+pnpm add --config @isentinel/pnpm-plugin-eslint-config
+```
+
+pnpm auto-loads any config dependency whose name matches its plugin pattern, so
+there is nothing to configure. Use the CLI rather than hand-editing
+`pnpm-workspace.yaml`: config dependencies are pinned to an exact version and
+verified against an integrity hash that `pnpm add --config` records for you.
+
 ## View what rules are enabled
 
 There is a visual tool to help you view what rules are enabled in your project

@@ -1,0 +1,39 @@
+{
+	"name": "@isentinel/pnpm-plugin-eslint-config",
+	"version": "1.0.0",
+	"description": "pnpm plugin that declares the type-only imports @isentinel/eslint-config's dependencies are missing",
+	"keywords": [
+		"pnpm",
+		"pnpm-plugin",
+		"pnpmfile",
+		"eslint-config"
+	],
+	"homepage": "https://github.com/christopher-buss/eslint-config/tree/main/pnpm-plugin",
+	"bugs": {
+		"url": "https://github.com/christopher-buss/eslint-config/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/christopher-buss/eslint-config.git",
+		"directory": "pnpm-plugin"
+	},
+	"license": "MIT",
+	"author": "Christopher Buss <christopher.buss@pm.me> (https://github.com/christopher-buss)",
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"./extensions": "./extensions.mjs",
+		"./package.json": "./package.json",
+		"./pnpmfile": "./pnpmfile.mjs"
+	},
+	"files": [
+		"extensions.mjs",
+		"pnpmfile.mjs"
+	],
+	"engines": {
+		"node": ">=24.12.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

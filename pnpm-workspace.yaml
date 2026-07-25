@@ -1,5 +1,6 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
+enableGlobalVirtualStore: true
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAgeExclude:
@@ -13,6 +14,7 @@ trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 10080
 
 packages:
+  - pnpm-plugin
   - src/*
 
 overrides:
@@ -85,7 +87,7 @@ catalogs:
     eslint-plugin-better-max-params: 1.0.0
     eslint-plugin-comment-length: 2.3.1
     eslint-plugin-de-morgan: 2.1.3
-    eslint-plugin-flawless: 1.4.0
+    eslint-plugin-flawless: 1.4.1
     eslint-plugin-format-lua: 2.0.0
     eslint-plugin-import-lite: 0.6.0
     eslint-plugin-jsdoc: 63.2.0
@@ -118,6 +120,139 @@ catalogs:
 
 allowBuilds:
   esbuild: true
+
+packageExtensions:
+  "@cspell/eslint-plugin":
+    dependencies:
+      "@types/estree": ^1
+  "@e18e/eslint-plugin":
+    dependencies:
+      "@eslint/core": ^1
+      "@types/estree": ^1
+    peerDependencies:
+      "@typescript-eslint/typescript-estree": "*"
+      "@typescript-eslint/utils": "*"
+      typescript: "*"
+    peerDependenciesMeta:
+      "@typescript-eslint/typescript-estree":
+        optional: true
+      "@typescript-eslint/utils":
+        optional: true
+      typescript:
+        optional: true
+  "@es-joy/jsdoccomment":
+    peerDependencies:
+      eslint: "*"
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+  "@eslint-community/eslint-utils":
+    dependencies:
+      "@types/estree": ^1
+  "@eslint/markdown":
+    dependencies:
+      "@types/mdast": ^4
+      "@types/unist": ^3
+  "@typescript-eslint/types":
+    peerDependencies:
+      typescript: "*"
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+  eslint-flat-config-utils:
+    peerDependencies:
+      eslint: "*"
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+  eslint-plugin-de-morgan:
+    dependencies:
+      "@types/estree": ^1
+  eslint-plugin-jsdoc:
+    dependencies:
+      "@eslint/core": ^1
+      "@types/estree": ^1
+      "@types/json-schema": ^7
+      jsdoc-type-pratt-parser: ^7
+    peerDependencies:
+      "@typescript-eslint/types": "*"
+    peerDependenciesMeta:
+      "@typescript-eslint/types":
+        optional: true
+  eslint-plugin-jsonc:
+    dependencies:
+      "@types/estree": ^1
+  eslint-plugin-n:
+    dependencies:
+      "@eslint/core": ^1
+      "@types/estree": ^1
+  eslint-plugin-perfectionist:
+    peerDependencies:
+      "@typescript-eslint/types": "*"
+      typescript: "*"
+    peerDependenciesMeta:
+      "@typescript-eslint/types":
+        optional: true
+      typescript:
+        optional: true
+  eslint-plugin-sentinel:
+    peerDependencies:
+      "@typescript-eslint/utils": "*"
+    peerDependenciesMeta:
+      "@typescript-eslint/utils":
+        optional: true
+  eslint-plugin-sonarjs:
+    dependencies:
+      "@eslint/core": ^1
+      "@types/estree": ^1
+      "@types/estree-jsx": ^1
+      "@types/functional-red-black-tree": ^1
+      "@types/semver": ^7
+      type-fest: ^5
+    peerDependencies:
+      "@typescript-eslint/utils": "*"
+    peerDependenciesMeta:
+      "@typescript-eslint/utils":
+        optional: true
+  fdir:
+    dependencies:
+      "@types/picomatch": ^4
+  generate-differences:
+    dependencies:
+      diff-match-patch-es: ^1
+  jsdoc-type-pratt-parser:
+    dependencies:
+      "@types/estree": ^1
+  jsonc-eslint-parser:
+    dependencies:
+      "@types/estree": ^1
+    peerDependencies:
+      eslint: "*"
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+  mdast-util-gfm-autolink-literal:
+    dependencies:
+      mdast-util-from-markdown: ^2
+      mdast-util-to-markdown: ^2
+  pkg-types:
+    peerDependencies:
+      typescript: "*"
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+  toml-eslint-parser:
+    peerDependencies:
+      eslint: "*"
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+  yaml-eslint-parser:
+    peerDependencies:
+      eslint: "*"
+    peerDependenciesMeta:
+      eslint:
+        optional: true
 
 peerDependencyRules:
   allowedVersions:

@@ -61,6 +61,12 @@ jobs:
             eslint-cache-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', 'eslint.config.*', '.eslintignore') }}-
             eslint-cache-${{ runner.os }}-
 
+      # Before the build: `nr build` runs `nr gen`, which rewrites the
+      # `packageExtensions` block, so a table committed without regenerating
+      # would be repaired in place and the drift never reported.
+      - name: Check package extensions
+        run: nr check:extensions
+
       - name: Build
         run: nr build
 
@@ -69,6 +75,10 @@ jobs:
 
       - name: Validate oxlint config
         run: nr validate:oxlint
+
+      # After the build: reads the emitted declarations.
+      - name: Check published extensions
+        run: nr check:published
 
       - name: Typecheck
         run: nr typecheck
