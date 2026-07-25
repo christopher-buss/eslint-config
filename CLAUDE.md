@@ -24,7 +24,7 @@ pnpm typecheck  # Type checking
 pnpm gen        # Generate types + version constants (see Type Generation)
 pnpm watch      # Watch mode
 pnpm dev        # View rules in browser inspector
-pnpm release    # Bump version and publish (uses bumpp)
+pnpm release    # Bump version and publish (uses bumpp; see Releasing)
 ```
 
 ## Workflow
@@ -35,6 +35,28 @@ pnpm release    # Bump version and publish (uses bumpp)
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
 - Do not create a new branch for every PR unless asked. Default to committing
   directly to `main`.
+
+## Releasing
+
+This is a two-package workspace: the preset, and
+`@isentinel/pnpm-plugin-eslint-config` in `pnpm-plugin/` (see
+`pnpm-plugin/extensions.mjs`).
+
+`pnpm release` runs `bumpp -r`, which sets **both** manifests to the same new
+version, so the plugin tracks the preset. Pushing the resulting `v*` tag runs
+`.github/workflows/release.yaml`, which publishes with
+`pnpm -r publish --access public`. The preset builds through its own `prepack`;
+the plugin ships its `.mjs` files as they are.
+
+The `-r` matters: `pnpm publish` skips any package whose version is already on
+the registry, so bumping only the root would publish the preset, silently skip
+the plugin, and leave consumers on the old table.
+
+Consumers pin the plugin as a config dependency at an exact version plus an
+integrity hash, so they pick up a new table by running
+`pnpm add --config @isentinel/pnpm-plugin-eslint-config@<version>`. The version
+bump is the only signal they get: the lockfile's `pnpmfileChecksum` covers
+`pnpmfile.mjs` alone, which never changes.
 
 ## Architecture
 

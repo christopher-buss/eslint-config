@@ -63,7 +63,7 @@
 		"lint": "isentinel-lint",
 		"oxlint": "oxlint",
 		"prepack": "nr build",
-		"release": "bumpp",
+		"release": "bumpp -r",
 		"stub": "tsdown",
 		"test": "nr gen && vitest run",
 		"test:watch": "vitest",
