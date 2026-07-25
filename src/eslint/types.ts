@@ -1,4 +1,3 @@
-import type { ESLintReactSettings } from "@eslint-react/shared";
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { FlatGitignoreOptions } from "eslint-config-flat-gitignore";
@@ -155,8 +154,51 @@ export interface PerfectionistConfig {
 	>;
 }
 
-export type ReactConfig = ESLintReactSettings &
-	OptionsOverridesTypeAware & {
+/**
+ * The analyzer settings `@eslint-react` reads from `settings["react-x"]`,
+ * declared here rather than imported from `@eslint-react/shared`.
+ *
+ * Upstream derives its own type from a Zod schema, so importing it would put
+ * `zod` in the published declarations — and `@eslint-react/shared` itself,
+ * which is a build-time dependency consumers never install. The shape is six
+ * optional primitives, so restating it costs nothing.
+ * `test/react-settings.spec.ts` fails if the two ever drift apart.
+ */
+export interface ReactSettings {
+	/**
+	 * A pattern matching custom hooks to treat as effect hooks, alongside
+	 * `useEffect` and friends.
+	 */
+	additionalEffectHooks?: string;
+	/**
+	 * A pattern matching custom hooks to treat as state hooks, alongside
+	 * `useState` and friends.
+	 */
+	additionalStateHooks?: string;
+	/** How the React Compiler decides which components to compile. */
+	compilationMode?: "all" | "annotation" | "infer" | "syntax";
+	/**
+	 * The module React is imported from.
+	 *
+	 * @default "react"
+	 */
+	importSource?: string;
+	/**
+	 * The prop a polymorphic component uses to override its element.
+	 *
+	 * @default "as"
+	 */
+	polymorphicPropName?: string;
+	/**
+	 * The React version to assume, rather than detecting it.
+	 *
+	 * @default "detect"
+	 */
+	version?: string;
+}
+
+export type ReactConfig = OptionsOverridesTypeAware &
+	ReactSettings & {
 		/**
 		 * Whether to enable the React Compiler rules.
 		 *

@@ -123,6 +123,7 @@
 		"prettier": "catalog:prod",
 		"semver": "catalog:prod",
 		"toml-eslint-parser": "catalog:prod",
+		"type-fest": "catalog:prod",
 		"yaml-eslint-parser": "catalog:prod",
 		"yargs": "catalog:prod"
 	},
@@ -158,7 +159,6 @@
 		"pnpm-workspace-yaml": "catalog:dev",
 		"publint": "catalog:dev",
 		"tsdown": "catalog:dev",
-		"type-fest": "catalog:dev",
 		"typescript": "catalog:dev",
 		"unplugin-unused": "catalog:dev",
 		"vitest": "catalog:dev"

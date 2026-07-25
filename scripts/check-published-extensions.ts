@@ -23,13 +23,18 @@
  *
  * Needs `dist`, so it runs after `pnpm build` (the order CI uses).
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { builtinModules } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 import { packageExtensions } from "../pnpm-plugin/extensions.mjs";
+import { isRecord } from "../src/guards.ts";
+
+/** The manifest fields whose entries a consumer actually installs. */
+const CONSUMER_FIELDS = ["dependencies", "peerDependencies", "optionalDependencies"];
 
 /**
  * Every entry point in the `exports` map. A missing `types` condition does not
@@ -53,6 +58,13 @@ const RESOLUTION_MODES = [
 const NODE_MODULES = "node_modules";
 
 const PATH_SEGMENT = /[/\\]/u;
+
+const BUILTINS = new Set([
+	...builtinModules,
+	...builtinModules.map((name) => `node:${name}`),
+	// Loaded globally through `types`, not through any importer.
+	"@types/node",
+]);
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDirectory = path.resolve(path.dirname(scriptPath), "..");
@@ -83,6 +95,18 @@ function owningPackage(file: string): string | undefined {
 	return nested !== undefined && scopeOrName.startsWith("@")
 		? `${scopeOrName}/${nested}`
 		: scopeOrName;
+}
+
+/**
+ * Reduces a module specifier to the package it resolves from, dropping any
+ * subpath.
+ *
+ * @param specifier - A bare module specifier.
+ * @returns The portion of it that names a package.
+ */
+function packageNameOf(specifier: string): string {
+	const segments = specifier.split("/");
+	return specifier.startsWith("@") ? segments.slice(0, 2).join("/") : (segments[0] ?? specifier);
 }
 
 /**
@@ -167,13 +191,17 @@ function createProbeHost(
 }
 
 /**
- * Builds a program from the public entry points and reports every package whose
- * declarations it loaded.
+ * Builds a program from the public entry points and sorts every declaration it
+ * loaded by owner.
  *
  * @param mode - The resolution mode to build under.
- * @returns The packages loaded under that mode.
+ * @returns The packages loaded, and the files belonging to no package — our own
+ *   emitted declarations.
  */
-function loadedPackages(mode: (typeof RESOLUTION_MODES)[number]): Set<string> {
+function loadedFiles(mode: (typeof RESOLUTION_MODES)[number]): {
+	ours: Array<string>;
+	packages: Set<string>;
+} {
 	const probePath = path.join(distributionDirectory, PROBE_FILE);
 	const probe = probeSource();
 	const options: ts.CompilerOptions = {
@@ -189,16 +217,104 @@ function loadedPackages(mode: (typeof RESOLUTION_MODES)[number]): Set<string> {
 		options,
 		createProbeHost(options, probePath, probe),
 	);
-	const loaded = new Set<string>();
+	const packages = new Set<string>();
+	const ours: Array<string> = [];
 
 	for (const file of program.getSourceFiles()) {
 		const owner = owningPackage(file.fileName);
 		if (owner !== undefined) {
-			loaded.add(owner);
+			packages.add(owner);
+		} else if (path.resolve(file.fileName) !== path.resolve(probePath)) {
+			ours.push(file.fileName);
 		}
 	}
 
-	return loaded;
+	return { ours, packages };
+}
+
+/**
+ * Everything the root manifest gives a consumer, by name.
+ *
+ * `devDependencies` is deliberately left out: it is precisely what a consumer
+ * never receives, and so what makes an import unresolvable for them.
+ *
+ * @returns The names a consumer can resolve, including our own.
+ */
+function declaredForConsumers(): Set<string> {
+	const parsed: unknown = JSON.parse(
+		readFileSync(path.join(rootDirectory, "package.json"), "utf8"),
+	);
+	const declared = new Set<string>();
+	if (!isRecord(parsed)) {
+		return declared;
+	}
+
+	const { name } = parsed;
+	if (typeof name === "string") {
+		declared.add(name);
+	}
+
+	for (const field of CONSUMER_FIELDS) {
+		const value = parsed[field];
+		if (isRecord(value)) {
+			for (const dependency of Object.keys(value)) {
+				declared.add(dependency);
+			}
+		}
+	}
+
+	return declared;
+}
+
+/**
+ * The packages a declaration file imports that `declared` does not cover.
+ *
+ * @param file - The declaration file to read.
+ * @param declared - What the root manifest gives a consumer.
+ * @returns The uncovered package names, sorted.
+ */
+function unresolvableFrom(file: string, declared: Set<string>): Array<string> {
+	const info = ts.preProcessFile(readFileSync(file, "utf8"), true, true);
+	const missing = new Set<string>();
+
+	for (const { fileName } of info.importedFiles) {
+		// A relative, absolute or subpath specifier resolves within the package
+		// itself, so no declaration has to cover it.
+		const isBare =
+			!fileName.startsWith(".") && !fileName.startsWith("/") && !fileName.startsWith("#");
+		const name = packageNameOf(fileName);
+		if (isBare && !BUILTINS.has(name) && !declared.has(name)) {
+			missing.add(name);
+		}
+	}
+
+	return [...missing].toSorted();
+}
+
+/**
+ * Reports what our own emitted declarations import but the root manifest does
+ * not give a consumer.
+ *
+ * This is the same failure the table repairs, one level up: a `devDependency`
+ * reaches nobody downstream, so the import resolves here and nowhere else,
+ * silently, because `skipLibCheck` swallows the `TS2307`. It cannot be a table
+ * entry — the root package is ours to declare, not a dependency's to repair.
+ *
+ * @param ours - The emitted declaration files the program loaded.
+ * @returns Each file mapped to the specifiers a consumer cannot resolve.
+ */
+function findUndeclaredByUs(ours: Array<string>): Map<string, Array<string>> {
+	const declared = declaredForConsumers();
+	const undeclared = new Map<string, Array<string>>();
+
+	for (const file of ours) {
+		const missing = unresolvableFrom(file, declared);
+		if (missing.length > 0) {
+			undeclared.set(path.relative(rootDirectory, file), missing);
+		}
+	}
+
+	return undeclared;
 }
 
 /**
@@ -276,18 +392,53 @@ function report(loaded: Set<string>): number {
  * The union across every resolution mode: a package reached under one of them
  * can degrade for whoever typechecks that way.
  *
- * @returns Every package a consumer's program can load.
+ * @returns Every package a consumer's program can load, and every declaration
+ *   we emitted ourselves.
  */
-function reachablePackages(): Set<string> {
-	const reachable = new Set<string>();
+function reachable(): { ours: Array<string>; packages: Set<string> } {
+	const packages = new Set<string>();
+	const ours = new Set<string>();
 
 	for (const mode of RESOLUTION_MODES) {
-		for (const name of loadedPackages(mode)) {
-			reachable.add(name);
+		const loaded = loadedFiles(mode);
+		for (const name of loaded.packages) {
+			packages.add(name);
+		}
+
+		for (const file of loaded.ours) {
+			ours.add(file);
 		}
 	}
 
-	return reachable;
+	return { ours: [...ours].toSorted(), packages };
+}
+
+/**
+ * Reports what our own declarations ask of a consumer that they cannot supply.
+ *
+ * @param ours - The emitted declaration files the program loaded.
+ * @returns The process exit code.
+ */
+function reportOurs(ours: Array<string>): number {
+	const undeclared = findUndeclaredByUs(ours);
+
+	for (const [file, names] of undeclared) {
+		console.error(
+			`[check-published] ${file} imports ${names.join(", ")}, which the root package does ` +
+				"not declare outside `devDependencies`. A consumer cannot resolve it, so the type " +
+				"degrades to `any` behind `skipLibCheck`.",
+		);
+	}
+
+	if (undeclared.size > 0) {
+		console.error(
+			"[check-published] Move it into `dependencies` or `peerDependencies`, or stop the " +
+				"declarations from referencing it.",
+		);
+		return 1;
+	}
+
+	return 0;
 }
 
 /**
@@ -303,15 +454,19 @@ function main(): number {
 		return 1;
 	}
 
-	const loaded = reachablePackages();
-	if (loaded.size === 0) {
+	const { ours, packages } = reachable();
+	if (packages.size === 0) {
 		console.error(
 			"[check-published] The probe loaded no dependencies, so it resolved nothing.",
 		);
 		return 1;
 	}
 
-	return report(loaded);
+	// Both run before either verdict, so one failure does not hide the other.
+	const oursCode = reportOurs(ours);
+	const flagsCode = report(packages);
+
+	return Math.max(oursCode, flagsCode);
 }
 
 process.exit(main());

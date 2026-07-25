@@ -1,5 +1,3 @@
-import type { ESLintReactSettings } from "@eslint-react/shared";
-
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../../globs.ts";
 import { reactRules } from "../../rules/react.ts";
 import { ensurePackages, getTsConfig, interopDefault } from "../../utils.ts";
@@ -10,6 +8,7 @@ import type {
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	ReactConfig,
+	ReactSettings,
 	TypedFlatConfigItem,
 } from "../types.ts";
 import { loadSmallRulesPlugin } from "./small-rules.ts";
@@ -67,7 +66,7 @@ export async function react(
 	const reactSettings = {
 		importSource: importSource ?? "@rbxts",
 		version: "17.0.2",
-	} satisfies ESLintReactSettings;
+	} satisfies ReactSettings;
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
 		"react/no-implicit-children": "error",

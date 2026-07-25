@@ -46,7 +46,6 @@ catalogs:
     pnpm-workspace-yaml: 1.7.0
     publint: 0.3.21
     tsdown: 0.22.12
-    type-fest: 5.8.0
     typescript: 6.0.3
     unplugin-unused: 0.5.7
     vitest: 4.1.10
@@ -115,6 +114,7 @@ catalogs:
     prettier: 3.9.6
     semver: 7.8.5
     toml-eslint-parser: 1.0.3
+    type-fest: 5.8.0
     yaml-eslint-parser: 2.1.0
     yargs: 18.0.0
 
