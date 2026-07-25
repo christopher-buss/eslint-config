@@ -2,7 +2,7 @@
 import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
-import { findUpSync } from "find-up-simple";
+import { findUp, findUpSync } from "find-up-simple";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -28,6 +28,36 @@ type ModuleImport<T> = Promise<T | { default: T }>;
 type Parser = NonNullable<TypedFlatConfigItem["languageOptions"]>["parser"];
 
 export const require = createRequire(import.meta.url);
+
+/**
+ * Resolves the workspace root directory.
+ *
+ * The root is the directory containing `pnpm-workspace.yaml`. When no workspace
+ * file exists anywhere up the tree the project is standalone, so the cwd is its
+ * own root.
+ *
+ * @param cwd - The directory to resolve from, defaulting to the current
+ *   working directory.
+ * @returns The absolute path of the workspace root directory.
+ */
+export async function findWorkspaceRoot(cwd = process.cwd()): Promise<string> {
+	const workspaceFile = await findUp("pnpm-workspace.yaml", { cwd });
+	return workspaceFile === undefined ? cwd : path.dirname(workspaceFile);
+}
+
+/**
+ * Synchronous {@link findWorkspaceRoot}, for the oxlint factory.
+ *
+ * The oxlint factory is synchronous, so it cannot await the async variant.
+ *
+ * @param cwd - The directory to resolve from, defaulting to the current
+ *   working directory.
+ * @returns The absolute path of the workspace root directory.
+ */
+export function findWorkspaceRootSync(cwd = process.cwd()): string {
+	const workspaceFile = findUpSync("pnpm-workspace.yaml", { cwd });
+	return workspaceFile === undefined ? cwd : path.dirname(workspaceFile);
+}
 
 /**
  * Whether the environment signals a CI run. Treats an unset, empty, `"false"`

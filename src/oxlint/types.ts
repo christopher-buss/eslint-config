@@ -84,6 +84,26 @@ export type OxlintFactoryOptions = {
 	categories?: RuleCategories;
 
 	/**
+	 * The directory holding this config, normally `import.meta.dirname`.
+	 *
+	 * Oxlint matches `overrides[].files` against paths relative to the config
+	 * that declares them, and nested configs replace their ancestors rather
+	 * than merging. A relaxation anchored on a directory name — `scripts`,
+	 * `tools`, `bin` — therefore cannot match from a config that already lives
+	 * inside that directory, because the anchor segment is not part of the path
+	 * being tested.
+	 *
+	 * Supplying this lets the factory emit an anchor-stripped variant alongside
+	 * each such pattern. Omit it and those relaxations are silently inert in
+	 * nested configs.
+	 *
+	 * Unlike ESLint, oxlint has no per-override base path to set instead:
+	 * `basePath` is rejected outright by its schema, and the upstream
+	 * equivalent is unresolved (oxc-project/oxc#24276).
+	 */
+	configDirectory?: string;
+
+	/**
 	 * Extra jsPlugins to load, or `false` to run oxlint with native rules
 	 * only.
 	 *

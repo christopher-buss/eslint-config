@@ -13,6 +13,7 @@ import { resolvePrettierSettings } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import type { Rules } from "../types.ts";
 import {
+	findWorkspaceRootSync,
 	getOverrides,
 	isInAgentSession,
 	isInEditorEnvironment,
@@ -368,7 +369,11 @@ export function isentinel(
 		}),
 		oxlintFlawless({ stylistic: stylisticOptions }, prettierSettings),
 		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
-		oxlintDisables({ root: rootGlobs }),
+		oxlintDisables({
+			configDirectory: options.configDirectory,
+			root: rootGlobs,
+			workspaceRoot: findWorkspaceRootSync(),
+		}),
 	);
 
 	if (stylisticOptions !== false && formatters !== false) {

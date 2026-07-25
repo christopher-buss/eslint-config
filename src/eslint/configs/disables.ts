@@ -11,10 +11,38 @@ import {
 } from "../../globs.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
-export function disables({ root }: { root: Array<string> }): Array<TypedFlatConfigItem> {
+/**
+ * Rule relaxations keyed on where a file lives.
+ *
+ * Blocks whose `files` patterns anchor on an ancestor directory name pin
+ * `basePath` to the workspace root. Without it they are silently dead in every
+ * project that has its own `eslint.config.*`: ESLint 10 resolves the config
+ * nearest each linted file and matches `files` against that config's directory,
+ * so `**\/scripts/` never appears in the path being tested. Pinning can only
+ * widen what these blocks match, and they contain nothing but `"off"`, so it
+ * cannot introduce a new error.
+ *
+ * `disables/root` is deliberately left unpinned — its patterns are relative by
+ * design, so under a nested config they resolve to that project's own top-level
+ * files, which is exactly the intent.
+ *
+ * @param options - The resolved factory options.
+ * @param options.root - Globs identifying root-level files.
+ * @param options.workspaceRoot - Absolute workspace root, used as the base path
+ *   for ancestor-anchored blocks.
+ * @returns The disables configs.
+ */
+export function disables({
+	root,
+	workspaceRoot,
+}: {
+	root: Array<string>;
+	workspaceRoot: string;
+}): Array<TypedFlatConfigItem> {
 	return [
 		{
 			name: "isentinel/disables/scripts",
+			basePath: workspaceRoot,
 			files: [`**/scripts/${GLOB_SRC}`],
 			rules: {
 				"antfu/no-top-level-await": "off",
@@ -26,6 +54,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 		},
 		{
 			name: "isentinel/disables/cli",
+			basePath: workspaceRoot,
 			files: [`**/cli/${GLOB_SRC}`, `**/cli.${GLOB_SRC_EXT}`],
 			rules: {
 				"antfu/no-top-level-await": "off",
@@ -34,6 +63,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 		},
 		{
 			name: "isentinel/disables/build-tools",
+			basePath: workspaceRoot,
 			files: GLOB_BUILD_TOOLS,
 			rules: {
 				"antfu/no-top-level-await": "off",
@@ -44,6 +74,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 		},
 		{
 			name: "isentinel/disables/bin",
+			basePath: workspaceRoot,
 			files: GLOB_BIN,
 			rules: {
 				"antfu/no-import-dist": "off",
@@ -69,6 +100,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 		},
 		{
 			name: "isentinel/disables/test",
+			basePath: workspaceRoot,
 			files: [...GLOB_TESTS],
 			rules: {
 				"antfu/no-top-level-await": "off",

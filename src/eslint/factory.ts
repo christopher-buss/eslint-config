@@ -8,6 +8,7 @@ import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
+	findWorkspaceRootSync,
 	getOverrides,
 	isAgentAutofixDisabled,
 	isInAgentSession,
@@ -598,7 +599,7 @@ export async function isentinel(
 		]);
 	}
 
-	configs.push(disables({ root: rootGlobs }));
+	configs.push(disables({ root: rootGlobs, workspaceRoot: findWorkspaceRootSync() }));
 
 	// As with spelling above, composed in "only" mode so `oxfmt/oxfmt` resolves
 	// in disable comments; the split strips the rule itself.

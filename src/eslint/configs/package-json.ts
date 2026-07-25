@@ -1,9 +1,5 @@
-import { findUp } from "find-up-simple";
-import path from "node:path";
-import process from "node:process";
-
 import { GLOB_PACKAGE_JSON, GLOB_PACKAGE_JSON_ROOT } from "../../globs.ts";
-import { interopDefault } from "../../utils.ts";
+import { findWorkspaceRoot, interopDefault } from "../../utils.ts";
 import type {
 	OptionsHasRoblox,
 	OptionsProjectType,
@@ -196,20 +192,4 @@ export async function packageJson({
 		},
 		{ ...rootOverride, basePath: rootDirectory },
 	];
-}
-
-/**
- * Resolves the workspace root directory.
- *
- * The root is the directory containing `pnpm-workspace.yaml`. When no workspace
- * file exists anywhere up the tree the project is standalone, so the cwd is its
- * own root.
- *
- * @param cwd - The directory to resolve from, defaulting to the current
- *   working directory.
- * @returns The absolute path of the workspace root directory.
- */
-async function findWorkspaceRoot(cwd = process.cwd()): Promise<string> {
-	const workspaceFile = await findUp("pnpm-workspace.yaml", { cwd });
-	return workspaceFile === undefined ? cwd : path.dirname(workspaceFile);
 }
