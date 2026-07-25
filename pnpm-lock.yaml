@@ -213,8 +213,8 @@ catalogs:
       specifier: 3.3.0
       version: 3.3.0
     eslint-plugin-oxfmt:
-      specifier: 0.14.0
-      version: 0.14.0
+      specifier: 0.15.0
+      version: 0.15.0
     eslint-plugin-package-json:
       specifier: 1.6.0
       version: 1.6.0
@@ -392,7 +392,7 @@ importers:
         version: 3.3.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
-        version: 0.14.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.59.0)
+        version: 0.15.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.59.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
         version: 1.6.0(@types/estree@1.0.9)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -1112,9 +1112,9 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@ntnyq/utils@0.16.1':
-    resolution: {integrity: sha512-jznqp0qdnCxbKEOD2F5ay9rE6IBHhcuBteCItdOLHTQImF9LI67zCz6vYuNipjwDHaDSQMzxAo1Kfkx1lKNl2A==}
-    engines: {node: ^22.13.0 || >=24}
+  '@ntnyq/utils@0.18.1':
+    resolution: {integrity: sha512-RiKtaz24iRwZggm7+sFfb4JK82EqtccGwOU5NIdl+RHYTnEx9MPUPXpQDimIIk7UY7u082bNEcf76mtQdJCdZA==}
+    engines: {node: ^22.19.0 || >=24.11.0}
 
   '@one-ini/wasm@0.2.1':
     resolution: {integrity: sha512-TUqERXGNTifZ9y2g3wPxQrw3HpHv/02DsW3D90T9x0hhonrL1ZqpSmNrU2XkoIq0fP1N6gZfVQzy2Fw1ZvGBNg==}
@@ -2845,12 +2845,12 @@ packages:
       typescript:
         optional: true
 
-  eslint-plugin-oxfmt@0.14.0:
-    resolution: {integrity: sha512-pIT2zSIFbU/b6u1y0MlJjJlYAt/2vHwQTtAYKqOlG/H5hD5/Gpp7KgnCJl2t0W8tQ5Gyq6nHQp1Z9MWP2++rmg==}
+  eslint-plugin-oxfmt@0.15.0:
+    resolution: {integrity: sha512-TmFJATCuSOxz4F2w1t8FpGQ2f4DLNEFfUXqLyGhnZ8a7to9Np9Dey4YhXjnmAzrxEiye4NfCUOWDv21y0b3Kag==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       eslint: ^9.5.0 || ^10.0.0
-      oxfmt: '>=0.59.0'
+      oxfmt: '>=0.60.0'
       svelte: '*'
     peerDependenciesMeta:
       svelte:
@@ -3399,11 +3399,11 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
-  load-oxfmt-config@0.15.0:
-    resolution: {integrity: sha512-PMuliv+7fwJVCsUizOawHSKQUc6eJJpDytG1Y+hglXN+Oqg9dSvuJhL92Q6FK3ut0aW1h9OTfN5JkbxmYhWTyg==}
+  load-oxfmt-config@0.16.0:
+    resolution: {integrity: sha512-VPbxvHovKAk+IEaNGimXx8jIBIOevcmT2o81mpIyTofm2d8tF/o6PhKhTOqq/6k0WM9P7KiqSnLA6q8EeQDdBQ==}
     engines: {node: ^22.13.0 || >=24}
     peerDependencies:
-      oxfmt: '>=0.59.0'
+      oxfmt: '>=0.60.0'
 
   local-pkg@1.2.1:
     resolution: {integrity: sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==}
@@ -4959,7 +4959,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@ntnyq/utils@0.16.1': {}
+  '@ntnyq/utils@0.18.1': {}
 
   '@one-ini/wasm@0.2.1': {}
 
@@ -6286,12 +6286,12 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  eslint-plugin-oxfmt@0.14.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.59.0):
+  eslint-plugin-oxfmt@0.15.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.59.0):
     dependencies:
       eslint: 10.7.0(jiti@2.7.0)(supports-color@10.2.2)
       generate-differences: 0.1.1
       ignore: 7.0.6
-      load-oxfmt-config: 0.15.0(oxfmt@0.59.0)
+      load-oxfmt-config: 0.16.0(oxfmt@0.59.0)
       oxfmt: 0.59.0
       picomatch: 4.0.5
       synckit: 0.11.13
@@ -6852,9 +6852,9 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.32.0
       lightningcss-win32-x64-msvc: 1.32.0
 
-  load-oxfmt-config@0.15.0(oxfmt@0.59.0):
+  load-oxfmt-config@0.16.0(oxfmt@0.59.0):
     dependencies:
-      '@ntnyq/utils': 0.16.1
+      '@ntnyq/utils': 0.18.1
       editorconfig: 3.0.2
       ignore: 7.0.6
       jiti: 2.7.0
