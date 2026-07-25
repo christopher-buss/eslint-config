@@ -2520,6 +2520,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/scripts/**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
+        "max-lines": "off",
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
       },
@@ -6223,6 +6224,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/scripts/**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
+        "max-lines": "off",
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
       },
@@ -10022,6 +10024,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/scripts/**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
+        "max-lines": "off",
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
       },
@@ -16206,6 +16209,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/scripts/**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
+        "max-lines": "off",
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
       },
