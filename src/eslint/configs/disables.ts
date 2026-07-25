@@ -18,6 +18,7 @@ export function disables({ root }: { root: Array<string> }): Array<TypedFlatConf
 			files: [`**/scripts/${GLOB_SRC}`],
 			rules: {
 				"antfu/no-top-level-await": "off",
+				"max-lines": "off",
 				"no-console": "off",
 				"small-rules/require-async-suffix": "off",
 				"ts/explicit-function-return-type": "off",
