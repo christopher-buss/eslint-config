@@ -115,7 +115,7 @@ export default defineConfig([
 		// dependency is bundled - the plugin only needs to read our own
 		// sources to spot the imports.
 		clean: true,
-		deps: { skipNodeModulesBundle: true },
+		deps: { neverBundle: true },
 		dts: false,
 		entry: entries,
 		format: ["esm"],
