@@ -16030,6 +16030,9 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "plugins": [
+        "node",
+      ],
       "rules": {
         "node/handle-callback-err": [
           "error",
@@ -17617,7 +17620,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
     "typescript",
     "unicorn",
     "jsdoc",
-    "node",
     "oxc",
   ],
   "settings": {

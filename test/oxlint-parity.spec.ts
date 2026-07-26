@@ -11,7 +11,11 @@ import {
 } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
 import type { Severity } from "./oxlint-helpers.ts";
-import { effectiveEslintRules, effectiveOxlintRules } from "./oxlint-helpers.ts";
+import {
+	effectiveEslintRules,
+	effectiveOxlintRules,
+	registeredNativePlugins,
+} from "./oxlint-helpers.ts";
 
 interface ParityVariant {
 	name: string;
@@ -596,7 +600,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 			}
 
 			const knownPrefixes = new Set<string>([
-				...(config.plugins! as Array<string>),
+				...registeredNativePlugins(config),
 				...registered.keys(),
 			]);
 

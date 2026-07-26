@@ -75,6 +75,28 @@ export function enabledOxlintRules(config: OxlintConfig): Set<string> {
 }
 
 /**
+ * Every native plugin a generated config registers, at the top level or on an
+ * override. File-scoped plugins live on their override, so the top-level
+ * `plugins` array alone is not the registered set.
+ *
+ * @param config - The generated oxlint config.
+ * @returns The registered native plugin names.
+ */
+export function registeredNativePlugins(config: OxlintConfig): Set<string> {
+	const plugins = new Set<string>(config.plugins);
+
+	const overrides = config.overrides ?? [];
+	for (const override of overrides) {
+		const overridePlugins = override.plugins ?? [];
+		for (const plugin of overridePlugins) {
+			plugins.add(plugin);
+		}
+	}
+
+	return plugins;
+}
+
+/**
  * Whether a file path matches a single glob pattern.
  *
  * @param filePath - The file path to test.

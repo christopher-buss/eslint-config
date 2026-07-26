@@ -56,7 +56,9 @@ import type {
 import {
 	anchorOxlintGlob,
 	createOxlintConfigs,
+	isUnscopedFragment,
 	jsPluginKey,
+	scopeOverridePlugins,
 	stripUnregisteredPluginRules,
 } from "./utils.ts";
 
@@ -396,6 +398,10 @@ export function isentinel(
 	// level, deduplicated.
 	const jsPlugins = new Map<string, ExternalPluginEntry>();
 	const nativePlugins = new Set<OxlintPlugin>();
+	// Only the plugins some fragment asks for across the whole tree. The rest
+	// ride on their own override, so `categories` reaches them where their
+	// `files` glob says and nowhere else.
+	const globalPlugins = new Set<OxlintPlugin>();
 	const overrides: Array<OxlintOverride> = [];
 	const mergedSettings: OxlintSettings = {};
 
@@ -418,6 +424,17 @@ export function isentinel(
 			nativePlugins.add(plugin);
 		}
 
+		// A fragment covering the whole tree keeps its plugins at the top level,
+		// where `categories` reaches them; a narrower one carries them on its
+		// own override instead. Registering a plugin project-wide is what opts
+		// it into a consumer's categories, so a hand-written `plugins` entry on
+		// a whole-tree fragment stays the way to ask for that.
+		if (isUnscopedFragment(config)) {
+			for (const plugin of fragmentPlugins) {
+				globalPlugins.add(plugin);
+			}
+		}
+
 		for (const jsPlugin of fragmentJsPlugins) {
 			jsPlugins.set(jsPluginKey(jsPlugin), jsPlugin);
 		}
@@ -426,7 +443,9 @@ export function isentinel(
 			Object.assign(mergedSettings, config.settings);
 		}
 
-		const { name: _name, plugins: _plugins, settings: _settings, ...override } = config;
+		// `plugins` stays on the override; `scopeOverridePlugins` decides which
+		// of them are hoisted away once every fragment has been seen.
+		const { name: _name, settings: _settings, ...override } = config;
 		override.files = override.files.map(anchorOxlintGlob);
 		if (override.excludeFiles !== undefined) {
 			override.excludeFiles = override.excludeFiles.map(anchorOxlintGlob);
@@ -498,6 +517,8 @@ export function isentinel(
 		stripUnregisteredPluginRules(overrides, new Set([...nativePlugins, ...jsPlugins.keys()]));
 	}
 
+	scopeOverridePlugins(overrides, globalPlugins);
+
 	if (defaultSeverity) {
 		const severityExcludeRules = new Set(["sonar/todo-tag"]);
 
@@ -523,7 +544,7 @@ export function isentinel(
 			...linterOptions,
 		},
 		overrides,
-		plugins: [...nativePlugins],
+		plugins: [...globalPlugins],
 		settings: mergedSettings,
 	});
 }

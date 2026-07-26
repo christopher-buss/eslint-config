@@ -113,6 +113,83 @@ export function anchorOxlintGlob(glob: string): string {
 }
 
 /**
+ * A glob that narrows by file extension alone: `**\/*.<ext>`, with no directory
+ * segment and no filename pattern before the extension. The source and
+ * per-language globs qualify; `**\/*.spec.ts` and `**\/__tests__\/**` do not.
+ */
+const WHOLE_TREE_GLOB = /^\*\*\/\*\.[^./]+$/;
+
+/**
+ * Whether a fragment applies to every file of the kinds it targets.
+ *
+ * The distinction that matters is whether a fragment narrows by *file type* or
+ * by *location*. A fragment covering `**\/*.ts` is the TypeScript rules'
+ * natural domain, so its plugins belong at the top level where `categories`
+ * reaches them project-wide; one covering `**\/*.spec.ts` is a location, and
+ * its plugins have to stay on their own override.
+ *
+ * @param fragment - The fragment to classify.
+ * @returns Whether the fragment narrows by extension only.
+ */
+export function isUnscopedFragment(fragment: TypedOxlintConfigItem): boolean {
+	return (
+		fragment.excludeFiles === undefined &&
+		fragment.files.every((glob) => WHOLE_TREE_GLOB.test(glob))
+	);
+}
+
+/**
+ * Move file-scoped native plugins from the top level onto the overrides that
+ * use them, mutating the overrides in place.
+ *
+ * A plugin registered at the top level hands every category-enabled rule it
+ * owns to the whole project, however narrow the `files` glob that asked for it
+ * was — the reason `vitest/*` fires on ordinary source files once a consumer
+ * turns a category on. Registering it on the override instead confines it:
+ * oxlint unions an override's `plugins` onto the base set, but applies
+ * `categories` to the base set alone, so an override-registered plugin
+ * contributes exactly the rules that override names and nothing more.
+ *
+ * A rule whose plugin is registered in neither place is silently ignored rather
+ * than rejected, so every override naming a scoped plugin has to carry it —
+ * including one that only disables its rules, which would otherwise lose a
+ * relaxation it makes wherever the plugin *is* enabled. Carrying it costs
+ * nothing, precisely because no category reaches it there.
+ *
+ * @param overrides - The merged overrides (mutated).
+ * @param globalPlugins - Plugins registered at the top level.
+ */
+export function scopeOverridePlugins(
+	overrides: Array<OxlintOverride>,
+	globalPlugins: ReadonlySet<string>,
+): void {
+	for (const override of overrides) {
+		const scoped = new Set<OxlintPlugin>();
+
+		const declared = override.plugins ?? [];
+		for (const plugin of declared) {
+			if (!globalPlugins.has(plugin)) {
+				scoped.add(plugin);
+			}
+		}
+
+		const ruleNames = Object.keys(override.rules ?? {});
+		for (const rule of ruleNames) {
+			const prefix = rulePluginPrefix(rule);
+			if (isNativePlugin(prefix) && !globalPlugins.has(prefix)) {
+				scoped.add(prefix);
+			}
+		}
+
+		if (scoped.size > 0) {
+			override.plugins = [...scoped];
+		} else {
+			delete override.plugins;
+		}
+	}
+}
+
+/**
  * Drop every rule whose plugin prefix is not registered on the generated
  * config, mutating the overrides in place. Oxlint fails the whole config build
  * on a rule naming an unknown plugin, so entries left behind by a plugin that
@@ -304,6 +381,18 @@ export function createOxlintConfigs({
 	}
 
 	return fragments;
+}
+
+/**
+ * The plugin a rule name belongs to, with unprefixed core rules mapped to
+ * `eslint`.
+ *
+ * @param rule - The oxlint rule name.
+ * @returns The part before the slash, or `eslint` when there is none.
+ */
+function rulePluginPrefix(rule: string): string {
+	const slashIndex = rule.indexOf("/");
+	return slashIndex === -1 ? "eslint" : rule.slice(0, slashIndex);
 }
 
 /**

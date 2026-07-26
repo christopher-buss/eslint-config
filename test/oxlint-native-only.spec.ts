@@ -11,6 +11,7 @@ import {
 	translateRuleToOxlint,
 } from "../src/rules/oxlint-mapping.ts";
 import {
+	collectEnabledRules,
 	effectiveEslintRules,
 	enabledEslintRules,
 	enabledFromEffective,
@@ -34,21 +35,48 @@ function nativeOnlyOxlintConfig(): OxlintConfig {
 }
 
 /**
- * The enabled rules of a generated config whose plugin prefix the config does
- * not register. Oxlint fails the whole config build on any of these.
+ * The enabled rules of a generated config whose plugin prefix is not registered
+ * where the rule sits. Oxlint fails the whole config build on any of these, and
+ * it resolves each override against the top-level plugins plus that override's
+ * own, so the check has to be per-override rather than against the config-wide
+ * set.
  *
  * @param config - The generated oxlint config.
  * @returns The offending rule names.
  */
 function unregisteredRules(config: OxlintConfig): Array<string> {
-	const registered = new Set<string>([
+	const base = new Set<string>([
 		...(config.plugins ?? []),
 		...(config.jsPlugins ?? []).map((entry) => jsPluginKey(entry)),
 	]);
-	return [...enabledOxlintRules(config)].filter((rule) => {
-		const slashIndex = rule.indexOf("/");
-		return slashIndex !== -1 && !registered.has(rule.slice(0, slashIndex));
-	});
+
+	const offending: Array<string> = [];
+	const scopes = [
+		{ plugins: base, rules: config.rules },
+		...(config.overrides ?? []).map((override) => {
+			return {
+				plugins: new Set<string>([
+					...base,
+					...(override.plugins ?? []),
+					...(override.jsPlugins ?? []).map((entry) => jsPluginKey(entry)),
+				]),
+				rules: override.rules,
+			};
+		}),
+	];
+
+	for (const scope of scopes) {
+		const enabled = new Set<string>();
+		collectEnabledRules(scope.rules, enabled);
+		for (const rule of enabled) {
+			const slashIndex = rule.indexOf("/");
+			if (slashIndex !== -1 && !scope.plugins.has(rule.slice(0, slashIndex))) {
+				offending.push(rule);
+			}
+		}
+	}
+
+	return offending;
 }
 
 /**

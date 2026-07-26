@@ -271,6 +271,32 @@ export default isentinel({
   Values are merged over that default, so enabling one category leaves the rest
   off. Useful for previewing rules the preset does not enable yet, but expect
   reports the preset has not vetted.
+
+  A category only reaches plugins registered at the top level: oxlint applies
+  categories to the base plugin set, not to plugins an override adds. The preset
+  keeps a plugin at the top level when it asks for it across the whole tree
+  (`typescript`, `unicorn`, `import`, `jsdoc`, `promise`, `oxc`), so categories
+  reach those project-wide. File-scoped ones — `vitest` under the test globs,
+  `node` over the complement of the `roblox` globs — are registered on their own
+  override instead, which keeps them from firing outside those globs; inside
+  them they contribute the rules the preset curates, and categories add nothing
+  further.
+
+  To opt a plugin into your categories project-wide, register it yourself on a
+  whole-tree config fragment:
+
+  ```ts
+  isentinel(
+  	{ categories: { correctness: "error" } },
+  	{
+  		name: "project/native-plugins",
+  		files: [GLOB_SRC],
+  		plugins: ["react-perf"],
+  		rules: {},
+  	},
+  );
+  ```
+
 - **`options`** — top-level linter options (`typeAware`, `typeCheck`,
   `maxWarnings`, `denyWarnings`, `reportUnusedDisableDirectives`,
   `respectEslintDisableDirectives`). The factory emits `typeAware: true` by
