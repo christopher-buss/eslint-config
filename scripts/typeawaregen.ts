@@ -1,0 +1,69 @@
+import fs from "node:fs/promises";
+import process from "node:process";
+
+import { scanTypeAwareRules } from "./type-aware-shared.ts";
+
+/**
+ * Snapshot which preset rules declare `meta.docs.requiresTypeChecking` at build
+ * time.
+ *
+ * The type-aware split classifies rules by that flag, and the only way to read
+ * it at runtime is to walk `plugin.rules` for every registered plugin — which
+ * loads every plugin implementation the preset registers, on every run that
+ * sets `typeAware`, purely to answer a question about static metadata. The
+ * plugins are pinned dependencies, so the answer is the same for every
+ * consumer.
+ *
+ * The prefixes are snapshotted alongside the rule ids because a prefix with no
+ * type-aware rules still has to be treated as covered; otherwise the split
+ * would fall back to scanning it and load it after all.
+ *
+ * `--check` reports drift instead of writing. It has to run before anything
+ * that runs `pnpm gen`, which repairs the file in place and hides the drift; a
+ * plugin bump that adds a type-aware rule without regenerating would otherwise
+ * ship that rule into the pass that has no TypeScript program.
+ */
+
+const OUTPUT = new URL("../src/rules/type-aware-generated.ts", import.meta.url);
+
+/**
+ * Renders the snapshot, or reports the drift when checking.
+ *
+ * @returns The process exit code.
+ */
+async function main(): Promise<number> {
+	const checking = process.argv.includes("--check");
+	const { prefixes, ruleIds } = await scanTypeAwareRules();
+	const desired = [
+		`export const typeAwarePrefixes: ReadonlySet<string> = new Set(${JSON.stringify(prefixes, null, 2)});`,
+		"",
+		`export const typeAwareRuleIds: ReadonlySet<string> = new Set(${JSON.stringify(ruleIds, null, 2)});`,
+		"",
+	].join("\n");
+
+	// An unreadable (or absent) file can never equal `desired`, so it falls
+	// through to the write or the drift report.
+	const current = await fs.readFile(OUTPUT, "utf8").catch(() => "");
+	if (current === desired) {
+		if (!checking) {
+			console.log(
+				`[type-aware] ${ruleIds.length} type-aware rules across ${prefixes.length} prefixes.`,
+			);
+		}
+
+		return 0;
+	}
+
+	if (checking) {
+		console.error(
+			"[type-aware] src/rules/type-aware-generated.ts is out of sync with the " +
+				"installed plugins. Run `pnpm gen` and commit the result.",
+		);
+		return 1;
+	}
+
+	await fs.writeFile(OUTPUT, desired);
+	return 0;
+}
+
+process.exit(await main());

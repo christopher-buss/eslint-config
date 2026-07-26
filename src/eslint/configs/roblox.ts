@@ -1,6 +1,7 @@
 import { GLOB_LUA, GLOB_MARKDOWN } from "../../globs.ts";
 import { robloxRules } from "../../rules/roblox.ts";
 import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFilesTypeAware,
@@ -30,11 +31,11 @@ export async function roblox(
 		typeAware = true,
 	} = options;
 
-	const [parserTs, pluginRobloxTs, pluginSentinel, pluginSmallRules] = await Promise.all([
+	const pluginSmallRules = loadSmallRulesPlugin();
+	const [parserTs, pluginRobloxTs, pluginSentinel] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
 		interopDefault(import("eslint-plugin-roblox-ts")),
 		interopDefault(import("eslint-plugin-sentinel")),
-		loadSmallRulesPlugin(),
 	] as const);
 
 	const files = options.files ?? [
@@ -116,7 +117,7 @@ export async function roblox(
 	];
 
 	if (formatLua) {
-		const pluginFormatLua = await interopDefault(import("eslint-plugin-format-lua"));
+		const pluginFormatLua = lazyPlugin("eslint-plugin-format-lua");
 
 		configs.push(
 			{

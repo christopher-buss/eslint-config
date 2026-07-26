@@ -11,6 +11,7 @@ import {
 	interopDefault,
 	renameRules,
 } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -68,10 +69,12 @@ export async function typescript(
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = typescriptTypeAwareRules({ roblox });
 
-	const [parserTs, pluginTs, pluginAntfu] = await Promise.all([
+	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
+	// Eager: `pluginTs.configs` is spread into the rules below, at composition
+	// time, and `ts/*` rules run on every source file anyway.
+	const [parserTs, pluginTs] = await Promise.all([
 		interopDefault(import("@typescript-eslint/parser")),
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
-		interopDefault(import("eslint-plugin-antfu")),
 	] as const);
 
 	const erasablePlugin = await (async () => {

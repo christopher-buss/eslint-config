@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 
 import { GLOB_PACKAGE_JSON } from "../../globs.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsIsInEditor, OptionsPnpm, TypedFlatConfigItem } from "../types.ts";
 
 export async function pnpm(
@@ -10,8 +11,8 @@ export async function pnpm(
 ): Promise<Array<TypedFlatConfigItem>> {
 	await ensurePackages(["eslint-plugin-pnpm"]);
 
-	const [pluginPnpm, yamlParser, jsoncParser] = await Promise.all([
-		interopDefault(import("eslint-plugin-pnpm")),
+	const pluginPnpm = lazyPlugin("eslint-plugin-pnpm");
+	const [yamlParser, jsoncParser] = await Promise.all([
 		interopDefault(import("yaml-eslint-parser")),
 		interopDefault(import("jsonc-eslint-parser")),
 	]);

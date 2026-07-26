@@ -1,6 +1,8 @@
+import type PluginStylistic from "@stylistic/eslint-plugin";
+
 import { GLOB_SRC } from "../../globs.ts";
 import { stylisticRules } from "../../rules/stylistic.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 
 export const StylisticConfigDefaults: StylisticConfig = {
@@ -10,18 +12,17 @@ export const StylisticConfigDefaults: StylisticConfig = {
 	semi: true,
 };
 
-export async function stylistic(
-	options: StylisticConfig = {},
-): Promise<Array<TypedFlatConfigItem>> {
+export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigItem> {
 	const { indent, jsx, quotes, semi } = {
 		...StylisticConfigDefaults,
 		...options,
 	};
 
-	const [pluginStylistic, pluginAntfu] = await Promise.all([
-		interopDefault(import("@stylistic/eslint-plugin")),
-		interopDefault(import("eslint-plugin-antfu")),
-	]);
+	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
+	// Hydrates immediately on the next line; the laziness is for the callers
+	// that only register `style` (`comments`, `react`) on a run with
+	// `stylistic: false`, where this module is never composed.
+	const pluginStylistic = lazyPlugin<typeof PluginStylistic>("@stylistic/eslint-plugin");
 
 	const config = pluginStylistic.configs.customize({
 		indent,

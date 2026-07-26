@@ -1,17 +1,20 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { commentLengthRules, commentsRules } from "../../rules/comments.ts";
 import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export async function comments({
 	prettierOptions = {},
 	stylistic = true,
 }: OptionsFormatters & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
-	const [pluginCommentLength, pluginComments, pluginStylistic] = await Promise.all([
-		interopDefault(import("eslint-plugin-comment-length")),
-		interopDefault(import("@eslint-community/eslint-plugin-eslint-comments")),
-		interopDefault(import("@stylistic/eslint-plugin")),
-	]);
+	const pluginCommentLength = lazyPlugin("eslint-plugin-comment-length");
+	// Registered but never read here; `stylistic()` is what reads the object,
+	// and it is skipped entirely when `stylistic: false`.
+	const pluginStylistic = lazyPlugin("@stylistic/eslint-plugin");
+	const pluginComments = await interopDefault(
+		import("@eslint-community/eslint-plugin-eslint-comments"),
+	);
 
 	return [
 		{

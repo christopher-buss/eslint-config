@@ -4,7 +4,7 @@ import {
 	perfectionistRules,
 	perfectionistSettings,
 } from "../../rules/perfectionist.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } from "../types.ts";
 
 /**
@@ -14,10 +14,10 @@ import type { OptionsProjectType, PerfectionistConfig, TypedFlatConfigItem } fro
  * @returns The configuration.
  * @see https://github.com/azat-io/eslint-plugin-perfectionist
  */
-export async function perfectionist(
+export function perfectionist(
 	config?: OptionsProjectType & PerfectionistConfig,
-): Promise<Array<TypedFlatConfigItem>> {
-	const pluginPerfectionist = await interopDefault(import("eslint-plugin-perfectionist"));
+): Array<TypedFlatConfigItem> {
+	const pluginPerfectionist = lazyPlugin("eslint-plugin-perfectionist");
 
 	return [
 		{

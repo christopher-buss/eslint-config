@@ -55,6 +55,8 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
     "**/auto-import{,s}.d.ts",
     "**/components.d.ts",
     "**/roblox.yml",
+    "**/.scratch/**",
+    "**/scratch/**",
   ],
   "jsPlugins": [
     {
@@ -2877,6 +2879,8 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
     "**/auto-import{,s}.d.ts",
     "**/components.d.ts",
     "**/roblox.yml",
+    "**/.scratch/**",
+    "**/scratch/**",
   ],
   "jsPlugins": [
     {
@@ -7184,6 +7188,8 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
     "**/auto-import{,s}.d.ts",
     "**/components.d.ts",
     "**/roblox.yml",
+    "**/.scratch/**",
+    "**/scratch/**",
   ],
   "jsPlugins": [
     {
@@ -11239,6 +11245,8 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
     "**/auto-import{,s}.d.ts",
     "**/components.d.ts",
     "**/roblox.yml",
+    "**/.scratch/**",
+    "**/scratch/**",
   ],
   "jsPlugins": [
     {

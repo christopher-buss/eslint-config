@@ -1,5 +1,6 @@
 import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC, GLOB_TSCONFIG } from "../../globs.ts";
 import { interopDefault, resolveWithDefaults } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
 	OptionsOverrides,
@@ -16,10 +17,8 @@ export async function jsonc({
 	const { indent = "tab" } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" || indent === "tab" ? indent : "tab";
 
-	const [pluginJsonc, parserJsonc] = await Promise.all([
-		interopDefault(import("eslint-plugin-jsonc")),
-		interopDefault(import("jsonc-eslint-parser")),
-	] as const);
+	const pluginJsonc = lazyPlugin("eslint-plugin-jsonc");
+	const parserJsonc = await interopDefault(import("jsonc-eslint-parser"));
 
 	return [
 		{

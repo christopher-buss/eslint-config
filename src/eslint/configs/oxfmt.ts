@@ -16,6 +16,7 @@ import {
 import { buildOxfmtOptions } from "../../rules/oxfmt.ts";
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import { defaultPluginRenaming } from "../plugin-renaming.ts";
 import type {
 	OptionsComponentExtensions,
@@ -62,10 +63,8 @@ export async function oxfmt(
 		prettierOptions,
 	});
 
-	const [configPrettier, pluginOxfmt] = await Promise.all([
-		interopDefault(import("eslint-config-prettier/flat")),
-		interopDefault(import("eslint-plugin-oxfmt")),
-	]);
+	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt");
+	const configPrettier = await interopDefault(import("eslint-config-prettier/flat"));
 
 	const rulesToIgnore = ["curly", "style/quotes"];
 	const rules = renameRules(configPrettier.rules, defaultPluginRenaming);

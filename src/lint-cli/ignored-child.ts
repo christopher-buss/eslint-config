@@ -14,6 +14,7 @@
  * stdin.
  */
 import fs from "node:fs";
+import module from "node:module";
 import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
@@ -286,6 +287,11 @@ async function resolvePayload(cwd: string): Promise<IgnoredPayload> {
 }
 
 async function main(): Promise<void> {
+	// The heaviest process the runner spawns, and the only one without a bin
+	// wrapper enabling the cache for it: `ignored.ts` invokes this entry
+	// directly, and ESLint's own bin is what covers the lint children.
+	module.enableCompileCache();
+
 	const [cwd, outFile] = process.argv.slice(2);
 	if (cwd === undefined || outFile === undefined) {
 		throw new Error("usage: node ignored-child <cwd> <outFile> (targets on stdin)");

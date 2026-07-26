@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { spellingRules } from "../../rules/spelling.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -9,9 +9,9 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
-export async function spelling(
+export function spelling(
 	options: OptionsComponentExtensions & OptionsFiles & OptionsIsInEditor & SpellCheckConfig = {},
-): Promise<Array<TypedFlatConfigItem>> {
+): Array<TypedFlatConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		inEditor,
@@ -24,7 +24,9 @@ export async function spelling(
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
-	const pluginCspell = await interopDefault(import("@cspell/eslint-plugin"));
+	// Hybrid mode drops `@cspell/spellchecker` for source files (oxlint owns
+	// it), so this survives only in `isentinel/spelling/markdown-code`.
+	const pluginCspell = lazyPlugin("@cspell/eslint-plugin");
 
 	return [
 		{

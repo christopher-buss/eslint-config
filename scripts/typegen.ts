@@ -2,38 +2,8 @@ import { flatConfigsToRulesDTS } from "eslint-typegen/core";
 import { builtinRules } from "eslint/use-at-your-own-risk";
 import fs from "node:fs/promises";
 
-import {
-	comments,
-	e18e,
-	eslintPlugin,
-	flawless,
-	gitignore,
-	ignores,
-	imports,
-	javascript,
-	jsdoc,
-	jsonc,
-	markdown,
-	naming,
-	node,
-	oxfmt,
-	packageJson,
-	perfectionist,
-	pnpm,
-	promise,
-	react,
-	roblox,
-	smallRules,
-	sonarjs,
-	spelling,
-	stylistic,
-	test,
-	toml,
-	typescript,
-	unicorn,
-	yaml,
-} from "../src/index.ts";
 import { combine } from "../src/utils.ts";
+import { PRESET_CONFIGS } from "./config-factories.ts";
 
 const configs = await combine(
 	{
@@ -44,35 +14,7 @@ const configs = await combine(
 			},
 		},
 	},
-	comments(),
-	e18e(),
-	eslintPlugin(),
-	flawless(),
-	gitignore(),
-	ignores(),
-	imports(),
-	javascript(),
-	jsdoc(),
-	jsonc(),
-	markdown(),
-	naming(),
-	node(),
-	oxfmt(),
-	packageJson(),
-	perfectionist(),
-	pnpm({ isInEditor: false }),
-	promise(),
-	react(),
-	roblox(),
-	smallRules(),
-	sonarjs({ isInEditor: false }),
-	spelling(),
-	stylistic(),
-	test({ jest: true, vitest: true }),
-	toml(),
-	typescript({ erasableOnly: true }),
-	unicorn(),
-	yaml(),
+	...PRESET_CONFIGS,
 );
 
 const configNames = configs
