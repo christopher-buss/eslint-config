@@ -149,6 +149,25 @@ keeps running in ESLint, notably:
 A test suite asserts that every rule dropped from ESLint in hybrid mode is
 enabled in the oxlint factory output, so coverage loss is a test failure.
 
+### Oxlint-only rules
+
+Traffic also flows the other way: oxlint's native `oxc/*` rules and, under
+`react: true`, its `react-perf/*` rules have no ESLint counterpart in the
+preset, so they run in oxlint alone.
+
+The four `react-perf` rules — `jsx-no-new-object-as-prop`,
+`jsx-no-new-array-as-prop`, `jsx-no-new-function-as-prop` and
+`jsx-no-jsx-as-prop` — flag values built inline in JSX, which get a fresh
+identity every render and defeat `React.memo` and hook-dependency bailouts. They
+are enabled as errors. With `roblox: true` (the default) they are configured
+with `nativeAllowList: "all"`, which skips host tags:
+`<textbutton Event={{ … }} />` is idiomatic Roblox UI with no reasonable way
+out. Under `roblox: false` the rules apply to host elements too.
+
+The rules match object literals, array literals, function expressions and JSX —
+**not** call expressions, so `<frame Size={UDim2.fromScale(1, 1)} />` is not
+reported even though it churns the same way.
+
 ### Native-only hybrid (experimental)
 
 `oxlint: "native"` narrows the hand-off: oxlint runs **only** the rules it
@@ -296,12 +315,12 @@ export default isentinel({
   A category only reaches plugins registered at the top level: oxlint applies
   categories to the base plugin set, not to plugins an override adds. The preset
   keeps a plugin at the top level when it asks for it across the whole tree
-  (`typescript`, `unicorn`, `import`, `jsdoc`, `promise`, `oxc`), so categories
-  reach those project-wide. File-scoped ones — `vitest` under the test globs,
-  `node` over the complement of the `roblox` globs — are registered on their own
-  override instead, which keeps them from firing outside those globs; inside
-  them they contribute the rules the preset curates, and categories add nothing
-  further.
+  (`typescript`, `unicorn`, `import`, `jsdoc`, `promise`, `oxc`, plus
+  `react-perf` under `react: true`), so categories reach those project-wide.
+  File-scoped ones — `vitest` under the test globs, `node` over the complement
+  of the `roblox` globs — are registered on their own override instead, which
+  keeps them from firing outside those globs; inside them they contribute the
+  rules the preset curates, and categories add nothing further.
 
   To opt a plugin into your categories project-wide, register it yourself on a
   whole-tree config fragment:
@@ -312,7 +331,7 @@ export default isentinel({
   	{
   		name: "project/native-plugins",
   		files: [GLOB_SRC],
-  		plugins: ["react-perf"],
+  		plugins: ["jsx-a11y"],
   		rules: {},
   	},
   );

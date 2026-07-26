@@ -69,7 +69,9 @@ function getOxlintNativeRules(): Map<string, OxlintRuleInfo> {
 	const ruleList = Array.isArray(parsed) ? parsed : [];
 	for (const rule of ruleList) {
 		if (isOxlintRuleInfo(rule)) {
-			rules.set(`${rule.scope}/${rule.value}`, rule);
+			// `--rules` reports scopes with underscores (`react_perf`);
+			// config keys use the hyphenated name (`react-perf`).
+			rules.set(`${rule.scope.replaceAll("_", "-")}/${rule.value}`, rule);
 		}
 	}
 
@@ -517,6 +519,134 @@ describe("oxc rules", () => {
 		// native oxc/branches-sharing-code rule covers it on the oxlint side).
 		expect(before.has("sonar/no-all-duplicated-branches")).toBe(true);
 		expect(after.has("sonar/no-all-duplicated-branches")).toBe(false);
+	});
+});
+
+const REACT_PERFORMANCE_RULES = [
+	"react-perf/jsx-no-jsx-as-prop",
+	"react-perf/jsx-no-new-array-as-prop",
+	"react-perf/jsx-no-new-function-as-prop",
+	"react-perf/jsx-no-new-object-as-prop",
+] as const;
+
+type ReactPerformanceEntry = NonNullable<
+	NonNullable<OxlintConfig["rules"]>["react-perf/jsx-no-jsx-as-prop"]
+>;
+
+/**
+ * Collect the enabled `react-perf/*` rules from a generated oxlint config,
+ * sorted.
+ *
+ * @param config - The generated oxlint config.
+ * @returns The enabled react-perf rule names.
+ */
+function enabledReactPerformanceRules(config: OxlintConfig): Array<string> {
+	return [...enabledOxlintRules(config)]
+		.filter((rule) => rule.startsWith("react-perf/"))
+		.toSorted();
+}
+
+/**
+ * Collect every `react-perf/*` rule entry the config emits, from the top level
+ * and from overrides.
+ *
+ * @param config - The generated oxlint config.
+ * @returns The emitted rule entries.
+ */
+function reactPerformanceEntries(config: OxlintConfig): Array<ReactPerformanceEntry> {
+	const ruleMaps = [config.rules, ...(config.overrides ?? []).map((override) => override.rules)];
+
+	const entries: Array<ReactPerformanceEntry> = [];
+	for (const ruleMap of ruleMaps) {
+		for (const rule of REACT_PERFORMANCE_RULES) {
+			const entry = ruleMap?.[rule];
+			if (entry !== undefined) {
+				entries.push(entry);
+			}
+		}
+	}
+
+	return entries;
+}
+
+/**
+ * The severity of a rule entry, with any options stripped.
+ *
+ * @param entry - An emitted rule entry, bare or with options.
+ * @returns The bare severity of that entry.
+ */
+function entrySeverity(entry: ReactPerformanceEntry): unknown {
+	return Array.isArray(entry) ? entry[0] : entry;
+}
+
+describe("react-perf rules", () => {
+	const reactOptions = { ...baseOptions, react: true } as const;
+
+	it("should omit the react-perf rules when react is disabled", ({ expect }) => {
+		expect.assertions(1);
+
+		const config = oxlintIsentinel({ name: "test/react-perf-off", ...baseOptions });
+
+		expect(enabledReactPerformanceRules(config)).toStrictEqual([]);
+	});
+
+	it("should enable every react-perf rule as an error when react is enabled", ({ expect }) => {
+		expect.assertions(2);
+
+		const config = oxlintIsentinel({ ...reactOptions, name: "test/react-perf-on" });
+		const severities = reactPerformanceEntries(config).map(entrySeverity);
+
+		expect(enabledReactPerformanceRules(config)).toStrictEqual(
+			REACT_PERFORMANCE_RULES.toSorted(),
+		);
+		expect(severities).toStrictEqual(["error", "error", "error", "error"]);
+	});
+
+	it("should allow native elements under roblox", ({ expect }) => {
+		expect.assertions(2);
+
+		const config = oxlintIsentinel({ ...reactOptions, name: "test/react-perf-roblox" });
+		const entries = reactPerformanceEntries(config);
+
+		expect(entries).toHaveLength(4);
+		expect(entries).toStrictEqual(
+			Array.from({ length: 4 }, () => ["error", { nativeAllowList: "all" }]),
+		);
+	});
+
+	it("should not allow native elements when roblox is disabled", ({ expect }) => {
+		expect.assertions(1);
+
+		const config = oxlintIsentinel({
+			...reactOptions,
+			name: "test/react-perf-no-roblox",
+			roblox: false,
+			type: "package",
+		});
+
+		expect(reactPerformanceEntries(config)).toStrictEqual(["error", "error", "error", "error"]);
+	});
+
+	it("should register the react-perf plugin at the top level", ({ expect }) => {
+		expect.assertions(1);
+
+		const config = oxlintIsentinel({ ...reactOptions, name: "test/react-perf-plugin" });
+
+		expect(config.plugins).toContain("react-perf");
+	});
+
+	it("should keep the react-perf rules in native-only mode", ({ expect }) => {
+		expect.assertions(1);
+
+		const config = oxlintIsentinel({
+			...reactOptions,
+			name: "test/react-perf-native-only",
+			jsPlugins: false,
+		});
+
+		expect(enabledReactPerformanceRules(config)).toStrictEqual(
+			REACT_PERFORMANCE_RULES.toSorted(),
+		);
 	});
 });
 

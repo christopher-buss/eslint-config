@@ -51,7 +51,9 @@ if (!Array.isArray(parsedRuleList)) {
 const validRules = new Set<string>();
 for (const rule of parsedRuleList) {
 	if (isOxlintRuleInfo(rule)) {
-		validRules.add(`${rule.scope}/${rule.value}`);
+		// `--rules` reports scopes with underscores (`react_perf`); config keys
+		// use the hyphenated plugin name (`react-perf`).
+		validRules.add(`${rule.scope.replaceAll("_", "-")}/${rule.value}`);
 	}
 }
 

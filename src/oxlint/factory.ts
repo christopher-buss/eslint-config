@@ -332,6 +332,7 @@ export function isentinel(
 		const reactOptions = typeof enableReact === "object" ? enableReact : {};
 		configs.push(
 			oxlintReact({
+				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 				...reactOptions,
 			}),
