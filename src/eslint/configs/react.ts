@@ -1,6 +1,7 @@
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../../globs.ts";
 import { reactRules } from "../../rules/react.ts";
 import { ensurePackages, getTsConfig, interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -40,24 +41,22 @@ export async function react(
 		await ensurePackages(["eslint-plugin-react-naming-convention"]);
 	}
 
+	const pluginSmallRules = loadSmallRulesPlugin();
+	const pluginStylistic = lazyPlugin("@stylistic/eslint-plugin");
 	const [
 		pluginReactCore,
 		pluginReactJsx,
 		pluginFlawless,
-		pluginStylistic,
 		pluginTs,
 		pluginUnicorn,
 		pluginUnusedImports,
-		pluginSmallRules,
 	] = await Promise.all([
 		interopDefault(import("eslint-plugin-react-x")),
 		interopDefault(import("eslint-plugin-react-jsx")),
 		interopDefault(import("eslint-plugin-flawless")),
-		interopDefault(import("@stylistic/eslint-plugin")),
 		interopDefault(import("@typescript-eslint/eslint-plugin")),
 		interopDefault(import("eslint-plugin-unicorn")),
 		interopDefault(import("eslint-plugin-unused-imports")),
-		loadSmallRulesPlugin(),
 	] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;

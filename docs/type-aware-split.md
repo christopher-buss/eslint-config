@@ -79,6 +79,26 @@ its classification, so the paired base-rule disables inside the type-aware
 blocks (for example `dot-notation: "off"` next to `ts/dot-notation`) stay with
 the fast pass and effective severities are preserved exactly.
 
+### Where the `requiresTypeChecking` answer comes from
+
+Reading that flag live means walking `plugin.rules` for every registered plugin,
+which loads every plugin implementation the preset registers on any run that
+sets `typeAware` — the preset registers its plugins lazily precisely to avoid
+that. So the flag is snapshotted at build time into
+`src/rules/type-aware-generated.ts` (`pnpm gen`), which records both the rule
+ids that declare it and the plugin prefixes the snapshot covers. The prefixes
+are needed separately: a prefix with no type-aware rules still has to count as
+covered, or it would be scanned and loaded after all.
+
+The preset's plugins are pinned dependencies, so the snapshot is the same for
+every consumer. `nr check:type-aware` fails when it drifts from the installed
+plugins; CI runs it before the build, because `pnpm gen` would otherwise repair
+the file in place and hide the drift.
+
+Prefixes outside the snapshot — plugins **you** registered — are still read
+live, so their `requiresTypeChecking` flags work exactly as before. Nothing is
+loaded that your own config had not already loaded.
+
 ## Caveats
 
 - **Custom type-aware rules** must declare `meta.docs.requiresTypeChecking`, be
@@ -86,6 +106,14 @@ the fast pass and effective severities are preserved exactly.
   `overridesTypeAware`), or be listed in the factory's `typeAwareRules` option.
   Otherwise they are sorted into the fast pass, where no type information
   exists, and will crash or silently no-op.
+- **Custom rules under a preset-owned prefix** are the one case where declaring
+  the flag is not enough. The snapshot answers for its 36 prefixes without
+  reading the live objects, so a rule you add under one of them — say a plugin
+  of your own registered as `react` on a `react: false` run — is not seen, and
+  its flag is ignored. Register such rules under a prefix of your own, or use
+  `typeAwareRules` / a `type-aware`-named config, both of which bypass the
+  snapshot. For the same reason, resolving a _different version_ of a preset
+  plugin than the one shipped gets the snapshot's answer, not that version's.
 - **Unused disable directives** are only reported by the full config. A
   directive for a rule that runs in the other pass would be a false "unused"
   report, so both split modes set

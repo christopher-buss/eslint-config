@@ -1,5 +1,6 @@
 import { GLOB_TOML } from "../../globs.ts";
 import { interopDefault, resolveWithDefaults } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
 	OptionsOverrides,
@@ -16,10 +17,8 @@ export async function toml({
 	const { indent = 2 } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" ? indent : 2;
 
-	const [pluginToml, parserToml] = await Promise.all([
-		interopDefault(import("eslint-plugin-toml")),
-		interopDefault(import("toml-eslint-parser")),
-	] as const);
+	const pluginToml = lazyPlugin("eslint-plugin-toml");
+	const parserToml = await interopDefault(import("toml-eslint-parser"));
 
 	return [
 		{

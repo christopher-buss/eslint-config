@@ -91,11 +91,23 @@ Each file exports a function returning `TypedFlatConfigItem[]`. Key configs:
 
 ### Type Generation
 
-`pnpm gen` runs five generators in `scripts/`: `typegen.ts`
+`pnpm gen` runs eight generators in `scripts/`: `typegen.ts`
 (`src/typegen.d.ts` - ESLint rule types and config names), `typegen-oxlint.ts`
 (`src/oxlint/` equivalents), the two `typegen-defaults*.ts` (default rule
-severities, used by the redundancy check) and `versiongen.ts`
-(`src/cli/constants-generated.ts`). Run it after modifying configs.
+severities, used by the redundancy check), `versiongen.ts`
+(`src/cli/constants-generated.ts`), `stylisticgen.ts`
+(`src/rules/stylistic-generated.ts` - `@stylistic` rule names),
+`typeawaregen.ts` (`src/rules/type-aware-generated.ts` - the
+`requiresTypeChecking` snapshot the type-aware split reads) and
+`gen-package-extensions.ts` (the `packageExtensions` block of
+`pnpm-workspace.yaml`). Run it after modifying configs.
+
+`typegen.ts` and `typeawaregen.ts` share one list of config modules
+(`scripts/config-factories.ts`); add new modules there or they escape both
+generators. Both `gen-package-extensions.ts` and `typeawaregen.ts` take
+`--check` (`nr check:extensions`, `nr check:type-aware`), which CI runs _before_
+the build - `pnpm gen` would otherwise repair a stale file in place and the
+drift would never be reported.
 
 ### CLI Tools
 

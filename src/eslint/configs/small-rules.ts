@@ -3,7 +3,7 @@ import type { Plugin as OxlintPlugin } from "@oxlint/plugins";
 
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { smallRulesRules } from "../../rules/small-rules.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -13,38 +13,34 @@ import type {
 } from "../types.ts";
 
 /**
- * Load the Oxlint-native `@pobammer-ts/small-rules` plugin and adapt it for
+ * Register the Oxlint-native `@pobammer-ts/small-rules` plugin, adapted for
  * ESLint. `eslintCompatPlugin` generates an ESLint `create` for the plugin's
- * `createOnce` rules (`prefer-singular-enums`); it mutates the module in place
- * and is idempotent, so the shared plugin object works under both linters
- * wherever it is registered.
+ * `createOnce` rules (`prefer-singular-enums`); it runs once, when the lazy
+ * plugin hydrates, and the memoised object is shared by every registration.
  *
  * @returns The ESLint-compatible small-rules plugin.
  */
-export async function loadSmallRulesPlugin(): Promise<
-	NonNullable<TypedFlatConfigItem["plugins"]>[string]
-> {
-	// `@pobammer-ts/small-rules` ships its own `oxlint-plugin-utilities` Plugin
-	// type that is structurally an oxlint/ESLint plugin but not nominally
-	// assignable to `@oxlint/plugins`' Plugin; `eslintCompatPlugin` adapts it at
-	// runtime.
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- cross-package plugin-type mismatch, runtime-compatible
-	const plugin = (await interopDefault(
-		import("@pobammer-ts/small-rules"),
-	)) as unknown as OxlintPlugin;
-	return eslintCompatPlugin(plugin);
+export function loadSmallRulesPlugin(): NonNullable<TypedFlatConfigItem["plugins"]>[string] {
+	return lazyPlugin("@pobammer-ts/small-rules", (plugin) => {
+		// `@pobammer-ts/small-rules` ships its own `oxlint-plugin-utilities`
+		// Plugin type that is structurally an oxlint/ESLint plugin but not
+		// nominally assignable to `@oxlint/plugins`' Plugin;
+		// `eslintCompatPlugin` adapts it at runtime.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- cross-package plugin-type mismatch, runtime-compatible
+		return eslintCompatPlugin(plugin as OxlintPlugin);
+	});
 }
 
-export async function smallRules(
+export function smallRules(
 	options: OptionsComponentExtensions & OptionsFiles & OptionsIsInEditor & OptionsStylistic = {},
-): Promise<Array<TypedFlatConfigItem>> {
+): Array<TypedFlatConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		isInEditor = false,
 		stylistic = true,
 	} = options;
 
-	const pluginSmallRules = await loadSmallRulesPlugin();
+	const pluginSmallRules = loadSmallRulesPlugin();
 
 	const files = options.files ?? [
 		GLOB_TS,

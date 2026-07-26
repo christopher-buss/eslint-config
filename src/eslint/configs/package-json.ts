@@ -1,5 +1,6 @@
 import { GLOB_PACKAGE_JSON, GLOB_PACKAGE_JSON_ROOT } from "../../globs.ts";
 import { findWorkspaceRoot, interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsHasRoblox,
 	OptionsProjectType,
@@ -14,9 +15,9 @@ export async function packageJson({
 }: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {}): Promise<
 	Array<TypedFlatConfigItem>
 > {
-	const [jsoncEslintParser, pluginPackageJson, rootDirectory] = await Promise.all([
+	const pluginPackageJson = lazyPlugin("eslint-plugin-package-json");
+	const [jsoncEslintParser, rootDirectory] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),
-		interopDefault(import("eslint-plugin-package-json")),
 		findWorkspaceRoot(),
 	]);
 

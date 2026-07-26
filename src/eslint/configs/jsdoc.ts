@@ -1,6 +1,6 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { jsdocRules } from "../../rules/jsdoc.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	JsdocOptions,
 	OptionsProjectType,
@@ -8,12 +8,12 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
-export async function jsdoc({
+export function jsdoc({
 	full = false,
 	stylistic = true,
 	type = "game",
-}: JsdocOptions & OptionsProjectType & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
-	const pluginJsdoc = await interopDefault(import("eslint-plugin-jsdoc"));
+}: JsdocOptions & OptionsProjectType & OptionsStylistic = {}): Array<TypedFlatConfigItem> {
+	const pluginJsdoc = lazyPlugin("eslint-plugin-jsdoc");
 
 	return [
 		{

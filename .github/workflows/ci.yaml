@@ -67,6 +67,12 @@ jobs:
       - name: Check package extensions
         run: nr check:extensions
 
+      # Same reason: a snapshot committed without regenerating would be
+      # repaired by `nr gen` and the drift never reported. A missed type-aware
+      # rule is sorted into the pass that has no TypeScript program.
+      - name: Check type-aware snapshot
+        run: nr check:type-aware
+
       - name: Build
         run: nr build
 

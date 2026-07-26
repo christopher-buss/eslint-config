@@ -1,6 +1,7 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { nodeRules } from "../../rules/node.ts";
-import { ensurePackages, interopDefault } from "../../utils.ts";
+import { ensurePackages } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsFiles, TypedFlatConfigItem } from "../types.ts";
 
 export async function node({
@@ -9,7 +10,7 @@ export async function node({
 }: OptionsFiles & { ignores?: Array<string> } = {}): Promise<Array<TypedFlatConfigItem>> {
 	await ensurePackages(["eslint-plugin-n"]);
 
-	const pluginNode = await interopDefault(import("eslint-plugin-n"));
+	const pluginNode = lazyPlugin("eslint-plugin-n");
 
 	return [
 		{

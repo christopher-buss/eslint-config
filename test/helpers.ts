@@ -54,6 +54,21 @@ const TSCONFIG_ROBLOX = JSON.stringify(
 );
 
 /**
+ * The fatal messages of a lint run: parse failures, missing plugins and crashed
+ * rules, which all carry a null ruleId.
+ *
+ * @param results - The lint results to scan.
+ * @returns The fatal message texts.
+ */
+export function fatalMessages(results: Array<ESLint.LintResult>): Array<string> {
+	return results.flatMap((result) => {
+		return result.messages
+			.filter((message) => message.fatal === true || message.ruleId === null)
+			.map((message) => message.message);
+	});
+}
+
+/**
  * Copy input fixtures, lint with --fix, return map of filename to
  * fixed content.
  *

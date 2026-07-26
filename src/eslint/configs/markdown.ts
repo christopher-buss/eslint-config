@@ -1,7 +1,10 @@
+import type PluginMarkdown from "@eslint/markdown";
+
+import type { Linter } from "eslint";
 import { mergeProcessors, processorPassThrough } from "eslint-merge-processors";
 
 import { GLOB_MARKDOWN, GLOB_MARKDOWN_BLOCKS, GLOB_MARKDOWN_IN_MARKDOWN } from "../../globs.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
 	OptionsFiles,
@@ -10,15 +13,36 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
-export async function markdown({
+/**
+ * The plugin's own name for its processor, restated so it can be read without
+ * loading the plugin. `test/lazy-plugin.spec.ts` asserts the two match.
+ */
+export const MARKDOWN_PROCESSOR_NAME = "@eslint/markdown/markdown";
+
+export function markdown({
 	componentExts: componentExtensions = [],
 	files = [GLOB_MARKDOWN],
 	overrides = {},
 	type = "game",
-}: OptionsComponentExtensions & OptionsFiles & OptionsOverrides & OptionsProjectType = {}): Promise<
-	Array<TypedFlatConfigItem>
-> {
-	const markdownPlugin = await interopDefault(import("@eslint/markdown"));
+}: OptionsComponentExtensions &
+	OptionsFiles &
+	OptionsOverrides &
+	OptionsProjectType = {}): Array<TypedFlatConfigItem> {
+	const markdownPlugin = lazyPlugin<typeof PluginMarkdown>("@eslint/markdown");
+
+	// `mergeProcessors` reads `meta.name` off each member to build its own id,
+	// so handing it the plugin's processor directly would load the plugin at
+	// composition time. Only the name matters: `mergeProcessors` hardcodes
+	// `supportsAutofix` on the result and forwards nothing else.
+	const markdownProcessor: Linter.Processor = {
+		meta: { name: MARKDOWN_PROCESSOR_NAME },
+		postprocess: (messages, filename) => {
+			return markdownPlugin.processors.markdown.postprocess(messages, filename);
+		},
+		preprocess: (text, filename) => {
+			return markdownPlugin.processors.markdown.preprocess(text, filename);
+		},
+	};
 
 	return [
 		{
@@ -35,7 +59,7 @@ export async function markdown({
 			// blocks, but not the markdown file itself.
 			// We use `eslint-merge-processors` to add a pass-through processor
 			// for the markdown file itself.
-			processor: mergeProcessors([markdownPlugin.processors.markdown, processorPassThrough]),
+			processor: mergeProcessors([markdownProcessor, processorPassThrough]),
 		},
 		{
 			name: "isentinel/markdown/parser",

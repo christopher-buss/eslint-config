@@ -1,6 +1,7 @@
 import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
 import { isRecord } from "../guards.ts";
 import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
+import { typeAwarePrefixes, typeAwareRuleIds } from "../rules/type-aware-generated.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 /**
@@ -16,6 +17,31 @@ const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 
 /** The type-aware split mode; see the factory's `typeAware` option. */
 export type TypeAwareSplitMode = "only" | false;
+
+/**
+ * Whether a plugin rule definition declares `meta.docs.requiresTypeChecking`,
+ * validating each hop since the plugin object crosses an untyped boundary.
+ *
+ * Exported so `scripts/type-aware-shared.ts` snapshots exactly the predicate
+ * the runtime fallback applies; a second copy could drift with nothing able to
+ * see it.
+ *
+ * @param rule - The rule definition read off a plugin's `rules` record.
+ * @returns Whether the rule requires type information.
+ */
+export function requiresTypeChecking(rule: unknown): boolean {
+	if (!isRecord(rule)) {
+		return false;
+	}
+
+	const { meta } = rule;
+	if (!isRecord(meta)) {
+		return false;
+	}
+
+	const { docs } = meta;
+	return isRecord(docs) && docs["requiresTypeChecking"] === true;
+}
 
 /**
  * Collect the names of every type-aware rule referenced by the resolved
@@ -108,12 +134,12 @@ export function applyTypeAwareSplit(
  * Record the type-aware rules of a single config item.
  *
  * @param config - The flat config item to scan.
- * @param registry - Rule id to rule definition.
+ * @param registry - The type-aware rule ids of the registered plugins.
  * @param typeAware - The type-aware rule names (mutated).
  */
 function collectFromConfig(
 	config: TypedFlatConfigItem,
-	registry: Map<string, boolean>,
+	registry: ReadonlySet<string>,
 	typeAware: Set<string>,
 ): void {
 	const inTypeAwareConfig = config.name?.includes("type-aware") ?? false;
@@ -123,7 +149,7 @@ function collectFromConfig(
 			continue;
 		}
 
-		if (FUNCTIONALLY_TYPE_AWARE_RULES.has(rule) || registry.get(rule) === true) {
+		if (FUNCTIONALLY_TYPE_AWARE_RULES.has(rule) || registry.has(rule)) {
 			typeAware.add(rule);
 			continue;
 		}
@@ -136,46 +162,54 @@ function collectFromConfig(
 }
 
 /**
- * Whether a plugin rule definition declares `meta.docs.requiresTypeChecking`,
- * validating each hop since the plugin object crosses an untyped boundary.
+ * Record the type-awareness of the rules of a config item's plugins, skipping
+ * the prefixes the build-time snapshot already covers.
  *
- * @param rule - The rule definition read off a plugin's `rules` record.
- * @returns Whether the rule requires type information.
+ * @param config - The flat config item to scan.
+ * @param registry - The type-aware rule ids (mutated).
  */
-function requiresTypeChecking(rule: unknown): boolean {
-	if (!isRecord(rule)) {
-		return false;
-	}
+function collectPluginRules(config: TypedFlatConfigItem, registry: Set<string>): void {
+	const plugins = Object.entries(config.plugins ?? {});
+	for (const [prefix, plugin] of plugins) {
+		if (typeAwarePrefixes.has(prefix)) {
+			continue;
+		}
 
-	const { meta } = rule;
-	if (!isRecord(meta)) {
-		return false;
-	}
-
-	const { docs } = meta;
-	return isRecord(docs) && docs["requiresTypeChecking"] === true;
-}
-
-/**
- * Build a registry of rule definitions from the plugins registered on the
- * resolved configs, keyed by the (renamed) `prefix/name` rule id.
- *
- * @param configs - The resolved flat config items.
- * @returns Rule id to rule definition.
- */
-function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Map<string, boolean> {
-	const registry = new Map<string, boolean>();
-
-	for (const config of configs) {
-		const plugins = Object.entries(config.plugins ?? {});
-		for (const [prefix, plugin] of plugins) {
-			const rules = isRecord(plugin) ? plugin["rules"] : undefined;
-			if (isRecord(rules)) {
-				for (const [name, rule] of Object.entries(rules)) {
-					registry.set(`${prefix}/${name}`, requiresTypeChecking(rule));
+		const rules = isRecord(plugin) ? plugin["rules"] : undefined;
+		if (isRecord(rules)) {
+			for (const [name, rule] of Object.entries(rules)) {
+				if (requiresTypeChecking(rule)) {
+					registry.add(`${prefix}/${name}`);
 				}
 			}
 		}
+	}
+}
+
+/**
+ * Collect the type-aware rule ids of the registered plugins, keyed by the
+ * (renamed) `prefix/name` rule id.
+ *
+ * The preset's own plugins answer from `type-aware-generated.ts`, a build-time
+ * snapshot of their `meta.docs.requiresTypeChecking` flags. Reading the flag
+ * off the live objects would mean touching `plugin.rules` for every registered
+ * plugin, which loads every preset plugin implementation on any run that sets
+ * `typeAware` — the plugins are registered lazily precisely to avoid that. A
+ * prefix the snapshot covers is therefore never scanned, even when none of its
+ * rules are type-aware.
+ *
+ * The scan survives for prefixes outside the snapshot: those are plugins the
+ * consumer registered in their own config, so they are already loaded and
+ * reading them costs nothing.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The type-aware rule ids.
+ */
+function collectRuleRegistry(configs: Array<TypedFlatConfigItem>): Set<string> {
+	const registry = new Set<string>(typeAwareRuleIds);
+
+	for (const config of configs) {
+		collectPluginRules(config, registry);
 	}
 
 	return registry;

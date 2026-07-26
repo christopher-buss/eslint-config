@@ -1,16 +1,14 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { importsGameRules, importsRules } from "../../rules/imports.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsProjectType, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
-export async function imports({
+export function imports({
 	stylistic = true,
 	type = "game",
-}: OptionsProjectType & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
-	const [pluginImport, pluginAntfu] = await Promise.all([
-		interopDefault(import("eslint-plugin-import-lite")),
-		interopDefault(import("eslint-plugin-antfu")),
-	]);
+}: OptionsProjectType & OptionsStylistic = {}): Array<TypedFlatConfigItem> {
+	const pluginImport = lazyPlugin("eslint-plugin-import-lite");
+	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
 
 	return [
 		{

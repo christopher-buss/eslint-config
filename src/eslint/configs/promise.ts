@@ -1,10 +1,9 @@
 import { promiseRules } from "../../rules/promise.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
-export async function promise(): Promise<Array<TypedFlatConfigItem>> {
-	// @ts-expect-error -- No types
-	const pluginPromise = await interopDefault(import("eslint-plugin-promise"));
+export function promise(): Array<TypedFlatConfigItem> {
+	const pluginPromise = lazyPlugin("eslint-plugin-promise");
 
 	return [
 		{

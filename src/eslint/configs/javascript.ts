@@ -3,6 +3,7 @@ import globals from "globals";
 import { GLOB_SRC } from "../../globs.ts";
 import { javascriptRules } from "../../rules/javascript.ts";
 import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
 	OptionsHasRoblox,
@@ -30,14 +31,10 @@ export async function javascript({
 		 */
 		complementIgnores?: Array<string>;
 	} = {}): Promise<Array<TypedFlatConfigItem>> {
-	const [pluginAntfu, pluginDeMorgan, pluginMaxParameters, pluginUnusedImports] =
-		await Promise.all([
-			interopDefault(import("eslint-plugin-antfu")),
-			interopDefault(import("eslint-plugin-de-morgan")),
-			// @ts-expect-error -- No types
-			interopDefault(import("eslint-plugin-better-max-params")),
-			interopDefault(import("eslint-plugin-unused-imports")),
-		] as const);
+	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
+	const pluginDeMorgan = lazyPlugin("eslint-plugin-de-morgan");
+	const pluginMaxParameters = lazyPlugin("eslint-plugin-better-max-params");
+	const pluginUnusedImports = await interopDefault(import("eslint-plugin-unused-imports"));
 
 	return [
 		{
