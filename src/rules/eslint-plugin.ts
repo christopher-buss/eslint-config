@@ -47,7 +47,7 @@ export function eslintPluginRules(): TypedFlatConfigItem["rules"] {
 		"eslint-plugin/require-meta-type": "error",
 		"eslint-plugin/require-test-case-name": "error",
 		"eslint-plugin/require-test-error-positions": "error",
-		"eslint-plugin/test-case-property-ordering": "error",
+		"eslint-plugin/test-case-property-ordering": "off",
 		"eslint-plugin/test-case-shorthand-strings": "error",
 		"eslint-plugin/unique-test-case-names": "error",
 	};

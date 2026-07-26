@@ -41,6 +41,47 @@ export const perfectionistSettings = {
 } as const;
 
 /**
+ * `eslint-plugin/test-case-property-ordering` canon, with `name` hoisted to the
+ * front. That rule is off (see `eslintPluginRules`) so perfectionist owns
+ * rule-test ordering, which frees `name` from its "unlisted keys last" rule.
+ */
+const TEST_CASE_KEY_ORDER = [
+	"name",
+	"filename",
+	"code",
+	"output",
+	"options",
+	"parser",
+	"languageOptions",
+	"parserOptions",
+	"globals",
+	"env",
+	"errors",
+] as const;
+
+const TEST_CASE_SELECTOR =
+	"Property[key.name=/^(?:invalid|valid)$/] > ArrayExpression > ObjectExpression";
+const TEST_CASE_DECLARATION = "^(?:in)?valid(?:Cases|TestCases|Tests)?$";
+
+const testCaseGroups = {
+	customGroups: TEST_CASE_KEY_ORDER.map((key) => {
+		return { elementNamePattern: `^${key}$`, groupName: key };
+	}),
+	groups: [...TEST_CASE_KEY_ORDER, "unknown"],
+};
+
+/**
+ * `sort-objects` configurations for rule-test cases. The first covers inline
+ * `valid:`/`invalid:` arrays, the second cases extracted to an
+ * `invalidCases`-style variable. Perfectionist takes the first entry whose
+ * `useConfigurationIf` matches, so these must precede the catch-all.
+ */
+const testCaseSortConfigs = [
+	{ ...testCaseGroups, useConfigurationIf: { matchesAstSelector: TEST_CASE_SELECTOR } },
+	{ ...testCaseGroups, useConfigurationIf: { declarationMatchesPattern: TEST_CASE_DECLARATION } },
+];
+
+/**
  * Perfectionist rules shared between the ESLint and oxlint factories.
  *
  * @param config - Shared rule options.
@@ -151,7 +192,7 @@ export function perfectionistRules(
 		"perfectionist/sort-maps": ["error"],
 		"perfectionist/sort-named-imports": ["error"],
 		"perfectionist/sort-object-types": ["error"],
-		"perfectionist/sort-objects": ["error", { ...sortedObjectConfig }],
+		"perfectionist/sort-objects": ["error", ...testCaseSortConfigs, { ...sortedObjectConfig }],
 		"perfectionist/sort-sets": ["error"],
 		"perfectionist/sort-switch-case": ["error"],
 		"perfectionist/sort-union-types": ["error"],
@@ -205,7 +246,11 @@ export function perfectionistJsxRules(
 				groups: ["reserved", "shorthand-prop", "unknown", "callback"],
 			},
 		],
-		"perfectionist/sort-objects": ["error", { ...sortedObjectJsxConfig }],
+		"perfectionist/sort-objects": [
+			"error",
+			...testCaseSortConfigs,
+			{ ...sortedObjectJsxConfig },
+		],
 	};
 }
 
