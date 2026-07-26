@@ -7,9 +7,11 @@ import {
 	isOxlintCovered,
 	isentinel as oxlintIsentinel,
 	oxlintJsPlugins,
+	oxlintRuleMapping,
 	translateRuleToOxlint,
 } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
+import { oxlintNativeRuleNames } from "../src/rules/oxlint-native-generated.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import {
 	effectiveEslintRules,
@@ -406,6 +408,62 @@ describe("oxlint options-level rules", () => {
 		const effective = effectiveOxlintRules(config, "src/index.ts");
 
 		expect(effective.get("react-x/no-nested-component-definitions")).toBe("off");
+	});
+
+	// `categories` only ever enables native rules, so an unmapped rule oxlint
+	// implements in Rust has to resolve to that rule: routed to a jsPlugin it
+	// would configure a different one and leave the category-enabled native rule
+	// on its defaults (#625).
+	it("should route unmapped rules oxlint implements natively to the native rule", ({
+		expect,
+	}) => {
+		expect.assertions(2);
+
+		const config = oxlintIsentinel({
+			name: "test/options-native-fallback",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			rules: {
+				"no-inner-declarations": ["error", "functions", { blockScopedFunctions: "allow" }],
+			},
+		});
+
+		const effective = effectiveOxlintRules(config, "src/index.ts");
+
+		expect(effective.get("no-inner-declarations")).toBe("enabled");
+		expect(effective.has("eslint-js/no-inner-declarations")).toBe(false);
+	});
+
+	it("should let an unmapped native rule be disabled from options.rules", ({ expect }) => {
+		expect.assertions(1);
+
+		const config = oxlintIsentinel({
+			name: "test/options-native-off",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			rules: { "jsx-a11y/alt-text": "off" },
+		});
+
+		const effective = effectiveOxlintRules(config, "src/index.ts");
+
+		expect(effective.get("jsx-a11y/alt-text")).toBe("off");
+	});
+
+	// The native fallback is for unmapped rules only. 52 rules mapped
+	// "js-plugin" (the jest family, react-x, id-length, no-loop-func) also exist
+	// natively; an oxlint upgrade landing more must be a deliberate migration,
+	// not a silent flip.
+	it("should keep deliberate js-plugin mappings off the native rule", ({ expect }) => {
+		expect.assertions(1);
+
+		const flipped = Object.keys(oxlintRuleMapping)
+			.filter((rule) => oxlintRuleMapping[rule] === "js-plugin")
+			.map((rule) => translateRuleToOxlint(rule))
+			.filter((translated) => oxlintNativeRuleNames.has(translated));
+
+		expect(flipped).toStrictEqual([]);
 	});
 });
 

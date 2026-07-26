@@ -11,26 +11,17 @@ import {
 	oxlintRuleMapping,
 	translateRuleToOxlint,
 } from "../rules/oxlint-mapping.ts";
+import { oxlintNativeRuleNames } from "../rules/oxlint-native-generated.ts";
 import type { Rules } from "../types.ts";
 import type { OxlintPlugin, TypedOxlintConfigItem } from "./types.ts";
 
-const NATIVE_PLUGINS = new Set<string>([
-	"eslint",
-	"import",
-	"jest",
-	"jsdoc",
-	"jsx-a11y",
-	"nextjs",
-	"node",
-	"oxc",
-	"promise",
-	"react",
-	"react-perf",
-	"typescript",
-	"unicorn",
-	"vitest",
-	"vue",
-]);
+/**
+ * Every plugin oxlint implements natively, derived from the generated rule
+ * names so a new oxlint scope needs no edit here.
+ */
+const NATIVE_PLUGINS: ReadonlySet<string> = new Set(
+	Array.from(oxlintNativeRuleNames, (rule) => rulePluginPrefix(rule)),
+);
 
 /**
  * Whether a rule's plugin prefix names a plugin oxlint implements natively.

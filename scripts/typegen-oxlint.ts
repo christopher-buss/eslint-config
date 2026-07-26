@@ -1,6 +1,8 @@
 /**
- * Generates `src/oxlint/typegen.d.ts`: typed rule maps for oxlint config
- * items, keyed by canonical oxlint rule names.
+ * Generates `src/oxlint/typegen.d.ts` (typed rule maps for oxlint config
+ * items, keyed by canonical oxlint rule names) and
+ * `src/rules/oxlint-native-generated.ts` (the same native rule names as a
+ * runtime set).
  *
  * - Native (Rust) rules come from oxlint's `configuration_schema.json` (option
  *   types via the `DummyRuleMap` interface oxlint ships) and `oxlint --rules
@@ -312,6 +314,14 @@ export type OxlintRules = Record<string, DummyRule | undefined> & OxlintRuleOpti
 `;
 
 await fs.writeFile("src/oxlint/typegen.d.ts", dts);
+
+// The same key list as a runtime set: `translateRuleToOxlint` needs it to tell a
+// rule oxlint implements natively from one that has to go through a jsPlugin,
+// for names `oxlintRuleMapping` says nothing about.
+await fs.writeFile(
+	"src/rules/oxlint-native-generated.ts",
+	`export const oxlintNativeRuleNames: ReadonlySet<string> = new Set(${JSON.stringify(nativeKeys, null, 2)});\n`,
+);
 
 console.log(
 	`typegen-oxlint: ${nativeKeys.length} native rules, ${renamedEntries.length} renamed jsPlugin rules ` +

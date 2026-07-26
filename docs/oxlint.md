@@ -92,6 +92,25 @@ exported from `@isentinel/eslint-config/oxlint`):
 | `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin |
 | stays in ESLint | Not in the mapping; documented in `staysInEslint`           |
 
+A rule you name in `options.rules` is resolved against that table, then against
+oxlint's own rule list:
+
+1. **Mapped** — the target above decides the emitted name (`ts/no-shadow` →
+   `no-shadow`, `jest/valid-title` → `jest-js/valid-title`).
+2. **Unmapped, but oxlint has it natively** — the native rule wins
+   (`no-inner-declarations`, `complexity`, `jsx-a11y/alt-text`). This is what
+   makes a `categories` rule overridable: categories only ever enable native
+   rules, so an entry routed to a jsPlugin instead would configure a different
+   rule and leave the native one on its defaults.
+3. **Unmapped and not native** — the rule runs through its ESLint plugin as a
+   jsPlugin (`eslint-js`, `import-js`, ...).
+
+The native rule list is generated from oxlint's own schema
+(`src/rules/oxlint-native-generated.ts`, refreshed by `pnpm gen`). Fragments you
+pass as extra arguments are **not** translated — their rule names reach oxlint
+verbatim, which is the escape hatch when you want to name an oxlint rule
+directly.
+
 With `oxlint: true`, the ESLint factory drops every mapped rule; everything else
 keeps running in ESLint, notably:
 
@@ -270,7 +289,9 @@ export default isentinel({
   top of the curated set and report rules the preset deliberately leaves out.
   Values are merged over that default, so enabling one category leaves the rest
   off. Useful for previewing rules the preset does not enable yet, but expect
-  reports the preset has not vetted.
+  reports the preset has not vetted. A category rule is silenced or reconfigured
+  from `options.rules` under its oxlint name — see
+  [How rules are split](#how-rules-are-split) for how a name resolves.
 
   A category only reaches plugins registered at the top level: oxlint applies
   categories to the base plugin set, not to plugins an override adds. The preset

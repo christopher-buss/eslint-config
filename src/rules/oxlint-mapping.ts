@@ -8,6 +8,7 @@
  * Rules NOT listed here stay in ESLint. Notable families that intentionally
  * stay are documented in {@link staysInEslint}.
  */
+import { oxlintNativeRuleNames } from "./oxlint-native-generated.ts";
 
 /** Where a rule runs when linting with oxlint. */
 export type OxlintTarget =
@@ -1053,6 +1054,17 @@ export function isTsgolintRule(rule: string): boolean {
 }
 
 /**
+ * Whether oxlint implements the rule natively (in Rust) under the name
+ * {@link nativeOxlintName} gives it.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether a native oxlint rule of that name exists.
+ */
+export function hasNativeOxlintRule(rule: string): boolean {
+	return oxlintNativeRuleNames.has(nativeOxlintName(rule));
+}
+
+/**
  * Translate a canonical ESLint rule name into its oxlint configuration name.
  *
  * @param rule - The canonical ESLint rule name.
@@ -1068,23 +1080,20 @@ export function translateRuleToOxlint(rule: string): string {
 	const { name, prefix } = splitRuleName(rule);
 
 	if (target === "native") {
-		if (prefix === "") {
-			return name;
-		}
-
-		if (prefix === "ts") {
-			return TS_EXTENSION_TO_CORE.has(name) ? name : `typescript/${name}`;
-		}
-
-		if (prefix === "unicorn") {
-			return `unicorn/${UNICORN_NATIVE_RENAMES[name] ?? name}`;
-		}
-
-		return rule;
+		return nativeOxlintName(rule);
 	}
 
 	if (target === "tsgolint") {
 		return `typescript/${name}`;
+	}
+
+	// An unmapped rule oxlint implements in Rust has to resolve to that rule.
+	// `categories` only ever enables native rules, so routing it to a jsPlugin
+	// instead would leave the native one unreachable: the entry a consumer wrote
+	// configures a different rule, and the one the category turned on keeps its
+	// default options (#625).
+	if (target === undefined && hasNativeOxlintRule(rule)) {
+		return nativeOxlintName(rule);
 	}
 
 	// js-plugin (or unmapped rules used by the standalone factory, which keep
@@ -1125,4 +1134,29 @@ function splitRuleName(rule: string): { name: string; prefix: string } {
 	}
 
 	return { name: rule.slice(slashIndex + 1), prefix: rule.slice(0, slashIndex) };
+}
+
+/**
+ * The name a rule takes in an oxlint config when it runs natively, whether or
+ * not such a rule exists.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns The native oxlint rule name.
+ */
+function nativeOxlintName(rule: string): string {
+	const { name, prefix } = splitRuleName(rule);
+
+	if (prefix === "") {
+		return name;
+	}
+
+	if (prefix === "ts") {
+		return TS_EXTENSION_TO_CORE.has(name) ? name : `typescript/${name}`;
+	}
+
+	if (prefix === "unicorn") {
+		return `unicorn/${UNICORN_NATIVE_RENAMES[name] ?? name}`;
+	}
+
+	return rule;
 }
