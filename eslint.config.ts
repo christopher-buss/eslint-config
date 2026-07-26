@@ -5,7 +5,7 @@ import { isentinel } from "./src/index.ts";
 export default isentinel(
 	{
 		name: "project/options",
-		ignores: ["fixtures", "_fixtures", "**/constants-generated.ts"],
+		ignores: ["fixtures", "_fixtures", "**/*-generated.ts"],
 		namedConfigs: true,
 		oxlint: "native",
 		pnpm: true,

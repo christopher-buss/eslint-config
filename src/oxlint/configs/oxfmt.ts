@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
 import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { isRecord } from "../../guards.ts";
+import { stylisticRuleNames } from "../../rules/stylistic-generated.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
@@ -46,18 +47,16 @@ export function oxlintOxfmt(
 	// must survive: other configs (react, user overrides) enable unmapped
 	// `style/*` rules that ESLint's formatter-compat layer turns off, and this
 	// config runs last to mirror that (e.g. `style/jsx-newline`). Names are
-	// checked against the plugin so oxlint never sees an unknown rule.
-	const stylisticPlugin: unknown = require("@stylistic/eslint-plugin");
-	const stylisticRules =
-		isRecord(stylisticPlugin) && isRecord(stylisticPlugin["rules"])
-			? stylisticPlugin["rules"]
-			: {};
+	// checked against the plugin's rule list so oxlint never sees an unknown
+	// rule — from the build-time snapshot rather than a `require` of the
+	// plugin, which would load all 97 rule implementations (~78ms) to read
+	// nothing but their names.
 	for (const [rule, value] of Object.entries(canonicalDisables)) {
 		if (!rule.startsWith("style/") || jsPluginRules[rule] !== undefined) {
 			continue;
 		}
 
-		if (stylisticRules[rule.slice("style/".length)] !== undefined) {
+		if (stylisticRuleNames.has(rule.slice("style/".length))) {
 			jsPluginRules[rule] = value;
 		}
 	}

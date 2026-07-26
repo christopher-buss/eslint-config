@@ -58,7 +58,7 @@
 		"check:extensions": "node scripts/check-package-extensions.ts && node scripts/gen-package-extensions.ts --check",
 		"check:published": "node scripts/check-published-extensions.ts",
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
-		"gen": "node scripts/typegen.ts && node scripts/typegen-oxlint.ts && node scripts/typegen-defaults.ts && node scripts/typegen-defaults-oxlint.ts && node scripts/versiongen.ts && node scripts/gen-package-extensions.ts",
+		"gen": "node scripts/typegen.ts && node scripts/typegen-oxlint.ts && node scripts/typegen-defaults.ts && node scripts/typegen-defaults-oxlint.ts && node scripts/versiongen.ts && node scripts/stylisticgen.ts && node scripts/gen-package-extensions.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "isentinel-lint",
 		"oxlint": "oxlint",
