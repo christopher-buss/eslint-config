@@ -41,10 +41,8 @@ export function oxlintJavascript(
 			navigator: "readonly",
 			window: "readonly",
 		},
-		rules: {
-			...javascriptRules({ isInEditor, roblox, stylistic }),
-			...overrides,
-		},
+		overrides,
+		rules: javascriptRules({ isInEditor, roblox, stylistic }),
 	});
 }
 

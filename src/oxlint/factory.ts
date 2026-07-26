@@ -46,6 +46,7 @@ import { oxlintStylistic } from "./configs/stylistic.ts";
 import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
+import { takeOverrideDiagnostics, warnDroppedOverrides } from "./override-diagnostics.ts";
 import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type {
 	OxlintFactoryOptions,
@@ -141,6 +142,7 @@ export function isentinel(
 		rules = {},
 		spellCheck: enableSpellCheck,
 		test: enableTest = false,
+		warnDroppedOverrides: enableDroppedOverrideWarning = true,
 	} = options;
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
@@ -461,10 +463,19 @@ export function isentinel(
 	// registration, so the whole fragment goes — except its `settings`, which are
 	// engine-wide and stay in fragment order so the same writer wins as it would
 	// with the fragment kept.
+	// Rules native-only mode removed, whether with their fragment or one by one
+	// below. A user override among them is reported rather than dropped mutely.
+	const removedRules = new Set<string>();
+
 	for (const fragment of configs.flat()) {
 		if (nativeOnly && droppedByNativeOnly(fragment)) {
 			if (fragment.settings) {
 				Object.assign(mergedSettings, fragment.settings);
+			}
+
+			const fragmentRules = Object.keys(fragment.rules ?? {});
+			for (const rule of fragmentRules) {
+				removedRules.add(rule);
 			}
 
 			continue;
@@ -515,7 +526,13 @@ export function isentinel(
 	// (a `sonar/*` entry in the consumer's own config, say) would fail the
 	// build rather than sit inert. Drop those; the ESLint side runs them.
 	if (nativeOnly) {
-		stripUnregisteredPluginRules(overrides, new Set([...nativePlugins, ...jsPlugins.keys()]));
+		const stripped = stripUnregisteredPluginRules(
+			overrides,
+			new Set([...nativePlugins, ...jsPlugins.keys()]),
+		);
+		for (const rule of stripped) {
+			removedRules.add(rule);
+		}
 	}
 
 	scopeOverridePlugins(overrides, globalPlugins);
@@ -532,6 +549,17 @@ export function isentinel(
 				) as DummyRuleMap;
 			}
 		}
+	}
+
+	const { dropped, emitted } = takeOverrideDiagnostics();
+	for (const rule of removedRules) {
+		if (emitted.has(rule)) {
+			dropped.push({ reason: "native-only", rule });
+		}
+	}
+
+	if (enableDroppedOverrideWarning) {
+		warnDroppedOverrides(dropped);
 	}
 
 	return defineConfig({

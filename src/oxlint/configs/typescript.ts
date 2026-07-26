@@ -57,13 +57,13 @@ export function oxlintTypescript(
 		name: "isentinel/typescript",
 		...(excludeFiles ? { excludeFiles } : {}),
 		files,
+		overrides,
 		rules: {
 			...typescriptRecommendedOverrides(),
 			...typescriptStrictPresetRules(),
 			...typescriptRules({ stylistic }),
 			...gatedTypeAwareRules,
 			...(erasableOnly ? erasableSyntaxOnlyRules() : {}),
-			...overrides,
 		},
 	});
 }

@@ -758,6 +758,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"vitest/no-hooks": "native",
 	"vitest/no-identical-title": "native",
 	"vitest/no-import-node-test": "native",
+	"vitest/no-importing-vitest-globals": "native",
 	"vitest/no-interpolation-in-snapshots": "native",
 	"vitest/no-large-snapshots": "native",
 	"vitest/no-mocks-import": "native",
@@ -1028,6 +1029,19 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
  */
 export function isOxlintCovered(rule: string): boolean {
 	return rule in oxlintRuleMapping || rule in oxcCoveredRules;
+}
+
+/**
+ * Whether the rule's oxlint side is a differently-named native oxc rule, which
+ * {@link translateRuleToOxlint} resolves. Such rules are in
+ * {@link excludedFromOxlint} so the preset never emits both halves, but a user
+ * override naming one still has somewhere to go.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @returns Whether an oxc rule covers the rule under another name.
+ */
+export function isOxcCoveredRule(rule: string): boolean {
+	return rule in oxcCoveredRules;
 }
 
 /**

@@ -261,6 +261,41 @@ shareable config you compose in can trigger the warning too (its oxlint-owned
 entries are genuinely inert in hybrid mode). Suppress it with
 `oxlintWarnDeadRules: false` if you cannot edit that config.
 
+## Rule overrides
+
+The `overrides` on a config option applies at the scope that option already
+covers, and outranks the preset there — whether it enables or disables, and
+whether or not the preset ships the rule at all:
+
+```ts
+export default isentinel({
+	name: "project/options",
+	test: {
+		vitest: {
+			files: ["**/*.spec.ts"],
+			overrides: {
+				"vitest/no-importing-vitest-globals": "off",
+				// Not enabled by the preset; on for spec files only.
+				"vitest/require-hook": "error",
+			},
+		},
+	},
+	type: "package",
+});
+```
+
+Two things still bound what an override can do:
+
+- **Position.** An override sits where its config option sits in the pipeline,
+  so a later module that names the same rule wins. Disabling an `oxc/*` rule
+  from `typescript.overrides` is undone by the `oxc` module that follows it; use
+  the top-level `rules`, which merges after every preset module.
+- **Reachability.** A few rules cannot run in oxlint: those needing type
+  information no jsPlugin can supply, those whose plugin is not installed, and —
+  under `jsPlugins: false` — every jsPlugin rule. The factory warns and lists
+  them at config-build time rather than discarding them quietly; the ESLint side
+  still runs them. Suppress with `warnDroppedOverrides: false`.
+
 ## Standalone mode
 
 Use only oxlint (no ESLint) via the dedicated export:

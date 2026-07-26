@@ -22,9 +22,7 @@ export function oxlintRoblox(
 	return createOxlintConfigs({
 		name: "isentinel/roblox",
 		files,
-		rules: {
-			...robloxRules({ stylistic }),
-			...overrides,
-		},
+		overrides,
+		rules: robloxRules({ stylistic }),
 	});
 }

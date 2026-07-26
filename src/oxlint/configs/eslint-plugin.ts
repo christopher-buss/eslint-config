@@ -13,9 +13,7 @@ export function oxlintEslintPlugin(
 	return createOxlintConfigs({
 		name: "isentinel/eslint-plugin",
 		files,
-		rules: {
-			...eslintPluginRules(),
-			...overrides,
-		},
+		overrides,
+		rules: eslintPluginRules(),
 	});
 }

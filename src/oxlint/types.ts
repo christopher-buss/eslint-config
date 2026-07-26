@@ -137,6 +137,18 @@ export type OxlintFactoryOptions = {
 	 * see no effect from this option.
 	 */
 	oxc?: boolean;
+
+	/**
+	 * Warn about `overrides` entries oxlint cannot apply. Defaults to `true`.
+	 *
+	 * An override is authoritative: it applies at the scope its config option
+	 * covers whether or not the preset enables the rule. A few cannot be
+	 * honoured — a rule that needs type information oxlint has no jsPlugin
+	 * route for, a plugin that is not installed, or one dropped by
+	 * `jsPlugins: false` — and those are reported rather than discarded in
+	 * silence.
+	 */
+	warnDroppedOverrides?: boolean;
 } & Omit<TypedOxlintConfigItem, "files" | "jsPlugins"> &
 	OxlintOptionsConfig;
 

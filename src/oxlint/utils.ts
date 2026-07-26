@@ -5,6 +5,7 @@ import type { ExternalPluginEntry, OxlintOverride } from "oxlint";
 import {
 	collapsesToTsCoreRule,
 	excludedFromOxlint,
+	isOxcCoveredRule,
 	isOxlintCovered,
 	isTsCoreCounterpartRule,
 	oxlintJsPlugins,
@@ -13,6 +14,7 @@ import {
 } from "../rules/oxlint-mapping.ts";
 import { oxlintNativeRuleNames } from "../rules/oxlint-native-generated.ts";
 import type { Rules } from "../types.ts";
+import { recordDroppedOverride, recordOverrideRules } from "./override-diagnostics.ts";
 import type { OxlintPlugin, TypedOxlintConfigItem } from "./types.ts";
 
 /**
@@ -46,6 +48,32 @@ export interface SplitOxlintRules {
 	jsPlugins: Array<ExternalPluginEntry>;
 	nativePlugins: Array<OxlintPlugin>;
 	nativeRules: Rules;
+	/** The oxlint names of the rules that came from user overrides. */
+	overrideRules: Array<string>;
+}
+
+export interface SplitOxlintRulesOptions {
+	/**
+	 * Emit disabled unmapped rules instead of skipping them (without
+	 * registering a jsPlugin for them).
+	 */
+	keepUnmappedOff?: boolean;
+	/**
+	 * The rules a user supplied through an `overrides` option, by canonical
+	 * ESLint name. They are authoritative: an override says "apply this rule at
+	 * the scope this config option already covers", so it survives the filters
+	 * that thin out preset rules, and is reported rather than dropped in
+	 * silence when oxlint cannot run it at all.
+	 *
+	 * The filters cannot simply be lifted for everyone. The preset's own rule
+	 * maps are full of disables for rules oxlint never had (the prettier
+	 * disables in `oxfmt`, the `disables/*` configs), and emitting those would
+	 * load a jsPlugin for nothing but an "off" entry, or register a native
+	 * plugin on a scoped override — which hands that override's files every
+	 * category-enabled rule the plugin owns. Honouring what the user wrote
+	 * costs neither, because the user wrote a bounded set.
+	 */
+	overrides?: ReadonlySet<string>;
 }
 
 export interface OxlintConfigFragmentOptions {
@@ -54,9 +82,18 @@ export interface OxlintConfigFragmentOptions {
 	files: Array<string>;
 	globals?: NonNullable<TypedOxlintConfigItem["globals"]>;
 	keepUnmappedOff?: boolean;
+	/**
+	 * User-supplied rule overrides for this config module, merged over `rules`
+	 * and treated as authoritative (see {@link SplitOxlintRulesOptions}, which
+	 * explains why that treatment is theirs alone). Spreading them into `rules`
+	 * instead would leave the splitter unable to tell them apart.
+	 */
+	overrides?: Rules;
 	rules: Rules | undefined;
 	settings?: NonNullable<TypedOxlintConfigItem["settings"]>;
 }
+
+const NO_OVERRIDES: ReadonlySet<string> = new Set();
 
 /**
  * Resolve a jsPlugin specifier, throwing when the package is not installed.
@@ -192,11 +229,14 @@ export function scopeOverridePlugins(
  *
  * @param overrides - The merged overrides (mutated).
  * @param registeredPlugins - Every native plugin and jsPlugin name registered.
+ * @returns The oxlint names of the rules that were deleted.
  */
 export function stripUnregisteredPluginRules(
 	overrides: Array<OxlintOverride>,
 	registeredPlugins: ReadonlySet<string>,
-): void {
+): Set<string> {
+	const stripped = new Set<string>();
+
 	for (const override of overrides) {
 		const { rules } = override;
 		if (rules === undefined) {
@@ -207,9 +247,12 @@ export function stripUnregisteredPluginRules(
 			const slashIndex = rule.indexOf("/");
 			if (slashIndex !== -1 && !registeredPlugins.has(rule.slice(0, slashIndex))) {
 				delete rules[rule as keyof typeof rules];
+				stripped.add(rule);
 			}
 		}
 	}
+
+	return stripped;
 }
 
 /**
@@ -220,26 +263,40 @@ export function stripUnregisteredPluginRules(
  * rules, which only run in standalone mode) are treated as jsPlugin rules.
  * Disabled unmapped rules are skipped so that no jsPlugin is loaded solely for
  * an "off" entry, unless `keepUnmappedOff` is set (user options.rules must not
- * silently discard an explicit disable).
+ * silently discard an explicit disable) or the entry is a user override, which
+ * is authoritative.
  *
  * @param rules - The canonical rule map.
- * @param keepUnmappedOff - Emit disabled unmapped rules instead of skipping
- *   them (without registering a jsPlugin for them).
+ * @param options - Which entries survive the filters, and which came from the
+ *   user.
  * @returns The split rules with the plugins each side requires.
  */
 export function splitOxlintRules(
 	rules: Rules | undefined,
-	keepUnmappedOff = false,
+	{ keepUnmappedOff = false, overrides = NO_OVERRIDES }: SplitOxlintRulesOptions = {},
 ): SplitOxlintRules {
 	const nativeRules: Rules = {};
 	const jsPluginRules: Rules = {};
 	const nativePlugins = new Set<OxlintPlugin>();
 	const jsPluginPrefixes = new Set<string>();
 	const tsCollapsed = new Set<string>();
+	const overrideRules = new Set<string>();
 
 	const entries = Object.entries(rules ?? {});
 	for (const [rule, value] of entries) {
-		if (value === undefined || excludedFromOxlint.has(rule)) {
+		if (value === undefined) {
+			continue;
+		}
+
+		const isOverride = overrides.has(rule);
+
+		// An oxc-covered rule is excluded so the preset never emits both halves,
+		// but the oxc rule it resolves to is a real target for an override.
+		if (excludedFromOxlint.has(rule) && (!isOverride || !isOxcCoveredRule(rule))) {
+			if (isOverride) {
+				recordDroppedOverride({ reason: "eslint-only", rule });
+			}
+
 			continue;
 		}
 
@@ -256,7 +313,11 @@ export function splitOxlintRules(
 		// rules, which would throw on the missing specifier.
 		const nativePrefix = isNativePlugin(prefix) ? prefix : undefined;
 
-		if (!covered && isOff && keepUnmappedOff) {
+		if (isOverride) {
+			overrideRules.add(translated);
+		}
+
+		if (!covered && isOff && (keepUnmappedOff || isOverride)) {
 			// Preserve an explicit disable. A native-prefix disable is kept and
 			// registers its (always-available) native plugin, which lets a
 			// config disable an unmapped native-only rule such as oxc/* for
@@ -271,6 +332,8 @@ export function splitOxlintRules(
 				if (specifier !== undefined && canResolveJsPlugin(specifier)) {
 					jsPluginRules[translated] = value;
 					jsPluginPrefixes.add(prefix);
+				} else if (isOverride) {
+					recordDroppedOverride({ reason: "missing-plugin", rule });
 				}
 			}
 
@@ -290,10 +353,22 @@ export function splitOxlintRules(
 			continue;
 		}
 
+		// `ts/<x>` and the bare core `<x>` collapse onto one native entry, and
+		// the extension wins — unless the user wrote one of them in an override,
+		// which outranks whichever half the preset supplied.
+		const collapsedToOverride =
+			!isOverride &&
+			overrideRules.has(translated) &&
+			(collapsesToTsCoreRule(rule) || isTsCoreCounterpartRule(rule));
+
+		if (collapsedToOverride) {
+			continue;
+		}
+
 		if (collapsesToTsCoreRule(rule)) {
 			tsCollapsed.add(translated);
 			nativeRules[translated] = value;
-		} else if (!isTsCoreCounterpartRule(rule) || !tsCollapsed.has(translated)) {
+		} else if (isOverride || !isTsCoreCounterpartRule(rule) || !tsCollapsed.has(translated)) {
 			nativeRules[translated] = value;
 		}
 
@@ -317,6 +392,7 @@ export function splitOxlintRules(
 		jsPlugins,
 		nativePlugins: [...nativePlugins],
 		nativeRules,
+		overrideRules: [...overrideRules],
 	};
 }
 
@@ -333,13 +409,18 @@ export function createOxlintConfigs({
 	files,
 	globals,
 	keepUnmappedOff = false,
+	overrides,
 	rules,
 	settings,
 }: OxlintConfigFragmentOptions): Array<TypedOxlintConfigItem> {
-	const { jsPluginRules, jsPlugins, nativePlugins, nativeRules } = splitOxlintRules(
-		rules,
-		keepUnmappedOff,
-	);
+	const merged = overrides === undefined ? rules : { ...rules, ...overrides };
+	const { jsPluginRules, jsPlugins, nativePlugins, nativeRules, overrideRules } =
+		splitOxlintRules(merged, {
+			keepUnmappedOff,
+			overrides: new Set(Object.keys(overrides ?? {})),
+		});
+
+	recordOverrideRules(overrideRules);
 
 	const fragments: Array<TypedOxlintConfigItem> = [];
 

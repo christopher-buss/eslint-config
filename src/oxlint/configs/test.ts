@@ -59,6 +59,7 @@ export function oxlintTest({
 			...createOxlintConfigs({
 				name: "isentinel/test/jest",
 				files: jestOptions.files?.flat() ?? files.flat(),
+				overrides: { ...overrides, ...jestOptions.overrides },
 				rules: {
 					...jestRules({
 						extended: jestOptions.extended === true,
@@ -67,8 +68,6 @@ export function oxlintTest({
 						stylistic,
 					}),
 					...sonarjsTestRules({ jest: true, roblox: isRoblox }),
-					...overrides,
-					...jestOptions.overrides,
 				},
 				settings: {
 					jest: {
@@ -91,6 +90,7 @@ export function oxlintTest({
 			...createOxlintConfigs({
 				name: "isentinel/test/vitest",
 				files: vitestOptions.files?.flat() ?? files.flat(),
+				overrides: { ...overrides, ...vitestOptions.overrides },
 				rules: {
 					...vitestRules({
 						extended: vitestOptions.extended === true,
@@ -98,8 +98,6 @@ export function oxlintTest({
 						stylistic,
 					}),
 					...sonarjsTestRules({ roblox: isRoblox }),
-					...overrides,
-					...vitestOptions.overrides,
 				},
 				settings: {
 					vitest: {

@@ -30,10 +30,8 @@ export function oxlintE18e({
 			name: "isentinel/e18e",
 			...(excludeFiles ? { excludeFiles } : {}),
 			files: files.flat(),
-			rules: {
-				...e18eRules({ modernization, nodeMajor, performanceImprovements }),
-				...overrides,
-			},
+			overrides,
+			rules: e18eRules({ modernization, nodeMajor, performanceImprovements }),
 		}),
 		...createOxlintConfigs({
 			name: "isentinel/e18e/disables/test",

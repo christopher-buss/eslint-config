@@ -48,10 +48,8 @@ export function oxlintReact(
 		...createOxlintConfigs({
 			name: "isentinel/react",
 			files,
-			rules: {
-				...reactRules({ filenameCase, reactCompiler, stylistic }),
-				...overrides,
-			},
+			overrides,
+			rules: reactRules({ filenameCase, reactCompiler, stylistic }),
 			settings: {
 				"react-x": {
 					importSource: importSource ?? "@rbxts",
