@@ -188,4 +188,7 @@ export const GLOB_EXCLUDE = [
 	"**/components.d.ts",
 
 	"**/roblox.yml",
+
+	"**/.scratch/**",
+	"**/scratch/**",
 ];
