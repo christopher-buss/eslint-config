@@ -47,8 +47,8 @@ catalogs:
     parse-gitignore-ts: 1.0.0
     picomatch: 4.0.5
     pnpm-workspace-yaml: 1.7.0
-    publint: 0.3.21
-    tsdown: 0.22.12
+    publint: 0.3.22
+    tsdown: 0.22.13
     typescript: 6.0.3
     unplugin-unused: 0.5.7
     vitest: 4.1.10
