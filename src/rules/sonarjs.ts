@@ -23,7 +23,7 @@ export function sonarjsRules({
 		"sonar/no-all-duplicated-branches": "error",
 		"sonar/no-collapsible-if": "error",
 		"sonar/no-commented-code": "off",
-		"sonar/no-dead-store": "error",
+		"sonar/no-dead-store": "off",
 		"sonar/no-duplicate-string": [
 			"error",
 			{

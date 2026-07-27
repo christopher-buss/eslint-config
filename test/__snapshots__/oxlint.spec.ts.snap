@@ -1841,7 +1841,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "sonar/max-switch-cases": "error",
         "sonar/misplaced-loop-counter": "error",
         "sonar/no-collapsible-if": "error",
-        "sonar/no-dead-store": "error",
+        "sonar/no-dead-store": "off",
         "sonar/no-duplicate-string": [
           "error",
           {
@@ -4758,7 +4758,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "sonar/max-switch-cases": "error",
         "sonar/misplaced-loop-counter": "error",
         "sonar/no-collapsible-if": "error",
-        "sonar/no-dead-store": "error",
+        "sonar/no-dead-store": "off",
         "sonar/no-default-utility-imports": "error",
         "sonar/no-duplicate-string": [
           "error",
@@ -9046,7 +9046,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "sonar/max-switch-cases": "error",
         "sonar/misplaced-loop-counter": "error",
         "sonar/no-collapsible-if": "error",
-        "sonar/no-dead-store": "error",
+        "sonar/no-dead-store": "off",
         "sonar/no-duplicate-string": [
           "error",
           {
@@ -13111,7 +13111,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "sonar/max-switch-cases": "error",
         "sonar/misplaced-loop-counter": "error",
         "sonar/no-collapsible-if": "error",
-        "sonar/no-dead-store": "error",
+        "sonar/no-dead-store": "off",
         "sonar/no-duplicate-string": [
           "error",
           {
