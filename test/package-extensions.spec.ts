@@ -32,6 +32,18 @@ const providers = packageExtensions.flatMap((extension) => {
 	});
 });
 
+/** Each table entry with the declarations it repairs or accounts for. */
+const EXTENSION_INJECTIONS = packageExtensions.map((extension) => {
+	return {
+		name: extension.name,
+		injected: [
+			...Object.keys(extension.dependencies ?? {}),
+			...Object.keys(extension.peerDependencies ?? {}),
+			...(extension.ignore ?? []),
+		],
+	};
+});
+
 describe("packageExtensions", () => {
 	it("has one entry per package, sorted by name", () => {
 		expect.assertions(2);
@@ -43,14 +55,8 @@ describe("packageExtensions", () => {
 		expect(names).toStrictEqual(names.toSorted());
 	});
 
-	it.for(packageExtensions)("gives $name something to inject", (extension) => {
+	it.for(EXTENSION_INJECTIONS)("gives $name something to inject", ({ injected }) => {
 		expect.assertions(1);
-
-		const injected = [
-			...Object.keys(extension.dependencies ?? {}),
-			...Object.keys(extension.peerDependencies ?? {}),
-			...(extension.ignore ?? []),
-		];
 
 		expect(injected.length).toBeGreaterThan(0);
 	});
