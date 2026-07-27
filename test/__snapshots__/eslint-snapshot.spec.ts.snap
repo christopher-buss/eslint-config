@@ -1151,6 +1151,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
   {
     "files": [
       "**/scripts/**/*.{,c,m}[jt]s{,x}",
+      "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -1178,14 +1179,8 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "**/config/**/*.{,c,m}[jt]s{,x}",
       "**/*config.{,c,m}[jt]s{,x}",
       "**/*config.*.{,c,m}[jt]s{,x}",
-      "**/build/**/*.{,c,m}[jt]s{,x}",
-      "**/tools/**/*.{,c,m}[jt]s{,x}",
-      "**/setup/**/*.{,c,m}[jt]s{,x}",
-      "**/dev/**/*.{,c,m}[jt]s{,x}",
-      "**/tasks/**/*.{,c,m}[jt]s{,x}",
-      "**/.github/scripts/**/*",
     ],
-    "name": "isentinel/disables/build-tools",
+    "name": "isentinel/disables/build-configs",
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
@@ -2842,6 +2837,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
   {
     "files": [
       "**/scripts/**/*.{,c,m}[jt]s{,x}",
+      "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -2869,14 +2865,8 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "**/config/**/*.{,c,m}[jt]s{,x}",
       "**/*config.{,c,m}[jt]s{,x}",
       "**/*config.*.{,c,m}[jt]s{,x}",
-      "**/build/**/*.{,c,m}[jt]s{,x}",
-      "**/tools/**/*.{,c,m}[jt]s{,x}",
-      "**/setup/**/*.{,c,m}[jt]s{,x}",
-      "**/dev/**/*.{,c,m}[jt]s{,x}",
-      "**/tasks/**/*.{,c,m}[jt]s{,x}",
-      "**/.github/scripts/**/*",
     ],
-    "name": "isentinel/disables/build-tools",
+    "name": "isentinel/disables/build-configs",
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
@@ -5297,6 +5287,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
   {
     "files": [
       "**/scripts/**/*.{,c,m}[jt]s{,x}",
+      "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -5324,14 +5315,8 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "**/config/**/*.{,c,m}[jt]s{,x}",
       "**/*config.{,c,m}[jt]s{,x}",
       "**/*config.*.{,c,m}[jt]s{,x}",
-      "**/build/**/*.{,c,m}[jt]s{,x}",
-      "**/tools/**/*.{,c,m}[jt]s{,x}",
-      "**/setup/**/*.{,c,m}[jt]s{,x}",
-      "**/dev/**/*.{,c,m}[jt]s{,x}",
-      "**/tasks/**/*.{,c,m}[jt]s{,x}",
-      "**/.github/scripts/**/*",
     ],
-    "name": "isentinel/disables/build-tools",
+    "name": "isentinel/disables/build-configs",
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
@@ -8170,6 +8155,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
   {
     "files": [
       "**/scripts/**/*.{,c,m}[jt]s{,x}",
+      "**/.github/scripts/**/*",
     ],
     "name": "isentinel/disables/scripts",
     "rules": [
@@ -8197,14 +8183,8 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "**/config/**/*.{,c,m}[jt]s{,x}",
       "**/*config.{,c,m}[jt]s{,x}",
       "**/*config.*.{,c,m}[jt]s{,x}",
-      "**/build/**/*.{,c,m}[jt]s{,x}",
-      "**/tools/**/*.{,c,m}[jt]s{,x}",
-      "**/setup/**/*.{,c,m}[jt]s{,x}",
-      "**/dev/**/*.{,c,m}[jt]s{,x}",
-      "**/tasks/**/*.{,c,m}[jt]s{,x}",
-      "**/.github/scripts/**/*",
     ],
-    "name": "isentinel/disables/build-tools",
+    "name": "isentinel/disables/build-configs",
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",

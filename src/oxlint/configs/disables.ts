@@ -1,6 +1,6 @@
 import { rebaseAncestorAnchor, workspaceRelativeDirectory } from "../../anchors.ts";
 import {
-	GLOB_BUILD_TOOLS,
+	GLOB_BUILD_CONFIGS,
 	GLOB_DTS,
 	GLOB_JSX,
 	GLOB_SRC,
@@ -58,8 +58,8 @@ export function oxlintDisables({
 				},
 			}),
 			...createOxlintConfigs({
-				name: "isentinel/disables/build-tools",
-				files: GLOB_BUILD_TOOLS,
+				name: "isentinel/disables/build-configs",
+				files: GLOB_BUILD_CONFIGS,
 				rules: {
 					"antfu/no-top-level-await": "off",
 					"no-console": "off",

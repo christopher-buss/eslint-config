@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { hasAncestorDirectoryAnchor, rebaseAncestorAnchor } from "../src/anchors.ts";
 import { disables } from "../src/eslint/configs/disables.ts";
-import { GLOB_SRC } from "../src/globs.ts";
+import { GLOB_BUILD_CONFIGS, GLOB_SRC } from "../src/globs.ts";
 import { oxlintDisables } from "../src/oxlint/configs/disables.ts";
 
 const WORKSPACE_ROOT = path.join("D:", "workspace");
@@ -128,7 +128,7 @@ describe("anchored disables stay mitigated", () => {
 		expect(anchoredEslintBlocks().map((block) => block.name)).toStrictEqual([
 			"isentinel/disables/scripts",
 			"isentinel/disables/cli",
-			"isentinel/disables/build-tools",
+			"isentinel/disables/build-configs",
 			"isentinel/disables/bin",
 			"isentinel/disables/test",
 		]);
@@ -170,14 +170,14 @@ describe("oxlint anchor rebasing", () => {
 		expect(files).toContain(GLOB_SRC);
 	});
 
-	it("widens anchored globs from a nested project directory", () => {
+	it("does not widen unrelated directories", () => {
 		expect.assertions(1);
 
 		const files = oxlintBlocks(path.join(WORKSPACE_ROOT, "tools", "bundler")).get(
-			"isentinel/disables/build-tools",
+			"isentinel/disables/build-configs",
 		);
 
-		expect(files).toContain(GLOB_SRC);
+		expect(files).toStrictEqual(GLOB_BUILD_CONFIGS);
 	});
 
 	it("leaves globs untouched without a configDirectory", () => {

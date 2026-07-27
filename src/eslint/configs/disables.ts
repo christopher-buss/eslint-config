@@ -1,6 +1,6 @@
 import {
 	GLOB_BIN,
-	GLOB_BUILD_TOOLS,
+	GLOB_BUILD_CONFIGS,
 	GLOB_DTS,
 	GLOB_JSX,
 	GLOB_SRC,
@@ -43,7 +43,7 @@ export function disables({
 		{
 			name: "isentinel/disables/scripts",
 			basePath: workspaceRoot,
-			files: [`**/scripts/${GLOB_SRC}`],
+			files: [`**/scripts/${GLOB_SRC}`, "**/.github/scripts/**/*"],
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"max-lines": "off",
@@ -62,9 +62,9 @@ export function disables({
 			},
 		},
 		{
-			name: "isentinel/disables/build-tools",
+			name: "isentinel/disables/build-configs",
 			basePath: workspaceRoot,
-			files: GLOB_BUILD_TOOLS,
+			files: GLOB_BUILD_CONFIGS,
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",

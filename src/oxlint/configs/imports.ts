@@ -1,4 +1,4 @@
-import { GLOB_BIN, GLOB_BUILD_TOOLS, GLOB_DTS, GLOB_SRC } from "../../globs.ts";
+import { GLOB_BIN, GLOB_BUILD_CONFIGS, GLOB_DTS, GLOB_SRC } from "../../globs.ts";
 import { importsRules } from "../../rules/imports.ts";
 import type { OptionsHasRoblox, OptionsStylistic } from "../../types.ts";
 import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
@@ -66,7 +66,7 @@ export function oxlintImports({
 		},
 		{
 			name: "isentinel/imports/oxlint/default-export",
-			excludeFiles: [GLOB_DTS, ...GLOB_BUILD_TOOLS, ...exclude],
+			excludeFiles: [GLOB_DTS, ...GLOB_BUILD_CONFIGS, ...exclude],
 			files: [GLOB_SRC],
 			plugins: ["import"],
 			rules: {
