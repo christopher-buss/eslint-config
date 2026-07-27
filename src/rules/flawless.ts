@@ -61,6 +61,7 @@ export function flawlessRules({
 			{ max: 30, skipBlankLines: true, skipComments: true },
 		],
 		"flawless/no-export-default-arrow": "error",
+		"flawless/no-floating-point-equality": "error",
 		"flawless/prefer-parameter-destructuring": "warn",
 
 		...arrowStyleRules(arrowOptions),

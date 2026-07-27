@@ -612,6 +612,7 @@ export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = {
 	"flawless/max-lines-per-function": "js-plugin",
 	"flawless/no-conditional-in-test": "js-plugin",
 	"flawless/no-export-default-arrow": "js-plugin",
+	"flawless/no-floating-point-equality": "js-plugin",
 	"flawless/no-unnecessary-use-callback": "js-plugin",
 	"flawless/no-unnecessary-use-memo": "js-plugin",
 	"flawless/padding-after-expect-assertions": "js-plugin",
