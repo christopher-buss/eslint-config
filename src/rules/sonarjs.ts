@@ -44,7 +44,7 @@ export function sonarjsRules({
 		"sonar/no-nested-incdec": "error",
 		"sonar/no-nested-switch": "error",
 		"sonar/no-nested-template-literals": "error",
-		"sonar/no-parameter-reassignment": "error",
+		"sonar/no-parameter-reassignment": "off",
 		"sonar/no-redundant-boolean": "error",
 		"sonar/no-redundant-jump": "error",
 		"sonar/no-redundant-optional": "error",
