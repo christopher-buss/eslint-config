@@ -1865,7 +1865,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "sonar/no-redundant-jump": "error",
         "sonar/no-unthrown-error": "error",
         "sonar/no-unused-collection": "error",
-        "sonar/no-use-of-empty-return-value": "error",
         "sonar/no-useless-catch": "error",
         "sonar/no-useless-increment": "error",
         "sonar/non-existent-operator": "error",
@@ -2158,7 +2157,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "unicorn-js/consistent-destructuring": "error",
         "unicorn-js/consistent-json-file-read": "error",
         "unicorn-js/consistent-tuple-labels": "error",
-        "unicorn-js/isolated-functions": "error",
         "unicorn-js/name-replacements": [
           "error",
           {
@@ -2209,7 +2207,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "unicorn-js/no-incorrect-template-string-interpolation": "error",
         "unicorn-js/no-invalid-well-known-symbol-methods": "error",
         "unicorn-js/no-keyword-prefix": "error",
-        "unicorn-js/no-loop-iterable-mutation": "error",
         "unicorn-js/no-mismatched-map-key": "error",
         "unicorn-js/no-misrefactored-assignment": "error",
         "unicorn-js/no-negated-array-predicate": "error",
@@ -2474,8 +2471,11 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         },
       ],
       "rules": {
+        "small-rules/isolated-functions": "error",
         "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
+        "small-rules/no-loop-iterable-mutation": "error",
+        "small-rules/no-use-of-empty-return-value": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [
           "error",
@@ -2932,6 +2932,10 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "specifier": "<pkg>:eslint-plugin-jest",
     },
     {
+      "name": "small-rules",
+      "specifier": "<pkg>:@pobammer-ts/small-rules",
+    },
+    {
       "name": "perfectionist",
       "specifier": "<pkg>:eslint-plugin-perfectionist",
     },
@@ -2942,10 +2946,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
     {
       "name": "@cspell",
       "specifier": "<pkg>:@cspell/eslint-plugin",
-    },
-    {
-      "name": "small-rules",
-      "specifier": "<pkg>:@pobammer-ts/small-rules",
     },
     {
       "name": "oxlint-comments",
@@ -4783,7 +4783,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "sonar/no-redundant-jump": "error",
         "sonar/no-unthrown-error": "error",
         "sonar/no-unused-collection": "error",
-        "sonar/no-use-of-empty-return-value": "error",
         "sonar/no-useless-catch": "error",
         "sonar/no-useless-increment": "error",
         "sonar/non-existent-operator": "error",
@@ -5103,7 +5102,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         },
       ],
       "rules": {
-        "unicorn-js/consistent-compound-words": "error",
         "unicorn-js/consistent-conditional-object-spread": [
           "error",
           "ternary",
@@ -5111,7 +5109,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "unicorn-js/consistent-destructuring": "error",
         "unicorn-js/consistent-json-file-read": "error",
         "unicorn-js/consistent-tuple-labels": "error",
-        "unicorn-js/isolated-functions": "error",
         "unicorn-js/name-replacements": [
           "error",
           {
@@ -5168,7 +5165,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "unicorn-js/no-invalid-character-comparison": "error",
         "unicorn-js/no-invalid-well-known-symbol-methods": "error",
         "unicorn-js/no-keyword-prefix": "error",
-        "unicorn-js/no-loop-iterable-mutation": "error",
         "unicorn-js/no-mismatched-map-key": "error",
         "unicorn-js/no-misrefactored-assignment": "error",
         "unicorn-js/no-negated-array-predicate": "error",
@@ -5488,6 +5484,10 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
+        {
+          "name": "small-rules",
+          "specifier": "<pkg>:@pobammer-ts/small-rules",
+        },
       ],
       "rules": {
         "flawless/padding-after-expect-assertions": "warn",
@@ -5568,8 +5568,8 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
             },
           },
         ],
+        "small-rules/no-trivial-assertions": "error",
         "sonar/no-mixed-completion-style": "error",
-        "sonar/no-trivial-assertions": "error",
         "sonar/super-linear-regex": "off",
         "sonar/synchronous-suite-callback": "error",
       },
@@ -6339,8 +6339,12 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         },
       ],
       "rules": {
+        "small-rules/consistent-compound-words": "error",
+        "small-rules/isolated-functions": "error",
         "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
+        "small-rules/no-loop-iterable-mutation": "error",
+        "small-rules/no-use-of-empty-return-value": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [
           "error",
@@ -9070,7 +9074,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "sonar/no-redundant-jump": "error",
         "sonar/no-unthrown-error": "error",
         "sonar/no-unused-collection": "error",
-        "sonar/no-use-of-empty-return-value": "error",
         "sonar/no-useless-catch": "error",
         "sonar/no-useless-increment": "error",
         "sonar/non-existent-operator": "error",
@@ -9383,7 +9386,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         },
       ],
       "rules": {
-        "unicorn-js/consistent-compound-words": "error",
         "unicorn-js/consistent-conditional-object-spread": [
           "error",
           "ternary",
@@ -9391,7 +9393,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "unicorn-js/consistent-destructuring": "error",
         "unicorn-js/consistent-json-file-read": "error",
         "unicorn-js/consistent-tuple-labels": "error",
-        "unicorn-js/isolated-functions": "error",
         "unicorn-js/name-replacements": [
           "error",
           {
@@ -9442,7 +9443,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "unicorn-js/no-incorrect-template-string-interpolation": "error",
         "unicorn-js/no-invalid-well-known-symbol-methods": "error",
         "unicorn-js/no-keyword-prefix": "error",
-        "unicorn-js/no-loop-iterable-mutation": "error",
         "unicorn-js/no-mismatched-map-key": "error",
         "unicorn-js/no-misrefactored-assignment": "error",
         "unicorn-js/no-negated-array-predicate": "error",
@@ -10401,8 +10401,12 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         },
       ],
       "rules": {
+        "small-rules/consistent-compound-words": "error",
+        "small-rules/isolated-functions": "error",
         "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
+        "small-rules/no-loop-iterable-mutation": "error",
+        "small-rules/no-use-of-empty-return-value": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [
           "error",
@@ -13135,7 +13139,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "sonar/no-redundant-jump": "error",
         "sonar/no-unthrown-error": "error",
         "sonar/no-unused-collection": "error",
-        "sonar/no-use-of-empty-return-value": "error",
         "sonar/no-useless-catch": "error",
         "sonar/no-useless-increment": "error",
         "sonar/non-existent-operator": "error",
@@ -13448,7 +13451,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         },
       ],
       "rules": {
-        "unicorn-js/consistent-compound-words": "error",
         "unicorn-js/consistent-conditional-object-spread": [
           "error",
           "ternary",
@@ -13456,7 +13458,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/consistent-destructuring": "error",
         "unicorn-js/consistent-json-file-read": "error",
         "unicorn-js/consistent-tuple-labels": "error",
-        "unicorn-js/isolated-functions": "error",
         "unicorn-js/name-replacements": [
           "error",
           {
@@ -13507,7 +13508,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/no-incorrect-template-string-interpolation": "error",
         "unicorn-js/no-invalid-well-known-symbol-methods": "error",
         "unicorn-js/no-keyword-prefix": "error",
-        "unicorn-js/no-loop-iterable-mutation": "error",
         "unicorn-js/no-mismatched-map-key": "error",
         "unicorn-js/no-misrefactored-assignment": "error",
         "unicorn-js/no-negated-array-predicate": "error",
@@ -15691,7 +15691,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         },
       ],
       "rules": {
-        "unicorn-js/consistent-compound-words": "error",
         "unicorn-js/consistent-conditional-object-spread": [
           "error",
           "ternary",
@@ -15699,7 +15698,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/consistent-destructuring": "error",
         "unicorn-js/consistent-json-file-read": "error",
         "unicorn-js/consistent-tuple-labels": "error",
-        "unicorn-js/isolated-functions": "error",
         "unicorn-js/name-replacements": [
           "error",
           {
@@ -15756,7 +15754,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/no-invalid-character-comparison": "error",
         "unicorn-js/no-invalid-well-known-symbol-methods": "error",
         "unicorn-js/no-keyword-prefix": "error",
-        "unicorn-js/no-loop-iterable-mutation": "error",
         "unicorn-js/no-mismatched-map-key": "error",
         "unicorn-js/no-misrefactored-assignment": "error",
         "unicorn-js/no-negated-array-predicate": "error",
@@ -16851,8 +16848,12 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         },
       ],
       "rules": {
+        "small-rules/consistent-compound-words": "error",
+        "small-rules/isolated-functions": "error",
         "small-rules/no-async-constructor": "error",
         "small-rules/no-commented-code": "error",
+        "small-rules/no-loop-iterable-mutation": "error",
+        "small-rules/no-use-of-empty-return-value": "error",
         "small-rules/prefer-class-properties": "error",
         "small-rules/prefer-early-return": [
           "error",

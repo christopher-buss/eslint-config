@@ -15,18 +15,28 @@ export function smallRulesRules({
 	stylistic = true,
 }: OptionsIsInEditor & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"small-rules/isolated-functions": "error",
 		"small-rules/no-async-constructor": "error",
 		"small-rules/no-commented-code": isInEditor ? "off" : "error",
+		"small-rules/no-loop-iterable-mutation": "error",
+		"small-rules/no-use-of-empty-return-value": "error",
 		"small-rules/prefer-class-properties": "error",
 		"small-rules/prefer-early-return": ["error", { maximumStatements: 1 }],
 		"small-rules/strict-component-boundaries": "error",
 
 		...(stylistic !== false
 			? {
+					"small-rules/consistent-compound-words": "error",
 					"small-rules/prefer-module-scope-constants": "error",
 					"small-rules/prefer-singular-enums": "error",
 					"small-rules/require-async-suffix": "error",
 				}
 			: {}),
+	};
+}
+
+export function smallRulesTestRules(): TypedFlatConfigItem["rules"] {
+	return {
+		"small-rules/no-trivial-assertions": "error",
 	};
 }

@@ -51,7 +51,6 @@ export function sonarjsRules({
 		"sonar/no-try-promise": "error",
 		"sonar/no-unthrown-error": "error",
 		"sonar/no-unused-collection": "error",
-		"sonar/no-use-of-empty-return-value": "error",
 		"sonar/no-useless-catch": "error",
 		"sonar/no-useless-increment": "error",
 		"sonar/non-existent-operator": "error",
@@ -92,7 +91,6 @@ export function sonarjsTestRules({
 }: { jest?: boolean; roblox?: boolean } = {}): TypedFlatConfigItem["rules"] {
 	return {
 		"sonar/no-incompatible-assertion-types": "error",
-		"sonar/no-trivial-assertions": "error",
 		...(jest
 			? {
 					"sonar/no-mixed-completion-style": "error",

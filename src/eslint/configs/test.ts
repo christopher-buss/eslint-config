@@ -3,6 +3,7 @@ import type PluginVitest from "@vitest/eslint-plugin";
 import type PluginJest from "eslint-plugin-jest";
 
 import { GLOB_TESTS, GLOB_TYPE_TESTS } from "../../globs.ts";
+import { smallRulesTestRules } from "../../rules/small-rules.ts";
 import { sonarjsTestRules } from "../../rules/sonarjs.ts";
 import { jestRules, typeTestRules, vitestRules } from "../../rules/test.ts";
 import { ensurePackages, interopDefault } from "../../utils.ts";
@@ -94,6 +95,7 @@ export async function test({
 						stylistic,
 					}),
 					...sonarjsTestRules({ jest: true, roblox: isRoblox }),
+					...smallRulesTestRules(),
 
 					...overrides,
 					...jestOptions.overrides,

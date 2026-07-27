@@ -88,7 +88,6 @@ export function unicornRules(
 				multipleFileExtensions: true,
 			},
 		],
-		"unicorn/isolated-functions": "error",
 		"unicorn/name-replacements": [
 			"error",
 			{
@@ -114,7 +113,6 @@ export function unicornRules(
 		"unicorn/no-invalid-well-known-symbol-methods": "error",
 		"unicorn/no-keyword-prefix": "error",
 		"unicorn/no-lonely-if": "error",
-		"unicorn/no-loop-iterable-mutation": "error",
 		"unicorn/no-mismatched-map-key": "error",
 		"unicorn/no-misrefactored-assignment": "error",
 		"unicorn/no-negated-array-predicate": "error",
@@ -168,7 +166,6 @@ export function unicornRules(
 
 		...(stylistic !== false
 			? {
-					"unicorn/consistent-compound-words": "error",
 					"unicorn/prefer-block-statement-over-iife": "error",
 					"unicorn/switch-case-braces": "error",
 				}

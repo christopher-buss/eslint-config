@@ -1,4 +1,5 @@
 import { GLOB_TESTS, GLOB_TYPE_TESTS } from "../../globs.ts";
+import { smallRulesTestRules } from "../../rules/small-rules.ts";
 import { sonarjsTestRules } from "../../rules/sonarjs.ts";
 import { jestRules, typeTestRules, vitestRules } from "../../rules/test.ts";
 import type {
@@ -68,6 +69,7 @@ export function oxlintTest({
 						stylistic,
 					}),
 					...sonarjsTestRules({ jest: true, roblox: isRoblox }),
+					...smallRulesTestRules(),
 				},
 				settings: {
 					jest: {
