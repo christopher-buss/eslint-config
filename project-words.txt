@@ -46,12 +46,14 @@ rojo
 setstate
 slsa
 sonarjs
+stylisticgen
 stylua
 sxzz
 textnodes
 thenables
 tsdoc
 tsgolint
+typeawaregen
 typecheck
 unjs
 unthrown

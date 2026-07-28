@@ -91,16 +91,27 @@ Each file exports a function returning `TypedFlatConfigItem[]`. Key configs:
 
 ### Type Generation
 
+Everything a generator writes lives in `src/generated/` (plus the two `.d.ts`
+files that have to sit next to the code they augment, and
+`src/cli/constants-generated.ts`). Nothing in `src/generated/` is hand-edited,
+and both root lint configs ignore it.
+
 `pnpm gen` runs eight generators in `scripts/`: `typegen.ts`
 (`src/typegen.d.ts` - ESLint rule types and config names), `typegen-oxlint.ts`
-(`src/oxlint/` equivalents), the two `typegen-defaults*.ts` (default rule
+(`src/oxlint/typegen.d.ts`, plus `src/generated/oxlint-native.ts` and
+`src/generated/oxlint-capabilities.ts` - the native and jsPlugin capability sets
+the oxlint resolver reads), the two `typegen-defaults*.ts` (default rule
 severities, used by the redundancy check), `versiongen.ts`
 (`src/cli/constants-generated.ts`), `stylisticgen.ts`
-(`src/rules/stylistic-generated.ts` - `@stylistic` rule names),
-`typeawaregen.ts` (`src/rules/type-aware-generated.ts` - the
-`requiresTypeChecking` snapshot the type-aware split reads) and
-`gen-package-extensions.ts` (the `packageExtensions` block of
-`pnpm-workspace.yaml`). Run it after modifying configs.
+(`src/generated/stylistic.ts` - `@stylistic` rule names), `typeawaregen.ts`
+(`src/generated/type-aware.ts` - the `requiresTypeChecking` snapshot the
+type-aware split reads) and `gen-package-extensions.ts` (the `packageExtensions`
+block of `pnpm-workspace.yaml`). Run it after modifying configs.
+
+`typegen-oxlint.ts` boots the real ESLint factory to learn which rules the
+preset actually enables, so it must stay deterministic: pass explicit values for
+anything the factory would otherwise sniff from the host (see `nodeMajor`), or
+the committed output changes depending on who ran it.
 
 `typegen.ts` and `typeawaregen.ts` share one list of config modules
 (`scripts/config-factories.ts`); add new modules there or they escape both

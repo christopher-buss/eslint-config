@@ -1,8 +1,8 @@
 /**
  * Why a user-supplied `overrides` entry could not be delivered to oxlint.
  *
- * - `eslint-only`: the rule cannot run in oxlint at all (see
- *   `excludedFromOxlint`), so the ESLint side keeps it.
+ * - `eslint-only`: the rule cannot run in oxlint at all (the resolver returns
+ *   an `eslint-only` route for it), so the ESLint side keeps it.
  * - `missing-plugin`: the rule needs a jsPlugin the consumer has not installed.
  * - `native-only`: `jsPlugins: false` dropped the plugin that owns the rule.
  */

@@ -23,6 +23,16 @@ interface OxlintDiagnostic {
 }
 
 /**
+ * The oxlint binary in this repo's `node_modules`. Exported so specs that
+ * spawn oxlint directly do not each re-derive the Windows `.CMD` suffix.
+ *
+ * @returns The absolute path to the binary.
+ */
+export function oxlintBinary(): string {
+	return path.join(PROJECT_ROOT, "node_modules", ".bin", isWindows ? "oxlint.CMD" : "oxlint");
+}
+
+/**
  * Run the oxlint binary and return the normalized, sorted diagnostics.
  *
  * Oxlint exits 1 when diagnostics are found; anything else (spawn error,
@@ -56,6 +66,34 @@ export function runOxlint(workingDirectory: string, allowEmpty = false): Array<s
 }
 
 /**
+ * Run oxlint with `--fix` over one file, for assertions about which
+ * implementation of a rule produced the fix.
+ *
+ * @param workingDirectory - The directory holding the config and the file.
+ * @param file - The file to fix, relative to that directory.
+ * @throws {Error} When oxlint cannot run. Exit code 1 is a normal "found
+ *   diagnostics" result and is not an error.
+ */
+export function runOxlintFix(workingDirectory: string, file: string): void {
+	const result = spawnSync(
+		oxlintBinary(),
+		["-c", ".oxlintrc.json", "--disable-nested-config", "--fix", file],
+		{
+			cwd: workingDirectory,
+			encoding: "utf8",
+			shell: isWindows,
+		},
+	);
+
+	if (result.error !== undefined || result.status === null || result.status > 1) {
+		throw new Error(
+			`oxlint --fix failed to run: status=${result.status}, ` +
+				`error=${result.error?.message}, stderr=${result.stderr}`,
+		);
+	}
+}
+
+/**
  * Spawn oxlint and parse its JSON report.
  *
  * @param workingDirectory - The directory to lint.
@@ -67,11 +105,8 @@ function spawnOxlint(workingDirectory: string): {
 	runContext: string;
 	stdout: string;
 } {
-	const binaryName = isWindows ? "oxlint.CMD" : "oxlint";
-	const binary = path.join(PROJECT_ROOT, "node_modules", ".bin", binaryName);
-
 	const result: SpawnSyncReturns<string> = spawnSync(
-		binary,
+		oxlintBinary(),
 		["-c", ".oxlintrc.json", "--disable-nested-config", "-f", "json", "."],
 		{
 			cwd: workingDirectory,

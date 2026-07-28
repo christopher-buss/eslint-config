@@ -24,7 +24,6 @@ export async function e18e({
 	OptionsIsInEditor &
 	OptionsProjectType & {
 		ignores?: Array<string>;
-		nodeMajor?: number;
 	} = {}): Promise<Array<TypedFlatConfigItem>> {
 	const [jsoncEslintParser, pluginE18e] = await Promise.all([
 		interopDefault(import("jsonc-eslint-parser")),

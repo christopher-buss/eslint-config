@@ -4,7 +4,7 @@ import { describe, it } from "vitest";
 
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import { FIXTURES_TEMP } from "./helpers.ts";
-import { runOxlint, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
+import { runOxlint, runOxlintFix, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const FIXTURES_INPUT = path.resolve(PROJECT_ROOT, "fixtures", "input");
@@ -68,6 +68,60 @@ describe("oxlint standalone fixtures", () => {
 			expect(diagnostics.some((diagnostic) => diagnostic.includes("spellchecker"))).toBe(
 				true,
 			);
+		},
+		timeout,
+	);
+
+	it(
+		"should fix unicorn/no-lonely-if through the JS implementation only",
+		async ({ expect }) => {
+			expect.assertions(3);
+
+			const temporaryDirectory = path.resolve(FIXTURES_TEMP, "oxlint-unicorn-lonely-if");
+			await fs.mkdir(temporaryDirectory, { recursive: true });
+			const inputPath = path.join(temporaryDirectory, "input.ts");
+			await fs.writeFile(
+				inputPath,
+				[
+					"declare const foo: boolean;",
+					"declare const bar: boolean;",
+					"declare function work(): void;",
+					"if (foo) {",
+					"\tif (bar) {",
+					"\t\twork();",
+					"\t}",
+					"}",
+					"",
+				].join("\n"),
+			);
+
+			const config = oxlintIsentinel({
+				name: "test/oxlint-unicorn-lonely-if",
+				formatters: false,
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				rules: { "no-lonely-if": "off" },
+				spellCheck: false,
+			});
+			await fs.writeFile(
+				path.join(temporaryDirectory, ".oxlintrc.json"),
+				JSON.stringify(config, undefined, "\t"),
+			);
+
+			const before = runOxlint(temporaryDirectory).filter((diagnostic) => {
+				return diagnostic.includes("no-lonely-if");
+			});
+
+			expect(before).toHaveLength(1);
+			expect(before[0]).toContain("unicorn-js(no-lonely-if)");
+
+			runOxlintFix(temporaryDirectory, "input.ts");
+
+			const fixedInput = await fs.readFile(inputPath, "utf8");
+			await fs.rm(temporaryDirectory, { force: true, recursive: true });
+
+			expect(fixedInput).toContain("if (foo && bar)");
 		},
 		timeout,
 	);

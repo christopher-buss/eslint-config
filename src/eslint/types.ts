@@ -269,6 +269,15 @@ export interface OptionsE18e extends OptionsOverrides {
 	 */
 	moduleReplacements?: boolean;
 	/**
+	 * The Node major version to target when deciding which rules the runtime
+	 * supports. Defaults to the running Node version, which makes the resulting
+	 * config host-dependent; pass an explicit value where that matters, such as
+	 * from a code generator whose output is committed.
+	 *
+	 * @default the running Node major version
+	 */
+	nodeMajor?: number;
+	/**
 	 * Include performance improvements rules.
 	 *
 	 * @see https://github.com/e18e/eslint-plugin#performance-improvements

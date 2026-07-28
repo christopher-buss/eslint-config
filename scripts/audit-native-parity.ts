@@ -8,13 +8,14 @@ import { fileURLToPath } from "node:url";
 
 import { isentinel as eslintIsentinel } from "../src/eslint/index.ts";
 import type { OptionsConfig } from "../src/eslint/types.ts";
+import { effectivePresetRuleNames } from "../src/generated/oxlint-capabilities.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import {
 	isTsCoreCounterpartRule,
-	oxlintRuleMapping,
+	resolveOxlintRule,
 	translateRuleToOxlint,
-} from "../src/rules/oxlint-mapping.ts";
+} from "../src/oxlint/routing.ts";
 
 /**
  * Factory options for the ESLint side; `ignores` is dropped to fit the factory
@@ -45,8 +46,8 @@ function isOxlintDiagnostic(value: unknown): value is OxlintDiagnostic {
 }
 
 // Empirically diff oxlint's native (Rust) rule implementations against the real
-// ESLint plugin rule they replace in hybrid mode, for every rule mapped
-// "native" in src/rules/oxlint-mapping.ts. Runs the full oxlint factory config
+// ESLint plugin rule they replace in hybrid mode, for every effective preset
+// rule the resolver owns natively. Runs the full oxlint factory config
 // and the full ESLint factory config (type-aware parsing disabled, since native
 // rules never need type information) over a corpus, then compares per-rule
 // (file, line) hit sets. Identical hits are native-parity safe; divergent hits
@@ -125,9 +126,11 @@ function normalizeOxlintCode(code: string): string {
  * @returns The sorted native rule names.
  */
 function nativeRules(): Array<string> {
-	return Object.entries(oxlintRuleMapping)
-		.filter(([rule, target]) => target === "native" && !isTsCoreCounterpartRule(rule))
-		.map(([rule]) => rule)
+	return [...effectivePresetRuleNames]
+		.filter((rule) => {
+			const route = resolveOxlintRule(rule);
+			return route.kind === "native" && !route.typeAware && !isTsCoreCounterpartRule(rule);
+		})
 		.sort();
 }
 
@@ -166,7 +169,13 @@ function runOxlint(
 	options: Parameters<typeof oxlintIsentinel>[0],
 	targets: Array<string>,
 ): Map<string, Array<Hit>> {
+	// The scratch directory holds no tsconfig, so a type-aware run would fail
+	// in tsgolint before producing a single diagnostic. The audit only covers
+	// rules that need no type information (see `nativeRules`), so turning it
+	// off costs no coverage — it mirrors the `typeAware: false` the ESLint side
+	// already uses.
 	const config = oxlintIsentinel(options);
+	config.options = { ...config.options, typeAware: false };
 	fs.writeFileSync(path.join(scratch, ".oxlintrc.json"), JSON.stringify(config, undefined, "\t"));
 
 	const result = spawnSync(

@@ -677,9 +677,10 @@ export async function isentinel(
 			warnMissingTsgolint();
 		}
 
-		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
-		// drop them from the ESLint configs. Type-aware rules are kept in
-		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
+		// Hybrid mode: Oxlint owns every rule in the generated compatibility
+		// view, so drop them from the ESLint configs. Type-aware rules are kept
+		// in ESLint when oxlint-tsgolint is absent so they do not vanish
+		// entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
 				warnDeadMappedRules(resolved, oxlintMode);

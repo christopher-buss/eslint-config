@@ -45,9 +45,20 @@ import type { Awaitable, TypedFlatConfigItem } from "../src/types.ts";
  * Composed at module scope, not behind thunks: each generator consumes it once,
  * immediately, and a thunk per entry buys nothing.
  */
+/**
+ * Node major version every generator targets.
+ *
+ * `nodeMajor` otherwise defaults to the running Node version, which would make
+ * committed generated output depend on who ran `pnpm gen`. The ceiling keeps
+ * every version-gated rule in view, the safe direction for a list of rules the
+ * preset can name. Any generator that boots the factory must pass this, or its
+ * output will disagree with the configs below.
+ */
+export const GENERATOR_NODE_MAJOR = Number.MAX_SAFE_INTEGER;
+
 export const PRESET_CONFIGS: Array<Awaitable<Array<TypedFlatConfigItem>>> = [
 	comments(),
-	e18e(),
+	e18e({ nodeMajor: GENERATOR_NODE_MAJOR }),
 	eslintPlugin(),
 	flawless(),
 	gitignore(),
@@ -70,7 +81,7 @@ export const PRESET_CONFIGS: Array<Awaitable<Array<TypedFlatConfigItem>>> = [
 	sonarjs({ isInEditor: false }),
 	spelling(),
 	stylistic(),
-	test({ jest: true, vitest: true }),
+	test({ jest: { extended: true }, vitest: true }),
 	toml(),
 	typescript({ erasableOnly: true }),
 	unicorn(),

@@ -57,6 +57,52 @@ export function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<str
 }
 
 /**
+ * Apply a rule map onto an effective-severity map (later entries win).
+ *
+ * @param rules - The rule map to apply.
+ * @param effective - The effective severity map (mutated).
+ */
+export function applyRules(
+	rules: Record<string, unknown> | undefined,
+	effective: Map<string, Severity>,
+): void {
+	const entries = Object.entries(rules ?? {});
+	for (const [rule, value] of entries) {
+		if (value === undefined) {
+			continue;
+		}
+
+		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
+		effective.set(rule, severity === "off" || severity === 0 ? "off" : "enabled");
+	}
+}
+
+/**
+ * Rules the formatter-compatibility layer switches off.
+ *
+ * These are enabled by a rule module and then unconditionally disabled by
+ * `isentinel/oxfmt/*`, so they never run in either engine no matter what hybrid
+ * mode does with them. `scripts/typegen-oxlint.ts` skips the same configs when
+ * it collects raw rule states, for the same reason.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The rule names the formatter layer disables.
+ */
+export function formatterDisabledRules(configs: Array<TypedFlatConfigItem>): Set<string> {
+	const effective = new Map<string, Severity>();
+
+	for (const config of configs) {
+		if (config.name?.startsWith("isentinel/oxfmt/") === true) {
+			applyRules(config.rules, effective);
+		}
+	}
+
+	return new Set(
+		[...effective].flatMap(([rule, severity]) => (severity === "off" ? [rule] : [])),
+	);
+}
+
+/**
  * Collect all enabled rule names from an oxlint config.
  *
  * @param config - The generated oxlint config.
@@ -105,27 +151,6 @@ export function registeredNativePlugins(config: OxlintConfig): Set<string> {
  */
 export function matchesPattern(filePath: string, pattern: string): boolean {
 	return picomatch.isMatch(filePath, pattern, MATCH_OPTIONS);
-}
-
-/**
- * Apply a rule map onto an effective-severity map (later entries win).
- *
- * @param rules - The rule map to apply.
- * @param effective - The effective severity map (mutated).
- */
-export function applyRules(
-	rules: Record<string, unknown> | undefined,
-	effective: Map<string, Severity>,
-): void {
-	const entries = Object.entries(rules ?? {});
-	for (const [rule, value] of entries) {
-		if (value === undefined) {
-			continue;
-		}
-
-		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
-		effective.set(rule, severity === "off" || severity === 0 ? "off" : "enabled");
-	}
 }
 
 /**

@@ -1,7 +1,7 @@
+import { typeAwarePrefixes, typeAwareRuleIds } from "../generated/type-aware.ts";
 import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../rules/oxlint-mapping.ts";
-import { typeAwarePrefixes, typeAwareRuleIds } from "../rules/type-aware-generated.ts";
+import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../oxlint/routing.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 /**
@@ -190,13 +190,13 @@ function collectPluginRules(config: TypedFlatConfigItem, registry: Set<string>):
  * Collect the type-aware rule ids of the registered plugins, keyed by the
  * (renamed) `prefix/name` rule id.
  *
- * The preset's own plugins answer from `type-aware-generated.ts`, a build-time
- * snapshot of their `meta.docs.requiresTypeChecking` flags. Reading the flag
- * off the live objects would mean touching `plugin.rules` for every registered
- * plugin, which loads every preset plugin implementation on any run that sets
- * `typeAware` — the plugins are registered lazily precisely to avoid that. A
- * prefix the snapshot covers is therefore never scanned, even when none of its
- * rules are type-aware.
+ * The preset's own plugins answer from `src/generated/type-aware.ts`, a
+ * build-time snapshot of their `meta.docs.requiresTypeChecking` flags. Reading
+ * the flag off the live objects would mean touching `plugin.rules` for every
+ * registered plugin, which loads every preset plugin implementation on any run
+ * that sets `typeAware` — the plugins are registered lazily precisely to avoid
+ * that. A prefix the snapshot covers is therefore never scanned, even when
+ * none of its rules are type-aware.
  *
  * The scan survives for prefixes outside the snapshot: those are plugins the
  * consumer registered in their own config, so they are already loaded and

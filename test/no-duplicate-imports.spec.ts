@@ -6,8 +6,8 @@ import path from "node:path";
 import { describe, it, onTestFinished } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
+import { oxlintBinary } from "./oxlint-run.ts";
 
-const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const isWindows = os.platform() === "win32";
 
 const RULE = "no-duplicate-imports";
@@ -29,10 +29,8 @@ const MODULE_FIXTURE =
  * @returns The flagged fixture file names.
  */
 function runOxlint(directory: string): Array<string> {
-	const binaryName = isWindows ? "oxlint.CMD" : "oxlint";
-	const binary = path.join(PROJECT_ROOT, "node_modules", ".bin", binaryName);
 	const result = spawnSync(
-		binary,
+		oxlintBinary(),
 		["-c", ".oxlintrc.json", "--disable-nested-config", "-f", "json", "split.ts", "dup.ts"],
 		{ cwd: directory, encoding: "utf8", shell: isWindows },
 	);

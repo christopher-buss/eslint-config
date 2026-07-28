@@ -1,5 +1,4 @@
 import { GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { isTsgolintRule } from "../../rules/oxlint-mapping.ts";
 import {
 	erasableSyntaxOnlyRules,
 	typescriptRecommendedOverrides,
@@ -16,6 +15,7 @@ import type {
 	OptionsTypeScriptErasableOnly,
 	Rules,
 } from "../../types.ts";
+import { isTsgolintRule } from "../routing.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 

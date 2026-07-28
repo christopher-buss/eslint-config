@@ -9,7 +9,7 @@ import type {
  * Core JavaScript rules shared between the ESLint and oxlint factories.
  *
  * Rule names use the canonical (renamed) ESLint prefixes. The oxlint factory
- * translates names via the oxlint rule mapping.
+ * translates names through the generated Oxlint resolver.
  *
  * @param options - Shared rule options.
  * @returns The rule map.
