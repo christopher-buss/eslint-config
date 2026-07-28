@@ -501,7 +501,7 @@ function runBuilder({
 		emitDeclarationOnly: true,
 		incremental: true,
 		noEmit: false,
-		tsBuildInfoFile: buildInfoPath,
+		tsBuildInfoFile: toPosix(buildInfoPath),
 	};
 
 	const gateValue = buildGateValue(resolutionGate, options);

@@ -399,8 +399,8 @@ describe("buildinfo fast path", () => {
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder on a truncated buildinfo", () => {
-		expect.assertions(3);
+	it("agrees with the builder on a corrupt buildinfo", () => {
+		expect.assertions(4);
 
 		// Corrupt to a fixed unparseable prefix rather than by slicing the real
 		// file: how far into a buildinfo a byte offset lands depends on the path
@@ -425,14 +425,14 @@ describe("buildinfo fast path", () => {
 		// wrong reason.
 		expect(corrupted).toBe(2);
 
-		// The fast path declines and hands over to the builder, whose own
-		// `readBuilderProgram` then throws on the same file — so the run degrades
-		// to a skipped pass. That is pre-existing behaviour, reproduced here only
-		// to pin that the fast path neither hides it nor adds a throw of its own.
-		// The gate-mtime observable says nothing about a run that aborted before
-		// reaching the write, so this scenario asserts only the answers.
+		// The fast path declines, and the builder recovers: `getBuildInfo` reads
+		// an unparseable file as "no prior state" by design, so the run rebuilds
+		// and reports every file rather than degrading to a skipped pass. Pinned
+		// because a skipped pass silently disables type-aware invalidation, and
+		// nothing downstream would notice.
 		expect(fast).toStrictEqual(builder);
-		expect(fast.skipped).toBe(true);
+		expect(fast.skipped).toBe(false);
+		expect(fast.affected).toStrictEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
 	});
 
 	it("agrees with the builder after a TypeScript version bump", () => {
