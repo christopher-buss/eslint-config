@@ -3,7 +3,7 @@ import { isentinel } from "./src/oxlint/index.ts";
 export default isentinel(
 	{
 		name: "project/options",
-		ignores: ["fixtures", "_fixtures", "**/*-generated.ts"],
+		ignores: ["fixtures", "_fixtures", "src/generated", "**/*-generated.ts"],
 		// Experiment: oxlint runs its native rules only; everything a jsPlugin
 		// would run stays in ESLint (`oxlint: "native"` there).
 		jsPlugins: false,

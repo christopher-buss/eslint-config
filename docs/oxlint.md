@@ -82,8 +82,10 @@ Then run both linters:
 
 ### How rules are split
 
-The split is driven by an explicit per-rule mapping (`oxlintRuleMapping`,
-exported from `@isentinel/eslint-config/oxlint`):
+The split is driven by one internal resolver backed by generated native and
+jsPlugin capability metadata. `oxlintRuleMapping`, exported from
+`@isentinel/eslint-config/oxlint`, remains as a generated compatibility and
+audit view:
 
 | Target          | Meaning                                                     |
 | --------------- | ----------------------------------------------------------- |
@@ -92,26 +94,47 @@ exported from `@isentinel/eslint-config/oxlint`):
 | `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin |
 | stays in ESLint | Not in the mapping; documented in `staysInEslint`           |
 
-A rule you name in `options.rules` is resolved against that table, then against
-oxlint's own rule list:
+A rule you name in `options.rules` is resolved in this order: an alternate
+native equivalent, an explicit ESLint-only exception, an implementation
+preference, a generated native capability, then a safe generated jsPlugin
+capability. Unknown custom rules retain the standalone fallback behavior.
+Examples include `ts/no-shadow` → `no-shadow`, `jest/valid-title` →
+`jest-js/valid-title`, and unmapped native rules such as `no-inner-declarations`
+staying native. Preferring the native rule wherever one exists is what keeps a
+`categories` entry overridable: categories only ever enable native rules, so an
+entry routed to a jsPlugin instead would configure a different rule and leave
+the native one on its defaults.
 
-1. **Mapped** — the target above decides the emitted name (`ts/no-shadow` →
-   `no-shadow`, `jest/valid-title` → `jest-js/valid-title`).
-2. **Unmapped, but oxlint has it natively** — the native rule wins
-   (`no-inner-declarations`, `complexity`, `jsx-a11y/alt-text`). This is what
-   makes a `categories` rule overridable: categories only ever enable native
-   rules, so an entry routed to a jsPlugin instead would configure a different
-   rule and leave the native one on its defaults.
-3. **Unmapped and not native** — the rule runs through its ESLint plugin as a
-   jsPlugin (`eslint-js`, `import-js`, ...).
+Jest and React prefer their jsPlugins; Vitest and Unicorn prefer native
+implementations. `id-length`, `no-loop-func`, and `unicorn/no-lonely-if` are
+exact jsPlugin preferences, the last because its JS implementation currently has
+better autofix parity. Whenever a preferred jsPlugin also has a native
+implementation, the generated config disables the native rule at the same scope
+so categories cannot activate a duplicate. This suppression remains in
+native-only mode even though the JS rule itself stays in ESLint.
 
-The native rule list is generated from oxlint's own schema
-(`src/rules/oxlint-native-generated.ts`, refreshed by `pnpm gen`). Fragments you
-pass as extra arguments are **not** translated — their rule names reach oxlint
-verbatim, which is the escape hatch when you want to name an oxlint rule
+The generated capability data in `src/generated/` is rule names only: which
+rules oxlint implements natively (from `oxlint --rules`), which rules the
+installed plugins expose, and which of each need type information. Everything
+else a rule carries — categories, fix status, documentation links — lives in
+`src/oxlint/typegen.d.ts` as JSDoc, where an editor can show it, rather than
+shipping as runtime data. Oxlint names, plugin aliases and package specifiers
+are derived from the rule name at lookup time. `pnpm gen` refreshes all of it,
+so a dependency upgrade produces a reviewable diff of what changed hands.
+
+A preset-only `"off"` entry does not load a jsPlugin merely because a capability
+exists. It is still emitted when the rule is native: `categories` can only ever
+switch native rules back on, so a rule the preset deliberately disables has to
+reach the config as an explicit `"off"` or opting into a category would silently
+revive it. Explicit user disables remain authoritative in both cases.
+
+Fragments passed as extra arguments are **not** translated — their rule names
+reach Oxlint verbatim, which is the escape hatch when naming an Oxlint rule
 directly.
 
-With `oxlint: true`, the ESLint factory drops every mapped rule; everything else
+With `oxlint: true`, the ESLint factory drops every rule the resolver hands to
+oxlint — not every rule in the exported view, which is a sample of the preset
+and would leave a rule enabled in both engines if it missed one. Everything else
 keeps running in ESLint, notably:
 
 - **JSON / YAML / TOML / Markdown / package.json / pnpm rules** — oxlint only

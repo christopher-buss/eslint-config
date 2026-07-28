@@ -12,7 +12,7 @@ exports[`oxlint standalone fixtures > should produce the expected diagnostics 1`
   "javascript.js:118 eslint-js(id-length)",
   "javascript.js:122 jsdoc-js(convert-to-jsdoc-comments)",
   "javascript.js:124 sonar(no-collapsible-if)",
-  "javascript.js:125 unicorn(no-lonely-if)",
+  "javascript.js:125 unicorn-js(no-lonely-if)",
   "javascript.js:13 eslint(no-eval)",
   "javascript.js:131 jsdoc-js(convert-to-jsdoc-comments)",
   "javascript.js:137 jsdoc-js(convert-to-jsdoc-comments)",

@@ -5,7 +5,7 @@ import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "..
  *
  * These do not require type information. Rule names use the canonical
  * (renamed) ESLint prefixes; the oxlint factory translates them via the
- * oxlint rule mapping.
+ * generated Oxlint resolver.
  *
  * @param options - Shared rule options.
  * @returns The rule map.

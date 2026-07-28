@@ -2,19 +2,18 @@ import process from "node:process";
 import { pathToFileURL } from "node:url";
 import type { ExternalPluginEntry, OxlintOverride } from "oxlint";
 
-import {
-	collapsesToTsCoreRule,
-	excludedFromOxlint,
-	isOxcCoveredRule,
-	isOxlintCovered,
-	isTsCoreCounterpartRule,
-	oxlintJsPlugins,
-	oxlintRuleMapping,
-	translateRuleToOxlint,
-} from "../rules/oxlint-mapping.ts";
-import { oxlintNativeRuleNames } from "../rules/oxlint-native-generated.ts";
+import { enabledPresetRuleNames } from "../generated/oxlint-capabilities.ts";
+import { oxlintNativeRuleNames } from "../generated/oxlint-native.ts";
 import type { Rules } from "../types.ts";
 import { recordDroppedOverride, recordOverrideRules } from "./override-diagnostics.ts";
+import {
+	collapsesToTsCoreRule,
+	isOxcCoveredRule,
+	isTsCoreCounterpartRule,
+	oxlintJsPlugins,
+	resolveOxlintRule,
+	translateRuleToOxlint,
+} from "./routing.ts";
 import type { OxlintPlugin, TypedOxlintConfigItem } from "./types.ts";
 
 /**
@@ -256,15 +255,12 @@ export function stripUnregisteredPluginRules(
 }
 
 /**
- * Split a canonical (ESLint-named) rule map into oxlint-native rules and
- * jsPlugin rules, translating rule names via the oxlint rule mapping.
+ * Split a canonical (ESLint-named) rule map into Oxlint-native rules and
+ * jsPlugin rules using the internal capability resolver.
  *
- * Rules that are not part of the hybrid mapping (for example jest or react
- * rules, which only run in standalone mode) are treated as jsPlugin rules.
- * Disabled unmapped rules are skipped so that no jsPlugin is loaded solely for
- * an "off" entry, unless `keepUnmappedOff` is set (user options.rules must not
- * silently discard an explicit disable) or the entry is a user override, which
- * is authoritative.
+ * Off-only preset rules are skipped so generated capability discovery cannot
+ * load a plugin solely for an `"off"` entry. Explicit user rules and overrides
+ * remain authoritative.
  *
  * @param rules - The canonical rule map.
  * @param options - Which entries survive the filters, and which came from the
@@ -289,10 +285,14 @@ export function splitOxlintRules(
 		}
 
 		const isOverride = overrides.has(rule);
+		const route = resolveOxlintRule(rule);
+		// Alternate Oxc equivalents are emitted by the dedicated Oxc module.
+		// A user override still targets that real native rule directly.
+		if (!isOverride && isOxcCoveredRule(rule)) {
+			continue;
+		}
 
-		// An oxc-covered rule is excluded so the preset never emits both halves,
-		// but the oxc rule it resolves to is a real target for an override.
-		if (excludedFromOxlint.has(rule) && (!isOverride || !isOxcCoveredRule(rule))) {
+		if (route.kind === "eslint-only") {
 			if (isOverride) {
 				recordDroppedOverride({ reason: "eslint-only", rule });
 			}
@@ -300,10 +300,31 @@ export function splitOxlintRules(
 			continue;
 		}
 
-		const covered = isOxlintCovered(rule);
+		// The eslint-only route already continued, so anything left is covered
+		// unless it is unmanaged, and a covered route already carries the
+		// translated name — asking `translateRuleToOxlint` would resolve the
+		// same rule a second time to reach the answer we are holding.
+		const covered = route.kind !== "unmanaged";
 		const severity = Array.isArray(value) ? value[0] : value;
 		const isOff = severity === "off" || severity === 0;
-		const translated = translateRuleToOxlint(rule);
+		const translated = covered ? route.oxlintName : translateRuleToOxlint(rule);
+
+		// Capability detection must not load a jsPlugin just to carry an
+		// off-only preset entry. Native rules need no plugin, so their disables
+		// are free to emit — and they have to, because `categories` can only
+		// ever switch native rules back on, and a rule the preset deliberately
+		// disables must stay disabled when a consumer opts into a category.
+		// User disables remain authoritative, and disables of rules enabled
+		// elsewhere in the preset still preserve effective per-scope parity.
+		if (
+			isOff &&
+			!isOverride &&
+			!keepUnmappedOff &&
+			route.kind === "js-plugin" &&
+			!enabledPresetRuleNames.has(rule)
+		) {
+			continue;
+		}
 
 		const slashIndex = translated.indexOf("/");
 		const prefix = slashIndex === -1 ? "eslint" : translated.slice(0, slashIndex);
@@ -344,12 +365,24 @@ export function splitOxlintRules(
 			continue;
 		}
 
-		const uncoveredTarget = nativePrefix !== undefined ? "native" : "js-plugin";
-		const target = covered ? mappedTarget(rule) : uncoveredTarget;
+		// An unmanaged rule has no route to follow, so its own prefix decides:
+		// a native oxlint plugin prefix means it runs natively, anything else
+		// needs a jsPlugin.
+		const unmanagedTarget = nativePrefix === undefined ? "js-plugin" : "native";
+		const target = covered ? route.kind : unmanagedTarget;
 
 		if (target === "js-plugin") {
 			jsPluginRules[translated] = value;
 			jsPluginPrefixes.add(prefix);
+
+			if (route.kind === "js-plugin" && route.suppressedNativeName !== undefined) {
+				nativeRules[route.suppressedNativeName] = "off";
+				const suppressedPrefix = rulePluginPrefix(route.suppressedNativeName);
+				if (isNativePlugin(suppressedPrefix)) {
+					nativePlugins.add(suppressedPrefix);
+				}
+			}
+
 			continue;
 		}
 
@@ -514,8 +547,4 @@ function tryResolveJsPlugin(specifier: string): string | undefined {
  */
 function canResolveJsPlugin(specifier: string): boolean {
 	return tryResolveJsPlugin(specifier) !== undefined;
-}
-
-function mappedTarget(rule: string): "js-plugin" | "native" {
-	return oxlintRuleMapping[rule] === "js-plugin" ? "js-plugin" : "native";
 }

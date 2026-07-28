@@ -1,6 +1,7 @@
 import picomatch from "picomatch";
 
 import type { TypedFlatConfigItem } from "../src/index.ts";
+import { isPruningViewConfig } from "../src/oxlint/adapters.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
 
 export type Severity = "enabled" | "off";
@@ -57,6 +58,53 @@ export function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<str
 }
 
 /**
+ * Apply a rule map onto an effective-severity map (later entries win).
+ *
+ * @param rules - The rule map to apply.
+ * @param effective - The effective severity map (mutated).
+ */
+export function applyRules(
+	rules: Record<string, unknown> | undefined,
+	effective: Map<string, Severity>,
+): void {
+	const entries = Object.entries(rules ?? {});
+	for (const [rule, value] of entries) {
+		if (value === undefined) {
+			continue;
+		}
+
+		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
+		effective.set(rule, severity === "off" || severity === 0 ? "off" : "enabled");
+	}
+}
+
+/**
+ * Rules the preset's pruning views switch off.
+ *
+ * These are enabled by a rule module and then unconditionally disabled by the
+ * formatter-compatibility layer or the Markdown relaxations, so they never run
+ * in either engine no matter what hybrid mode does with them. Shares
+ * {@link isPruningViewConfig} with `scripts/typegen-oxlint.ts`, which skips the
+ * same configs for the same reason.
+ *
+ * @param configs - The resolved flat config items.
+ * @returns The rule names the pruning views disable.
+ */
+export function formatterDisabledRules(configs: Array<TypedFlatConfigItem>): Set<string> {
+	const effective = new Map<string, Severity>();
+
+	for (const config of configs) {
+		if (isPruningViewConfig(config.name)) {
+			applyRules(config.rules, effective);
+		}
+	}
+
+	return new Set(
+		[...effective].flatMap(([rule, severity]) => (severity === "off" ? [rule] : [])),
+	);
+}
+
+/**
  * Collect all enabled rule names from an oxlint config.
  *
  * @param config - The generated oxlint config.
@@ -105,27 +153,6 @@ export function registeredNativePlugins(config: OxlintConfig): Set<string> {
  */
 export function matchesPattern(filePath: string, pattern: string): boolean {
 	return picomatch.isMatch(filePath, pattern, MATCH_OPTIONS);
-}
-
-/**
- * Apply a rule map onto an effective-severity map (later entries win).
- *
- * @param rules - The rule map to apply.
- * @param effective - The effective severity map (mutated).
- */
-export function applyRules(
-	rules: Record<string, unknown> | undefined,
-	effective: Map<string, Severity>,
-): void {
-	const entries = Object.entries(rules ?? {});
-	for (const [rule, value] of entries) {
-		if (value === undefined) {
-			continue;
-		}
-
-		const severity = Array.isArray(value) ? (value[0] as unknown) : value;
-		effective.set(rule, severity === "off" || severity === 0 ? "off" : "enabled");
-	}
 }
 
 /**

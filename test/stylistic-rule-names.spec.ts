@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { stylisticRuleNames } from "../src/rules/stylistic-generated.ts";
+import { stylisticRuleNames } from "../src/generated/stylistic.ts";
 import { interopDefault } from "../src/utils.ts";
 
 describe("stylistic rule-name snapshot", () => {

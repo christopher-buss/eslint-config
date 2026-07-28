@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
-import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
+import { isentinel as oxlintIsentinel, oxlintRuleMapping } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
-import { jsPluginKey } from "../src/oxlint/utils.ts";
 import {
-	isJsPluginRule,
-	isOxlintCovered,
-	oxlintRuleMapping,
+	isPresetRuleJsPlugin,
+	resolveOxlintRule,
 	translateRuleToOxlint,
-} from "../src/rules/oxlint-mapping.ts";
+} from "../src/oxlint/routing.ts";
+import { jsPluginKey } from "../src/oxlint/utils.ts";
 import {
 	collectEnabledRules,
 	effectiveEslintRules,
@@ -80,14 +79,19 @@ function unregisteredRules(config: OxlintConfig): Array<string> {
 }
 
 /**
- * Whether native-only mode must NOT drop this rule from ESLint: only mapped,
- * non-jsPlugin rules move to oxlint.
+ * Whether native-only mode must NOT drop this rule from ESLint: only rules the
+ * resolver routes natively move to oxlint.
+ *
+ * Asks the resolver, not the generated compatibility view, because the drop
+ * path does — the view omits preset rules that no sampled factory variant
+ * leaves enabled (the formatter-disabled ones, say), and those are legitimately
+ * dropped.
  *
  * @param rule - The canonical ESLint rule name.
  * @returns Whether dropping the rule would be a coverage loss.
  */
 function mustStayInEslint(rule: string): boolean {
-	return isJsPluginRule(rule) || !isOxlintCovered(rule);
+	return resolveOxlintRule(rule).kind !== "native";
 }
 
 describe("oxlint native-only hybrid mode", () => {
@@ -134,7 +138,7 @@ describe("oxlint native-only hybrid mode", () => {
 		const full = await eslintRules({ oxlint: true });
 		const native = await eslintRules({ oxlint: "native" });
 
-		const jsPluginRules = [...eslintOnly].filter((rule) => isJsPluginRule(rule));
+		const jsPluginRules = [...eslintOnly].filter((rule) => isPresetRuleJsPlugin(rule));
 
 		// The mode only means something if the mapping has jsPlugin rules the
 		// full hand-off moves out of ESLint.

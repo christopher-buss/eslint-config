@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
 
 import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
+import { stylisticRuleNames } from "../../generated/stylistic.ts";
 import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { isRecord } from "../../guards.ts";
-import { stylisticRuleNames } from "../../rules/stylistic-generated.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";

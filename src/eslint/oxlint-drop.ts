@@ -1,5 +1,11 @@
 import { GLOB_MARKDOWN_CODE } from "../globs.ts";
-import { isJsPluginRule, isOxlintCovered, isTsgolintRule } from "../rules/oxlint-mapping.ts";
+import {
+	isPresetRuleJsPlugin,
+	isPresetRuleOxlintCovered,
+	resolveOxlintRule,
+	routeTarget,
+} from "../oxlint/routing.ts";
+import type { OxlintRoute } from "../oxlint/routing.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 const HYBRID_FORMATTING_RULES = new Set(["oxfmt/oxfmt"]);
@@ -62,9 +68,9 @@ export function warnMissingTsgolint(): void {
 }
 
 /**
- * Remove rules covered by oxlint (per the oxlint rule mapping) from the
- * resolved ESLint configs. Only enabled rules in `isentinel/*` configs are
- * removed; `"off"` entries and user configs are left untouched.
+ * Remove rules the Oxlint resolver owns from the resolved ESLint configs. Only
+ * enabled rules in `isentinel/*` configs are removed; `"off"` entries and user
+ * configs are left untouched.
  *
  * Oxlint cannot lint Markdown virtual files (fenced code blocks processed by
  * the markdown plugin), so every dropped rule is re-added in a sibling config
@@ -123,19 +129,25 @@ export function dropOxlintCoveredRules(
 }
 
 /**
- * Whether oxlint owns the rule in the given hybrid mode (and therefore whether
- * ESLint must drop it).
+ * Whether a rule named in a *user* config is one the preset hands to oxlint.
+ *
+ * Deliberately reads the generated compatibility view rather than the resolver.
+ * The resolver is total, so it would answer "yes" for any rule oxlint could
+ * conceivably run and warn about entries that are not dead at all — user
+ * configs are never dropped, so a rule the preset never enables keeps working
+ * in ESLint exactly as written. The view lists only the preset's own rules,
+ * which is the set whose ESLint half hybrid mode actually removes.
  *
  * @param rule - The canonical ESLint rule name.
  * @param mode - The hybrid mode.
- * @returns Whether oxlint runs the rule.
+ * @returns Whether the preset hands the rule to oxlint.
  */
-function isOwnedByOxlint(rule: string, mode: OxlintHybridMode): boolean {
-	if (!isOxlintCovered(rule)) {
+function presetHandsRuleToOxlint(rule: string, mode: OxlintHybridMode): boolean {
+	if (!isPresetRuleOxlintCovered(rule)) {
 		return false;
 	}
 
-	return mode === "full" || !isJsPluginRule(rule);
+	return mode === "full" || !isPresetRuleJsPlugin(rule);
 }
 
 function isPresetConfig(config: TypedFlatConfigItem): boolean {
@@ -181,7 +193,7 @@ function findDeadMappedRules(
 		for (const [rule, value] of Object.entries(config.rules)) {
 			if (
 				value !== undefined &&
-				(isOwnedByOxlint(rule, mode) ||
+				(presetHandsRuleToOxlint(rule, mode) ||
 					(mode === "full" && HYBRID_FORMATTING_RULES.has(rule)))
 			) {
 				references.push({ config: label, rule });
@@ -192,6 +204,35 @@ function findDeadMappedRules(
 	return references;
 }
 
+/**
+ * Whether oxlint runs the rule in the given hybrid mode, and therefore whether
+ * ESLint must drop it.
+ *
+ * Asks the resolver rather than the generated compatibility view: the view is
+ * built from a sample of factory options, so a rule the preset only enables
+ * under an unsampled option would be absent from it, and ESLint would keep a
+ * rule the oxlint factory also emits. The emit side (`splitOxlintRules`) reads
+ * the resolver, so this side must too or the two disagree.
+ *
+ * @param route - The rule's resolved route.
+ * @param typeAware - Whether oxlint-tsgolint is present to run type-aware
+ *   rules. When absent they stay in ESLint rather than vanishing from both.
+ * @param mode - The hybrid mode.
+ * @returns Whether oxlint runs the rule.
+ */
+function oxlintRunsRule(route: OxlintRoute, typeAware: boolean, mode: OxlintHybridMode): boolean {
+	const target = routeTarget(route);
+	if (target === undefined) {
+		return false;
+	}
+
+	if (target === "js-plugin") {
+		return mode === "full";
+	}
+
+	return target === "native" || typeAware;
+}
+
 function dropCoveredRulesFromConfig(
 	rules: NonNullable<TypedFlatConfigItem["rules"]>,
 	typeAware: boolean,
@@ -200,11 +241,7 @@ function dropCoveredRulesFromConfig(
 	const dropped: NonNullable<TypedFlatConfigItem["rules"]> = {};
 
 	for (const [rule, value] of Object.entries(rules)) {
-		if (
-			value === undefined ||
-			!isOwnedByOxlint(rule, mode) ||
-			(!typeAware && isTsgolintRule(rule))
-		) {
+		if (value === undefined || !oxlintRunsRule(resolveOxlintRule(rule), typeAware, mode)) {
 			continue;
 		}
 

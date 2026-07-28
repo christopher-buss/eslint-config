@@ -61,7 +61,6 @@ import {
 import { jsx } from "./configs/jsx.ts";
 import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
-import { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } from "./oxlint-drop.ts";
 import type { OxlintHybridMode } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
 import type { ValidateOptions, ValidateUserConfigs } from "./redundancy.ts";
@@ -672,14 +671,21 @@ export async function isentinel(
 	}
 
 	if (oxlintMode !== "off") {
+		// Imported here rather than at module scope: this module pulls in the
+		// generated Oxlint capability data, which nothing reads when hybrid mode
+		// is off (the default). Keeping it off the static graph saves every
+		// plain ESLint run from parsing it.
+		const { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } =
+			await import("./oxlint-drop.ts");
+
 		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
 		if (!tsgolintAvailable) {
 			warnMissingTsgolint();
 		}
 
-		// Hybrid mode: oxlint owns every rule in the oxlint rule mapping, so
-		// drop them from the ESLint configs. Type-aware rules are kept in
-		// ESLint when oxlint-tsgolint is absent so they do not vanish entirely.
+		// Hybrid mode: Oxlint owns every rule the resolver routes to it, so drop
+		// them from the ESLint configs. Type-aware rules are kept in ESLint when
+		// oxlint-tsgolint is absent so they do not vanish entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
 				warnDeadMappedRules(resolved, oxlintMode);

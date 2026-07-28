@@ -1,6 +1,7 @@
 import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
+import { oxlintNativeRuleNames } from "../src/generated/oxlint-native.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import {
@@ -11,7 +12,6 @@ import {
 	translateRuleToOxlint,
 } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
-import { oxlintNativeRuleNames } from "../src/rules/oxlint-native-generated.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import {
 	effectiveEslintRules,
@@ -182,6 +182,84 @@ describe("oxlint per-file severity parity", () => {
 
 			expect(missing).toStrictEqual([]);
 			expect(overReported).toStrictEqual([]);
+		});
+	});
+});
+
+/**
+ * Rules the hybrid ESLint config still enables that oxlint also runs for the
+ * same file, which would report every violation twice.
+ *
+ * @param filePath - The file path under comparison.
+ * @param hybridEffective - Effective severities of the `oxlint: true` config.
+ * @param oxlintEffective - Effective oxlint severities.
+ * @returns Human-readable problems.
+ */
+function findDoubleReported(
+	filePath: string,
+	hybridEffective: Map<string, Severity>,
+	oxlintEffective: Map<string, Severity>,
+): Array<string> {
+	const duplicated: Array<string> = [];
+
+	for (const [rule, severity] of hybridEffective) {
+		if (severity !== "enabled") {
+			continue;
+		}
+
+		const translated = translateRuleToOxlint(rule);
+		if (oxlintEffective.get(translated) === "enabled") {
+			duplicated.push(`${filePath}: ${rule} -> ${translated}`);
+		}
+	}
+
+	return duplicated;
+}
+
+// The hand-off only holds while the drop path and the emit path agree on which
+// rules oxlint owns. They are separate code paths reading the same resolver, so
+// any rule the preset can enable under an option must be dropped from ESLint
+// exactly when oxlint emits it. `jest.extended` is the case that caught a real
+// divergence: its rules are enabled by both factories but were invisible to the
+// sampled compatibility view, so ESLint kept them while oxlint ran them too.
+const hybridVariants: Array<ParityVariant> = [
+	...variants,
+	{
+		name: "jest-extended",
+		files: ["src/services/service.spec.ts", "src/util.test.ts"],
+		options: { ...baseOptions, test: { jest: { extended: true } } },
+	},
+];
+
+describe("oxlint hybrid hand-off", () => {
+	describe.for(hybridVariants)("$name", (variant: ParityVariant) => {
+		it("should never leave a rule enabled in both engines", async ({ expect }) => {
+			expect.assertions(1);
+
+			const hybrid = [
+				...(await isentinel({
+					name: "test/handoff-eslint",
+					...variant.options,
+					oxlint: true,
+				})),
+			];
+			const oxlintConfig = oxlintIsentinel({
+				name: "test/handoff-oxlint",
+				...variant.options,
+			});
+
+			const duplicated: Array<string> = [];
+			for (const filePath of variant.files) {
+				duplicated.push(
+					...findDoubleReported(
+						filePath,
+						effectiveEslintRules(hybrid, filePath),
+						effectiveOxlintRules(oxlintConfig, filePath),
+					),
+				);
+			}
+
+			expect(duplicated).toStrictEqual([]);
 		});
 	});
 });

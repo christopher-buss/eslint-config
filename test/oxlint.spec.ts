@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import path from "node:path";
 import process from "node:process";
 import { describe, it } from "vitest";
 
@@ -19,10 +18,10 @@ import {
 	enabledEslintRules,
 	enabledFromEffective,
 	enabledOxlintRules,
+	formatterDisabledRules,
 } from "./oxlint-helpers.ts";
+import { oxlintBinary } from "./oxlint-run.ts";
 import { snapshotFixtures } from "./snapshot-fixtures.ts";
-
-const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
 interface OxlintRuleInfo {
 	scope: string;
@@ -57,9 +56,7 @@ function isOxlintRuleInfo(value: unknown): value is OxlintRuleInfo {
  * @returns Native rule metadata keyed by `scope/rule`.
  */
 function getOxlintNativeRules(): Map<string, OxlintRuleInfo> {
-	const binaryName = process.platform === "win32" ? "oxlint.CMD" : "oxlint";
-	const binary = path.join(PROJECT_ROOT, "node_modules", ".bin", binaryName);
-	const output = execFileSync(binary, ["--rules", "-f", "json"], {
+	const output = execFileSync(oxlintBinary(), ["--rules", "-f", "json"], {
 		encoding: "utf8",
 		shell: process.platform === "win32",
 	});
@@ -215,7 +212,14 @@ describe("oxlint hybrid coverage", () => {
 
 			const enabledBefore = enabledEslintRules([...eslintOnly]);
 			const enabledAfter = enabledEslintRules([...hybrid]);
-			const dropped = [...enabledBefore].filter((rule) => !enabledAfter.has(rule));
+			// Rules the oxfmt layer disables are enabled by a rule module and
+			// switched off again before anything runs them, so hybrid mode
+			// moving them is not a coverage question — they are off in both
+			// engines either way.
+			const formatterDisabled = formatterDisabledRules([...eslintOnly]);
+			const dropped = [...enabledBefore]
+				.filter((rule) => !enabledAfter.has(rule))
+				.filter((rule) => !formatterDisabled.has(rule));
 
 			// Hybrid mode must actually move rules to oxlint
 			expect(dropped.length).toBeGreaterThan(100);
