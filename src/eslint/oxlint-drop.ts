@@ -1,7 +1,7 @@
 import { GLOB_MARKDOWN_CODE } from "../globs.ts";
 import {
-	isJsPluginRule,
-	isOxlintCovered,
+	isPresetRuleJsPlugin,
+	isPresetRuleOxlintCovered,
 	resolveOxlintRule,
 	routeTarget,
 } from "../oxlint/routing.ts";
@@ -143,11 +143,11 @@ export function dropOxlintCoveredRules(
  * @returns Whether the preset hands the rule to oxlint.
  */
 function presetHandsRuleToOxlint(rule: string, mode: OxlintHybridMode): boolean {
-	if (!isOxlintCovered(rule)) {
+	if (!isPresetRuleOxlintCovered(rule)) {
 		return false;
 	}
 
-	return mode === "full" || !isJsPluginRule(rule);
+	return mode === "full" || !isPresetRuleJsPlugin(rule);
 }
 
 function isPresetConfig(config: TypedFlatConfigItem): boolean {

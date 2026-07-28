@@ -1,6 +1,7 @@
 import picomatch from "picomatch";
 
 import type { TypedFlatConfigItem } from "../src/index.ts";
+import { isPruningViewConfig } from "../src/oxlint/adapters.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
 
 export type Severity = "enabled" | "off";
@@ -78,21 +79,22 @@ export function applyRules(
 }
 
 /**
- * Rules the formatter-compatibility layer switches off.
+ * Rules the preset's pruning views switch off.
  *
- * These are enabled by a rule module and then unconditionally disabled by
- * `isentinel/oxfmt/*`, so they never run in either engine no matter what hybrid
- * mode does with them. `scripts/typegen-oxlint.ts` skips the same configs when
- * it collects raw rule states, for the same reason.
+ * These are enabled by a rule module and then unconditionally disabled by the
+ * formatter-compatibility layer or the Markdown relaxations, so they never run
+ * in either engine no matter what hybrid mode does with them. Shares
+ * {@link isPruningViewConfig} with `scripts/typegen-oxlint.ts`, which skips the
+ * same configs for the same reason.
  *
  * @param configs - The resolved flat config items.
- * @returns The rule names the formatter layer disables.
+ * @returns The rule names the pruning views disable.
  */
 export function formatterDisabledRules(configs: Array<TypedFlatConfigItem>): Set<string> {
 	const effective = new Map<string, Severity>();
 
 	for (const config of configs) {
-		if (config.name?.startsWith("isentinel/oxfmt/") === true) {
+		if (isPruningViewConfig(config.name)) {
 			applyRules(config.rules, effective);
 		}
 	}

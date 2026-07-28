@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
-import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
+import { isentinel as oxlintIsentinel, oxlintRuleMapping } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
 import {
-	isJsPluginRule,
-	oxlintRuleMapping,
+	isPresetRuleJsPlugin,
 	resolveOxlintRule,
 	translateRuleToOxlint,
 } from "../src/oxlint/routing.ts";
@@ -139,7 +138,7 @@ describe("oxlint native-only hybrid mode", () => {
 		const full = await eslintRules({ oxlint: true });
 		const native = await eslintRules({ oxlint: "native" });
 
-		const jsPluginRules = [...eslintOnly].filter((rule) => isJsPluginRule(rule));
+		const jsPluginRules = [...eslintOnly].filter((rule) => isPresetRuleJsPlugin(rule));
 
 		// The mode only means something if the mapping has jsPlugin rules the
 		// full hand-off moves out of ESLint.

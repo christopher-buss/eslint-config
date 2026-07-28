@@ -43,6 +43,7 @@ import { requiresTypeChecking } from "../src/eslint/type-aware-split.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel as eslintIsentinel } from "../src/index.ts";
 import {
+	isPruningViewConfig,
 	oxlintFamilyPolicies,
 	oxlintJsPluginPrefixRenames,
 	oxlintJsPlugins,
@@ -415,11 +416,9 @@ function recordRawRuleState(states: Map<string, boolean>, rule: string, value: u
 
 const rawRuleStates = new Map<string, boolean>();
 for (const config of presetConfigs) {
-	const name = config.name ?? "";
-	// Formatter compatibility and Markdown relaxation maps are pruning views,
-	// not capability declarations. Including them would turn hundreds of
-	// standalone "off" entries into owned rules.
-	if (name === "isentinel/markdown/disables" || name.startsWith("isentinel/oxfmt/")) {
+	// Pruning views are not capability declarations. Including them would turn
+	// hundreds of standalone "off" entries into owned rules.
+	if (isPruningViewConfig(config.name)) {
 		continue;
 	}
 
@@ -478,7 +477,10 @@ const effectiveVariants = [
 			test: { vitest: { typecheck: true } },
 			type: "package" as const,
 		},
-		paths: [...commonEffectivePaths, "bin/run.ts"],
+		// Only the paths this variant resolves differently from the jest one:
+		// the two agree exactly on the non-test paths, and re-deriving those
+		// costs ~360 ms of every `pnpm gen` for no additional coverage.
+		paths: ["src/index.spec.ts", "bin/run.ts"],
 	},
 ];
 

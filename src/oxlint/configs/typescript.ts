@@ -15,7 +15,7 @@ import type {
 	OptionsTypeScriptErasableOnly,
 	Rules,
 } from "../../types.ts";
-import { isTsgolintRule } from "../routing.ts";
+import { runsInTsgolint } from "../routing.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
@@ -50,7 +50,7 @@ export function oxlintTypescript(
 	const gatedTypeAwareRules = typeAware
 		? typeAwareRules
 		: (Object.fromEntries(
-				Object.entries(typeAwareRules).filter(([rule]) => !isTsgolintRule(rule)),
+				Object.entries(typeAwareRules).filter(([rule]) => !runsInTsgolint(rule)),
 			) as Rules);
 
 	return createOxlintConfigs({

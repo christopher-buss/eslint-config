@@ -10,9 +10,11 @@ import {
 import {
 	candidateNativeOxlintName,
 	jsPluginAdapterFor,
+	optionallyTypeAwareRules,
 	oxlintFamilyPolicies,
 	splitRuleName,
 	TS_EXTENSION_TO_CORE,
+	typeAwareJsPluginRules,
 } from "./adapters.ts";
 
 /** Where a rule runs when linting with Oxlint. */
@@ -72,42 +74,6 @@ export const oxcCoveredRules: Readonly<Record<string, string>> = {
 	"sonar/no-all-duplicated-branches": "oxc/branches-sharing-code",
 	"unicorn/no-accidental-bitwise-operator": "oxc/bad-bitwise-operator",
 };
-
-/**
- * Rules that run without type information but intentionally remain in ESLint
- * because parser services improve their results.
- */
-export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
-	"e18e/prefer-array-at",
-	"e18e/prefer-array-to-reversed",
-	"e18e/prefer-array-to-sorted",
-	"e18e/prefer-spread-syntax",
-	"unicorn/no-useless-coercion",
-]);
-
-/**
- * Type-aware jsPlugin rules used by the ESLint type-aware split. Some declare
- * the metadata flag; the explicit list also documents known unreliable cases.
- */
-export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
-	"eslint-plugin/no-property-in-node",
-	"jest/no-error-equal",
-	"jest/no-unnecessary-assertion",
-	"jest/unbound-method",
-	"jest/valid-expect-with-promise",
-	"react/no-implicit-children",
-	"react/no-implicit-key",
-	"react/no-implicit-ref",
-	"react/no-leaked-conditional-rendering",
-	"react/no-unused-props",
-	"sonar/no-ignored-return",
-	"sonar/no-incompatible-assertion-types",
-	"sonar/no-redundant-optional",
-	"sonar/no-try-promise",
-	"sonar/prefer-immediate-return",
-	"ts/prefer-destructuring",
-	"unicorn/no-non-function-verb-prefix",
-]);
 
 const TYPE_AWARE_METADATA_EXCEPTIONS: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
@@ -217,6 +183,29 @@ export function routeTarget(route: OxlintRoute): OxlintTarget | undefined {
 	return undefined;
 }
 
+/**
+ * Build the compatibility view over the effective preset rule union.
+ *
+ * Resolving ~800 rules is only worth doing for a caller that needs the
+ * preset-scoped view; the drop path asks the resolver per rule instead, and
+ * with `oxlint: false` nothing needs this at all. `src/oxlint/index.ts` calls
+ * this once for the public export, which the ESLint factory never loads.
+ *
+ * @returns The rule-to-target map.
+ */
+export function buildOxlintRuleMapping(): Readonly<Record<string, OxlintTarget>> {
+	return Object.fromEntries(
+		[...effectivePresetRuleNames].flatMap((rule): Array<[string, OxlintTarget]> => {
+			if (rule in oxcCoveredRules) {
+				return [];
+			}
+
+			const target = routeTarget(resolveOxlintRule(rule));
+			return target === undefined ? [] : [[rule, target]];
+		}),
+	);
+}
+
 function eslintOnlyReason(rule: string): string | undefined {
 	if (optionallyTypeAwareRules.has(rule)) {
 		return "The rule is optionally type-aware and would lose parser-service coverage.";
@@ -284,29 +273,20 @@ function jsPluginRoute(
 	};
 }
 
-/**
- * Generated compatibility view over the effective preset rule union. The
- * resolver remains internal; consumers continue to see the original targets.
- */
-export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = Object.fromEntries(
-	[...effectivePresetRuleNames].flatMap((rule): Array<[string, OxlintTarget]> => {
-		if (rule in oxcCoveredRules) {
-			return [];
-		}
-
-		const target = routeTarget(resolveOxlintRule(rule));
-		return target === undefined ? [] : [[rule, target]];
-	}),
-);
+let cachedMapping: Readonly<Record<string, OxlintTarget>> | undefined;
 
 /**
  * Whether hybrid mode hands this effective preset rule to Oxlint.
  *
+ * Preset-scoped: answers only for rules the preset itself names. Callers that
+ * must agree with what the oxlint factory emits want {@link resolveOxlintRule},
+ * which is total.
+ *
  * @param rule - The canonical ESLint rule name.
  * @returns Whether Oxlint covers the rule.
  */
-export function isOxlintCovered(rule: string): boolean {
-	return rule in oxlintRuleMapping || rule in oxcCoveredRules;
+export function isPresetRuleOxlintCovered(rule: string): boolean {
+	return rule in presetRuleMapping() || rule in oxcCoveredRules;
 }
 
 /**
@@ -320,23 +300,28 @@ export function isOxcCoveredRule(rule: string): boolean {
 }
 
 /**
- * Whether this preset rule runs through an Oxlint jsPlugin.
+ * Whether this preset rule runs through an Oxlint jsPlugin. Preset-scoped; see
+ * {@link isPresetRuleOxlintCovered}.
  *
  * @param rule - The canonical ESLint rule name.
  * @returns Whether the rule is routed to a jsPlugin.
  */
-export function isJsPluginRule(rule: string): boolean {
-	return oxlintRuleMapping[rule] === "js-plugin";
+export function isPresetRuleJsPlugin(rule: string): boolean {
+	return presetRuleMapping()[rule] === "js-plugin";
 }
 
 /**
- * Whether this preset rule runs through oxlint-tsgolint.
+ * Whether Oxlint runs this rule through oxlint-tsgolint.
+ *
+ * Resolver-backed rather than preset-scoped: the emit path gates rules on this,
+ * and a type-aware rule missing from the sampled view would otherwise be
+ * emitted with `typeAware: false` for tsgolint to never run.
  *
  * @param rule - The canonical ESLint rule name.
  * @returns Whether the rule is routed to tsgolint.
  */
-export function isTsgolintRule(rule: string): boolean {
-	return oxlintRuleMapping[rule] === "tsgolint";
+export function runsInTsgolint(rule: string): boolean {
+	return routeTarget(resolveOxlintRule(rule)) === "tsgolint";
 }
 
 /**
@@ -379,6 +364,16 @@ export function collapsesToTsCoreRule(rule: string): boolean {
 export function isTsCoreCounterpartRule(rule: string): boolean {
 	const { name, prefix } = splitRuleName(rule);
 	return prefix === "" && TS_EXTENSION_TO_CORE.has(name);
+}
+
+/**
+ * The compatibility view, built on first use and reused after.
+ *
+ * @returns The rule-to-target map.
+ */
+function presetRuleMapping(): Readonly<Record<string, OxlintTarget>> {
+	cachedMapping ??= buildOxlintRuleMapping();
+	return cachedMapping;
 }
 
 export { oxlintJsPlugins } from "./adapters.ts";

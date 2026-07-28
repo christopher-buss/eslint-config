@@ -1,7 +1,7 @@
 import { typeAwarePrefixes, typeAwareRuleIds } from "../generated/type-aware.ts";
 import { GLOB_ALL_JSON, GLOB_LUA, GLOB_MARKDOWN, GLOB_TOML, GLOB_YAML } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../oxlint/routing.ts";
+import { optionallyTypeAwareRules, typeAwareJsPluginRules } from "../oxlint/adapters.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 /**

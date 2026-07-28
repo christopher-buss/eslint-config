@@ -55,6 +55,63 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"vitest-js": "@vitest/eslint-plugin",
 } as const;
 
+/**
+ * Whether a preset config is a pruning view rather than a rule declaration.
+ *
+ * The formatter-compatibility layer and the Markdown relaxations switch off
+ * rules that other modules turned on. Treating their hundreds of standalone
+ * `"off"` entries as declarations would make the preset look like it owns
+ * rules it merely silences, so both the capability generator and the tests
+ * that reason about ownership skip them — through this predicate, so the two
+ * cannot disagree about which configs count.
+ *
+ * @param name - The `name` of the config to classify.
+ * @returns Whether the config only prunes rules other configs declare.
+ */
+export function isPruningViewConfig(name: string | undefined): boolean {
+	return name === "isentinel/markdown/disables" || name?.startsWith("isentinel/oxfmt/") === true;
+}
+
+/**
+ * Rules that run without type information but intentionally remain in ESLint
+ * because parser services improve their results.
+ *
+ * Lives here rather than beside the resolver so the ESLint type-aware split can
+ * read it without pulling in the generated capability data, which is ~145 KB
+ * this module has no need of.
+ */
+export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
+	"e18e/prefer-array-at",
+	"e18e/prefer-array-to-reversed",
+	"e18e/prefer-array-to-sorted",
+	"e18e/prefer-spread-syntax",
+	"unicorn/no-useless-coercion",
+]);
+
+/**
+ * Type-aware jsPlugin rules used by the ESLint type-aware split. Some declare
+ * the metadata flag; the explicit list also documents known unreliable cases.
+ */
+export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
+	"eslint-plugin/no-property-in-node",
+	"jest/no-error-equal",
+	"jest/no-unnecessary-assertion",
+	"jest/unbound-method",
+	"jest/valid-expect-with-promise",
+	"react/no-implicit-children",
+	"react/no-implicit-key",
+	"react/no-implicit-ref",
+	"react/no-leaked-conditional-rendering",
+	"react/no-unused-props",
+	"sonar/no-ignored-return",
+	"sonar/no-incompatible-assertion-types",
+	"sonar/no-redundant-optional",
+	"sonar/no-try-promise",
+	"sonar/prefer-immediate-return",
+	"ts/prefer-destructuring",
+	"unicorn/no-non-function-verb-prefix",
+]);
+
 const ESLINT_ONLY = "eslint-only";
 const NATIVE_FIRST = "native-first";
 

@@ -102,8 +102,8 @@ and both root lint configs ignore it.
 `src/generated/oxlint-capabilities.ts` - the native and jsPlugin capability sets
 the oxlint resolver reads), the two `typegen-defaults*.ts` (default rule
 severities, used by the redundancy check), `versiongen.ts`
-(`src/cli/constants-generated.ts`), `stylisticgen.ts`
-(`src/generated/stylistic.ts` - `@stylistic` rule names), `typeawaregen.ts`
+(`src/cli/constants-generated.ts`), `stylistic-gen.ts`
+(`src/generated/stylistic.ts` - `@stylistic` rule names), `type-aware-gen.ts`
 (`src/generated/type-aware.ts` - the `requiresTypeChecking` snapshot the
 type-aware split reads) and `gen-package-extensions.ts` (the `packageExtensions`
 block of `pnpm-workspace.yaml`). Run it after modifying configs.
@@ -113,9 +113,9 @@ preset actually enables, so it must stay deterministic: pass explicit values for
 anything the factory would otherwise sniff from the host (see `nodeMajor`), or
 the committed output changes depending on who ran it.
 
-`typegen.ts` and `typeawaregen.ts` share one list of config modules
+`typegen.ts` and `type-aware-gen.ts` share one list of config modules
 (`scripts/config-factories.ts`); add new modules there or they escape both
-generators. Both `gen-package-extensions.ts` and `typeawaregen.ts` take
+generators. Both `gen-package-extensions.ts` and `type-aware-gen.ts` take
 `--check` (`nr check:extensions`, `nr check:type-aware`), which CI runs _before_
 the build - `pnpm gen` would otherwise repair a stale file in place and the
 drift would never be reported.
