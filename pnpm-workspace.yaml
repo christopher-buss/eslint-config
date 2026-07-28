@@ -49,12 +49,12 @@ catalogs:
     picomatch: 4.0.5
     pnpm-workspace-yaml: 1.7.0
     publint: 0.3.22
-    tsdown: 0.22.13
+    tsdown: 0.22.14
     typescript: 6.0.3
     unplugin-unused: 0.5.7
     vitest: 4.1.10
   peer:
-    "@vitest/eslint-plugin": 1.6.23
+    "@vitest/eslint-plugin": 1.6.24
     eslint: 10.7.0
     eslint-plugin-erasable-syntax-only: 0.4.2
     eslint-plugin-eslint-plugin: 7.5.0
@@ -81,7 +81,7 @@ catalogs:
     "@typescript-eslint/eslint-plugin": 8.65.0
     "@typescript-eslint/parser": 8.65.0
     ansis: 4.3.1
-    concurrently: 10.0.3
+    concurrently: 10.0.4
     eslint-config-flat-gitignore: 2.3.0
     eslint-config-prettier: 10.1.8
     eslint-flat-config-utils: 3.2.0
@@ -93,10 +93,10 @@ catalogs:
     eslint-plugin-flawless: 1.5.0
     eslint-plugin-format-lua: 2.0.0
     eslint-plugin-import-lite: 0.6.0
-    eslint-plugin-jsdoc: 63.2.0
+    eslint-plugin-jsdoc: 63.2.2
     eslint-plugin-jsonc: 3.3.0
     eslint-plugin-oxfmt: 0.15.0
-    eslint-plugin-package-json: 1.6.0
+    eslint-plugin-package-json: 1.6.2
     eslint-plugin-perfectionist: 5.10.0
     eslint-plugin-pnpm: 1.7.0
     eslint-plugin-promise: 7.3.0
