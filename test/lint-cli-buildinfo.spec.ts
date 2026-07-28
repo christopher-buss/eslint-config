@@ -1,4 +1,4 @@
-// cspell:words tsbuildinfo tsgate typeaware buildinfo mojibake
+// cspell:words tsbuildinfo tsgate typeaware buildinfo mojibake unparseable
 import { Buffer } from "node:buffer";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -400,16 +400,30 @@ describe("buildinfo fast path", () => {
 	});
 
 	it("agrees with the builder on a truncated buildinfo", () => {
-		expect.assertions(2);
+		expect.assertions(3);
+
+		// Corrupt to a fixed unparseable prefix rather than by slicing the real
+		// file: how far into a buildinfo a byte offset lands depends on the path
+		// lengths baked into it, which differ per platform (a fixture whose
+		// `typescript` resolves onto another drive stores absolute names, not
+		// relative ones). A length-derived cut therefore corrupts fatally on one
+		// OS and harmlessly on another.
+		let corrupted = 0;
 
 		const { builder, fast } = compare({
 			mutate: (directory) => {
 				for (const file of stateFiles(directory, "tsbuildinfo")) {
-					fs.writeFileSync(file, fs.readFileSync(file, "utf8").slice(0, 400));
+					fs.writeFileSync(file, '{"version":');
+					corrupted += 1;
 				}
 			},
 			tree: CHAIN,
 		});
+
+		// Both sides must actually have been corrupted; a mutation that silently
+		// matched no state file would make the assertions below pass for the
+		// wrong reason.
+		expect(corrupted).toBe(2);
 
 		// The fast path declines and hands over to the builder, whose own
 		// `readBuilderProgram` then throws on the same file — so the run degrades
