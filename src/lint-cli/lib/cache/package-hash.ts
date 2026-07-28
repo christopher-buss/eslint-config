@@ -1,19 +1,20 @@
-// cspell:words typeaware unparseable
+// cspell:words typeaware unparseable buildinfo
 import crypto from "node:crypto";
 import path from "node:path";
 
 import { isRecord } from "../../../guards.ts";
 import { findWorkspaceRoot } from "../files/workspace.ts";
+import { stableStringify } from "../stable-json.ts";
 import { readFileIfPresent } from "../state.ts";
 
 /**
- * Root `package.json` fields whose edits can change the types a consumer's
- * importers see (resolution surface + dependency versions). A change to any of
- * these must invalidate the type-aware caches; unrelated edits (`scripts`,
- * `version`, metadata) must not. `pnpm` (overrides/patchedDependencies) and
+ * `package.json` fields whose edits can change the types a consumer's importers
+ * see (resolution surface + dependency versions). A change to any of these must
+ * invalidate the type-aware caches; unrelated edits (`scripts`, `version`,
+ * metadata) must not. `pnpm` (overrides/patchedDependencies) and
  * `optionalDependencies` can silently swap a resolved version too.
  */
-const RESOLUTION_FIELDS = [
+export const RESOLUTION_FIELDS = [
 	"exports",
 	"imports",
 	"main",
@@ -28,43 +29,26 @@ const RESOLUTION_FIELDS = [
 ] as const;
 
 /**
- * Hash the resolution-relevant fields of the consumer's `package.json` as
- * sorted, stable JSON. When `cwd` sits in a workspace whose root differs, the
- * root `package.json`'s resolution fields fold into the same digest — a hoisted
- * root dependency bump changes the types a sub-package sees even though its own
- * `package.json` text is untouched. Returns `undefined` when there is no
- * readable/parseable local `package.json` (the caller then treats the check as
- * a no-op).
- *
- * @param cwd - The consumer project root.
- * @returns The hex digest, or `undefined` when unavailable.
+ * {@link RESOLUTION_FIELDS} plus `type`, which decides every file's
+ * `impliedFormat` and therefore how its imports resolve. The builder detects a
+ * `type` flip through its own `impliedFormat` comparison, so the mtime/hash
+ * bust never needed it; the buildinfo fast path has no such comparison and must
+ * gate on it (see `computeResolutionGate`).
  */
-export function computePackageJsonHash(cwd: string): string | undefined {
-	const local = resolutionSubset(cwd);
-	if (local === undefined) {
-		return undefined;
-	}
-
-	const combined: Record<string, unknown> = { local };
-	const root = findWorkspaceRoot(cwd);
-	if (root !== cwd) {
-		const rootSubset = resolutionSubset(root);
-		if (rootSubset !== undefined) {
-			combined["root"] = rootSubset;
-		}
-	}
-
-	return crypto.createHash("sha256").update(stableStringify(combined)).digest("hex");
-}
+export const MANIFEST_FIELDS = [...RESOLUTION_FIELDS, "type"] as const;
 
 /**
- * Read a directory's `package.json` and project it down to the resolution
- * fields, or `undefined` when it is absent or unparseable.
+ * Read a directory's `package.json` and project it down to the named fields, or
+ * `undefined` when it is absent or unparseable.
  *
  * @param directory - The directory whose `package.json` to read.
- * @returns The resolution-field subset, or `undefined`.
+ * @param fields - The manifest fields to keep.
+ * @returns The field subset, or `undefined`.
  */
-function resolutionSubset(directory: string): Record<string, unknown> | undefined {
+export function manifestSubset(
+	directory: string,
+	fields: ReadonlyArray<string>,
+): Record<string, unknown> | undefined {
 	const raw = readFileIfPresent(path.join(directory, "package.json"));
 	if (raw === undefined) {
 		return undefined;
@@ -82,7 +66,7 @@ function resolutionSubset(directory: string): Record<string, unknown> | undefine
 	}
 
 	const subset: Record<string, unknown> = {};
-	for (const field of RESOLUTION_FIELDS) {
+	for (const field of fields) {
 		if (Object.hasOwn(parsed, field)) {
 			subset[field] = parsed[field];
 		}
@@ -92,23 +76,31 @@ function resolutionSubset(directory: string): Record<string, unknown> | undefine
 }
 
 /**
- * Serialize a value to JSON with object keys sorted at every depth so the
- * digest is insensitive to key ordering.
+ * Hash the resolution-relevant fields of the consumer's `package.json` as
+ * sorted, stable JSON. When `cwd` sits in a workspace whose root differs, the
+ * root `package.json`'s resolution fields fold into the same digest — a hoisted
+ * root dependency bump changes the types a sub-package sees even though its own
+ * `package.json` text is untouched. Returns `undefined` when there is no
+ * readable/parseable local `package.json` (the caller then treats the check as
+ * a no-op).
  *
- * @param value - The value to stringify.
- * @returns The stable JSON string.
+ * @param cwd - The consumer project root.
+ * @returns The hex digest, or `undefined` when unavailable.
  */
-function stableStringify(value: unknown): string {
-	if (Array.isArray(value)) {
-		return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+export function computePackageJsonHash(cwd: string): string | undefined {
+	const local = manifestSubset(cwd, RESOLUTION_FIELDS);
+	if (local === undefined) {
+		return undefined;
 	}
 
-	if (isRecord(value)) {
-		const entries = Object.keys(value)
-			.sort()
-			.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`);
-		return `{${entries.join(",")}}`;
+	const combined: Record<string, unknown> = { local };
+	const root = findWorkspaceRoot(cwd);
+	if (root !== cwd) {
+		const rootSubset = manifestSubset(root, RESOLUTION_FIELDS);
+		if (rootSubset !== undefined) {
+			combined["root"] = rootSubset;
+		}
 	}
 
-	return JSON.stringify(value);
+	return crypto.createHash("sha256").update(stableStringify(combined)).digest("hex");
 }
