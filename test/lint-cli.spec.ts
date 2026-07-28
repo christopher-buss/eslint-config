@@ -35,7 +35,7 @@ import type {
 import { CliError } from "../src/lint-cli/lib/cli/types.ts";
 import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
-import { execute } from "../src/lint-cli/lib/exec/execute.ts";
+import { execute, executeStaged } from "../src/lint-cli/lib/exec/execute.ts";
 import { buildShellCommand, formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
 import { collectRepoFiles, oxlintTargets } from "../src/lint-cli/lib/files/collect.ts";
 import type { RepoFiles } from "../src/lint-cli/lib/files/collect.ts";
@@ -952,33 +952,36 @@ describe("compose --print", () => {
 
 describe("plan", () => {
 	it("returns the default fast + typed passes as data", () => {
-		expect.assertions(4);
+		expect.assertions(5);
 
 		const directory = temporaryDirectory();
-		const runPlan = withoutGitEnvironment(() => {
+		const staged = withoutGitEnvironment(() => {
 			return plan(parseArguments([], {}), runContext(directory));
 		});
 
-		expect(runPlan.oxlint).toBe(true);
-		expect(runPlan.oxlintTypeAware).toBe(true);
-		expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+		expect(staged.eager.oxlint).toBe(true);
+		expect(staged.eager.oxlintTypeAware).toBe(true);
+		expect(staged.eager.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
 			"fast",
 			"typed",
 		]);
 		// A read-only plan never auto-skips the typed pass.
-		expect(runPlan.passes.every((pass) => pass.shouldRun)).toBe(true);
+		expect(staged.eager.passes.every((pass) => pass.shouldRun)).toBe(true);
+		// ...nor stages one: --print runs no builder to move off the path.
+		expect(staged.resolveDeferred).toBeUndefined();
 	});
 
 	it("plans no ESLint passes for an oxlint-only run", () => {
-		expect.assertions(2);
+		expect.assertions(3);
 
 		const directory = temporaryDirectory();
-		const runPlan = withoutGitEnvironment(() => {
+		const staged = withoutGitEnvironment(() => {
 			return plan(parseArguments(["--oxlint"], {}), runContext(directory));
 		});
 
-		expect(runPlan.oxlint).toBe(true);
-		expect(runPlan.passes).toStrictEqual([]);
+		expect(staged.eager.oxlint).toBe(true);
+		expect(staged.eager.passes).toStrictEqual([]);
+		expect(staged.resolveDeferred).toBeUndefined();
 	});
 
 	it("collapses to a single pass for the explicit modes", () => {
@@ -995,8 +998,96 @@ describe("plan", () => {
 			);
 		});
 
-		expect(fast.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
-		expect(full.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
+		expect(fast.eager.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
+		expect(full.eager.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
+	});
+});
+
+describe("plan staging", () => {
+	function stagedLabels(
+		argv: Array<string>,
+		directory: string,
+		environment: NodeJS.ProcessEnv = {},
+	): { deferred: Array<string>; eager: Array<string> } {
+		const staged = withoutGitEnvironment(() => {
+			return plan(
+				parseArguments(argv, environment),
+				runContext(directory, { environment, mutate: true }),
+			);
+		});
+
+		return {
+			deferred: (staged.resolveDeferred?.() ?? []).map((pass) => pass.descriptor.label),
+			eager: staged.eager.passes.map((pass) => pass.descriptor.label),
+		};
+	}
+
+	/**
+	 * A fixture whose oxlint child survives the hybrid gate: a fresh status
+	 * file and no `eslint.config.*` to make it look stale.
+	 *
+	 * @returns The fixture directory.
+	 */
+	function hybridDirectory(): string {
+		const directory = temporaryDirectory();
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		writeHybridStatus(directory, true);
+		return directory;
+	}
+
+	it("holds the typed pass back from a default run", () => {
+		expect.assertions(2);
+
+		const { deferred, eager } = stagedLabels([], hybridDirectory());
+
+		expect(eager).toStrictEqual(["fast"]);
+		expect(deferred).toStrictEqual(["typed"]);
+	});
+
+	it("holds a lone typed or full pass back behind the oxlint child", () => {
+		expect.assertions(4);
+
+		const only = stagedLabels(["--type-aware=only"], hybridDirectory());
+		const ci = stagedLabels([], hybridDirectory(), { CI: "true" });
+
+		expect(only.eager).toStrictEqual([]);
+		expect(only.deferred).toStrictEqual(["typed"]);
+		expect(ci.eager).toStrictEqual([]);
+		expect(ci.deferred).toStrictEqual(["eslint"]);
+	});
+
+	it("never stages --print or --fix", () => {
+		expect.assertions(2);
+
+		const directory = hybridDirectory();
+		const printed = withoutGitEnvironment(() => {
+			return plan(parseArguments([], {}), runContext(directory));
+		});
+
+		expect(printed.resolveDeferred).toBeUndefined();
+		expect(stagedLabels(["--fix"], directory).deferred).toStrictEqual([]);
+	});
+
+	it("never stages a run whose eager half could end up a lone child", () => {
+		expect.assertions(2);
+
+		// --eslint drops the oxlint child, leaving the fast pass alone; the typed
+		// pass may still auto-skip, which would strip the run back to one child.
+		const split = stagedLabels(["--eslint"], hybridDirectory());
+
+		expect(split.eager).toStrictEqual(["fast", "typed"]);
+		expect(split.deferred).toStrictEqual([]);
+	});
+
+	it("never stages a run with nothing to lint alongside the builder", () => {
+		expect.assertions(2);
+
+		// --eslint drops oxlint and =only leaves no syntactic pass, so the typed
+		// child is the whole run: holding it back would only delay it.
+		const only = stagedLabels(["--eslint", "--type-aware=only"], hybridDirectory());
+
+		expect(only.eager).toStrictEqual(["typed"]);
+		expect(only.deferred).toStrictEqual([]);
 	});
 });
 
@@ -1233,6 +1324,76 @@ describe("execute", () => {
 		expect(code).toBe(1);
 		expect(fs.existsSync(eslintMarker)).toBe(true);
 		expect(fs.existsSync(oxcMarker)).toBe(true);
+	}, 15_000);
+});
+
+describe("executeStaged", () => {
+	it("spawns the eager children before it resolves the deferred ones", async () => {
+		expect.assertions(3);
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-staged-"));
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		const oxcMarker = path.join(directory, "oxc-ran");
+		const eslintMarker = path.join(directory, "eslint-ran");
+
+		// oxlint writes its marker immediately; the resolver below asserts the
+		// file exists, which can only hold if the child really started first.
+		writeFakeToolBin(
+			directory,
+			"oxlint",
+			`const fs=require("node:fs");setTimeout(()=>{fs.writeFileSync(${JSON.stringify(
+				oxcMarker,
+			)},"ran");process.exit(0);},250);`,
+		);
+		writeFakeToolBin(
+			directory,
+			"eslint",
+			`const fs=require("node:fs");fs.writeFileSync(${JSON.stringify(
+				eslintMarker,
+			)},"ran");process.exit(1);`,
+		);
+
+		let oxcDoneAtResolve = true;
+		const code = await executeStaged(
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			directory,
+			() => {
+				oxcDoneAtResolve = fs.existsSync(oxcMarker);
+				return [{ args: [], bin: "eslint", env: {}, label: "typed" }];
+			},
+		);
+
+		// oxlint only writes its marker after 250ms, so the resolver running
+		// before it appeared — and the marker existing afterwards — is the
+		// eager child linting through the deferred planning step.
+		expect(oxcDoneAtResolve).toBe(false);
+		expect(fs.existsSync(oxcMarker)).toBe(true);
+		expect(code).toBe(1);
+	}, 15_000);
+
+	it("skips the deferred group when the resolver plans nothing", async () => {
+		expect.assertions(2);
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-staged-"));
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		writeFakeToolBin(directory, "oxlint", "process.exit(0);");
+
+		let resolverCalls = 0;
+		const code = await executeStaged(
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			directory,
+			() => {
+				resolverCalls += 1;
+				return [];
+			},
+		);
+
+		expect(code).toBe(0);
+		expect(resolverCalls).toBe(1);
 	}, 15_000);
 });
 

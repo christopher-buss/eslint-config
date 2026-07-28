@@ -50,6 +50,14 @@ export interface SizingInputs {
 	files: RepoFiles;
 	/** The resolved worker limits. */
 	limits: WorkerLimits;
+	/**
+	 * Whether the run selected more than one pass, which is what lets the typed
+	 * pass auto-skip. Carried here rather than derived from the descriptor list
+	 * because staging sizes the passes in two calls: the typed pass is sized
+	 * alone, after its siblings have spawned, and would otherwise read as the
+	 * only pass of the run.
+	 */
+	multiPass: boolean;
 	/** The newest cache-bust mtime (see `maxMtimeMs`). */
 	newestBustMtime: number | undefined;
 	/** The parsed CLI options. */
@@ -58,8 +66,6 @@ export interface SizingInputs {
 
 /** Everything one pass is sized against. */
 interface SizePassContext extends SizingInputs {
-	/** Whether more than one pass was selected (the typed pass may skip). */
-	multiPass: boolean;
 	/** The run context. */
 	run: RunContext;
 }
@@ -74,6 +80,11 @@ interface SizePassContext extends SizingInputs {
  * mtime/checksum and touches nothing. Callers see neither path — they get the
  * planned passes.
  *
+ * Callable more than once per run: a staged run sizes the builder-free passes
+ * up front and the builder-backed ones after their siblings have spawned. The
+ * inputs are the same value both times, so nothing is recomputed — only the
+ * builder work moves.
+ *
  * @param descriptors - The passes to size, in run order.
  * @param run - The run context.
  * @param inputs - The file lists, limits and bust results to size against.
@@ -84,8 +95,7 @@ export function sizePasses(
 	run: RunContext,
 	inputs: SizingInputs,
 ): Array<PassPlan> {
-	const multiPass = descriptors.length > 1;
-	return descriptors.map((descriptor) => sizePass(descriptor, { ...inputs, multiPass, run }));
+	return descriptors.map((descriptor) => sizePass(descriptor, { ...inputs, run }));
 }
 
 /**

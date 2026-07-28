@@ -1,6 +1,7 @@
 import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import { composeEslintCommand, composeOxlintCommand } from "./command.ts";
 import type { RunPlan } from "./plan.ts";
+import type { PassPlan } from "./sizing.ts";
 
 /** The stderr notice emitted when a lint target resolves outside the cwd. */
 const OUTSIDE_CWD_NOTICE =
@@ -16,6 +17,52 @@ export interface CommandPlan {
 	 * pass).
 	 */
 	notice: string | undefined;
+}
+
+/**
+ * Turn planned ESLint passes into child commands, collecting the notices of the
+ * ones that auto-skipped. Pure, and split out of {@link compose} because a
+ * staged run composes its passes in two goes: the type-aware pass is only sized
+ * once its siblings are already linting, and nothing else about the run is
+ * re-derived when it is.
+ *
+ * @param passes - The planned passes to compose, in run order.
+ * @param runPlan - The run they belong to, for the settings every child shares.
+ *   Its own `passes` are ignored in favour of the argument.
+ * @param options - The parsed CLI options (paths and per-tool args).
+ * @returns The composed commands and skip notices.
+ */
+export function composePasses(
+	passes: Array<PassPlan>,
+	runPlan: RunPlan,
+	options: LintCliOptions,
+): CommandPlan {
+	const commands: Array<ChildCommand> = [];
+	const notices: Array<string> = [];
+
+	for (const pass of passes) {
+		if (!pass.shouldRun) {
+			if (pass.skipReason !== undefined) {
+				notices.push(pass.skipReason);
+			}
+
+			continue;
+		}
+
+		commands.push(
+			composeEslintCommand(options, {
+				agentsFormatterPath: runPlan.agentsFormatterPath,
+				cacheLocation: pass.cacheFile,
+				ci: runPlan.ci,
+				concurrency: pass.concurrency,
+				eslintLabel: pass.descriptor.label,
+				paths: options.paths,
+				typeAwareEnv: pass.descriptor.typeAwareEnv,
+			}),
+		);
+	}
+
+	return { commands, notice: notices.length > 0 ? notices.join("") : undefined };
 }
 
 /**
@@ -47,26 +94,10 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 		);
 	}
 
-	for (const pass of runPlan.passes) {
-		if (!pass.shouldRun) {
-			if (pass.skipReason !== undefined) {
-				notices.push(pass.skipReason);
-			}
-
-			continue;
-		}
-
-		commands.push(
-			composeEslintCommand(options, {
-				agentsFormatterPath: runPlan.agentsFormatterPath,
-				cacheLocation: pass.cacheFile,
-				ci: runPlan.ci,
-				concurrency: pass.concurrency,
-				eslintLabel: pass.descriptor.label,
-				paths: options.paths,
-				typeAwareEnv: pass.descriptor.typeAwareEnv,
-			}),
-		);
+	const passPlan = composePasses(runPlan.passes, runPlan, options);
+	commands.push(...passPlan.commands);
+	if (passPlan.notice !== undefined) {
+		notices.push(passPlan.notice);
 	}
 
 	return { commands, notice: notices.length > 0 ? notices.join("") : undefined };

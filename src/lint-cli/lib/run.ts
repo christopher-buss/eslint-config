@@ -4,9 +4,9 @@ import process from "node:process";
 import { parseArguments } from "./cli/options.ts";
 import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
-import { execute } from "./exec/execute.ts";
+import { execute, executeStaged } from "./exec/execute.ts";
 import { formatCommandLine } from "./exec/shell.ts";
-import { compose } from "./plan/compose.ts";
+import { compose, composePasses } from "./plan/compose.ts";
 import { plan } from "./plan/plan.ts";
 
 /**
@@ -26,7 +26,8 @@ export async function runLint(
 	const options = parseArguments(argv, environment);
 
 	const run = resolveRunContext(cwd, environment, !options.print);
-	const { commands, notice } = compose(plan(options, run), options);
+	const staged = plan(options, run);
+	const { commands, notice } = compose(staged.eager, options);
 
 	if (options.print) {
 		for (const command of commands) {
@@ -56,7 +57,24 @@ export async function runLint(
 		process.stderr.write(notice);
 	}
 
-	// `--fix` must be sequential: two children writing the same files at once
-	// would race. A lone child gains nothing from the concurrently harness.
-	return execute(commands, cwd, options.fix || commands.length <= 1);
+	const { resolveDeferred } = staged;
+	if (resolveDeferred === undefined) {
+		// `--fix` must be sequential: two children writing the same files at once
+		// would race. A lone child gains nothing from the concurrently harness.
+		return execute(commands, cwd, options.fix || commands.length <= 1);
+	}
+
+	// A staged run is concurrent by construction (the planner only stages when
+	// at least one other child is already linting), so it never takes the
+	// sequential path. The type-aware pass is planned — TypeScript builder and
+	// all — only once the children above are running, and its notice is emitted
+	// as soon as it is known rather than held to the end of the run.
+	return executeStaged(commands, cwd, () => {
+		const later = composePasses(resolveDeferred(), staged.eager, options);
+		if (later.notice !== undefined) {
+			process.stderr.write(later.notice);
+		}
+
+		return later.commands;
+	});
 }
