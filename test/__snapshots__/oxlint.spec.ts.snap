@@ -6330,7 +6330,14 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         ],
         "small-rules/prefer-module-scope-constants": "error",
         "small-rules/prefer-singular-enums": "error",
-        "small-rules/require-async-suffix": "error",
+        "small-rules/require-async-suffix": [
+          "error",
+          {
+            "except": [
+              "main",
+            ],
+          },
+        ],
         "small-rules/strict-component-boundaries": "error",
       },
     },
@@ -10375,7 +10382,14 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         ],
         "small-rules/prefer-module-scope-constants": "error",
         "small-rules/prefer-singular-enums": "error",
-        "small-rules/require-async-suffix": "error",
+        "small-rules/require-async-suffix": [
+          "error",
+          {
+            "except": [
+              "main",
+            ],
+          },
+        ],
         "small-rules/strict-component-boundaries": "error",
       },
     },
@@ -16799,7 +16813,14 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         ],
         "small-rules/prefer-module-scope-constants": "error",
         "small-rules/prefer-singular-enums": "error",
-        "small-rules/require-async-suffix": "error",
+        "small-rules/require-async-suffix": [
+          "error",
+          {
+            "except": [
+              "main",
+            ],
+          },
+        ],
         "small-rules/strict-component-boundaries": "error",
       },
     },

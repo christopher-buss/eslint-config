@@ -29,7 +29,7 @@ export function smallRulesRules({
 					"small-rules/consistent-compound-words": "error",
 					"small-rules/prefer-module-scope-constants": "error",
 					"small-rules/prefer-singular-enums": "error",
-					"small-rules/require-async-suffix": "error",
+					"small-rules/require-async-suffix": ["error", { except: ["main"] }],
 				}
 			: {}),
 	};
