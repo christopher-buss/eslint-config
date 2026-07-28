@@ -1,5 +1,5 @@
-// cspell:words tsbuildinfo typeaware buildinfo mtimes normalised stabilise
-// cspell:words unparseable slugified sanitise optimisation unsuffixed
+// cspell:words tsbuildinfo tsgate typeaware buildinfo mtimes normalised
+// cspell:words stabilise unparseable slugified sanitise optimisation unsuffixed
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -10,7 +10,9 @@ import type { TypeAwareMode } from "../cli/types.ts";
 import { CACHE_KEY_LENGTH } from "../context.ts";
 import type { RunContext } from "../context.ts";
 import { toPosix } from "../paths.ts";
-import { stateDirectory, statePath } from "../state.ts";
+import { stateDirectory, statePath, writeState } from "../state.ts";
+import { isBuildInfoUnchanged } from "./buildinfo.ts";
+import { buildGateValue, computeResolutionGate } from "./gate.ts";
 import { loadTypescript } from "./load.ts";
 
 /** Result of a builder pass over the consumer's program. */
@@ -42,8 +44,15 @@ interface ResolvedProject {
 interface BuilderRun {
 	/** The variant's buildinfo file (see {@link builderStatePath}). */
 	buildInfoPath: string;
+	/** The buildinfo's gate state file (see {@link gateStatePath}). */
+	gatePath: string;
 	/** The resolved project to build (see {@link collectProjects}). */
 	project: ResolvedProject;
+	/**
+	 * The run's resolution digest (see `computeResolutionGate`), or `undefined`
+	 * when it could not be computed — which disables the fast path.
+	 */
+	resolutionGate: string | undefined;
 	/** The resolved TypeScript module. */
 	ts: typeof TypeScript;
 }
@@ -111,12 +120,19 @@ export function computeAffectedFiles(
 		// here rather than once per builder.
 		fs.mkdirSync(stateDirectory(cwd), { recursive: true });
 
+		// One digest for the whole run: the manifests and lockfiles it reads are
+		// the consumer's, not any single project's, and a solution can hold
+		// dozens of projects.
+		const resolutionGate = computeResolutionGate(cwd);
+
 		const affected = new Set<string>();
 		let warmProjects = 0;
 		for (const project of projects) {
 			const result = runBuilder({
 				buildInfoPath: builderStatePath(cwd, mode, key, project.id),
+				gatePath: gateStatePath(cwd, mode, key, project.id),
 				project,
+				resolutionGate,
 				ts,
 			});
 
@@ -173,6 +189,38 @@ function builderStatePath(
 ): string {
 	const suffix = mode === "only" ? "typeaware" : "full";
 	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
+}
+
+/**
+ * Resolve the gate state paired with one {@link builderStatePath} buildinfo:
+ * the resolution and compiler-option digest that was true when the builder last
+ * made that buildinfo describe the program.
+ *
+ * Written by the builder path only, never by the fast path, and never through
+ * `swapState`. A compare-and-swap here would consume the change at read time
+ * and open a hole with no symptom: an option flip would store the new digest,
+ * fall through to the builder, and — if that builder then threw — leave the
+ * buildinfo un-advanced with a gate that already claims to describe it. Every
+ * later run would fast-path against state nothing ever updated.
+ *
+ * Named apart from the `tsbuildinfo-` prefix rather than suffixed onto it so
+ * anything enumerating a variant's buildinfo files does not pick this up as
+ * one.
+ *
+ * @param cwd - The consumer project root.
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @param key - The config-variant key from `resolveCacheKey`.
+ * @param projectId - {@link projectDigest} of the project's tsconfig.
+ * @returns The absolute path to the gate state file.
+ */
+function gateStatePath(
+	cwd: string,
+	mode: TypeAwareMode | undefined,
+	key: string,
+	projectId: string,
+): string {
+	const suffix = mode === "only" ? "typeaware" : "full";
+	return statePath(cwd, "tsgate", suffix, key, projectId);
 }
 
 /**
@@ -350,6 +398,11 @@ function collectAffected(
  * degrades to a source-text hash and every implementation-only edit invalidates
  * all its importers.
  *
+ * The buildinfo is written through a temp file and a rename. It has a second
+ * reader now — {@link isBuildInfoUnchanged} parses it directly — and parallel
+ * per-package lints share this directory, so a half-written file would be read
+ * back as unparseable rather than merely re-emitted by the next builder.
+ *
  * @param builder - The drained builder program.
  * @param buildInfoPath - The variant's buildinfo file.
  */
@@ -359,20 +412,60 @@ function persistBuilderState(
 ): void {
 	const normalizedBuildInfo = path.normalize(buildInfoPath);
 	builder.emit(undefined, (fileName, data) => {
-		if (path.normalize(fileName) === normalizedBuildInfo) {
-			fs.writeFileSync(fileName, data);
+		if (path.normalize(fileName) !== normalizedBuildInfo) {
+			return;
+		}
+
+		const temporary = `${fileName}.${process.pid}.tmp`;
+		try {
+			fs.writeFileSync(temporary, data);
+			fs.renameSync(temporary, fileName);
+		} catch (err) {
+			fs.rmSync(temporary, { force: true });
+			throw err;
 		}
 	});
+}
+
+/**
+ * Record the gate the buildinfo was just persisted under, or remove it when the
+ * gate could not be computed. Removal matters: a leftover value from an earlier
+ * run would describe a resolution surface nothing has re-verified since.
+ *
+ * @param gatePath - The gate state file (see {@link gateStatePath}).
+ * @param gateValue - The gate this run computed, or `undefined`.
+ */
+function writeGateState(gatePath: string, gateValue: string | undefined): void {
+	if (gateValue === undefined) {
+		fs.rmSync(gatePath, { force: true });
+		return;
+	}
+
+	writeState(gatePath, gateValue);
 }
 
 /**
  * Drive the incremental builder: read prior state, drain the affected set
  * without reporting diagnostics, then persist updated state.
  *
- * @param build - The project, its state file, and the run's shared handles.
+ * A warm run whose buildinfo still describes the working tree exactly
+ * ({@link isBuildInfoUnchanged}) short-circuits before any program is
+ * constructed. That is the common case — a lint run where the previous one
+ * already saw every edit — and constructing the program only to learn it costs
+ * over a second on this repo, against under a tenth of that to verify the
+ * buildinfo. The short circuit is strictly read-only: it persists nothing,
+ * which is exactly what the builder does when it finds nothing affected.
+ *
+ * @param build - The project, its state files, and the run's shared handles.
  * @returns The affected result.
  */
-function runBuilder({ buildInfoPath, project, ts }: BuilderRun): AffectedResult {
+function runBuilder({
+	buildInfoPath,
+	gatePath,
+	project,
+	resolutionGate,
+	ts,
+}: BuilderRun): AffectedResult {
 	const firstRun = !fs.existsSync(buildInfoPath);
 
 	// Force the settings the shape-hash BFS depends on:
@@ -380,6 +473,12 @@ function runBuilder({ buildInfoPath, project, ts }: BuilderRun): AffectedResult 
 	//   its emitted `.d.ts` rather than raw source text, so a body-only edit
 	//   (unchanged public surface) does NOT propagate to importers. Without it,
 	//   the hash is the full-text hash and every dependent is invalidated.
+	// - `emitDeclarationOnly: true` drops JS emission, halving the outputs the
+	//   persist produces only to throw away (measured on this repo: 428 files
+	//   and 1.8MB down to 217 and 0.6MB). The shape hash is derived from the
+	//   `.d.ts`, so nothing the BFS reads is lost. It buys no wall-clock time —
+	//   the emit's cost is the declaration work, not the writing — so do not
+	//   read it as a performance setting the fast path can lean on.
 	// - `incremental: true` + `tsBuildInfoFile` persist state in OUR cache dir.
 	// - `composite`/`declarationMap` off, `noEmit` false: see
 	//   {@link persistBuilderState} for why we emit and what happens to it.
@@ -399,11 +498,25 @@ function runBuilder({ buildInfoPath, project, ts }: BuilderRun): AffectedResult 
 		composite: false,
 		declaration: true,
 		declarationMap: false,
-		emitDeclarationOnly: false,
+		emitDeclarationOnly: true,
 		incremental: true,
 		noEmit: false,
-		tsBuildInfoFile: buildInfoPath,
+		tsBuildInfoFile: toPosix(buildInfoPath),
 	};
+
+	const gateValue = buildGateValue(resolutionGate, options);
+	if (
+		!firstRun &&
+		isBuildInfoUnchanged({
+			buildInfoPath,
+			fileNames: project.fileNames,
+			gatePath,
+			gateValue,
+			ts,
+		})
+	) {
+		return { affected: new Set(), firstRun: false };
+	}
 
 	const host = ts.createIncrementalCompilerHost(options, ts.sys);
 	const oldProgram = ts.readBuilderProgram(options, host);
@@ -436,6 +549,12 @@ function runBuilder({ buildInfoPath, project, ts }: BuilderRun): AffectedResult 
 	if (touched) {
 		persistBuilderState(builder, buildInfoPath);
 	}
+
+	// Only now, with the buildinfo known to describe the tree this run saw, is
+	// the gate allowed to move. Writing it earlier (or swapping it on read)
+	// would let a throw between the two leave a gate vouching for a buildinfo
+	// the builder never advanced.
+	writeGateState(gatePath, gateValue);
 
 	return { affected, firstRun };
 }
