@@ -12,14 +12,16 @@ import { collectRepoFiles, oxlintTargets, withoutIgnored } from "../files/collec
 import { resolveIgnoredFiles } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { resolveWorkerLimits } from "./concurrency.ts";
+import type { PassDescriptor } from "./passes.ts";
 import { selectPasses } from "./passes.ts";
-import type { PassPlan } from "./sizing.ts";
+import type { PassPlan, SizingInputs } from "./sizing.ts";
 import { sizePasses } from "./sizing.ts";
 
 /**
- * A composed run as plain data: all I/O and mutation happen once in
- * {@link plan} to build it, then `compose` turns it into child commands with no
- * further I/O.
+ * A composed run as plain data: the I/O and mutation behind it happen in
+ * {@link plan}, then `compose` turns it into child commands with no further
+ * I/O. A staged run leaves one step outstanding — see {@link StagedPlan} — but
+ * this value is complete for the passes it carries.
  */
 export interface RunPlan {
 	/**
@@ -49,18 +51,66 @@ export interface RunPlan {
 }
 
 /**
+ * A run planned in two stages, so the children that need nothing from the
+ * TypeScript builder stop waiting behind it.
+ *
+ * Sizing a type-aware pass means running the incremental builder over the whole
+ * program — seconds on a real project, and unconditional even when it reports
+ * nothing affected. Everything else the planner does is cheap. Splitting the
+ * plan lets the oxlint child and the syntactic pass spawn first and lint while
+ * the builder runs, with the type-aware child joining once its own sizing is
+ * known.
+ */
+export interface StagedPlan {
+	/** The part of the run that is ready to spawn now. */
+	eager: RunPlan;
+	/**
+	 * Size the passes held back from {@link StagedPlan.eager}: runs the
+	 * TypeScript builder and folds its invalidation into the type-aware cache.
+	 * `undefined` when nothing was held back, which is also the whole plan for
+	 * `--print` and `--fix`.
+	 *
+	 * Call once, and only after the eager children have spawned — it mutates
+	 * the type-aware cache the child it plans is about to read.
+	 */
+	resolveDeferred: (() => Array<PassPlan>) | undefined;
+}
+
+/** What the staging decision needs to know beyond the descriptors. */
+interface StagingInputs {
+	/** Whether the run selected more than one pass. */
+	multiPass: boolean;
+	/** Whether an oxlint child survived the hybrid gate. */
+	oxlint: boolean;
+	/** Whether a lint target resolved outside the cwd. */
+	targetsOutsideCwd: boolean;
+}
+
+/** How the selected passes split across the two spawn stages. */
+interface StagedDescriptors {
+	/** Passes whose dirty count needs the builder; sized after the spawn. */
+	deferred: Array<PassDescriptor>;
+	/** Passes sized now, so their children spawn before the builder runs. */
+	eager: Array<PassDescriptor>;
+}
+
+/**
  * Plan the run: collect the repo file list once, apply the package.json and
- * mtime busts and TypeScript builder invalidation, size each pass and decide
- * which run. All I/O and mutation happen here, exactly once. When `mutate` is
- * false (`--print`) the whole mutation step is skipped — no builder, no cache
- * deletion, no state writes and no auto-skip — while still sizing from the
- * on-disk caches. The returned value is plain data.
+ * mtime busts, size each pass and decide which run. Every cache bust and every
+ * deletion happens here, before anything spawns, so no child ever lints against
+ * a cache that is about to vanish. When `mutate` is false (`--print`) the whole
+ * mutation step is skipped — no builder, no cache deletion, no state writes and
+ * no auto-skip — while still sizing from the on-disk caches.
+ *
+ * The one step that may outlive this call is the TypeScript builder behind a
+ * type-aware pass's dirty count; see {@link StagedPlan}. The returned eager
+ * half is plain data.
  *
  * @param options - The parsed CLI options.
  * @param run - The run context (cwd, variant key, environment, mutate).
- * @returns The run plan.
+ * @returns The staged run plan.
  */
-export function plan(options: LintCliOptions, run: RunContext): RunPlan {
+export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	const { ci, cwd, environment, mutate } = run;
 	const runEslint = !options.oxlint;
 	const oxlintTypeAware = resolveOxlintTypeAware(options);
@@ -75,14 +125,17 @@ export function plan(options: LintCliOptions, run: RunContext): RunPlan {
 
 	if (!runEslint) {
 		return {
-			agentsFormatterPath,
-			ci,
-			oxlint: runOxlint,
-			oxlintPaths,
-			oxlintReason: undefined,
-			oxlintTypeAware,
-			passes: [],
-			targetsOutsideCwd: false,
+			eager: {
+				agentsFormatterPath,
+				ci,
+				oxlint: runOxlint,
+				oxlintPaths,
+				oxlintReason: undefined,
+				oxlintTypeAware,
+				passes: [],
+				targetsOutsideCwd: false,
+			},
+			resolveDeferred: undefined,
 		};
 	}
 
@@ -142,26 +195,85 @@ export function plan(options: LintCliOptions, run: RunContext): RunPlan {
 	const ignored = resolveIgnoredFiles(run, configHash, files.lintable);
 	const sizingFiles = withoutIgnored(files, ignored);
 
-	const passes = sizePasses(descriptors, run, {
+	const inputs: SizingInputs = {
 		clearedCaches,
 		files: sizingFiles,
 		limits,
+		multiPass: descriptors.length > 1,
 		newestBustMtime,
 		options,
+	};
+
+	const staged = stageDescriptors(descriptors, options, run, {
+		multiPass: inputs.multiPass,
+		oxlint: oxlintDecision.run,
+		targetsOutsideCwd: sizingFiles.targetsOutsideCwd,
 	});
 
 	return {
-		agentsFormatterPath,
-		ci,
-		oxlint: oxlintDecision.run,
-		oxlintPaths,
-		oxlintReason: oxlintDecision.reason,
-		oxlintTypeAware,
-		passes,
-		targetsOutsideCwd: files.targetsOutsideCwd,
+		eager: {
+			agentsFormatterPath,
+			ci,
+			oxlint: oxlintDecision.run,
+			oxlintPaths,
+			oxlintReason: oxlintDecision.reason,
+			oxlintTypeAware,
+			passes: sizePasses(staged.eager, run, inputs),
+			targetsOutsideCwd: files.targetsOutsideCwd,
+		},
+		resolveDeferred:
+			staged.deferred.length > 0 ? () => sizePasses(staged.deferred, run, inputs) : undefined,
 	};
 }
 
 function resolveOxlintTypeAware(options: LintCliOptions): boolean {
 	return !options.eslint && options.oxlintTypeAware && options.typeAware !== "off";
+}
+
+/**
+ * Split the selected passes into the ones that can be sized now and the ones
+ * worth holding back until their siblings are already linting. Only a pass that
+ * runs the TypeScript builder is ever held back — that is the whole cost being
+ * moved off the critical path.
+ *
+ * Everything else stays eager, and four cases opt out of staging entirely:
+ *
+ * - `--print` (`mutate` false) runs no builder anyway and must stay one pure
+ *   snapshot printed in a single go;
+ * - `--fix` runs its children one at a time, so a later spawn buys nothing and
+ *   there is no reason to reopen the write race the sequential path prevents;
+ * - a run with no eager child at all, where holding the builder-backed pass
+ *   back would only delay the whole run;
+ * - a run whose one eager child could end up alone, because the type-aware pass
+ *   it was staged alongside auto-skipped. A lone child gets inherited stdio
+ *   (colour, no prefix), and staging would have already committed it to the
+ *   prefixed, piped harness for no gain.
+ *
+ * @param descriptors - The selected passes, in run order.
+ * @param options - The parsed CLI options.
+ * @param run - The run context.
+ * @param staging - The oxlint decision and the auto-skip inputs.
+ * @returns The two stages, each in run order.
+ */
+function stageDescriptors(
+	descriptors: Array<PassDescriptor>,
+	options: LintCliOptions,
+	run: RunContext,
+	staging: StagingInputs,
+): StagedDescriptors {
+	const eager = descriptors.filter((descriptor) => descriptor.invalidation === "none");
+	const deferred = descriptors.filter((descriptor) => descriptor.invalidation !== "none");
+	const unstaged: StagedDescriptors = { deferred: [], eager: descriptors };
+
+	if (!run.mutate || options.fix || deferred.length === 0) {
+		return unstaged;
+	}
+
+	const eagerChildren = (staging.oxlint ? 1 : 0) + eager.length;
+	const mayAutoSkip = staging.multiPass && !staging.targetsOutsideCwd;
+	if (eagerChildren === 0 || (eagerChildren === 1 && mayAutoSkip)) {
+		return unstaged;
+	}
+
+	return { deferred, eager };
 }

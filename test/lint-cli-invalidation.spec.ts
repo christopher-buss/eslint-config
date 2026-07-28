@@ -24,7 +24,7 @@ import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { computeAffectedFiles } from "../src/lint-cli/lib/typescript/affected.ts";
-import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
+import { allPasses, composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 /**
@@ -634,7 +634,7 @@ describe("plan mutation", () => {
 			return plan(parseArguments([], {}), runContext(directory));
 		});
 
-		expect(runPlan.passes.map((pass) => pass.descriptor.label)).toStrictEqual([
+		expect(allPasses(runPlan).map((pass) => pass.descriptor.label)).toStrictEqual([
 			"fast",
 			"typed",
 		]);
@@ -642,9 +642,10 @@ describe("plan mutation", () => {
 		expect(builderStateFiles(directory, buildInfo)).toHaveLength(0);
 		expect(fs.existsSync(cacheFile)).toBe(true);
 
-		// The mutating plan, by contrast, runs the builder.
+		// The mutating plan, by contrast, runs the builder — once its deferred
+		// stage is resolved, which is where a staged run moved it to.
 		withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+			return allPasses(plan(parseArguments([], {}), runContext(directory, { mutate: true })));
 		});
 
 		expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
@@ -666,7 +667,7 @@ describe("plan mutation", () => {
 		const runPlan = withoutGitEnvironment(() => {
 			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
 		});
-		const typed = runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+		const typed = allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 
 		expect(typed!.shouldRun).toBe(false);
 		expect(typed!.skipReason).toMatch(/skipping the type-aware/);
@@ -1026,7 +1027,7 @@ describe("computeConfigHash discovery", () => {
 
 describe("config drift sizing", () => {
 	function typedPass(runPlan: ReturnType<typeof plan>): PassPlan | undefined {
-		return runPlan.passes.find((pass) => pass.descriptor.label === "typed");
+		return allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 	}
 
 	it("un-skips the typed pass when a module the config imports changed", () => {
