@@ -30,7 +30,7 @@ export function restrictedDomImportRule(
 				{
 					name: domPackage,
 					message:
-						"Import from @packages/react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.",
+						"Import from react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.",
 				},
 			],
 		},
@@ -174,9 +174,7 @@ export function reactRules({
 					"testing-library/no-await-sync-queries": "error",
 					"testing-library/no-container": "error",
 					"testing-library/no-debugging-utils": "error",
-					"testing-library/no-global-regexp-flag-in-query": "error",
 					"testing-library/no-manual-cleanup": "error",
-					"testing-library/no-node-access": "error",
 					"testing-library/no-promise-in-fire-event": "error",
 					"testing-library/no-render-in-lifecycle": "error",
 					"testing-library/no-unnecessary-act": "error",

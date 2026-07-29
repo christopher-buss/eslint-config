@@ -25,7 +25,7 @@ export type ConfigSettings = NonNullable<Linter.Config["settings"]> & {
 		 * Package name for DOM Testing Library.
 		 *
 		 * When React testing support is enabled, importing this package is
-		 * forbidden in favor of `@packages/react-testing-library-lua`.
+		 * forbidden in favor of `react-testing-library-lua`.
 		 */
 		domPackage?: string;
 	};
