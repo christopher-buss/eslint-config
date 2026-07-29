@@ -6,6 +6,7 @@ import { isPackageExists } from "local-pkg";
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
+import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
 	findWorkspaceRootSync,
@@ -256,6 +257,11 @@ export async function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+	const reactOptions = resolveSubOptions(options, "react");
+	const restrictedDomPackage =
+		enableReact !== false && reactOptions.testing === true
+			? options.settings?.["testing-library"]?.domPackage
+			: undefined;
 
 	// Hybrid mode is off, full (oxlint owns every mapped rule) or native-only
 	// (oxlint owns just the Rust rules; jsPlugin rules and formatting stay here).
@@ -664,6 +670,25 @@ export async function isentinel(
 	if (options.markdown !== false) {
 		composer = composer.setDefaultIgnores((previous) => {
 			return [...previous, GLOB_MARKDOWN];
+		});
+	}
+
+	if (restrictedDomPackage !== undefined) {
+		composer = composer.onResolved((resolved) => {
+			for (const config of resolved) {
+				const restrictedImports = config.rules?.["no-restricted-imports"];
+				if (restrictedImports === undefined) {
+					continue;
+				}
+
+				config.rules = {
+					...config.rules,
+					"no-restricted-imports": mergeRestrictedDomImportRule(
+						restrictedImports,
+						restrictedDomPackage,
+					),
+				};
+			}
 		});
 	}
 

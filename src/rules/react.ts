@@ -1,3 +1,4 @@
+import { isRecord } from "../guards.ts";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface ReactRuleOptions extends OptionsStylistic {
@@ -8,6 +9,9 @@ export interface ReactRuleOptions extends OptionsStylistic {
 }
 
 type RestrictedImportRule = NonNullable<TypedFlatConfigItem["rules"]>["no-restricted-imports"];
+
+const DOM_IMPORT_MESSAGE =
+	"Import from react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.";
 
 /**
  * Build the direct DOM Testing Library import restriction shared by both
@@ -26,15 +30,72 @@ export function restrictedDomImportRule(
 	return [
 		"error",
 		{
-			paths: [
-				{
-					name: domPackage,
-					message:
-						"Import from react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.",
-				},
-			],
+			paths: [domImportRestriction(domPackage)],
 		},
 	];
+}
+
+/**
+ * Merge the direct DOM Testing Library restriction into an existing
+ * `no-restricted-imports` entry.
+ *
+ * The existing entry owns the severity and any duplicate restriction. An
+ * explicit disabled entry remains disabled.
+ *
+ * @param rule - Existing rule entry.
+ * @param domPackage - Package name for DOM Testing Library.
+ * @returns The composed rule entry.
+ */
+export function mergeRestrictedDomImportRule(
+	rule: RestrictedImportRule | undefined,
+	domPackage: string | undefined,
+): RestrictedImportRule | undefined {
+	if (domPackage === undefined || rule === "off" || rule === 0) {
+		return rule;
+	}
+
+	if (rule === undefined) {
+		return restrictedDomImportRule(domPackage);
+	}
+
+	const parts: Array<unknown> = Array.isArray(rule) ? [...rule] : [rule];
+	const [severity, ...options] = parts;
+	if (severity === "off" || severity === 0) {
+		return rule;
+	}
+
+	if (severity !== "error" && severity !== "warn" && severity !== 1 && severity !== 2) {
+		return rule;
+	}
+
+	const [firstOption] = options;
+	if (options.length === 1 && isObjectStyleRestriction(firstOption)) {
+		const paths = Array.isArray(firstOption["paths"]) ? firstOption["paths"] : [];
+		if (paths.some((path) => isDomImportRestriction(path, domPackage))) {
+			return rule;
+		}
+
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime checks above preserve ESLint's valid object-style rule shape.
+		return [
+			severity,
+			{
+				...firstOption,
+				paths: [...paths, domImportRestriction(domPackage)],
+			},
+		] as RestrictedImportRule;
+	}
+
+	if (options.some((option) => isDomImportRestriction(option, domPackage))) {
+		return rule;
+	}
+
+	if (options.length === 0) {
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a severity plus the object-style option is a valid rule entry.
+		return [severity, { paths: [domImportRestriction(domPackage)] }] as RestrictedImportRule;
+	}
+
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- appending a path descriptor preserves ESLint's valid legacy rule shape.
+	return [...parts, domImportRestriction(domPackage)] as unknown as RestrictedImportRule;
 }
 
 /**
@@ -230,4 +291,21 @@ export function reactRules({
 				}
 			: {}),
 	};
+}
+
+function domImportRestriction(domPackage: string): { message: string; name: string } {
+	return {
+		name: domPackage,
+		message: DOM_IMPORT_MESSAGE,
+	};
+}
+
+function isDomImportRestriction(value: unknown, domPackage: string): boolean {
+	return (
+		value === domPackage || (isRecord(value) && "name" in value && value["name"] === domPackage)
+	);
+}
+
+function isObjectStyleRestriction(value: unknown): value is Record<string, unknown> {
+	return isRecord(value) && !("name" in value);
 }

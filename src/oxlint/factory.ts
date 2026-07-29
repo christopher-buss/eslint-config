@@ -9,8 +9,10 @@ import type {
 import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
+import { isRecord } from "../guards.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
+import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
 import {
 	findWorkspaceRootSync,
@@ -147,6 +149,14 @@ export function isentinel(
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
 	const enableRoblox = options.roblox !== false;
+	const reactOptions = resolveSubOptions(options, "react");
+	const testingLibrarySettings = options.settings?.["testing-library"];
+	const configuredDomPackage =
+		isRecord(testingLibrarySettings) && typeof testingLibrarySettings["domPackage"] === "string"
+			? testingLibrarySettings["domPackage"]
+			: undefined;
+	const restrictedDomPackage =
+		enableReact !== false && reactOptions.testing === true ? configuredDomPackage : undefined;
 
 	// Native-only mode: oxlint runs its Rust rules (and tsgolint) and nothing
 	// else. Every preset fragment that needs a jsPlugin is stripped, so the
@@ -331,7 +341,6 @@ export function isentinel(
 	}
 
 	if (enableReact !== false) {
-		const reactOptions = typeof enableReact === "object" ? enableReact : {};
 		configs.push(
 			oxlintReact({
 				roblox: enableRoblox,
@@ -450,6 +459,23 @@ export function isentinel(
 		// `plugins` stays on the override; `scopeOverridePlugins` decides which
 		// of them are hoisted away once every fragment has been seen.
 		const { name: _name, settings: _settings, ...override } = config;
+		const restrictedImports = override.rules?.["no-restricted-imports"];
+		if (restrictedDomPackage !== undefined && restrictedImports !== undefined) {
+			const mergedRestrictedImports = mergeRestrictedDomImportRule(
+				// Both engines use the core-rule schema.
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- schema match.
+				restrictedImports as Parameters<typeof mergeRestrictedDomImportRule>[0],
+				restrictedDomPackage,
+			);
+			override.rules = {
+				...override.rules,
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- preserves the native rule shape.
+				"no-restricted-imports": mergedRestrictedImports as unknown as NonNullable<
+					typeof restrictedImports
+				>,
+			};
+		}
+
 		override.files = override.files.map(anchorOxlintGlob);
 		if (override.excludeFiles !== undefined) {
 			override.excludeFiles = override.excludeFiles.map(anchorOxlintGlob);
