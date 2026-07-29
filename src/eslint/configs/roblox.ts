@@ -24,9 +24,12 @@ export async function roblox(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
+		outOfProjectFiles,
 		overrides = {},
 		overridesTypeAware = {},
 		parserOptions = {},
+		parserOptionsNonTypeAware = {},
+		parserOptionsTypeAware = {},
 		stylistic = true,
 		typeAware = true,
 	} = options;
@@ -59,8 +62,11 @@ export async function roblox(
 			configName: "roblox",
 			files: parserFiles,
 			ignores,
+			outOfProjectFiles,
 			parser: parserTs,
 			parserOptions,
+			parserOptionsNonTypeAware,
+			parserOptionsTypeAware,
 			tsconfigPath,
 			typeAware: usesTypeInformation,
 		});
