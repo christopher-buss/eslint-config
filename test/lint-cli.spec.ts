@@ -693,7 +693,14 @@ describe("command composition", () => {
 			paths: ["src"],
 		});
 
-		expect(command.args).toStrictEqual(["--format", "agent", "--type-aware", "--fix", "src"]);
+		expect(command.args).toStrictEqual([
+			"--format",
+			"agent",
+			"--type-aware",
+			"--fix",
+			"--no-error-on-unmatched-pattern",
+			"src",
+		]);
 		expect(command.env).toStrictEqual({});
 	});
 
@@ -703,6 +710,23 @@ describe("command composition", () => {
 		const command = composeOxlintCommand(options(), { oxlintTypeAware: false, paths: ["."] });
 
 		expect(command.args).not.toContain("--type-aware");
+	});
+
+	// A tracked file the oxlint config ignores (`src/generated/*.ts`) survives
+	// `oxlintTargets`, which only sees git's ignores, and leaves oxlint with
+	// nothing to lint. Bare, that exits non-zero and fails a hook.
+	it("never lets an all-ignored target set fail the oxlint pass", () => {
+		expect.assertions(1);
+
+		const command = composeOxlintCommand(options(), {
+			oxlintTypeAware: false,
+			paths: ["src/generated/oxlint-capabilities.ts"],
+		});
+
+		expect(command.args).toStrictEqual([
+			"--no-error-on-unmatched-pattern",
+			"src/generated/oxlint-capabilities.ts",
+		]);
 	});
 
 	it("composes the ESLint command with cache location and concurrency", () => {
@@ -789,7 +813,9 @@ describe("formatCommandLine", () => {
 
 		const command = composeOxlintCommand(options(), { oxlintTypeAware: true, paths: ["."] });
 
-		expect(formatCommandLine(command)).toBe("oxlint --type-aware .");
+		expect(formatCommandLine(command)).toBe(
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+		);
 	});
 });
 
@@ -846,7 +872,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines([], directory)).toStrictEqual([
-			"oxlint --type-aware .",
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
@@ -860,7 +886,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
-			"oxlint .",
+			"oxlint --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
@@ -872,7 +898,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
-			"oxlint --type-aware .",
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
@@ -899,7 +925,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
-			"oxlint --type-aware .",
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
 		]);
 	});
@@ -910,7 +936,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines([], directory, { CI: "true" })).toStrictEqual([
-			"oxlint --type-aware .",
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
 		]);
 	});
@@ -934,7 +960,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["package.json", "src/index.ts", "docs"], directory)[0]).toBe(
-			"oxlint --type-aware src/index.ts docs",
+			"oxlint --type-aware --no-error-on-unmatched-pattern src/index.ts docs",
 		);
 	});
 
@@ -944,7 +970,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--fix"], directory)).toStrictEqual([
-			"oxlint --type-aware --fix .",
+			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
 			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off --fix .`,
 		]);
 	});
@@ -1898,7 +1924,7 @@ describe("explicit --type-aware selection in CI", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
-			"oxlint --type-aware .",
+			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
@@ -1910,7 +1936,7 @@ describe("explicit --type-aware selection in CI", () => {
 		const directory = temporaryDirectory();
 
 		expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
-			"oxlint .",
+			"oxlint --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);

@@ -134,17 +134,21 @@ export function withoutIgnored(files: RepoFiles, ignored: ReadonlySet<string>): 
 }
 
 /**
- * Restrict explicit lint targets to the ones oxlint could lint. Oxlint only
- * handles the TS/JS family, and exits non-zero with "No files found to lint"
- * when every path it was handed resolves to nothing — so a hook run over a
- * `package.json`-only change would fail on a file oxlint was never going to
- * lint. A path is kept when its extension is type-aware, when it has no
- * extension, or when it is an existing directory (either may hold TS/JS files).
+ * Restrict explicit lint targets to the ones oxlint could lint, so a run with
+ * nothing for oxlint to do spawns no oxlint child at all. Oxlint only handles
+ * the TS/JS family: a path is kept when its extension is type-aware, when it
+ * has no extension, or when it is an existing directory (either may hold TS/JS
+ * files).
  *
  * Surviving targets are then dropped when oxlint's own ignore matching would
  * skip them (see {@link gitIgnoredTargets}): a hook stages a `.gitignore`d yet
  * git-tracked file (a committed generated `*.d.ts`, say), which passes the
- * extension test but is the exact all-ignored set oxlint exits non-zero on.
+ * extension test but is a path oxlint refuses.
+ *
+ * This is a spawn-avoidance filter, not a correctness one — the config
+ * `ignores` an all-ignored set usually comes from are invisible to git.
+ * Tolerating that set is `--no-error-on-unmatched-pattern`'s job (see
+ * `composeOxlintCommand`).
  *
  * @param cwd - The working directory to resolve targets against.
  * @param targets - The explicit lint target paths.

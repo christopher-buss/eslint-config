@@ -117,9 +117,11 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	const agentsFormatterPath = options.agents ? resolveAgentsFormatter() : "";
 
 	// Targets oxlint cannot lint (a `package.json`-only commit, say) are dropped,
-	// and oxlint is skipped outright when nothing survives — handed only such
-	// paths it exits non-zero on "No files found to lint", failing a hook over a
-	// file it was never going to lint. The default target `.` always survives.
+	// and oxlint is skipped outright when nothing survives, so no child spawns
+	// for a run with nothing to do. Surviving targets that oxlint's own config
+	// ignores are not predictable here; `--no-error-on-unmatched-pattern` (see
+	// `composeOxlintCommand`) is what keeps those from failing the run. The
+	// default target `.` always survives.
 	const oxlintPaths = oxlintTargets(cwd, options.paths);
 	const runOxlint = !options.eslint && oxlintPaths.length > 0;
 

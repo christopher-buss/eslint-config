@@ -29,7 +29,13 @@ export function composeOxlintCommand(
 		args.push("--fix");
 	}
 
-	args.push(...options.oxlintArgs, ...context.paths);
+	// Every target surviving `oxlintTargets` can still resolve to nothing once
+	// oxlint applies its own config `ignores` — a hook staging a tracked but
+	// config-ignored file (`src/generated/*.ts`, say) is the common case, and no
+	// git-side prediction can see those patterns. Bare, oxlint exits non-zero
+	// there and fails the hook over a file it was never going to lint. A path
+	// that matches nothing at all still surfaces: the ESLint pass reports it.
+	args.push("--no-error-on-unmatched-pattern", ...options.oxlintArgs, ...context.paths);
 	return { args, bin: "oxlint", env: {}, label: "oxc" };
 }
 
