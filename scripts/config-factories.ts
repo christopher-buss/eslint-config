@@ -75,7 +75,7 @@ export const PRESET_CONFIGS: Array<Awaitable<Array<TypedFlatConfigItem>>> = [
 	perfectionist(),
 	pnpm({ isInEditor: false }),
 	promise(),
-	react(),
+	react({ testing: true }),
 	roblox(),
 	smallRules(),
 	sonarjs({ isInEditor: false }),

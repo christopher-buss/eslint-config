@@ -1,8 +1,40 @@
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface ReactRuleOptions extends OptionsStylistic {
+	domPackage?: string;
 	filenameCase?: "kebabCase" | "pascalCase";
 	reactCompiler?: boolean;
+	testing?: boolean;
+}
+
+type RestrictedImportRule = NonNullable<TypedFlatConfigItem["rules"]>["no-restricted-imports"];
+
+/**
+ * Build the direct DOM Testing Library import restriction shared by both
+ * engines.
+ *
+ * @param domPackage - Package name for DOM Testing Library.
+ * @returns The configured restriction, or `undefined` when no package is set.
+ */
+export function restrictedDomImportRule(
+	domPackage: string | undefined,
+): RestrictedImportRule | undefined {
+	if (domPackage === undefined) {
+		return undefined;
+	}
+
+	return [
+		"error",
+		{
+			paths: [
+				{
+					name: domPackage,
+					message:
+						"Import from @packages/react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.",
+				},
+			],
+		},
+	];
 }
 
 /**
@@ -15,10 +47,14 @@ export interface ReactRuleOptions extends OptionsStylistic {
  * @returns The rule map.
  */
 export function reactRules({
+	domPackage,
 	filenameCase = "kebabCase",
 	reactCompiler = true,
 	stylistic = true,
+	testing = false,
 }: ReactRuleOptions = {}): TypedFlatConfigItem["rules"] {
+	const restrictedDomImport = testing ? restrictedDomImportRule(domPackage) : undefined;
+
 	return {
 		"flawless/no-unnecessary-use-callback": "error",
 
@@ -126,6 +162,38 @@ export function reactRules({
 		"react/static-components": "error",
 		"react/use-memo": "error",
 		"react/use-state": ["error", { enforceAssignment: false, enforceSetterName: false }],
+
+		...(testing
+			? {
+					"testing-library/await-async-queries": "error",
+					"testing-library/await-async-utils": "error",
+					"testing-library/no-await-sync-events": [
+						"error",
+						{ eventModules: ["fire-event"] },
+					],
+					"testing-library/no-await-sync-queries": "error",
+					"testing-library/no-container": "error",
+					"testing-library/no-debugging-utils": "error",
+					"testing-library/no-global-regexp-flag-in-query": "error",
+					"testing-library/no-manual-cleanup": "error",
+					"testing-library/no-node-access": "error",
+					"testing-library/no-promise-in-fire-event": "error",
+					"testing-library/no-render-in-lifecycle": "error",
+					"testing-library/no-unnecessary-act": "error",
+					"testing-library/no-wait-for-multiple-assertions": "error",
+					"testing-library/no-wait-for-side-effects": "error",
+					"testing-library/no-wait-for-snapshot": "error",
+					"testing-library/prefer-explicit-assert": "error",
+					"testing-library/prefer-find-by": "error",
+					"testing-library/prefer-presence-queries": "error",
+					"testing-library/prefer-query-by-disappearance": "error",
+					"testing-library/prefer-screen-queries": "error",
+					"testing-library/render-result-naming-convention": "error",
+					...(restrictedDomImport !== undefined
+						? { "no-restricted-imports": restrictedDomImport }
+						: {}),
+				}
+			: {}),
 
 		...(stylistic !== false
 			? {

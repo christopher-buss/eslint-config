@@ -494,6 +494,7 @@ export async function isentinel(
 			react({
 				...resolveSubOptions(options, "react"),
 				...getOverrides(options, "react"),
+				settings: options.settings,
 			}),
 		);
 	}

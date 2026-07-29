@@ -19,12 +19,27 @@ export interface JsdocOptions {
 
 export type Rules = Record<string, Linter.RuleEntry<any> | undefined> & RuleOptions;
 
+export type ConfigSettings = NonNullable<Linter.Config["settings"]> & {
+	"testing-library"?: {
+		/**
+		 * Package name for DOM Testing Library.
+		 *
+		 * When React testing support is enabled, importing this package is
+		 * forbidden in favor of `@packages/react-testing-library-lua`.
+		 */
+		domPackage?: string;
+	};
+};
+
 /**
  * An updated version of ESLint's `Linter.Config`, which provides autocompletion
  * for `rules` and relaxes type limitations for `plugins` and `rules`, because
  * many plugins still lack proper type definitions.
  */
-export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>, "plugins"> & {
+export type TypedFlatConfigItem = Omit<
+	Linter.Config<Linter.RulesRecord & Rules>,
+	"plugins" | "settings"
+> & {
 	/**
 	 * The base directory that `files` and `ignores` patterns in this config
 	 * object are resolved against. Defaults to the location ESLint derives the
@@ -49,6 +64,9 @@ export type TypedFlatConfigItem = Omit<Linter.Config<Linter.RulesRecord & Rules>
 	 * files.
 	 */
 	rules?: Rules;
+
+	/** Shared settings consumed by configured plugins and presets. */
+	settings?: ConfigSettings;
 };
 
 export interface OptionsComponentExtensions {

@@ -64,6 +64,7 @@ catalogs:
     eslint-plugin-react-jsx: 5.17.3
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
+    eslint-plugin-testing-library: 7.16.2
     oxlint: 1.74.0
     oxlint-tsgolint: 0.25.0
   prod:

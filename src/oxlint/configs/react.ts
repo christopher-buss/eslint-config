@@ -1,7 +1,12 @@
 import { GLOB_JSX, GLOB_TSX } from "../../globs.ts";
 import type { ReactRuleOptions } from "../../rules/react.ts";
 import { reactRules } from "../../rules/react.ts";
-import type { OptionsFiles, OptionsHasRoblox, OptionsOverrides } from "../../types.ts";
+import type {
+	ConfigSettings,
+	OptionsFiles,
+	OptionsHasRoblox,
+	OptionsOverrides,
+} from "../../types.ts";
 import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
@@ -27,15 +32,17 @@ export function oxlintReact(
 	options: OptionsFiles &
 		OptionsHasRoblox &
 		OptionsOverrides &
-		ReactRuleOptions & { importSource?: string } = {},
+		ReactRuleOptions & { importSource?: string; settings?: ConfigSettings } = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
+		domPackage = options.settings?.["testing-library"]?.domPackage,
 		filenameCase = "kebabCase",
 		importSource,
 		overrides = {},
 		reactCompiler = true,
 		roblox = true,
 		stylistic = true,
+		testing = false,
 	} = options;
 
 	const files = options.files?.flat() ?? [GLOB_JSX, GLOB_TSX];
@@ -49,12 +56,22 @@ export function oxlintReact(
 			name: "isentinel/react",
 			files,
 			overrides,
-			rules: reactRules({ filenameCase, reactCompiler, stylistic }),
+			rules: reactRules({
+				domPackage,
+				filenameCase,
+				reactCompiler,
+				stylistic,
+				testing,
+			}),
 			settings: {
 				"react-x": {
 					importSource: importSource ?? "@rbxts",
 					version: "17.0.2",
 				},
+				...(testing ? { "testing-library/utils-module": "testing-library-lua" } : {}),
+				...(options.settings?.["testing-library"]
+					? { "testing-library": options.settings["testing-library"] }
+					: {}),
 			},
 		}),
 		{

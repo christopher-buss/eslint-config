@@ -3,6 +3,7 @@ import { reactRules } from "../../rules/react.ts";
 import { ensurePackages, getTsConfig, interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
+	ConfigSettings,
 	OptionsComponentExtensions,
 	OptionsFiles,
 	OptionsStylistic,
@@ -20,7 +21,7 @@ export async function react(
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
 		OptionsTypeScriptWithTypes &
-		ReactConfig = {},
+		ReactConfig & { settings?: ConfigSettings } = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		filenameCase = "kebabCase",
@@ -32,13 +33,19 @@ export async function react(
 		overridesTypeAware,
 		reactCompiler = true,
 		stylistic = true,
+		testing = false,
 		typeAware = true,
 	} = options;
+	const domPackage = options.settings?.["testing-library"]?.domPackage;
 
 	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-jsx"]);
 
 	if (stylistic !== false) {
 		await ensurePackages(["eslint-plugin-react-naming-convention"]);
+	}
+
+	if (testing) {
+		await ensurePackages(["eslint-plugin-testing-library"]);
 	}
 
 	const pluginSmallRules = loadSmallRulesPlugin();
@@ -101,6 +108,18 @@ export async function react(
 					},
 				]
 			: []),
+		...(testing
+			? [
+					{
+						name: "isentinel/react/setup/testing-library",
+						plugins: {
+							"testing-library": await interopDefault(
+								import("eslint-plugin-testing-library"),
+							),
+						},
+					},
+				]
+			: []),
 		{
 			name: "isentinel/react/rules",
 			files,
@@ -113,13 +132,20 @@ export async function react(
 				sourceType: "module",
 			},
 			rules: {
-				...reactRules({ filenameCase, reactCompiler, stylistic }),
+				...reactRules({
+					domPackage,
+					filenameCase,
+					reactCompiler,
+					stylistic,
+					testing,
+				}),
 
 				// overrides
 				...overrides,
 			},
 			settings: {
 				"react-x": reactSettings,
+				...(testing ? { "testing-library/utils-module": "testing-library-lua" } : {}),
 			},
 		},
 		...(isTypeAware

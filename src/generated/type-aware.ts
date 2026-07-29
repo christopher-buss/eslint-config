@@ -31,6 +31,7 @@ export const typeAwarePrefixes: ReadonlySet<string> = new Set([
   "small-rules",
   "sonar",
   "style",
+  "testing-library",
   "toml",
   "ts",
   "unicorn",

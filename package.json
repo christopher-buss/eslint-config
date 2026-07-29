@@ -151,6 +151,7 @@
 		"eslint-plugin-react-jsx": "catalog:peer",
 		"eslint-plugin-react-naming-convention": "catalog:peer",
 		"eslint-plugin-react-x": "catalog:peer",
+		"eslint-plugin-testing-library": "catalog:peer",
 		"eslint-typegen": "catalog:dev",
 		"jiti": "catalog:dev",
 		"oxlint": "catalog:peer",
@@ -174,6 +175,7 @@
 		"eslint-plugin-react-jsx": "^5.10.0",
 		"eslint-plugin-react-naming-convention": "^5.10.0",
 		"eslint-plugin-react-x": "^5.10.0",
+		"eslint-plugin-testing-library": "^7.16.2",
 		"oxlint": ">=1.73.0",
 		"oxlint-tsgolint": ">=0.24.0"
 	},
@@ -200,6 +202,9 @@
 			"optional": true
 		},
 		"eslint-plugin-react-x": {
+			"optional": true
+		},
+		"eslint-plugin-testing-library": {
 			"optional": true
 		},
 		"oxlint": {

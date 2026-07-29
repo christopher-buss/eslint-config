@@ -335,6 +335,7 @@ export function isentinel(
 		configs.push(
 			oxlintReact({
 				roblox: enableRoblox,
+				settings: options.settings,
 				stylistic: stylisticOptions,
 				...reactOptions,
 			}),

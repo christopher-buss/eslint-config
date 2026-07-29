@@ -208,6 +208,14 @@ export type ReactConfig = OptionsOverridesTypeAware &
 		 * @default true
 		 */
 		reactCompiler?: boolean;
+		/**
+		 * Whether to enable Testing Library rules for testing-library-lua.
+		 *
+		 * Requires installing `eslint-plugin-testing-library`.
+		 *
+		 * @default false
+		 */
+		testing?: boolean;
 	} & {
 		filenameCase?: "kebabCase" | "pascalCase";
 	};
@@ -472,6 +480,10 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * If `stylistic` is enabled, also requires:
 	 *
 	 * - `eslint-plugin-react-naming-convention`.
+	 *
+	 * If `testing` is enabled, also requires:
+	 *
+	 * - `eslint-plugin-testing-library`.
 	 *
 	 * @default false
 	 */
