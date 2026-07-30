@@ -32,7 +32,7 @@ patchedDependencies:
 
 catalogs:
   dev:
-    "@antfu/ni": 30.2.0
+    "@antfu/ni": 30.3.0
     "@eslint-react/shared": 5.17.3
     "@eslint/config-inspector": 3.1.0
     "@isentinel/tsconfig": 1.2.0

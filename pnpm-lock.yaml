@@ -28,8 +28,8 @@ settings:
 catalogs:
   dev:
     '@antfu/ni':
-      specifier: 30.2.0
-      version: 30.2.0
+      specifier: 30.3.0
+      version: 30.3.0
     '@eslint-react/shared':
       specifier: 5.17.3
       version: 5.17.3
@@ -477,7 +477,7 @@ importers:
     devDependencies:
       '@antfu/ni':
         specifier: catalog:dev
-        version: 30.2.0
+        version: 30.3.0
       '@eslint-react/shared':
         specifier: catalog:dev
         version: 5.17.3(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -591,8 +591,8 @@ packages:
   '@antfu/install-pkg@2.0.1':
     resolution: {integrity: sha512-iCKVQcIC0e3oDxEfs3SHQGW+ovhBMZmS1TE+bTk50rVyMCBmCfClv7Qi3HQKlumYwvjb/iIMeWCW2i67q6kFfQ==}
 
-  '@antfu/ni@30.2.0':
-    resolution: {integrity: sha512-/FOdAP1w8COnANVD3TtNj/tnpt/36RkU/ysKZTqx86x9acdhCqTFjDXNYVDyBg6UzcrTwWPUeY75ng7CWLNr+g==}
+  '@antfu/ni@30.3.0':
+    resolution: {integrity: sha512-KkYFVPA1IvC3m+WBKUuY5oxYc4OdXr83jvnlOn8a+bJM10yQMu+slFN/1pDzAw2JZVi+FYP9IYjo4KaPIccMmA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -4206,7 +4206,7 @@ snapshots:
       package-manager-detector: 1.7.0
       tinyexec: 1.2.4
 
-  '@antfu/ni@30.2.0':
+  '@antfu/ni@30.3.0':
     dependencies:
       fzf: 0.5.2
       package-manager-detector: 1.7.0
