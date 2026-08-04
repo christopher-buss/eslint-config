@@ -13,10 +13,14 @@ const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
 	...optionallyTypeAwareRules,
 	"flawless/prefer-read-only-props",
-	// A function or class passed as a describe/test title only resolves to a
-	// name through type information, so the ESLint rule belongs in the typed
-	// pass. Oxlint keeps running its native port, which does the syntactic
-	// subset, so this is a split classification and not a routing decision.
+	// The only two `@vitest/eslint-plugin` rules that reach for parser services:
+	// under `settings.vitest.typecheck` both ask the type of a describe/test
+	// title to tell a function or class from a plain value. The flag is off by
+	// default, but a consumer that turns it on would otherwise crash the
+	// syntactic pass, so both rules are classified type-aware unconditionally.
+	// Oxlint keeps running its native ports, which do the syntactic subset, so
+	// this is a split classification and not a routing decision.
+	"vitest/prefer-describe-function-title",
 	"vitest/valid-title",
 ]);
 
