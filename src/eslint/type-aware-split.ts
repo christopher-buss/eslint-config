@@ -13,6 +13,11 @@ const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
 	...optionallyTypeAwareRules,
 	"flawless/prefer-read-only-props",
+	// A function or class passed as a describe/test title only resolves to a
+	// name through type information, so the ESLint rule belongs in the typed
+	// pass. Oxlint keeps running its native port, which does the syntactic
+	// subset, so this is a split classification and not a routing decision.
+	"vitest/valid-title",
 ]);
 
 /** The type-aware split mode; see the factory's `typeAware` option. */
