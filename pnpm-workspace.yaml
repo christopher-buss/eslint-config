@@ -50,7 +50,7 @@ catalogs:
     pnpm-workspace-yaml: 1.7.0
     publint: 0.3.22
     tsdown: 0.22.14
-    typescript: 6.0.3
+    typescript: 7.0.2
     unplugin-unused: 0.5.7
     vitest: 4.1.10
   peer:
