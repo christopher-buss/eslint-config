@@ -249,8 +249,8 @@ catalogs:
       specifier: 4.4.1
       version: 4.4.1
     eslint-plugin-yml:
-      specifier: 3.5.0
-      version: 3.5.0
+      specifier: 3.8.1
+      version: 3.8.1
     file-entry-cache:
       specifier: 11.1.5
       version: 11.1.5
@@ -431,7 +431,7 @@ importers:
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-yml:
         specifier: catalog:prod
-        version: 3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 3.8.1(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       file-entry-cache:
         specifier: catalog:prod
         version: 11.1.5
@@ -2894,8 +2894,8 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
 
-  eslint-plugin-yml@3.5.0:
-    resolution: {integrity: sha512-u2UkSIp/+th1wYCt0QWeCI6agf24dxX6PbFfCCN18gGQHmXh3Cn9D/U5OiP5RNYTEwjXCLusj1OJRK+zwdvFqQ==}
+  eslint-plugin-yml@3.8.1:
+    resolution: {integrity: sha512-E/70psRwxz5EJ8dBtzrFfqSiiInuSytbdtFCjueb/GcKjsWzPBfxfhtQePImMAPjHwMA/VDurO7DJwStDJ4wWg==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -5488,7 +5488,7 @@ snapshots:
       '@typescript-eslint/types': 8.65.0(typescript@6.0.3)
       '@typescript-eslint/visitor-keys': 8.65.0(typescript@6.0.3)
       debug: 4.4.3(supports-color@10.2.2)
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
@@ -6370,7 +6370,7 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
 
-  eslint-plugin-yml@3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-yml@3.8.1(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint/core': 1.2.1
       '@eslint/plugin-kit': 0.7.2
