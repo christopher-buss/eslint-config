@@ -151,10 +151,10 @@ catalogs:
       version: 8.0.3
     '@isentinel/dict-rbxts':
       specifier: latest
-      version: 1.0.17
+      version: 1.0.18
     '@isentinel/dict-roblox':
       specifier: latest
-      version: 1.0.10
+      version: 1.0.11
     '@oxlint/plugins':
       specifier: 1.74.0
       version: 1.74.0
@@ -270,8 +270,8 @@ catalogs:
       specifier: 0.60.0
       version: 0.60.0
     oxlint-plugin-eslint:
-      specifier: 1.74.0
-      version: 1.74.0
+      specifier: 1.77.0
+      version: 1.77.0
     oxlint-plugin-oxlint-comments:
       specifier: 0.1.0
       version: 0.1.0
@@ -332,10 +332,10 @@ importers:
         version: 8.0.3(supports-color@10.2.2)
       '@isentinel/dict-rbxts':
         specifier: catalog:prod
-        version: 1.0.17
+        version: 1.0.18
       '@isentinel/dict-roblox':
         specifier: catalog:prod
-        version: 1.0.10
+        version: 1.0.11
       '@oxlint/plugins':
         specifier: catalog:prod
         version: 1.74.0
@@ -452,7 +452,7 @@ importers:
         version: 0.60.0
       oxlint-plugin-eslint:
         specifier: catalog:prod
-        version: 1.74.0
+        version: 1.77.0
       oxlint-plugin-oxlint-comments:
         specifier: catalog:prod
         version: 0.1.0(oxlint-tsgolint@0.25.0)
@@ -1073,12 +1073,12 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@isentinel/dict-rbxts@1.0.17':
-    resolution: {integrity: sha512-qIqhILOwiMfDT42H1Do07DsXipUKzVI2AdPznMxPJohtySdQmFIzXrApTj6zSgXv9IQGYS5WB0bprBqtapjj/Q==}
+  '@isentinel/dict-rbxts@1.0.18':
+    resolution: {integrity: sha512-a48j+zwvpQ0xuB6EVhbhfP4Fk8+Fy+I9PhOg+Sh5IpWH61Nl2j9Lznkn4gLHSSDwFoYOTMzloPGhfeqIKdYzfw==}
     engines: {node: '>=22'}
 
-  '@isentinel/dict-roblox@1.0.10':
-    resolution: {integrity: sha512-We84lknBpnMVtR4S5MDc8f06RXcNosPZGLha9oTHOc1aCEmtFxTf5dhrT2j+loBGQAgxnn9JioM/8+P2stWMNg==}
+  '@isentinel/dict-roblox@1.0.11':
+    resolution: {integrity: sha512-FZlMG5EiSdZqkYRrRLkTAn98ELUlBI0F07LlBa8ViI5tviy4AObP/WApixTqdXXoZalPEDLOedlrz51E3sBSnw==}
     engines: {node: '>=20.18.0'}
 
   '@isentinel/tsconfig@1.2.0':
@@ -3589,8 +3589,8 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-plugin-eslint@1.74.0:
-    resolution: {integrity: sha512-AtZ4w3owo4xoY5fe/Juy9hmzEnekVPd/DDiPlOVGfR2linDTp/XVu0xK7ODNK4CCLvnnfCob/UeWN6kSiqm2CQ==}
+  oxlint-plugin-eslint@1.77.0:
+    resolution: {integrity: sha512-9IMswrFzZPY/OZruaz17W7O8aohZhByTggPEzSfOzrQIIK6ko4fFjR8Nus3HlcUhraQ52stEU06993GHWTeNFA==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   oxlint-plugin-oxlint-comments@0.1.0:
@@ -4856,9 +4856,9 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@isentinel/dict-rbxts@1.0.17': {}
+  '@isentinel/dict-rbxts@1.0.18': {}
 
-  '@isentinel/dict-roblox@1.0.10': {}
+  '@isentinel/dict-roblox@1.0.11': {}
 
   '@isentinel/tsconfig@1.2.0(typescript@6.0.3)':
     dependencies:
@@ -5488,7 +5488,7 @@ snapshots:
       '@typescript-eslint/types': 8.65.0(typescript@6.0.3)
       '@typescript-eslint/visitor-keys': 8.65.0(typescript@6.0.3)
       debug: 4.4.3(supports-color@10.2.2)
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
@@ -7264,7 +7264,7 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.60.0
       '@oxfmt/binding-win32-x64-msvc': 0.60.0
 
-  oxlint-plugin-eslint@1.74.0: {}
+  oxlint-plugin-eslint@1.77.0: {}
 
   oxlint-plugin-oxlint-comments@0.1.0(oxlint-tsgolint@0.25.0):
     dependencies:
