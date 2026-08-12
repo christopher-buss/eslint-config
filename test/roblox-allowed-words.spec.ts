@@ -38,13 +38,25 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
-	it("keeps member names, not just type names", () => {
+	it("keeps property names, not just type names", () => {
 		expect.assertions(1);
 
 		// No type is called `ZIndex` or `TextureID`; they are properties, and a
 		// variable is as likely to be named after one as after a type.
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
 			expect.arrayContaining(["TextureID", "UVOffset", "ZIndex"]),
+		);
+	});
+
+	it("drops method names", () => {
+		expect.assertions(1);
+
+		// A call is written at the call site, where the API spelling is already
+		// required and no naming rule applies, so `Color3.ToHSV` is no reason to
+		// let a variable be called `toHSV`. The three forms below are method
+		// shorthand, generic method shorthand and a function-typed property.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.not.arrayContaining(["ToHSV", "IsA", "fromRGB", "toHSV"]),
 		);
 	});
 

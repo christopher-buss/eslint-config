@@ -22,7 +22,7 @@ const SOURCES = [
 ];
 
 /**
- * The sources whose members are worth scraping as well as their type names.
+ * The sources whose properties are worth scraping as well as their type names.
  *
  * A property is as likely to name a variable as the type is - `autoZIndex`
  * holds a `ZIndex`, and no type is called `ZIndex`. Enum items are excluded:
@@ -47,11 +47,19 @@ const TOP_LEVEL_INTERFACE = /^interface (\w+)/gmu;
 const ENUM_NAMESPACE = /^[\t ]*export namespace (\w+)/gmu;
 
 /**
- * `ZIndex: number` / `GetFaceUVs(...)` - the properties and methods declared
- * inside an interface, which the leading indent distinguishes from the
- * interface itself.
+ * `ZIndex: number` - the data properties declared inside an interface, which
+ * the leading indent distinguishes from the interface itself.
+ *
+ * Methods are deliberately excluded. A property lends its spelling to whatever
+ * holds it, but a call is written out at the call site, where the API spelling
+ * is already required and no naming rule applies - so `Color3.ToHSV` is no
+ * reason to let a variable be called `toHSV`, and `toHsv` is the name to use.
+ * All three declaration forms count as a method: `ToHSV(this: Color3): T`,
+ * `Name<T>(value: T): T`, and `toHSV: (color: Color3) => T`. The lookahead
+ * does its own whitespace skip, because a negative lookahead after `\s*` would
+ * backtrack to zero width and then test the space rather than the `(`.
  */
-const INTERFACE_MEMBER = /^[\t ]+(?:readonly )?(\w+)\??\s*[:(<]/gmu;
+const INTERFACE_MEMBER = /^[\t ]+(?:readonly )?(\w+)\??\s*:(?=\s*[^\s(<])/gmu;
 
 const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
 

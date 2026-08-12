@@ -156,6 +156,17 @@ describe("naming allowedWords", () => {
 		);
 	});
 
+	it("rejects a method name", async () => {
+		expect.assertions(1);
+
+		// `Color3.ToHSV` is spelled out at the call site, where no naming rule
+		// applies, so a variable holding its result is still expected to read
+		// `colorToHsv`.
+		await expect(lint("const colorToHSV = 1;", { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining("colorToHSV"),
+		]);
+	});
+
 	it("does not become a blanket escape", async () => {
 		expect.assertions(1);
 
