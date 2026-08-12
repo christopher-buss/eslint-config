@@ -4,8 +4,7 @@ import { describe, it } from "vitest";
 
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import type { OxlintFactoryOptions, RuleCategories } from "../src/oxlint/index.ts";
-import { FIXTURES_TEMP } from "./helpers.ts";
-import { runOxlint, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
+import { OXLINT_FIXTURES_TEMP, runOxlint, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
 
 /**
  * The setting that makes the routing observable: `categories` only ever enables
@@ -47,7 +46,7 @@ async function lintProbe(
 	name: string,
 	rules: OxlintFactoryOptions["rules"],
 ): Promise<Array<string>> {
-	const temporaryDirectory = path.resolve(FIXTURES_TEMP, name);
+	const temporaryDirectory = path.resolve(OXLINT_FIXTURES_TEMP, name);
 	await fs.mkdir(path.join(temporaryDirectory, "src"), { recursive: true });
 	await fs.writeFile(path.join(temporaryDirectory, "src", "probe.ts"), PROBE);
 

@@ -12,6 +12,18 @@ const isWindows = os.platform() === "win32";
 /** Spawning the binary is slow enough on Windows to need its own budget. */
 export const OXLINT_TIMEOUT = isWindows ? 300_000 : 120_000;
 
+/**
+ * Root for the directories the oxlint specs lint.
+ *
+ * Deliberately not `_fixtures`, the root the ESLint specs use: since oxlint
+ * 1.78 the file walker reads `.gitignore` files from every ancestor up to the
+ * git root, this repository ignores `_fixtures`, and `--no-ignore` only covers
+ * `.eslintignore`. Fixtures written there are invisible to oxlint, which then
+ * lints zero files. The system temp directory sits outside any repository, so
+ * no ancestor `.gitignore` applies.
+ */
+export const OXLINT_FIXTURES_TEMP = path.join(os.tmpdir(), "isentinel-oxlint-fixtures");
+
 interface OxlintDiagnostic {
 	// oxlint omits `code` for some diagnostics; keep it optional so the runtime
 	/**
@@ -121,11 +133,20 @@ function spawnOxlint(workingDirectory: string): {
 		throw new Error(`oxlint failed to run: ${runContext}`);
 	}
 
+	// oxlint prints warnings such as "No files found to lint." to stdout, ahead
+	// of the JSON report, so the payload starts at the first brace rather than
+	// at the first character.
+	const jsonStart = result.stdout.indexOf("{");
+
 	let parsed: unknown;
 	try {
-		parsed = JSON.parse(result.stdout);
+		parsed = JSON.parse(jsonStart === -1 ? result.stdout : result.stdout.slice(jsonStart));
 	} catch {
 		throw new Error(`Failed to parse oxlint JSON output. ${runContext}\n${result.stdout}`);
+	}
+
+	if (isRecord(parsed) && parsed["number_of_files"] === 0) {
+		throw new Error(`oxlint found no files to lint: ${runContext}\n${result.stdout}`);
 	}
 
 	const diagnostics =

@@ -4,8 +4,7 @@ import { describe, it } from "vitest";
 
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import type { OxlintConfig, OxlintOverride, RuleCategories } from "../src/oxlint/index.ts";
-import { FIXTURES_TEMP } from "./helpers.ts";
-import { runOxlint, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
+import { OXLINT_FIXTURES_TEMP, runOxlint, OXLINT_TIMEOUT as timeout } from "./oxlint-run.ts";
 
 /**
  * Every category at `error`, the setting that makes plugin scoping observable:
@@ -44,7 +43,7 @@ const VITEST_FILES = ["bedrock/**/*.test.ts"];
  * @returns The diagnostics from both probes.
  */
 async function lintProbes(name: string): Promise<Array<string>> {
-	const temporaryDirectory = path.resolve(FIXTURES_TEMP, name);
+	const temporaryDirectory = path.resolve(OXLINT_FIXTURES_TEMP, name);
 	await fs.mkdir(path.join(temporaryDirectory, "src"), { recursive: true });
 	await fs.mkdir(path.join(temporaryDirectory, "bedrock"), { recursive: true });
 	await fs.writeFile(path.join(temporaryDirectory, "src", "probe.ts"), PROBE);
@@ -80,7 +79,7 @@ async function lintProbes(name: string): Promise<Array<string>> {
  * @returns The diagnostics.
  */
 async function lintWithVitestAt(name: string, level: "override" | "top"): Promise<Array<string>> {
-	const temporaryDirectory = path.resolve(FIXTURES_TEMP, name);
+	const temporaryDirectory = path.resolve(OXLINT_FIXTURES_TEMP, name);
 	await fs.mkdir(temporaryDirectory, { recursive: true });
 	await fs.writeFile(path.join(temporaryDirectory, "probe.test.ts"), PROBE);
 

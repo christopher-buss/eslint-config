@@ -4473,6 +4473,12 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
             "ignoreConstructors": false,
           },
         ],
+        "one-var": [
+          "error",
+          {
+            "initialized": "never",
+          },
+        ],
         "prefer-arrow-callback": [
           "error",
           {
@@ -4592,12 +4598,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
-        "eslint-js/one-var": [
-          "error",
-          {
-            "initialized": "never",
-          },
-        ],
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
           "error",
@@ -5296,6 +5296,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "jsdoc/check-property-names": "warn",
         "jsdoc/empty-tags": "warn",
         "jsdoc/implements-on-classes": "warn",
+        "jsdoc/no-blank-blocks": "warn",
         "jsdoc/no-defaults": "warn",
         "jsdoc/require-param": [
           "warn",
@@ -5363,7 +5364,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "jsdoc-js/informative-docs": "warn",
         "jsdoc-js/multiline-blocks": "warn",
         "jsdoc-js/no-blank-block-descriptions": "warn",
-        "jsdoc-js/no-blank-blocks": "warn",
         "jsdoc-js/no-multi-asterisks": "warn",
         "jsdoc-js/no-types": "warn",
         "jsdoc-js/no-undefined-types": "error",
@@ -8861,6 +8861,12 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
             "ignoreConstructors": false,
           },
         ],
+        "one-var": [
+          "error",
+          {
+            "initialized": "never",
+          },
+        ],
         "prefer-arrow-callback": [
           "error",
           {
@@ -8975,12 +8981,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
-        "eslint-js/one-var": [
-          "error",
-          {
-            "initialized": "never",
-          },
-        ],
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
           "error",
@@ -9642,6 +9642,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "jsdoc/check-property-names": "warn",
         "jsdoc/empty-tags": "warn",
         "jsdoc/implements-on-classes": "warn",
+        "jsdoc/no-blank-blocks": "warn",
         "jsdoc/no-defaults": "warn",
         "jsdoc/require-param-description": "warn",
         "jsdoc/require-param-name": "warn",
@@ -9692,7 +9693,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "jsdoc-js/informative-docs": "warn",
         "jsdoc-js/multiline-blocks": "warn",
         "jsdoc-js/no-blank-block-descriptions": "warn",
-        "jsdoc-js/no-blank-blocks": "warn",
         "jsdoc-js/no-multi-asterisks": "warn",
         "jsdoc-js/no-types": "warn",
         "jsdoc-js/no-undefined-types": "error",
@@ -12940,6 +12940,12 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             "ignoreConstructors": false,
           },
         ],
+        "one-var": [
+          "error",
+          {
+            "initialized": "never",
+          },
+        ],
         "prefer-arrow-callback": [
           "error",
           {
@@ -13054,12 +13060,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
-        "eslint-js/one-var": [
-          "error",
-          {
-            "initialized": "never",
-          },
-        ],
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
           "error",
@@ -13721,6 +13721,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "jsdoc/check-property-names": "warn",
         "jsdoc/empty-tags": "warn",
         "jsdoc/implements-on-classes": "warn",
+        "jsdoc/no-blank-blocks": "warn",
         "jsdoc/no-defaults": "warn",
         "jsdoc/require-param-description": "warn",
         "jsdoc/require-param-name": "warn",
@@ -13771,7 +13772,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "jsdoc-js/informative-docs": "warn",
         "jsdoc-js/multiline-blocks": "warn",
         "jsdoc-js/no-blank-block-descriptions": "warn",
-        "jsdoc-js/no-blank-blocks": "warn",
         "jsdoc-js/no-multi-asterisks": "warn",
         "jsdoc-js/no-types": "warn",
         "jsdoc-js/no-undefined-types": "error",
@@ -15594,6 +15594,12 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             "ignoreConstructors": false,
           },
         ],
+        "one-var": [
+          "error",
+          {
+            "initialized": "never",
+          },
+        ],
         "prefer-arrow-callback": [
           "error",
           {
@@ -15716,12 +15722,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
-        "eslint-js/one-var": [
-          "error",
-          {
-            "initialized": "never",
-          },
-        ],
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
           "error",
