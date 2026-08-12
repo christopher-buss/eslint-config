@@ -52,6 +52,23 @@ export interface OptionsOverridesTypeAware extends OptionsOverrides {
 
 export interface NamingConfig extends OptionsOverridesTypeAware {
 	/**
+	 * Words that keep their own casing inside a name when checking
+	 * `strictCamelCase` / `StrictPascalCase`, so an identifier may mirror the
+	 * type it holds - `targetCFrame` rather than `targetCframe`. The rest of
+	 * the name is still checked.
+	 *
+	 * `true` uses `ROBLOX_ALLOWED_WORDS`, the list generated from
+	 * `@rbxts/types`. An array uses exactly those words; spread
+	 * `ROBLOX_ALLOWED_WORDS` into it to extend rather than replace.
+	 *
+	 * Applies to every selector, including those passed via `selectors`. A
+	 * selector opts out with its own `allowedWords: []`.
+	 *
+	 * @default false
+	 */
+	allowedWords?: Array<string> | boolean;
+
+	/**
 	 * Whether the project targets Roblox. Enables `@rbxts/react`
 	 * type-reference matchers in the TSX config so React components and
 	 * contexts may use PascalCase without inline disables.

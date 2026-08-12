@@ -771,6 +771,49 @@ selectors are simply added. A less specific entry cannot override a more
 specific default. The `overridesTypeAware` escape hatch still replaces the whole
 rule if you need full control.
 
+##### Roblox names
+
+`strictCamelCase` and `StrictPascalCase` reject two capitals in a row, so a
+`CFrame` has to be stored in `targetCframe` and the identifier stops matching
+the type it holds. `allowedWords` lets listed words keep their own casing inside
+a name, while the rest of the name is still checked. It is off by default:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	naming: {
+		// Use ROBLOX_ALLOWED_WORDS, generated from `@rbxts/types`
+		allowedWords: true,
+	},
+});
+```
+
+```ts
+const targetCFrame = new CFrame(); // ok
+const listLayoutUIPadding = 0; // ok
+const target_CFrame = 0; // still an error
+```
+
+Pass an array to use exactly those words instead. Spread `ROBLOX_ALLOWED_WORDS`
+to extend the list rather than replace it:
+
+```ts
+import isentinel, { ROBLOX_ALLOWED_WORDS } from "@isentinel/eslint-config";
+
+export default isentinel({
+	naming: {
+		allowedWords: [...ROBLOX_ALLOWED_WORDS, "HTTP", "URL"],
+	},
+});
+```
+
+The list reaches every selector, including your own `selectors` entries. A
+selector opts out with its own `allowedWords: []`. Only the two strict formats
+honour it, so it can never loosen `snake_case` or `UPPER_CASE`, and a word only
+matches at a hump boundary, so it cannot split an existing hump.
+
 #### Oxlint
 
 The config can run alongside (or be replaced by)

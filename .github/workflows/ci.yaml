@@ -73,6 +73,11 @@ jobs:
       - name: Check type-aware snapshot
         run: nr check:type-aware
 
+      # Same reason again. A stale word list silently narrows what
+      # `naming: { allowedWords: true }` lets through.
+      - name: Check Roblox allowed-words snapshot
+        run: nr check:roblox-words
+
       - name: Build
         run: nr build
 

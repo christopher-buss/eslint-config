@@ -96,7 +96,7 @@ files that have to sit next to the code they augment, and
 `src/cli/constants-generated.ts`). Nothing in `src/generated/` is hand-edited,
 and both root lint configs ignore it.
 
-`pnpm gen` runs eight generators in `scripts/`: `typegen.ts`
+`pnpm gen` runs nine generators in `scripts/`: `typegen.ts`
 (`src/typegen.d.ts` - ESLint rule types and config names), `typegen-oxlint.ts`
 (`src/oxlint/typegen.d.ts`, plus `src/generated/oxlint-native.ts` and
 `src/generated/oxlint-capabilities.ts` - the native and jsPlugin capability sets
@@ -105,7 +105,10 @@ severities, used by the redundancy check), `versiongen.ts`
 (`src/cli/constants-generated.ts`), `stylistic-gen.ts`
 (`src/generated/stylistic.ts` - `@stylistic` rule names), `type-aware-gen.ts`
 (`src/generated/type-aware.ts` - the `requiresTypeChecking` snapshot the
-type-aware split reads) and `gen-package-extensions.ts` (the `packageExtensions`
+type-aware split reads), `roblox-allowed-words-gen.ts`
+(`src/generated/roblox-allowed-words.ts` - the Roblox names
+`naming: { allowedWords: true }` hands to `flawless/naming-convention`, scraped
+from `@rbxts/types`) and `gen-package-extensions.ts` (the `packageExtensions`
 block of `pnpm-workspace.yaml`). Run it after modifying configs.
 
 `typegen-oxlint.ts` boots the real ESLint factory to learn which rules the
@@ -115,10 +118,11 @@ the committed output changes depending on who ran it.
 
 `typegen.ts` and `type-aware-gen.ts` share one list of config modules
 (`scripts/config-factories.ts`); add new modules there or they escape both
-generators. Both `gen-package-extensions.ts` and `type-aware-gen.ts` take
-`--check` (`nr check:extensions`, `nr check:type-aware`), which CI runs _before_
-the build - `pnpm gen` would otherwise repair a stale file in place and the
-drift would never be reported.
+generators. `gen-package-extensions.ts`, `type-aware-gen.ts` and
+`roblox-allowed-words-gen.ts` all take `--check` (`nr check:extensions`,
+`nr check:type-aware`, `nr check:roblox-words`), which CI runs _before_ the
+build - `pnpm gen` would otherwise repair a stale file in place and the drift
+would never be reported.
 
 ### CLI Tools
 
