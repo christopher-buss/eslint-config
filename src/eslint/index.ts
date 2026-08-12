@@ -1,3 +1,4 @@
+export * from "../generated/roblox-allowed-words.ts";
 export * from "../globs.ts";
 export { isAgentAutofixDisabled } from "../utils.ts";
 export { isInEditorEnvironment } from "../utils.ts";

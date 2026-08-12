@@ -1,3 +1,4 @@
+import { ROBLOX_ALLOWED_WORDS } from "../../generated/roblox-allowed-words.ts";
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
@@ -37,6 +38,7 @@ export async function naming(
 	options: NamingConfig & OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
+		allowedWords = false,
 		overridesTypeAware = {},
 		roblox: isRoblox = true,
 		selectors = [],
@@ -45,6 +47,14 @@ export async function naming(
 	} = options;
 
 	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+
+	// One shared list rather than a copy on every selector: the rule reads
+	// `settings.flawless.namingConvention.allowedWords` for any selector that
+	// does not carry its own, which covers the defaults below and anything
+	// passed through `selectors`.
+	const configuredWords = allowedWords === true ? ROBLOX_ALLOWED_WORDS : allowedWords;
+	const words =
+		configuredWords === false || configuredWords.length === 0 ? undefined : configuredWords;
 
 	const tsFilesTypeAware = [GLOB_TS];
 	const tsxFilesTypeAware = [GLOB_TSX];
@@ -58,6 +68,15 @@ export async function naming(
 			plugins: {
 				flawless: eslintPluginFlawless,
 			},
+			...(words !== undefined
+				? {
+						settings: {
+							flawless: {
+								namingConvention: { allowedWords: words },
+							},
+						},
+					}
+				: {}),
 		},
 		...(isTypeAware
 			? [
