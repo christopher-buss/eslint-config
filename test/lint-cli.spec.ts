@@ -633,7 +633,7 @@ describe("oxlintTargets", () => {
 		expect.assertions(1);
 
 		const directory = temporaryDirectory();
-		execFileSync("git", ["init", "-q"], { cwd: directory });
+		withoutGitEnvironment(() => execFileSync("git", ["init", "-q"], { cwd: directory }));
 		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
 		// The only oxlint-eligible target is the one git ignores, so the set
@@ -650,7 +650,7 @@ describe("oxlintTargets", () => {
 		expect.assertions(1);
 
 		const directory = temporaryDirectory();
-		execFileSync("git", ["init", "-q"], { cwd: directory });
+		withoutGitEnvironment(() => execFileSync("git", ["init", "-q"], { cwd: directory }));
 		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
 		expect(
