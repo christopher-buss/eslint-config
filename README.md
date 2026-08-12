@@ -814,6 +814,10 @@ selector opts out with its own `allowedWords: []`. Only the two strict formats
 honour it, so it can never loosen `snake_case` or `UPPER_CASE`, and a word only
 matches at a hump boundary, so it cannot split an existing hump.
 
+Matching is case-sensitive, so a word at the **start** of a `strictCamelCase`
+name is not covered — that position is lowercased by the format itself. Write
+`motor6dWeld` rather than `motor6DWeld`; `targetMotor6DPart` is fine.
+
 #### Oxlint
 
 The config can run alongside (or be replaced by)

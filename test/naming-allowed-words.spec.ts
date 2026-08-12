@@ -134,6 +134,19 @@ describe("naming allowedWords", () => {
 		);
 	});
 
+	it("accepts a name that only collides with what follows it", async () => {
+		expect.assertions(2);
+
+		// `Motor6D` holds no pair of its own; it only breaks once the next
+		// word's capital lands against its trailing `D`.
+		await expect(
+			lint("const targetMotor6DPart = 1;", { allowedWords: true }),
+		).resolves.toStrictEqual([]);
+		await expect(
+			lint("const jointRotateVAxis = 1;", { allowedWords: true }),
+		).resolves.toStrictEqual([]);
+	});
+
 	it("still checks the rest of the name", async () => {
 		expect.assertions(2);
 

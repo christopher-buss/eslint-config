@@ -14,7 +14,7 @@ describe("roblox allowed-words snapshot", () => {
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(await deriveRobloxAllowedWords());
 	});
 
-	it("keeps the names the strict formats reject", () => {
+	it("keeps the names that already hold two capitals", () => {
 		expect.assertions(1);
 
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
@@ -28,13 +28,29 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
+	it("keeps the names that end in a capital", () => {
+		expect.assertions(1);
+
+		// Fine alone, but they collide with the next word's capital once
+		// something follows: `Motor6D` is legal, `motor6DWeld` is not.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.arrayContaining(["Motor6D", "Path2D", "Path3D", "RotateP", "RotateV"]),
+		);
+	});
+
 	it("drops names a shorter word already resolves", () => {
 		expect.assertions(1);
 
-		// `CFrame` matches at a hump boundary inside all three, so listing them
-		// separately would only add work at lint time.
+		// `CFrame` matches at a hump boundary inside the first three and
+		// `Path2D` inside the last, so listing them separately would only add
+		// work at lint time.
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
-			expect.not.arrayContaining(["CFrameConstructor", "CFrameValue", "UDim2", "UserCFrame"]),
+			expect.not.arrayContaining([
+				"CFrameConstructor",
+				"CFrameValue",
+				"UserCFrame",
+				"Path2DControlPoint",
+			]),
 		);
 	});
 });

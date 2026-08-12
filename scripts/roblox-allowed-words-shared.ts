@@ -40,15 +40,22 @@ const ENUM_NAMESPACE = /^[\t ]*export namespace (\w+)/gmu;
 const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
 
 /**
+ * A name ending in a capital is only a problem once something follows it, and
+ * in either strict format the next word starts with a capital - `Motor6D` is
+ * fine on its own but `motor6DWeld` is not.
+ */
+const TRAILING_CAPITAL = /[A-Z]$/u;
+
+/**
  * The Roblox names a `strictCamelCase` / `StrictPascalCase` identifier cannot
  * spell without an escape.
  *
- * Only names holding two capitals in a row need listing - those are the only
- * ones the strict formats reject - which turns the ~1500 declared names into
- * around 80. The list is then pruned: a name is dropped when the words already
- * kept resolve it anyway, so `CFrame` absorbs `CFrameValue`,
- * `CFrameConstructor` and `UserCFrame`, and `UDim` absorbs `UDim2`. Candidates
- * are visited shortest-first so the more general word is always the one kept.
+ * Only names that can put two capitals in a row need listing, which turns the
+ * ~1500 declared names into around 90. The list is then pruned: a name is
+ * dropped when the words already kept resolve it anyway, so `CFrame` absorbs
+ * `CFrameValue`, `CFrameConstructor` and `UserCFrame`, `UDim` absorbs `UDim2`,
+ * and `Path2D` absorbs `Path2DControlPoint`. Candidates are visited
+ * shortest-first so the more general word is always the one kept.
  *
  * Comparisons are by code unit rather than `localeCompare`, so the output does
  * not depend on the host locale.
@@ -58,13 +65,13 @@ const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
 export async function deriveRobloxAllowedWords(): Promise<Array<string>> {
 	const declared = await readDeclaredNames();
 	const candidates = [...declared]
-		.filter((name) => CONSECUTIVE_CAPITALS.test(name))
+		.filter((name) => needsAllowing(name))
 		.sort((left, right) => left.length - right.length || (left < right ? -1 : 1));
 
 	const kept: Array<string> = [];
 	for (const candidate of candidates) {
 		const longestFirst = kept.toSorted((left, right) => right.length - left.length);
-		if (CONSECUTIVE_CAPITALS.test(applyAllowedWords(candidate, longestFirst))) {
+		if (needsAllowing(applyAllowedWords(candidate, longestFirst))) {
 			kept.push(candidate);
 		}
 	}
@@ -137,6 +144,22 @@ function applyAllowedWords(name: string, allowedWords: ReadonlyArray<string>): s
 	}
 
 	return result;
+}
+
+/**
+ * Whether a name can put two capitals in a row, which is what the strict
+ * formats reject.
+ *
+ * Two ways to get there: the name already holds a pair (`CFrame`), or it ends
+ * in a capital and so collides with whatever word follows it in an identifier
+ * (`Motor6D` in `motor6DWeld`). Checking the name in isolation catches only the
+ * first.
+ *
+ * @param name - The name to test.
+ * @returns True when the name needs to be in the list.
+ */
+function needsAllowing(name: string): boolean {
+	return CONSECUTIVE_CAPITALS.test(name) || TRAILING_CAPITAL.test(name);
 }
 
 /**
