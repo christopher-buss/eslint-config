@@ -76,7 +76,7 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
-    "@oxlint/plugins": 1.74.0
+    "@oxlint/plugins": 1.77.0
     "@pobammer-ts/small-rules": 2.14.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.65.0
