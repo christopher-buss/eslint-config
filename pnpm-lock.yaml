@@ -222,8 +222,8 @@ catalogs:
       specifier: 0.15.0
       version: 0.15.0
     eslint-plugin-package-json:
-      specifier: 1.6.3
-      version: 1.6.3
+      specifier: 1.7.0
+      version: 1.7.0
     eslint-plugin-perfectionist:
       specifier: 5.10.1
       version: 5.10.1
@@ -404,7 +404,7 @@ importers:
         version: 0.15.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.60.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
-        version: 1.6.3(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 1.7.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-perfectionist:
         specifier: catalog:prod
         version: 5.10.1(@typescript-eslint/types@8.65.0(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -2793,8 +2793,8 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-package-json@1.6.3:
-    resolution: {integrity: sha512-32ZHJFzEtsWeZfFr/YMQzq7amG/9jewUuNIKmnkl7QoT7gwclxUwurqRMrjWK2S9lh4prZkNbymROQ6aDpb06Q==}
+  eslint-plugin-package-json@1.7.0:
+    resolution: {integrity: sha512-6kc/2obmBs1JZ2/m65iZjDWFxC4n0OVDKTEhsnWCE6syL5qAJb0rzQtYFNaSmFe9hUWqhaTpr2+OnHQlU1X5kQ==}
     engines: {node: ^22.22.2 || >=24.15.0}
     peerDependencies:
       '@eslint/json': '>=1.0.0'
@@ -6195,7 +6195,7 @@ snapshots:
       picomatch: 4.0.5
       synckit: 0.11.13
 
-  eslint-plugin-package-json@1.6.3(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-package-json@1.7.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@altano/repository-tools': 2.0.3
       '@types/estree': 1.0.9

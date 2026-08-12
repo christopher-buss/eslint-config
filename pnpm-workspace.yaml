@@ -4,10 +4,7 @@ enableGlobalVirtualStore: true
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAgeExclude:
-  - "@pobammer-ts/small-rules@2.14.0"
-  - "@rbxts/types@1.0.943"
   - eslint-plugin-flawless
-  - eslint-plugin-jest@29.16.0
 
 savePrefix: ""
 shellEmulator: true
@@ -99,7 +96,7 @@ catalogs:
     eslint-plugin-jsdoc: 63.2.2
     eslint-plugin-jsonc: 3.3.0
     eslint-plugin-oxfmt: 0.15.0
-    eslint-plugin-package-json: 1.6.3
+    eslint-plugin-package-json: 1.7.0
     eslint-plugin-perfectionist: 5.10.1
     eslint-plugin-pnpm: 1.7.0
     eslint-plugin-promise: 7.3.0
