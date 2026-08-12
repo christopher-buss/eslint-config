@@ -28,8 +28,8 @@ settings:
 catalogs:
   dev:
     '@antfu/ni':
-      specifier: 30.2.0
-      version: 30.2.0
+      specifier: 30.5.0
+      version: 30.5.0
     '@eslint-react/shared':
       specifier: 5.17.3
       version: 5.17.3
@@ -480,7 +480,7 @@ importers:
     devDependencies:
       '@antfu/ni':
         specifier: catalog:dev
-        version: 30.2.0
+        version: 30.5.0
       '@eslint-react/shared':
         specifier: catalog:dev
         version: 5.17.3(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -597,8 +597,8 @@ packages:
   '@antfu/install-pkg@2.0.1':
     resolution: {integrity: sha512-iCKVQcIC0e3oDxEfs3SHQGW+ovhBMZmS1TE+bTk50rVyMCBmCfClv7Qi3HQKlumYwvjb/iIMeWCW2i67q6kFfQ==}
 
-  '@antfu/ni@30.2.0':
-    resolution: {integrity: sha512-/FOdAP1w8COnANVD3TtNj/tnpt/36RkU/ysKZTqx86x9acdhCqTFjDXNYVDyBg6UzcrTwWPUeY75ng7CWLNr+g==}
+  '@antfu/ni@30.5.0':
+    resolution: {integrity: sha512-VwQoM9qF1dzDrye55b1qIBeLr4zQ1a5wZQMPCe496HTiquViBZqxtNBaq98WX3ze5kC9Yl7gKSU4W2vtLztxYw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -3652,6 +3652,9 @@ packages:
   package-manager-detector@1.7.0:
     resolution: {integrity: sha512-xg1eHpwYL/D/HEdWw2goFZP6vV0FH7W+PZ5rFkGjdIDLtxq7EkzBUeT3m+lndYCt8wKbmofUu1MUdMCXkCk9ZQ==}
 
+  package-manager-detector@1.8.0:
+    resolution: {integrity: sha512-yQA4H19AmPEoMUeavPMDIe1higySl/gH/yaQrkT/s07Qp+7pp2hYz30N3z2l5BkjVkF9Ow6o0wjJamm2y7Sn0A==}
+
   parse-gitignore-ts@1.0.0:
     resolution: {integrity: sha512-TKHnaWbGmsqoBNzQBxY7HJyT16jjjFVHwkTLuJDX6vHAoddYvtY/6SIJf4fVSCo1maZ/dkHnNSBrZrREaVjyxA==}
     engines: {node: '>=14'}
@@ -3926,6 +3929,10 @@ packages:
 
   tinyexec@1.2.4:
     resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
+    engines: {node: '>=18'}
+
+  tinyexec@1.3.0:
+    resolution: {integrity: sha512-QKAl9m8gWWGHV8jZcPeym6j+XULi6tOf1mT83WYJ4Lk2ytW/uwAWkrP0uFsdoYMdueVJ0qs26wZ+23xeB4ibNQ==}
     engines: {node: '>=18'}
 
   tinyglobby@0.2.17:
@@ -4298,11 +4305,11 @@ snapshots:
       package-manager-detector: 1.7.0
       tinyexec: 1.2.4
 
-  '@antfu/ni@30.2.0':
+  '@antfu/ni@30.5.0':
     dependencies:
       fzf: 0.5.2
-      package-manager-detector: 1.7.0
-      tinyexec: 1.2.4
+      package-manager-detector: 1.8.0
+      tinyexec: 1.3.0
       tinyglobby: 0.2.17
 
   '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
@@ -7347,6 +7354,8 @@ snapshots:
 
   package-manager-detector@1.7.0: {}
 
+  package-manager-detector@1.8.0: {}
+
   parse-gitignore-ts@1.0.0: {}
 
   parse-imports-exports@0.2.4:
@@ -7607,6 +7616,8 @@ snapshots:
   tinybench@2.9.0: {}
 
   tinyexec@1.2.4: {}
+
+  tinyexec@1.3.0: {}
 
   tinyglobby@0.2.17:
     dependencies:
