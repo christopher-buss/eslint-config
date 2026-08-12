@@ -9,6 +9,30 @@ import type {
 
 const RBXTS_REACT = "@rbxts/react";
 
+/**
+ * Component-valued types from `@rbxts/react`.
+ *
+ * `ComponentType` is an alias for `ComponentClass | FunctionComponent`, and the
+ * type matcher splits unions before matching, so both members have to be listed
+ * for a `ComponentType`-annotated name to match.
+ */
+const REACT_COMPONENT_TYPES = [
+	{ name: "ComponentClass", from: RBXTS_REACT },
+	{ name: "Context", from: RBXTS_REACT },
+	{ name: "ExoticComponent", from: RBXTS_REACT },
+	{ name: "FC", from: RBXTS_REACT },
+	{ name: "ForwardRefExoticComponent", from: RBXTS_REACT },
+	{ name: "FunctionComponent", from: RBXTS_REACT },
+	{ name: "LazyExoticComponent", from: RBXTS_REACT },
+	{ name: "MemoExoticComponent", from: RBXTS_REACT },
+	{ name: "NamedExoticComponent", from: RBXTS_REACT },
+];
+
+const REACT_ELEMENT_RETURN_TYPES = [
+	{ returns: { name: "Element", from: RBXTS_REACT } },
+	{ returns: { name: "ReactNode", from: RBXTS_REACT } },
+];
+
 export async function naming(
 	options: NamingConfig & OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
 ): Promise<Array<TypedFlatConfigItem>> {
@@ -53,6 +77,7 @@ export async function naming(
 									format: null,
 									selector: "import",
 								},
+								...(isRoblox ? reactSelectors() : []),
 								{
 									format: null,
 									modifiers: ["destructured"],
@@ -240,52 +265,7 @@ export async function naming(
 									leadingUnderscore: "allow",
 									selector: "variable",
 								},
-								...(isRoblox
-									? [
-											{
-												// React components and contexts
-												// conventionally use PascalCase
-												format: ["StrictPascalCase"],
-												selector: ["parameter", "variable"],
-												types: [
-													{ name: "Context", from: RBXTS_REACT },
-													{ name: "FC", from: RBXTS_REACT },
-													{
-														name: "FunctionComponent",
-														from: RBXTS_REACT,
-													},
-												],
-											},
-											{
-												// components typed as anonymous
-												// functions (e.g. `() =>
-												// React.ReactNode`) have no
-												// symbol name to match, so match
-												// by return type instead;
-												// permissive since camelCase
-												// helpers can also return
-												// elements. typeMethod covers
-												// function-typed interface
-												// members
-												format: ["strictCamelCase", "StrictPascalCase"],
-												selector: ["parameter", "typeMethod", "variable"],
-												types: [
-													{
-														returns: {
-															name: "Element",
-															from: RBXTS_REACT,
-														},
-													},
-													{
-														returns: {
-															name: "ReactNode",
-															from: RBXTS_REACT,
-														},
-													},
-												],
-											},
-										]
-									: []),
+								...(isRoblox ? reactSelectors() : []),
 
 								{
 									format: null,
@@ -422,5 +402,37 @@ export async function naming(
 					},
 				]
 			: []),
+	];
+}
+
+/**
+ * Selectors that let React component values carry component casing.
+ *
+ * @returns The naming-convention selectors for `@rbxts/react` types.
+ */
+function reactSelectors(): Array<Record<string, unknown>> {
+	return [
+		{
+			// React components and contexts conventionally use PascalCase
+			format: ["StrictPascalCase"],
+			selector: ["parameter", "variable"],
+			types: REACT_COMPONENT_TYPES,
+		},
+		{
+			// Properties holding a component are named for the component, but
+			// camelCase stays legal so existing props do not have to move
+			format: ["strictCamelCase", "StrictPascalCase"],
+			selector: ["classProperty", "typeProperty"],
+			types: REACT_COMPONENT_TYPES,
+		},
+		{
+			// components typed as anonymous functions (e.g. `() =>
+			// React.ReactNode`) have no symbol name to match, so match by return
+			// type instead; permissive since camelCase helpers can also return
+			// elements. typeMethod covers function-typed interface members
+			format: ["strictCamelCase", "StrictPascalCase"],
+			selector: ["parameter", "typeMethod", "variable"],
+			types: REACT_ELEMENT_RETURN_TYPES,
+		},
 	];
 }
