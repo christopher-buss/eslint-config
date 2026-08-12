@@ -128,6 +128,7 @@ export const jsPluginRuleNames: ReadonlySet<string> = new Set([
 	"flawless/no-export-default-arrow",
 	"flawless/no-floating-point-equality",
 	"flawless/no-redundant-tsconfig-options",
+	"flawless/no-shared-mocks",
 	"flawless/no-unnecessary-use-callback",
 	"flawless/no-unnecessary-use-memo",
 	"flawless/padding-after-expect-assertions",

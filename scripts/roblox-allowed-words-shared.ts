@@ -115,10 +115,23 @@ function isUppercaseCharacter(character: string): boolean {
 }
 
 /**
+ * The word with its first character lowercased, which is how a word reads at
+ * the start of a `strictCamelCase` name.
+ *
+ * @param word - The word in its API spelling.
+ * @returns The word with a lowercase first character.
+ */
+function lowercaseInitial(word: string): string {
+	return word.slice(0, 1).toLowerCase() + word.slice(1);
+}
+
+/**
  * The longest allowed word starting at `index`, if that position opens a hump.
  *
  * A word only matches at the start of the name or after a character that is not
- * uppercase, so it can never split an existing hump.
+ * uppercase, so it can never split an existing hump. At the start the word also
+ * matches in its lowercased-initial form, because that is the only spelling
+ * `strictCamelCase` permits there - `motor6DWeld` holds `Motor6D`.
  *
  * @param name - The name being rewritten.
  * @param allowedWords - The words to look for, longest first.
@@ -130,8 +143,13 @@ function findWordAt(
 	allowedWords: ReadonlyArray<string>,
 	index: number,
 ): string | undefined {
-	const previous = index === 0 ? undefined : name[index - 1];
-	if (previous !== undefined && isUppercaseCharacter(previous)) {
+	if (index === 0) {
+		return allowedWords.find((candidate) => {
+			return name.startsWith(candidate) || name.startsWith(lowercaseInitial(candidate));
+		});
+	}
+
+	if (isUppercaseCharacter(name[index - 1] ?? "")) {
 		return undefined;
 	}
 
@@ -163,7 +181,9 @@ function applyAllowedWords(name: string, allowedWords: ReadonlyArray<string>): s
 			continue;
 		}
 
-		result += word[0] + word.slice(1).toLowerCase();
+		result += name.startsWith(word, index)
+			? word.slice(0, 1) + word.slice(1).toLowerCase()
+			: word.toLowerCase();
 		index += word.length;
 	}
 

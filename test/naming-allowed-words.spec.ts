@@ -147,6 +147,32 @@ describe("naming allowedWords", () => {
 		).resolves.toStrictEqual([]);
 	});
 
+	it("accepts a word at the start of the name", async () => {
+		expect.assertions(2);
+
+		// `strictCamelCase` lowercases the first hump, so the word can only ever
+		// appear there in its lowercased-initial form. Needs flawless >= 1.9.0.
+		await expect(lint("const motor6DWeld = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+		await expect(lint("const uIPadding = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+	});
+
+	it("only accepts the lowercased initial at the start", async () => {
+		expect.assertions(1);
+
+		// Anywhere else the word has to be spelled as the API spells it, so a
+		// missing hump boundary is still caught.
+		// cspell:disable-next-line
+		const name = "targetmotor6DPart";
+
+		await expect(lint(`const ${name} = 1;`, { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining(name),
+		]);
+	});
+
 	it("accepts a property name, not just a type name", async () => {
 		expect.assertions(1);
 
