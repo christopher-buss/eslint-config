@@ -793,7 +793,9 @@ export default isentinel({
 ```ts
 const targetCFrame = new CFrame(); // ok
 const listLayoutUIPadding = 0; // ok
+const autoZIndex = 0; // ok - properties count, not just types
 const target_CFrame = 0; // still an error
+const fooXYBar = 0; // still an error - not a Roblox name
 ```
 
 Pass an array to use exactly those words instead. Spread `ROBLOX_ALLOWED_WORDS`

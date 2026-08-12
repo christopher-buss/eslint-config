@@ -147,6 +147,24 @@ describe("naming allowedWords", () => {
 		).resolves.toStrictEqual([]);
 	});
 
+	it("accepts a property name, not just a type name", async () => {
+		expect.assertions(1);
+
+		// `ZIndex` is a `GuiObject` property; no type carries the name.
+		await expect(lint("const autoZIndex = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+	});
+
+	it("does not become a blanket escape", async () => {
+		expect.assertions(1);
+
+		// `XY` is not a Roblox name, so nothing folds it.
+		await expect(lint("const fooXYBar = 1;", { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining("fooXYBar"),
+		]);
+	});
+
 	it("still checks the rest of the name", async () => {
 		expect.assertions(2);
 

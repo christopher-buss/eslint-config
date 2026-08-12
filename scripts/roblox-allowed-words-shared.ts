@@ -22,6 +22,15 @@ const SOURCES = [
 ];
 
 /**
+ * The sources whose members are worth scraping as well as their type names.
+ *
+ * A property is as likely to name a variable as the type is - `autoZIndex`
+ * holds a `ZIndex`, and no type is called `ZIndex`. Enum items are excluded:
+ * they are only ever reached as `Enum.TextXAlignment.Center`, never declared.
+ */
+const MEMBER_SOURCES = ["include/roblox.d.ts", "include/generated/None.d.ts"];
+
+/**
  * `declare const CFrame: CFrameConstructor` - the datatype values.
  */
 const DECLARE_CONST = /^declare const (\w+) *:/gmu;
@@ -37,6 +46,13 @@ const TOP_LEVEL_INTERFACE = /^interface (\w+)/gmu;
  */
 const ENUM_NAMESPACE = /^[\t ]*export namespace (\w+)/gmu;
 
+/**
+ * `ZIndex: number` / `GetFaceUVs(...)` - the properties and methods declared
+ * inside an interface, which the leading indent distinguishes from the
+ * interface itself.
+ */
+const INTERFACE_MEMBER = /^[\t ]+(?:readonly )?(\w+)\??\s*[:(<]/gmu;
+
 const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
 
 /**
@@ -51,10 +67,10 @@ const TRAILING_CAPITAL = /[A-Z]$/u;
  * spell without an escape.
  *
  * Only names that can put two capitals in a row need listing, which turns the
- * ~1500 declared names into around 90. The list is then pruned: a name is
- * dropped when the words already kept resolve it anyway, so `CFrame` absorbs
- * `CFrameValue`, `CFrameConstructor` and `UserCFrame`, `UDim` absorbs `UDim2`,
- * and `Path2D` absorbs `Path2DControlPoint`. Candidates are visited
+ * ~7000 declared names and members into a few hundred. The list is then pruned:
+ * a name is dropped when the words already kept resolve it anyway, so `CFrame`
+ * absorbs `CFrameValue`, `CFrameConstructor` and `UserCFrame`, `UDim` absorbs
+ * `UDim2`, and `ZIndex` absorbs `ZIndexBehavior`. Candidates are visited
  * shortest-first so the more general word is always the one kept.
  *
  * Comparisons are by code unit rather than `localeCompare`, so the output does
@@ -159,30 +175,65 @@ function applyAllowedWords(name: string, allowedWords: ReadonlyArray<string>): s
  * @returns True when the name needs to be in the list.
  */
 function needsAllowing(name: string): boolean {
+	// A one-character word folds to itself - `applyAllowedWords` only lowercases
+	// a word's tail, and a single capital has none - so listing `X` can never
+	// change an outcome. Members like `Vector3.X` would otherwise qualify under
+	// the trailing-capital arm and sit in the list doing nothing.
+	if (name.length < 2) {
+		return false;
+	}
+
 	return CONSECUTIVE_CAPITALS.test(name) || TRAILING_CAPITAL.test(name);
 }
 
 /**
- * Reads every declared name out of the `@rbxts/types` sources.
+ * Adds every capture of every pattern to `names`.
  *
- * @returns The union of datatype, Instance and enum names.
+ * @param content - The file to scan.
+ * @param patterns - The global-flagged patterns to run, each capturing a name.
+ * @param names - The set to add to.
+ */
+function collectNames(content: string, patterns: Array<RegExp>, names: Set<string>): void {
+	for (const pattern of patterns) {
+		for (const [, name] of content.matchAll(pattern)) {
+			if (name !== undefined) {
+				names.add(name);
+			}
+		}
+	}
+}
+
+/**
+ * Reads one `@rbxts/types` source.
+ *
+ * @param root - The resolved package root.
+ * @param source - The path within the package.
+ * @returns The file contents.
+ */
+async function readSource(root: string, source: string): Promise<string> {
+	return fs.readFile(path.join(root, source), "utf8");
+}
+
+/**
+ * Reads every name an identifier can be built from out of `@rbxts/types`.
+ *
+ * @returns The union of datatype, Instance, enum and member names.
  */
 async function readDeclaredNames(): Promise<Set<string>> {
 	const require = createRequire(import.meta.url);
 	const root = path.dirname(require.resolve("@rbxts/types/package.json"));
-	const contents = await Promise.all(
-		SOURCES.map(async (source) => fs.readFile(path.join(root, source), "utf8")),
-	);
+	const [typeSources, memberSources] = await Promise.all([
+		Promise.all(SOURCES.map(async (source) => readSource(root, source))),
+		Promise.all(MEMBER_SOURCES.map(async (source) => readSource(root, source))),
+	]);
 
 	const names = new Set<string>();
-	for (const content of contents) {
-		for (const pattern of [DECLARE_CONST, TOP_LEVEL_INTERFACE, ENUM_NAMESPACE]) {
-			for (const [, name] of content.matchAll(pattern)) {
-				if (name !== undefined) {
-					names.add(name);
-				}
-			}
-		}
+	for (const content of typeSources) {
+		collectNames(content, [DECLARE_CONST, TOP_LEVEL_INTERFACE, ENUM_NAMESPACE], names);
+	}
+
+	for (const content of memberSources) {
+		collectNames(content, [INTERFACE_MEMBER], names);
 	}
 
 	return names;

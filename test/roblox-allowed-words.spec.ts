@@ -38,18 +38,38 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
+	it("keeps member names, not just type names", () => {
+		expect.assertions(1);
+
+		// No type is called `ZIndex` or `TextureID`; they are properties, and a
+		// variable is as likely to be named after one as after a type.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.arrayContaining(["TextureID", "UVOffset", "ZIndex"]),
+		);
+	});
+
+	it("drops one-character words", () => {
+		expect.assertions(1);
+
+		// `Vector3.X` and friends qualify under the trailing-capital arm, but
+		// folding a word only lowercases its tail and a single capital has
+		// none, so listing them could never change an outcome.
+		expect(ROBLOX_ALLOWED_WORDS.filter((word) => word.length < 2)).toStrictEqual([]);
+	});
+
 	it("drops names a shorter word already resolves", () => {
 		expect.assertions(1);
 
-		// `CFrame` matches at a hump boundary inside the first three and
-		// `Path2D` inside the last, so listing them separately would only add
-		// work at lint time.
+		// `CFrame` matches at a hump boundary inside the first three, `Path2D`
+		// inside the fourth and `ZIndex` inside the last, so listing them
+		// separately would only add work at lint time.
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
 			expect.not.arrayContaining([
 				"CFrameConstructor",
 				"CFrameValue",
 				"UserCFrame",
 				"Path2DControlPoint",
+				"ZIndexBehavior",
 			]),
 		);
 	});
