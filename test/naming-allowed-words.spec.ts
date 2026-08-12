@@ -134,6 +134,74 @@ describe("naming allowedWords", () => {
 		);
 	});
 
+	it("accepts a name that only collides with what follows it", async () => {
+		expect.assertions(2);
+
+		// `Motor6D` holds no pair of its own; it only breaks once the next
+		// word's capital lands against its trailing `D`.
+		await expect(
+			lint("const targetMotor6DPart = 1;", { allowedWords: true }),
+		).resolves.toStrictEqual([]);
+		await expect(
+			lint("const jointRotateVAxis = 1;", { allowedWords: true }),
+		).resolves.toStrictEqual([]);
+	});
+
+	it("accepts a word at the start of the name", async () => {
+		expect.assertions(2);
+
+		// `strictCamelCase` lowercases the first hump, so the word can only ever
+		// appear there in its lowercased-initial form. Needs flawless >= 1.9.0.
+		await expect(lint("const motor6DWeld = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+		await expect(lint("const uIPadding = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+	});
+
+	it("only accepts the lowercased initial at the start", async () => {
+		expect.assertions(1);
+
+		// Anywhere else the word has to be spelled as the API spells it, so a
+		// missing hump boundary is still caught.
+		// cspell:disable-next-line
+		const name = "targetmotor6DPart";
+
+		await expect(lint(`const ${name} = 1;`, { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining(name),
+		]);
+	});
+
+	it("accepts a property name, not just a type name", async () => {
+		expect.assertions(1);
+
+		// `ZIndex` is a `GuiObject` property; no type carries the name.
+		await expect(lint("const autoZIndex = 1;", { allowedWords: true })).resolves.toStrictEqual(
+			[],
+		);
+	});
+
+	it("rejects a method name", async () => {
+		expect.assertions(1);
+
+		// `Color3.ToHSV` is spelled out at the call site, where no naming rule
+		// applies, so a variable holding its result is still expected to read
+		// `colorToHsv`.
+		await expect(lint("const colorToHSV = 1;", { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining("colorToHSV"),
+		]);
+	});
+
+	it("does not become a blanket escape", async () => {
+		expect.assertions(1);
+
+		// `XY` is not a Roblox name, so nothing folds it.
+		await expect(lint("const fooXYBar = 1;", { allowedWords: true })).resolves.toStrictEqual([
+			expect.stringContaining("fooXYBar"),
+		]);
+	});
+
 	it("still checks the rest of the name", async () => {
 		expect.assertions(2);
 

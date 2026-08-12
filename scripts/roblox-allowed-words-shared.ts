@@ -22,6 +22,15 @@ const SOURCES = [
 ];
 
 /**
+ * The sources whose properties are worth scraping as well as their type names.
+ *
+ * A property is as likely to name a variable as the type is - `autoZIndex`
+ * holds a `ZIndex`, and no type is called `ZIndex`. Enum items are excluded:
+ * they are only ever reached as `Enum.TextXAlignment.Center`, never declared.
+ */
+const MEMBER_SOURCES = ["include/roblox.d.ts", "include/generated/None.d.ts"];
+
+/**
  * `declare const CFrame: CFrameConstructor` - the datatype values.
  */
 const DECLARE_CONST = /^declare const (\w+) *:/gmu;
@@ -37,18 +46,40 @@ const TOP_LEVEL_INTERFACE = /^interface (\w+)/gmu;
  */
 const ENUM_NAMESPACE = /^[\t ]*export namespace (\w+)/gmu;
 
+/**
+ * `ZIndex: number` - the data properties declared inside an interface, which
+ * the leading indent distinguishes from the interface itself.
+ *
+ * Methods are deliberately excluded. A property lends its spelling to whatever
+ * holds it, but a call is written out at the call site, where the API spelling
+ * is already required and no naming rule applies - so `Color3.ToHSV` is no
+ * reason to let a variable be called `toHSV`, and `toHsv` is the name to use.
+ * All three declaration forms count as a method: `ToHSV(this: Color3): T`,
+ * `Name<T>(value: T): T`, and `toHSV: (color: Color3) => T`. The lookahead
+ * does its own whitespace skip, because a negative lookahead after `\s*` would
+ * backtrack to zero width and then test the space rather than the `(`.
+ */
+const INTERFACE_MEMBER = /^[\t ]+(?:readonly )?(\w+)\??\s*:(?=\s*[^\s(<])/gmu;
+
 const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
+
+/**
+ * A name ending in a capital is only a problem once something follows it, and
+ * in either strict format the next word starts with a capital - `Motor6D` is
+ * fine on its own but `motor6DWeld` is not.
+ */
+const TRAILING_CAPITAL = /[A-Z]$/u;
 
 /**
  * The Roblox names a `strictCamelCase` / `StrictPascalCase` identifier cannot
  * spell without an escape.
  *
- * Only names holding two capitals in a row need listing - those are the only
- * ones the strict formats reject - which turns the ~1500 declared names into
- * around 80. The list is then pruned: a name is dropped when the words already
- * kept resolve it anyway, so `CFrame` absorbs `CFrameValue`,
- * `CFrameConstructor` and `UserCFrame`, and `UDim` absorbs `UDim2`. Candidates
- * are visited shortest-first so the more general word is always the one kept.
+ * Only names that can put two capitals in a row need listing, which turns the
+ * ~7000 declared names and members into a few hundred. The list is then pruned:
+ * a name is dropped when the words already kept resolve it anyway, so `CFrame`
+ * absorbs `CFrameValue`, `CFrameConstructor` and `UserCFrame`, `UDim` absorbs
+ * `UDim2`, and `ZIndex` absorbs `ZIndexBehavior`. Candidates are visited
+ * shortest-first so the more general word is always the one kept.
  *
  * Comparisons are by code unit rather than `localeCompare`, so the output does
  * not depend on the host locale.
@@ -58,13 +89,13 @@ const CONSECUTIVE_CAPITALS = /[A-Z]{2}/u;
 export async function deriveRobloxAllowedWords(): Promise<Array<string>> {
 	const declared = await readDeclaredNames();
 	const candidates = [...declared]
-		.filter((name) => CONSECUTIVE_CAPITALS.test(name))
+		.filter((name) => needsAllowing(name))
 		.sort((left, right) => left.length - right.length || (left < right ? -1 : 1));
 
 	const kept: Array<string> = [];
 	for (const candidate of candidates) {
 		const longestFirst = kept.toSorted((left, right) => right.length - left.length);
-		if (CONSECUTIVE_CAPITALS.test(applyAllowedWords(candidate, longestFirst))) {
+		if (needsAllowing(applyAllowedWords(candidate, longestFirst))) {
 			kept.push(candidate);
 		}
 	}
@@ -84,10 +115,23 @@ function isUppercaseCharacter(character: string): boolean {
 }
 
 /**
+ * The word with its first character lowercased, which is how a word reads at
+ * the start of a `strictCamelCase` name.
+ *
+ * @param word - The word in its API spelling.
+ * @returns The word with a lowercase first character.
+ */
+function lowercaseInitial(word: string): string {
+	return word.slice(0, 1).toLowerCase() + word.slice(1);
+}
+
+/**
  * The longest allowed word starting at `index`, if that position opens a hump.
  *
  * A word only matches at the start of the name or after a character that is not
- * uppercase, so it can never split an existing hump.
+ * uppercase, so it can never split an existing hump. At the start the word also
+ * matches in its lowercased-initial form, because that is the only spelling
+ * `strictCamelCase` permits there - `motor6DWeld` holds `Motor6D`.
  *
  * @param name - The name being rewritten.
  * @param allowedWords - The words to look for, longest first.
@@ -99,8 +143,13 @@ function findWordAt(
 	allowedWords: ReadonlyArray<string>,
 	index: number,
 ): string | undefined {
-	const previous = index === 0 ? undefined : name[index - 1];
-	if (previous !== undefined && isUppercaseCharacter(previous)) {
+	if (index === 0) {
+		return allowedWords.find((candidate) => {
+			return name.startsWith(candidate) || name.startsWith(lowercaseInitial(candidate));
+		});
+	}
+
+	if (isUppercaseCharacter(name[index - 1] ?? "")) {
 		return undefined;
 	}
 
@@ -132,7 +181,9 @@ function applyAllowedWords(name: string, allowedWords: ReadonlyArray<string>): s
 			continue;
 		}
 
-		result += word[0] + word.slice(1).toLowerCase();
+		result += name.startsWith(word, index)
+			? word.slice(0, 1) + word.slice(1).toLowerCase()
+			: word.toLowerCase();
 		index += word.length;
 	}
 
@@ -140,26 +191,77 @@ function applyAllowedWords(name: string, allowedWords: ReadonlyArray<string>): s
 }
 
 /**
- * Reads every declared name out of the `@rbxts/types` sources.
+ * Whether a name can put two capitals in a row, which is what the strict
+ * formats reject.
  *
- * @returns The union of datatype, Instance and enum names.
+ * Two ways to get there: the name already holds a pair (`CFrame`), or it ends
+ * in a capital and so collides with whatever word follows it in an identifier
+ * (`Motor6D` in `motor6DWeld`). Checking the name in isolation catches only the
+ * first.
+ *
+ * @param name - The name to test.
+ * @returns True when the name needs to be in the list.
+ */
+function needsAllowing(name: string): boolean {
+	// A one-character word folds to itself - `applyAllowedWords` only lowercases
+	// a word's tail, and a single capital has none - so listing `X` can never
+	// change an outcome. Members like `Vector3.X` would otherwise qualify under
+	// the trailing-capital arm and sit in the list doing nothing.
+	if (name.length < 2) {
+		return false;
+	}
+
+	return CONSECUTIVE_CAPITALS.test(name) || TRAILING_CAPITAL.test(name);
+}
+
+/**
+ * Adds every capture of every pattern to `names`.
+ *
+ * @param content - The file to scan.
+ * @param patterns - The global-flagged patterns to run, each capturing a name.
+ * @param names - The set to add to.
+ */
+function collectNames(content: string, patterns: Array<RegExp>, names: Set<string>): void {
+	for (const pattern of patterns) {
+		for (const [, name] of content.matchAll(pattern)) {
+			if (name !== undefined) {
+				names.add(name);
+			}
+		}
+	}
+}
+
+/**
+ * Reads one `@rbxts/types` source.
+ *
+ * @param root - The resolved package root.
+ * @param source - The path within the package.
+ * @returns The file contents.
+ */
+async function readSource(root: string, source: string): Promise<string> {
+	return fs.readFile(path.join(root, source), "utf8");
+}
+
+/**
+ * Reads every name an identifier can be built from out of `@rbxts/types`.
+ *
+ * @returns The union of datatype, Instance, enum and member names.
  */
 async function readDeclaredNames(): Promise<Set<string>> {
 	const require = createRequire(import.meta.url);
 	const root = path.dirname(require.resolve("@rbxts/types/package.json"));
-	const contents = await Promise.all(
-		SOURCES.map(async (source) => fs.readFile(path.join(root, source), "utf8")),
-	);
+	const [typeSources, memberSources] = await Promise.all([
+		Promise.all(SOURCES.map(async (source) => readSource(root, source))),
+		Promise.all(MEMBER_SOURCES.map(async (source) => readSource(root, source))),
+	]);
 
 	const names = new Set<string>();
-	for (const content of contents) {
-		for (const pattern of [DECLARE_CONST, TOP_LEVEL_INTERFACE, ENUM_NAMESPACE]) {
-			for (const [, name] of content.matchAll(pattern)) {
-				if (name !== undefined) {
-					names.add(name);
-				}
-			}
-		}
+	for (const content of typeSources) {
+		collectNames(content, [DECLARE_CONST, TOP_LEVEL_INTERFACE, ENUM_NAMESPACE], names);
+	}
+
+	for (const content of memberSources) {
+		collectNames(content, [INTERFACE_MEMBER], names);
 	}
 
 	return names;

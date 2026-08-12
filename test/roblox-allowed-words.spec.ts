@@ -14,7 +14,7 @@ describe("roblox allowed-words snapshot", () => {
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(await deriveRobloxAllowedWords());
 	});
 
-	it("keeps the names the strict formats reject", () => {
+	it("keeps the names that already hold two capitals", () => {
 		expect.assertions(1);
 
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
@@ -28,13 +28,61 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
+	it("keeps the names that end in a capital", () => {
+		expect.assertions(1);
+
+		// Fine alone, but they collide with the next word's capital once
+		// something follows: `Motor6D` is legal, `motor6DWeld` is not.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.arrayContaining(["Motor6D", "Path2D", "Path3D", "RotateP", "RotateV"]),
+		);
+	});
+
+	it("keeps property names, not just type names", () => {
+		expect.assertions(1);
+
+		// No type is called `ZIndex` or `TextureID`; they are properties, and a
+		// variable is as likely to be named after one as after a type.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.arrayContaining(["TextureID", "UVOffset", "ZIndex"]),
+		);
+	});
+
+	it("drops method names", () => {
+		expect.assertions(1);
+
+		// A call is written at the call site, where the API spelling is already
+		// required and no naming rule applies, so `Color3.ToHSV` is no reason to
+		// let a variable be called `toHSV`. The three forms below are method
+		// shorthand, generic method shorthand and a function-typed property.
+		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
+			expect.not.arrayContaining(["ToHSV", "IsA", "fromRGB", "toHSV"]),
+		);
+	});
+
+	it("drops one-character words", () => {
+		expect.assertions(1);
+
+		// `Vector3.X` and friends qualify under the trailing-capital arm, but
+		// folding a word only lowercases its tail and a single capital has
+		// none, so listing them could never change an outcome.
+		expect(ROBLOX_ALLOWED_WORDS.filter((word) => word.length < 2)).toStrictEqual([]);
+	});
+
 	it("drops names a shorter word already resolves", () => {
 		expect.assertions(1);
 
-		// `CFrame` matches at a hump boundary inside all three, so listing them
+		// `CFrame` matches at a hump boundary inside the first three, `Path2D`
+		// inside the fourth and `ZIndex` inside the last, so listing them
 		// separately would only add work at lint time.
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
-			expect.not.arrayContaining(["CFrameConstructor", "CFrameValue", "UDim2", "UserCFrame"]),
+			expect.not.arrayContaining([
+				"CFrameConstructor",
+				"CFrameValue",
+				"UserCFrame",
+				"Path2DControlPoint",
+				"ZIndexBehavior",
+			]),
 		);
 	});
 });

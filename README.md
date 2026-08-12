@@ -793,8 +793,15 @@ export default isentinel({
 ```ts
 const targetCFrame = new CFrame(); // ok
 const listLayoutUIPadding = 0; // ok
+const autoZIndex = 0; // ok - properties count, not just types
 const target_CFrame = 0; // still an error
+const fooXYBar = 0; // still an error - not a Roblox name
+const colorToHSV = 0; // still an error - methods do not count, use `colorToHsv`
 ```
+
+The generated list covers type names and data properties, not methods. A call
+spells the API out at the call site, where the naming rules do not reach, so
+`Color3.ToHSV` is no reason to let the variable holding its result skip them.
 
 Pass an array to use exactly those words instead. Spread `ROBLOX_ALLOWED_WORDS`
 to extend the list rather than replace it:
@@ -813,6 +820,11 @@ The list reaches every selector, including your own `selectors` entries. A
 selector opts out with its own `allowedWords: []`. Only the two strict formats
 honour it, so it can never loosen `snake_case` or `UPPER_CASE`, and a word only
 matches at a hump boundary, so it cannot split an existing hump.
+
+At the **start** of a `strictCamelCase` name a word also matches with its first
+character lowercased, since that is the only spelling the format allows there —
+`motor6DWeld` and `targetMotor6DPart` both pass. Everywhere else the word has to
+be spelled as the API spells it, so `targetmotor6DPart` is still an error.
 
 #### Oxlint
 
