@@ -1,6 +1,6 @@
 {
 	"name": "@isentinel/eslint-config",
-	"version": "6.0.0-beta.39",
+	"version": "6.0.0-beta.40",
 	"description": "iSentinel's ESLint config",
 	"keywords": [
 		"eslint-config",
