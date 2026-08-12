@@ -4,11 +4,15 @@ import "package://github.com/jdx/hk/releases/download/v1.53.0/hk@1.53.0#/Builtin
 
 local bash: String = "bash -c"
 
+// No `shell` override: these builtins are `hk util` subcommands, so they need
+// no shell, and the structured form is what lets hk auto-batch `{{files}}`.
+// Under a shell hk sizes batches from ARG_MAX (128KB fallback on Windows), so
+// a whole-repo run renders one ~15KB command that Windows rejects with "The
+// command line is too long."
 local sharedGuards = new Mapping<String, Step> {
-    ["check-merge-conflict"] = (Builtins.check_merge_conflict) { shell = bash }
-    ["detect-private-key"] = (Builtins.detect_private_key) { shell = bash }
+    ["check-merge-conflict"] = (Builtins.check_merge_conflict) {}
+    ["detect-private-key"] = (Builtins.detect_private_key) {}
     ["check-added-large-files"] = (Builtins.check_added_large_files) {
-        shell = bash
         exclude = List(
             "pnpm-lock.yaml",
             "src/typegen.d.ts",
