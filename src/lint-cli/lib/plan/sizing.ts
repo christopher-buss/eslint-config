@@ -5,7 +5,7 @@ import { cacheFileFor } from "../cache/constants.ts";
 import type { DirtyCache } from "../cache/entries.ts";
 import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
 import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
-import type { LintCliOptions, TypeAwareMode } from "../cli/types.ts";
+import type { LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import type { RepoFiles } from "../files/collect.ts";
 import { hasBuilderState } from "../typescript/affected.ts";
@@ -42,9 +42,9 @@ export interface PassPlan {
  */
 export interface SizingInputs {
 	/**
-	 * The cache files the up-front stale sweep deleted (absolute paths). A pass
-	 * whose cache is in here counts every file as dirty and skips the builder —
-	 * everything re-lints regardless.
+	 * The cache files this run deleted up front (absolute paths), from the hash
+	 * busts and the stale sweep alike. A pass whose cache is in here counts
+	 * every file as dirty and skips the builder — everything re-lints anyway.
 	 */
 	clearedCaches: ReadonlySet<string>;
 	/** The lint-target lists, already filtered of ESLint-ignored files. */
@@ -100,28 +100,6 @@ export function sizePasses(
 }
 
 /**
- * Whether a pass whose cache this run deleted may skip its builder outright.
- *
- * With no cache, the affected set the builder computes has nothing to remove
- * from — but the builder is also the only thing that establishes the state a
- * later run invalidates against, so skipping it while none exists trades one
- * run's latency for stale diagnostics on the next (see `hasBuilderState`). The
- * syntactic pass builds no program at all, so it always skips.
- *
- * @param descriptor - The pass being sized.
- * @param run - The run context.
- * @param mode - The pass's type-aware mode.
- * @returns True when the builder can be skipped safely.
- */
-function canSkipBuilder(
-	descriptor: PassDescriptor,
-	run: RunContext,
-	mode: TypeAwareMode | undefined,
-): boolean {
-	return descriptor.invalidation === "none" || hasBuilderState(run, mode);
-}
-
-/**
  * Dirty count for a real run: clear the cache wholesale when stale, then fold
  * TS builder invalidation in, reusing a single loaded cache for the dirty query
  * and the surgical entry removal.
@@ -138,11 +116,19 @@ function mutatingDirtyCount(
 	targetFiles: Array<string>,
 	{ clearedCaches, run }: SizePassContext,
 ): number {
+	// Both facts this pass needs about its builder, read off the one field that
+	// records them: whether it builds a TypeScript program at all, and the mode
+	// that program runs under.
+	const buildsProgram = descriptor.invalidation !== "none";
 	const mode = descriptor.invalidation === "only" ? "only" : undefined;
-	if (clearedCaches.has(cacheLocation) && canSkipBuilder(descriptor, run, mode)) {
-		// A bust or the up-front sweep already deleted this pass's cache (see
-		// `plan`), so every file is dirty and the builder's invalidation would be
-		// pure waste — everything re-lints.
+
+	// A bust or the up-front sweep already deleted this pass's cache (see
+	// `plan`), so every file is dirty and the affected set the builder computes
+	// would have nothing to remove from. Skipping it is only safe once prior
+	// builder state exists: with none, the next run reports `firstRun` and throws
+	// its affected set away, so an importer of a file edited in between would
+	// keep a stale entry (see `hasBuilderState`).
+	if (clearedCaches.has(cacheLocation) && (!buildsProgram || hasBuilderState(run, mode))) {
 		return targetFiles.length;
 	}
 
@@ -151,7 +137,7 @@ function mutatingDirtyCount(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);
 
-	if (descriptor.invalidation !== "none") {
+	if (buildsProgram) {
 		const outcome = applyTypeAwareInvalidation(run, {
 			alreadyDirty: dirty,
 			cache,

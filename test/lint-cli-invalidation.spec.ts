@@ -24,6 +24,7 @@ import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
+import { stateDirectory } from "../src/lint-cli/lib/state.ts";
 import { computeAffectedFiles } from "../src/lint-cli/lib/typescript/affected.ts";
 import { allPasses, composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
@@ -42,6 +43,12 @@ const AGENT_ENVIRONMENT = { CLAUDECODE: "1" };
 
 /** The agent variant's config-variant key. */
 const AGENT_KEY = resolveCacheKey(AGENT_ENVIRONMENT);
+
+/** The type-aware builder state-file prefix for the default variant. */
+const TYPE_AWARE_BUILD_INFO = `tsbuildinfo-typeaware-${TEST_KEY}`;
+
+/** The full-config builder state-file prefix for the default variant. */
+const FULL_BUILD_INFO = `tsbuildinfo-full-${TEST_KEY}`;
 
 const TSCONFIG = JSON.stringify({
 	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
@@ -132,15 +139,18 @@ const SOLUTION_FIXTURE = {
  *
  * @param directory - The fixture project root.
  * @param prefix - The `tsbuildinfo-<mode>-<key>` prefix to match.
- * @returns The matching file names, empty when the cache directory is absent.
+ * @returns The matching absolute paths, empty when the cache directory is absent.
  */
 function builderStateFiles(directory: string, prefix: string): Array<string> {
-	const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
-	if (!fs.existsSync(stateDirectory)) {
+	const cacheDirectory = stateDirectory(directory);
+	if (!fs.existsSync(cacheDirectory)) {
 		return [];
 	}
 
-	return fs.readdirSync(stateDirectory).filter((name) => name.startsWith(prefix));
+	return fs
+		.readdirSync(cacheDirectory)
+		.filter((name) => name.startsWith(prefix))
+		.map((name) => path.join(cacheDirectory, name));
 }
 
 /**
@@ -153,10 +163,7 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
  * @returns The matching files' contents.
  */
 function builderStateContents(directory: string, prefix: string): Array<string> {
-	const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
-	return builderStateFiles(directory, prefix).map((name) => {
-		return fs.readFileSync(path.join(stateDirectory, name), "utf8");
-	});
+	return builderStateFiles(directory, prefix).map((file) => fs.readFileSync(file, "utf8"));
 }
 
 /**
@@ -278,7 +285,7 @@ describe("computeAffectedFiles", () => {
 
 		// One per file-owning project (lib + app); the file-less entry
 		// tsconfig contributes no state of its own.
-		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(2);
+		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(2);
 	});
 
 	it("does not report first-run when only some projects are new", () => {
@@ -289,14 +296,12 @@ describe("computeAffectedFiles", () => {
 		// added while its siblings stay warm — the shape of a solution that
 		// gains a reference.
 		computeAffectedFiles(runFor(directory), "only");
-		const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
-		const prefix = `tsbuildinfo-typeaware-${TEST_KEY}`;
-		const stateFiles = builderStateFiles(directory, prefix);
+		const stateFiles = builderStateFiles(directory, TYPE_AWARE_BUILD_INFO);
 
 		expect(stateFiles.length).toBeGreaterThan(1);
 
 		const [firstState = ""] = stateFiles;
-		fs.rmSync(path.join(stateDirectory, firstState));
+		fs.rmSync(firstState);
 
 		const result = computeAffectedFiles(runFor(directory), "only");
 
@@ -474,7 +479,7 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(outcome.firstRun).toBe(true);
 		expect(outcome.busted).toBe(false);
 		expect(outcome.invalidated).toStrictEqual([]);
-		expect(builderStateFiles(directory, `tsbuildinfo-full-${TEST_KEY}`)).toHaveLength(1);
+		expect(builderStateFiles(directory, FULL_BUILD_INFO)).toHaveLength(1);
 		expect(cacheHasEntry(cacheFile, fileA)).toBe(true);
 		expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
 	});
@@ -633,8 +638,6 @@ describe("typed-pass skip", () => {
 });
 
 describe("plan mutation", () => {
-	const buildInfo = `tsbuildinfo-typeaware-${TEST_KEY}`;
-
 	it("performs no I/O mutation in read-only (print) mode", () => {
 		expect.assertions(4);
 
@@ -656,7 +659,7 @@ describe("plan mutation", () => {
 			"typed",
 		]);
 		// Read-only planning never runs the builder or deletes caches.
-		expect(builderStateFiles(directory, buildInfo)).toHaveLength(0);
+		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(0);
 		expect(fs.existsSync(cacheFile)).toBe(true);
 
 		// The mutating plan, by contrast, runs the builder — once its deferred
@@ -665,7 +668,7 @@ describe("plan mutation", () => {
 			return allPasses(plan(parseArguments([], {}), runContext(directory, { mutate: true })));
 		});
 
-		expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
+		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 	});
 
 	it("marks the typed pass skipped in the plan when nothing type-relevant changed", () => {
@@ -773,7 +776,7 @@ describe("per-variant cache isolation", () => {
 		computeAffectedFiles(runFor(directory), "only");
 		computeAffectedFiles(runFor(directory, AGENT_ENVIRONMENT), "only");
 
-		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toHaveLength(1);
+		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${AGENT_KEY}`)).toHaveLength(1);
 	});
 });
@@ -865,8 +868,9 @@ function anyCacheExists(directory: string, key: string): boolean {
 
 /**
  * The cleared-path list a config-drift bust of one variant must report: every
- * cache, in the order the bust lists them. The planner sizes its passes against
- * these, so what the outcome names — not only what it deleted — is behaviour.
+ * cache, in the order the bust deletes them. The planner sizes its passes
+ * against these, so what the outcome names — not only what it deleted — is
+ * behaviour.
  *
  * @param directory - The fixture project root.
  * @param key - The config-variant key whose caches were busted.
@@ -1063,8 +1067,6 @@ describe("config drift sizing", () => {
 		return allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 	}
 
-	const buildInfo = `tsbuildinfo-typeaware-${TEST_KEY}`;
-
 	it("runs no TypeScript builder when the drift bust cleared the caches", () => {
 		expect.assertions(3);
 
@@ -1075,7 +1077,7 @@ describe("config drift sizing", () => {
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
 		withoutGitEnvironment(() => plan(args, runContext(directory, { mutate: true })));
-		const before = builderStateContents(directory, buildInfo);
+		const before = builderStateContents(directory, TYPE_AWARE_BUILD_INFO);
 
 		expect(before).toHaveLength(1);
 
@@ -1093,7 +1095,7 @@ describe("config drift sizing", () => {
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 		// The bust already deleted this pass's cache, so every file is dirty and
 		// the builder can only produce invalidation nothing will read.
-		expect(builderStateContents(directory, buildInfo)).toStrictEqual(before);
+		expect(builderStateContents(directory, TYPE_AWARE_BUILD_INFO)).toStrictEqual(before);
 	});
 
 	it("still seeds absent builder state when the bust cleared the caches", () => {
@@ -1116,7 +1118,7 @@ describe("config drift sizing", () => {
 		// Skipping the builder here would leave the *next* run with no prior
 		// state, so it would report a first run and discard its affected set —
 		// and an importer of a file edited in between would keep a stale entry.
-		expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
+		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 	});
 
 	it("un-skips the typed pass when a module the config imports changed", () => {

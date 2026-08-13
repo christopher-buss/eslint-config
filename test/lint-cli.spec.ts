@@ -1167,10 +1167,10 @@ describe("applyPackageJsonBust", () => {
 	}
 
 	/**
-	 * The cleared-path list a bust of one variant's caches must report: the two
-	 * type-aware caches, in the order the bust deletes them. The planner sizes
-	 * its passes against these, so what the outcome names — not only what it
-	 * deleted — is behaviour.
+	 * The cleared-path list this bust must report: the two type-aware caches,
+	 * in the order it deletes them. Spelled out rather than read back from
+	 * `PACKAGE_RESOLUTION.caches`, which would only assert the code against
+	 * itself.
 	 *
 	 * @param directory - The fixture root.
 	 * @param variantKey - The config-variant key whose caches were busted.

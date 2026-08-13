@@ -68,6 +68,12 @@ interface ProjectWalkResult {
 const warned = new Set<string>();
 
 /**
+ * State-file base name for the builder's incremental state, shared by the
+ * per-project path and the prefix {@link hasBuilderState} scans for.
+ */
+const BUILD_INFO_STATE = "tsbuildinfo";
+
+/**
  * Compute the set of files whose type-aware lint results may have changed since
  * the previous run, using TypeScript's builder API. The builder does a native
  * shape-hash BFS: it recomputes each dependent's emitted-`.d.ts` shape hash and
@@ -182,7 +188,12 @@ export function hasBuilderState(
 	{ key, cwd }: RunContext,
 	mode: TypeAwareMode | undefined,
 ): boolean {
-	const prefix = `tsbuildinfo-${modeSuffix(mode)}-${key}-`;
+	// Named through the same `statePath` the buildinfo files themselves are,
+	// minus the per-project digest, so the base name and the hyphen-join rule are
+	// stated once. Spelling the prefix out here would let a rename slip past
+	// silently: the scan would stop matching and the guard would degrade to
+	// "always build", with no error and nothing to fail on.
+	const prefix = `${path.basename(statePath(cwd, BUILD_INFO_STATE, modeSuffix(mode), key))}-`;
 	try {
 		return fs.readdirSync(stateDirectory(cwd)).some((name) => name.startsWith(prefix));
 	} catch {
@@ -230,7 +241,7 @@ function builderStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	return statePath(cwd, "tsbuildinfo", modeSuffix(mode), key, projectId);
+	return statePath(cwd, BUILD_INFO_STATE, modeSuffix(mode), key, projectId);
 }
 
 /**

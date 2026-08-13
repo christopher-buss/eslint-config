@@ -34,10 +34,8 @@ export interface HashBust {
 export interface BustOutcome {
 	/**
 	 * Absolute paths of the cache files this bust deleted, empty when the hash
-	 * did not change. Reported rather than merely counted because the planner
-	 * folds them into the set a pass sizes against: a pass whose cache is gone
-	 * has every file dirty already, so the TypeScript builder behind its
-	 * invalidation could only produce removals nothing will read.
+	 * did not change. Named rather than counted because the planner folds them
+	 * into the set each pass is sized against (see `mutatingDirtyCount`).
 	 *
 	 * Listed whether or not the file was there to delete — an absent cache
 	 * means "everything is dirty" just as a deleted one does.
