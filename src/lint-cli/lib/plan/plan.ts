@@ -159,11 +159,12 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	// `--no-cache` never touches cache state, and `--print` (mutate=false) never
 	// mutates.
 	//
-	// The package.json bust runs first and deletes only this variant's type-aware
-	// caches (a syntactic lint is immune to resolution changes), so it does NOT
-	// feed `clearedCaches` — the fast cache survives it. The mtime sweep below is
-	// the wholesale one, and it covers every variant on disk, not just the ones
-	// this run selected.
+	// Every deletion feeds `clearedCaches`, whichever step made it, so that
+	// sizing can tell a pass that re-lints everything from one that does not (see
+	// `mutatingDirtyCount`). The package.json bust spares the fast cache, so it
+	// contributes only the two type-aware ones. The mtime sweep below is the
+	// wholesale one, and it covers every variant on disk, not just the ones this
+	// run selected.
 	const canMutateCaches = mutate && options.cache;
 	const hasTypeAwarePass = descriptors.some((descriptor) => descriptor.invalidation !== "none");
 
@@ -173,6 +174,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	// `--no-cache` counts every file dirty regardless.
 	const configHash = options.cache ? computeConfigHash(cwd, files.configFiles) : undefined;
 
+	const cleared: Array<string> = [];
 	if (canMutateCaches) {
 		// Config drift through a module `eslint.config.*` imports shifts ESLint's
 		// per-entry `hashOfConfig` (a full re-lint) but touches no bust file, so
@@ -181,14 +183,19 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 		// three of this variant's caches when it changed. Applies to every pass
 		// (a config change can alter a syntactic lint), so it runs before the
 		// type-aware-only package.json bust.
-		applyHashBust(run, CONFIG_DRIFT, configHash);
+		cleared.push(...applyHashBust(run, CONFIG_DRIFT, configHash).cleared);
+		if (hasTypeAwarePass) {
+			cleared.push(
+				...applyHashBust(run, PACKAGE_RESOLUTION, computePackageJsonHash(cwd)).cleared,
+			);
+		}
+
+		// The sweep runs last, so it lists only the caches the busts left on
+		// disk.
+		cleared.push(...sweepStaleCaches(cwd, newestBustMtime));
 	}
 
-	if (canMutateCaches && hasTypeAwarePass) {
-		applyHashBust(run, PACKAGE_RESOLUTION, computePackageJsonHash(cwd));
-	}
-
-	const clearedCaches = new Set(canMutateCaches ? sweepStaleCaches(cwd, newestBustMtime) : []);
+	const clearedCaches = new Set(cleared);
 
 	// Drop the files ESLint declines to lint before anything sizes from them:
 	// they never enter a cache, so they would otherwise read as dirty forever

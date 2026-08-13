@@ -1167,6 +1167,22 @@ describe("applyPackageJsonBust", () => {
 	}
 
 	/**
+	 * The cleared-path list this bust must report: the two type-aware caches,
+	 * in the order it deletes them. Spelled out rather than read back from
+	 * `PACKAGE_RESOLUTION.caches`, which would only assert the code against
+	 * itself.
+	 *
+	 * @param directory - The fixture root.
+	 * @param variantKey - The config-variant key whose caches were busted.
+	 * @returns The expected `BustOutcome.cleared` value.
+	 */
+	function typeAwareClearedPaths(directory: string, variantKey: string): Array<string> {
+		return [CACHE_FILE_DEFAULT, CACHE_FILE_TYPE_AWARE].map((name) => {
+			return path.join(directory, cacheFileFor(name, variantKey));
+		});
+	}
+
+	/**
 	 * Apply the package-resolution bust to a run, hashing its `package.json`
 	 * the way the planner does.
 	 *
@@ -1186,7 +1202,7 @@ describe("applyPackageJsonBust", () => {
 
 		const outcome = bustPackage(runContext(directory));
 
-		expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+		expect(outcome).toStrictEqual({ cleared: [], firstRun: true });
 		expect(everyCacheExists(directory)).toBe(true);
 	});
 
@@ -1201,7 +1217,10 @@ describe("applyPackageJsonBust", () => {
 		writePackageJson(directory, { exports: "./other.js" });
 		const outcome = bustPackage(runContext(directory));
 
-		expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+		expect(outcome).toStrictEqual({
+			cleared: typeAwareClearedPaths(directory, key),
+			firstRun: false,
+		});
 		expect(fs.existsSync(path.join(directory, cacheFileFor(CACHE_FILE_TYPE_AWARE, key)))).toBe(
 			false,
 		);
@@ -1226,7 +1245,7 @@ describe("applyPackageJsonBust", () => {
 		});
 		const outcome = bustPackage(runContext(directory));
 
-		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(outcome).toStrictEqual({ cleared: [], firstRun: false });
 		expect(everyCacheExists(directory)).toBe(true);
 	});
 
@@ -1253,7 +1272,7 @@ describe("applyPackageJsonBust", () => {
 		// would make the second call a no-op and leave the agent's type-aware
 		// caches permanently stale.
 		expect(bustPackage(runContext(directory))).toStrictEqual({
-			busted: true,
+			cleared: typeAwareClearedPaths(directory, key),
 			firstRun: false,
 		});
 		expect(
@@ -1261,7 +1280,7 @@ describe("applyPackageJsonBust", () => {
 		).toBe(true);
 
 		expect(bustPackage(agentRun)).toStrictEqual({
-			busted: true,
+			cleared: typeAwareClearedPaths(directory, agentKey),
 			firstRun: false,
 		});
 		expect(

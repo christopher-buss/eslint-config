@@ -32,8 +32,15 @@ export interface HashBust {
 
 /** Outcome of a hash-drift check. */
 export interface BustOutcome {
-	/** True when the hash changed and this variant's caches were deleted. */
-	busted: boolean;
+	/**
+	 * Absolute paths of the cache files this bust deleted, empty when the hash
+	 * did not change. Named rather than counted because the planner folds them
+	 * into the set each pass is sized against (see `mutatingDirtyCount`).
+	 *
+	 * Listed whether or not the file was there to delete — an absent cache
+	 * means "everything is dirty" just as a deleted one does.
+	 */
+	cleared: ReadonlyArray<string>;
 	/** True when no prior hash existed (state stored, no bust). */
 	firstRun: boolean;
 }
@@ -90,17 +97,20 @@ export function applyHashBust(
 	hash: string | undefined,
 ): BustOutcome {
 	if (hash === undefined) {
-		return { busted: false, firstRun: false };
+		return { cleared: [], firstRun: false };
 	}
 
 	const swap = swapState(statePath(run.cwd, bust.name, run.key), hash);
 	if (swap !== "changed") {
-		return { busted: false, firstRun: swap === "first" };
+		return { cleared: [], firstRun: swap === "first" };
 	}
 
+	const cleared: Array<string> = [];
 	for (const base of bust.caches) {
-		fs.rmSync(path.resolve(run.cwd, cacheFileFor(base, run.key)), { force: true });
+		const cacheFilePath = path.resolve(run.cwd, cacheFileFor(base, run.key));
+		fs.rmSync(cacheFilePath, { force: true });
+		cleared.push(cacheFilePath);
 	}
 
-	return { busted: true, firstRun: false };
+	return { cleared, firstRun: false };
 }

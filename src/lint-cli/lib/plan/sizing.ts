@@ -8,6 +8,7 @@ import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
 import type { LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import type { RepoFiles } from "../files/collect.ts";
+import { hasBuilderState } from "../typescript/affected.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
 import type { PassDescriptor } from "./passes.ts";
@@ -41,9 +42,9 @@ export interface PassPlan {
  */
 export interface SizingInputs {
 	/**
-	 * The cache files the up-front stale sweep deleted (absolute paths). A pass
-	 * whose cache is in here counts every file as dirty and skips the builder —
-	 * everything re-lints regardless.
+	 * The cache files this run deleted up front (absolute paths), from the hash
+	 * busts and the stale sweep alike. A pass whose cache is in here counts
+	 * every file as dirty and skips the builder — everything re-lints anyway.
 	 */
 	clearedCaches: ReadonlySet<string>;
 	/** The lint-target lists, already filtered of ESLint-ignored files. */
@@ -115,10 +116,19 @@ function mutatingDirtyCount(
 	targetFiles: Array<string>,
 	{ clearedCaches, run }: SizePassContext,
 ): number {
-	if (clearedCaches.has(cacheLocation)) {
-		// The up-front sweep already deleted this pass's cache (see `plan`), so
-		// every file is dirty and the builder would be pure waste — everything
-		// re-lints.
+	// Both facts this pass needs about its builder, read off the one field that
+	// records them: whether it builds a TypeScript program at all, and the mode
+	// that program runs under.
+	const buildsProgram = descriptor.invalidation !== "none";
+	const mode = descriptor.invalidation === "only" ? "only" : undefined;
+
+	// A bust or the up-front sweep already deleted this pass's cache (see
+	// `plan`), so every file is dirty and the affected set the builder computes
+	// would have nothing to remove from. Skipping it is only safe once prior
+	// builder state exists: with none, the next run reports `firstRun` and throws
+	// its affected set away, so an importer of a file edited in between would
+	// keep a stale entry (see `hasBuilderState`).
+	if (clearedCaches.has(cacheLocation) && (!buildsProgram || hasBuilderState(run, mode))) {
 		return targetFiles.length;
 	}
 
@@ -127,12 +137,12 @@ function mutatingDirtyCount(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);
 
-	if (descriptor.invalidation !== "none") {
+	if (buildsProgram) {
 		const outcome = applyTypeAwareInvalidation(run, {
 			alreadyDirty: dirty,
 			cache,
 			cacheLocation,
-			mode: descriptor.invalidation === "only" ? "only" : undefined,
+			mode,
 			targetFiles,
 		});
 		if (outcome.busted) {

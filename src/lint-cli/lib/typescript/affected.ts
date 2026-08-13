@@ -68,6 +68,19 @@ interface ProjectWalkResult {
 const warned = new Set<string>();
 
 /**
+ * State-file base name for the builder's incremental state, shared by the
+ * per-project path and the prefix {@link hasBuilderState} scans for.
+ */
+const BUILD_INFO_STATE = "tsbuildinfo";
+
+/**
+ * State-file base name for the gate paired with each buildinfo. Deliberately
+ * not a `tsbuildinfo-` suffix, so anything enumerating a variant's buildinfo
+ * files does not pick a gate up as one (see {@link gateStatePath}).
+ */
+const GATE_STATE = "tsgate";
+
+/**
  * Compute the set of files whose type-aware lint results may have changed since
  * the previous run, using TypeScript's builder API. The builder does a native
  * shape-hash BFS: it recomputes each dependent's emitted-`.d.ts` shape hash and
@@ -159,6 +172,61 @@ export function computeAffectedFiles(
 }
 
 /**
+ * Whether a previous run left builder state for this mode and config variant.
+ *
+ * The one thing a builder pass does that nothing else can is establish this
+ * state. Its affected set is disposable — a caller with an empty cache re-lints
+ * regardless — but a run that skips the builder while no state exists only
+ * defers the cost onto the next run, which then reports `firstRun` and throws
+ * its affected set away. A file edited in between would be re-linted on its own
+ * mtime while its importers kept stale type-aware cache entries, which no later
+ * run revisits. Callers that skip the builder as an optimisation ask this
+ * first.
+ *
+ * Any one project's state is enough: {@link computeAffectedFiles} reports
+ * `firstRun` only when no project at all had state, and a newly added project
+ * contributes its whole file set rather than an empty one.
+ *
+ * @param run - The run context.
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @returns True when at least one buildinfo for this mode and variant exists.
+ */
+export function hasBuilderState(
+	{ key, cwd }: RunContext,
+	mode: TypeAwareMode | undefined,
+): boolean {
+	// Named through the same `statePath` the buildinfo files themselves are,
+	// minus the per-project digest, so the base name and the hyphen-join rule are
+	// stated once. Spelling the prefix out here would let a rename slip past
+	// silently: the scan would stop matching and the guard would degrade to
+	// "always build", with no error and nothing to fail on.
+	const prefix = `${path.basename(statePath(cwd, BUILD_INFO_STATE, modeSuffix(mode), key))}-`;
+	try {
+		// Both writers in this directory stage through a sibling
+		// `<name>.<pid>.tmp` (see `persistBuilderState` and `writeState`), which
+		// shares the prefix. A run killed mid-write leaves one behind for good,
+		// and counting it as state would re-enable the skip with nothing on disk
+		// to invalidate against.
+		return fs
+			.readdirSync(stateDirectory(cwd))
+			.some((name) => name.startsWith(prefix) && !name.endsWith(".tmp"));
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * The state-file segment discriminating the type-aware mode a builder ran
+ * under. Two modes resolve different programs, so their state cannot be shared.
+ *
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @returns The file-name segment for that mode.
+ */
+function modeSuffix(mode: TypeAwareMode | undefined): string {
+	return mode === "only" ? "typeaware" : "full";
+}
+
+/**
  * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
  * config variant.
  *
@@ -187,8 +255,7 @@ function builderStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
+	return statePath(cwd, BUILD_INFO_STATE, modeSuffix(mode), key, projectId);
 }
 
 /**
@@ -219,8 +286,7 @@ function gateStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, "tsgate", suffix, key, projectId);
+	return statePath(cwd, GATE_STATE, modeSuffix(mode), key, projectId);
 }
 
 /**
