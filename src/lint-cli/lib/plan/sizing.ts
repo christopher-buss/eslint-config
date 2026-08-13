@@ -5,9 +5,10 @@ import { cacheFileFor } from "../cache/constants.ts";
 import type { DirtyCache } from "../cache/entries.ts";
 import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
 import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
-import type { LintCliOptions } from "../cli/types.ts";
+import type { LintCliOptions, TypeAwareMode } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import type { RepoFiles } from "../files/collect.ts";
+import { hasBuilderState } from "../typescript/affected.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
 import type { PassDescriptor } from "./passes.ts";
@@ -99,6 +100,28 @@ export function sizePasses(
 }
 
 /**
+ * Whether a pass whose cache this run deleted may skip its builder outright.
+ *
+ * With no cache, the affected set the builder computes has nothing to remove
+ * from — but the builder is also the only thing that establishes the state a
+ * later run invalidates against, so skipping it while none exists trades one
+ * run's latency for stale diagnostics on the next (see `hasBuilderState`). The
+ * syntactic pass builds no program at all, so it always skips.
+ *
+ * @param descriptor - The pass being sized.
+ * @param run - The run context.
+ * @param mode - The pass's type-aware mode.
+ * @returns True when the builder can be skipped safely.
+ */
+function canSkipBuilder(
+	descriptor: PassDescriptor,
+	run: RunContext,
+	mode: TypeAwareMode | undefined,
+): boolean {
+	return descriptor.invalidation === "none" || hasBuilderState(run, mode);
+}
+
+/**
  * Dirty count for a real run: clear the cache wholesale when stale, then fold
  * TS builder invalidation in, reusing a single loaded cache for the dirty query
  * and the surgical entry removal.
@@ -115,10 +138,11 @@ function mutatingDirtyCount(
 	targetFiles: Array<string>,
 	{ clearedCaches, run }: SizePassContext,
 ): number {
-	if (clearedCaches.has(cacheLocation)) {
-		// The up-front sweep already deleted this pass's cache (see `plan`), so
-		// every file is dirty and the builder would be pure waste — everything
-		// re-lints.
+	const mode = descriptor.invalidation === "only" ? "only" : undefined;
+	if (clearedCaches.has(cacheLocation) && canSkipBuilder(descriptor, run, mode)) {
+		// A bust or the up-front sweep already deleted this pass's cache (see
+		// `plan`), so every file is dirty and the builder's invalidation would be
+		// pure waste — everything re-lints.
 		return targetFiles.length;
 	}
 
@@ -132,7 +156,7 @@ function mutatingDirtyCount(
 			alreadyDirty: dirty,
 			cache,
 			cacheLocation,
-			mode: descriptor.invalidation === "only" ? "only" : undefined,
+			mode,
 			targetFiles,
 		});
 		if (outcome.busted) {

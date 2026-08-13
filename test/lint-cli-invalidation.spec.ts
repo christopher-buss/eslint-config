@@ -144,25 +144,19 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
 }
 
 /**
- * Delete every builder state file, leaving the rest of the state directory
- * alone. A test that asserts a run did *not* build needs the buildinfo to be
- * absent beforehand, so that a build is observable as one reappearing — and it
- * must not take the `config-hash` state with it, or the drift bust under test
- * would report a first run and never fire.
+ * The content of every builder state file matching a prefix, in the order
+ * {@link builderStateFiles} lists them. A run that skipped the builder leaves
+ * these byte-identical; one that ran it over a changed program does not.
  *
  * @param directory - The fixture project root.
+ * @param prefix - The `tsbuildinfo-<mode>-<key>` prefix to match.
+ * @returns The matching files' contents.
  */
-function removeBuilderState(directory: string): void {
+function builderStateContents(directory: string, prefix: string): Array<string> {
 	const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
-	if (!fs.existsSync(stateDirectory)) {
-		return;
-	}
-
-	for (const name of fs.readdirSync(stateDirectory)) {
-		if (name.startsWith("tsbuildinfo-") || name.startsWith("tsgate-")) {
-			fs.rmSync(path.join(stateDirectory, name), { force: true });
-		}
-	}
+	return builderStateFiles(directory, prefix).map((name) => {
+		return fs.readFileSync(path.join(stateDirectory, name), "utf8");
+	});
 }
 
 /**
@@ -1069,8 +1063,10 @@ describe("config drift sizing", () => {
 		return allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 	}
 
+	const buildInfo = `tsbuildinfo-typeaware-${TEST_KEY}`;
+
 	it("runs no TypeScript builder when the drift bust cleared the caches", () => {
-		expect.assertions(2);
+		expect.assertions(3);
 
 		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
@@ -1079,11 +1075,15 @@ describe("config drift sizing", () => {
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
 		withoutGitEnvironment(() => plan(args, runContext(directory, { mutate: true })));
+		const before = builderStateContents(directory, buildInfo);
 
-		// Clear the builder state so this run's builder, if it runs at all,
-		// leaves a buildinfo behind. Editing the imported module changes no bust
-		// file, so only the drift bust can delete the caches.
-		removeBuilderState(directory);
+		expect(before).toHaveLength(1);
+
+		// A type-relevant edit the builder would otherwise record, alongside the
+		// config drift. Only the drift can reach the caches here: `eslint-rules`
+		// is neither a lint target nor a cache-bust file.
+		fs.writeFileSync(fileA, "export function a(): string { return 'now a string'; }\n");
+		touch(fileA);
 		editRules(directory);
 
 		const drifted = withoutGitEnvironment(() => {
@@ -1093,7 +1093,30 @@ describe("config drift sizing", () => {
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 		// The bust already deleted this pass's cache, so every file is dirty and
 		// the builder can only produce invalidation nothing will read.
-		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toStrictEqual([]);
+		expect(builderStateContents(directory, buildInfo)).toStrictEqual(before);
+	});
+
+	it("still seeds absent builder state when the bust cleared the caches", () => {
+		expect.assertions(2);
+
+		// Store the config hash without ever running the builder, then give the
+		// run caches to delete: the shape of a lint right after an install, which
+		// discards `node_modules` (the builder state with it) but not the caches.
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const args = parseArguments(["src"], {});
+		bustConfig(runFor(directory));
+		seedAllCaches(directory, TEST_KEY);
+		editRules(directory);
+
+		const drifted = withoutGitEnvironment(() => {
+			return plan(args, runContext(directory, { mutate: true }));
+		});
+
+		expect(typedPass(drifted)!.shouldRun).toBe(true);
+		// Skipping the builder here would leave the *next* run with no prior
+		// state, so it would report a first run and discard its affected set —
+		// and an importer of a file edited in between would keep a stale entry.
+		expect(builderStateFiles(directory, buildInfo)).toHaveLength(1);
 	});
 
 	it("un-skips the typed pass when a module the config imports changed", () => {

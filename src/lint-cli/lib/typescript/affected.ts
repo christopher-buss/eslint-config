@@ -159,6 +159,49 @@ export function computeAffectedFiles(
 }
 
 /**
+ * Whether a previous run left builder state for this mode and config variant.
+ *
+ * The one thing a builder pass does that nothing else can is establish this
+ * state. Its affected set is disposable — a caller with an empty cache re-lints
+ * regardless — but a run that skips the builder while no state exists only
+ * defers the cost onto the next run, which then reports `firstRun` and throws
+ * its affected set away. A file edited in between would be re-linted on its own
+ * mtime while its importers kept stale type-aware cache entries, which no later
+ * run revisits. Callers that skip the builder as an optimisation ask this
+ * first.
+ *
+ * Any one project's state is enough: {@link computeAffectedFiles} reports
+ * `firstRun` only when no project at all had state, and a newly added project
+ * contributes its whole file set rather than an empty one.
+ *
+ * @param run - The run context.
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @returns True when at least one buildinfo for this mode and variant exists.
+ */
+export function hasBuilderState(
+	{ key, cwd }: RunContext,
+	mode: TypeAwareMode | undefined,
+): boolean {
+	const prefix = `tsbuildinfo-${modeSuffix(mode)}-${key}-`;
+	try {
+		return fs.readdirSync(stateDirectory(cwd)).some((name) => name.startsWith(prefix));
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * The state-file segment discriminating the type-aware mode a builder ran
+ * under. Two modes resolve different programs, so their state cannot be shared.
+ *
+ * @param mode - The active ESLint type-aware mode (never `"off"` here).
+ * @returns The file-name segment for that mode.
+ */
+function modeSuffix(mode: TypeAwareMode | undefined): string {
+	return mode === "only" ? "typeaware" : "full";
+}
+
+/**
  * Resolve the builder incremental-state (`.tsbuildinfo`) file for a mode and
  * config variant.
  *
@@ -187,8 +230,7 @@ function builderStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, "tsbuildinfo", suffix, key, projectId);
+	return statePath(cwd, "tsbuildinfo", modeSuffix(mode), key, projectId);
 }
 
 /**
@@ -219,8 +261,7 @@ function gateStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	const suffix = mode === "only" ? "typeaware" : "full";
-	return statePath(cwd, "tsgate", suffix, key, projectId);
+	return statePath(cwd, "tsgate", modeSuffix(mode), key, projectId);
 }
 
 /**
