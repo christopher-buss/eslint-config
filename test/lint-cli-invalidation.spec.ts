@@ -1,4 +1,5 @@
 // cspell:words tsbuildinfo typeaware globals CLAUDECODE normalised buildinfo
+// cspell:words tsgate
 import fileEntryCache from "file-entry-cache";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -140,6 +141,28 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
 	}
 
 	return fs.readdirSync(stateDirectory).filter((name) => name.startsWith(prefix));
+}
+
+/**
+ * Delete every builder state file, leaving the rest of the state directory
+ * alone. A test that asserts a run did *not* build needs the buildinfo to be
+ * absent beforehand, so that a build is observable as one reappearing — and it
+ * must not take the `config-hash` state with it, or the drift bust under test
+ * would report a first run and never fire.
+ *
+ * @param directory - The fixture project root.
+ */
+function removeBuilderState(directory: string): void {
+	const stateDirectory = path.join(directory, "node_modules/.cache/isentinel-lint");
+	if (!fs.existsSync(stateDirectory)) {
+		return;
+	}
+
+	for (const name of fs.readdirSync(stateDirectory)) {
+		if (name.startsWith("tsbuildinfo-") || name.startsWith("tsgate-")) {
+			fs.rmSync(path.join(stateDirectory, name), { force: true });
+		}
+	}
 }
 
 /**
@@ -846,6 +869,19 @@ function anyCacheExists(directory: string, key: string): boolean {
 	return ALL_CACHE_FILES.some((name) => cacheExists(directory, key, name));
 }
 
+/**
+ * The cleared-path list a config-drift bust of one variant must report: every
+ * cache, in the order the bust lists them. The planner sizes its passes against
+ * these, so what the outcome names — not only what it deleted — is behaviour.
+ *
+ * @param directory - The fixture project root.
+ * @param key - The config-variant key whose caches were busted.
+ * @returns The expected `BustOutcome.cleared` value.
+ */
+function clearedPaths(directory: string, key: string): Array<string> {
+	return ALL_CACHE_FILES.map((name) => path.join(directory, cacheFileFor(name, key)));
+}
+
 function editRules(directory: string): void {
 	fs.writeFileSync(
 		path.join(directory, "eslint-rules.ts"),
@@ -862,7 +898,7 @@ describe("applyConfigDriftBust", () => {
 
 		const outcome = bustConfig(runFor(directory));
 
-		expect(outcome).toStrictEqual({ busted: false, firstRun: true });
+		expect(outcome).toStrictEqual({ cleared: [], firstRun: true });
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
@@ -876,7 +912,10 @@ describe("applyConfigDriftBust", () => {
 
 		const outcome = bustConfig(runFor(directory));
 
-		expect(outcome).toStrictEqual({ busted: true, firstRun: false });
+		expect(outcome).toStrictEqual({
+			cleared: clearedPaths(directory, TEST_KEY),
+			firstRun: false,
+		});
 		// Unlike the package.json bust, the fast (syntactic) cache is dropped
 		// too: a rule-severity change alters a syntactic lint.
 		expect(anyCacheExists(directory, TEST_KEY)).toBe(false);
@@ -894,7 +933,7 @@ describe("applyConfigDriftBust", () => {
 
 		// Content-addressed, so an mtime bump with identical content is a
 		// no-op.
-		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(outcome).toStrictEqual({ cleared: [], firstRun: false });
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
@@ -909,14 +948,14 @@ describe("applyConfigDriftBust", () => {
 		editRules(directory);
 
 		expect(bustConfig(runFor(directory))).toStrictEqual({
-			busted: true,
+			cleared: clearedPaths(directory, TEST_KEY),
 			firstRun: false,
 		});
 		// The no-agent run must not consume the drift on the agent's behalf.
 		expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
 
 		expect(bustConfig(runFor(directory, AGENT_ENVIRONMENT))).toStrictEqual({
-			busted: true,
+			cleared: clearedPaths(directory, AGENT_KEY),
 			firstRun: false,
 		});
 		expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
@@ -934,7 +973,7 @@ describe("applyConfigDriftBust", () => {
 			computeConfigHash(directory, []),
 		);
 
-		expect(outcome).toStrictEqual({ busted: false, firstRun: false });
+		expect(outcome).toStrictEqual({ cleared: [], firstRun: false });
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
@@ -952,7 +991,7 @@ describe("applyConfigDriftBust", () => {
 		expect(
 			applyHashBust(runFor(directory), CONFIG_DRIFT, computeConfigHash(directory, roots)),
 		).toStrictEqual({
-			busted: false,
+			cleared: [],
 			firstRun: false,
 		});
 	});
@@ -1029,6 +1068,33 @@ describe("config drift sizing", () => {
 	function typedPass(runPlan: ReturnType<typeof plan>): PassPlan | undefined {
 		return allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 	}
+
+	it("runs no TypeScript builder when the drift bust cleared the caches", () => {
+		expect.assertions(2);
+
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
+		const fileA = path.join(directory, "src/a.ts");
+		const args = parseArguments(["src"], {});
+		computeAffectedFiles(runFor(directory), "only");
+		seedCache(cacheFile, [fileA]);
+		withoutGitEnvironment(() => plan(args, runContext(directory, { mutate: true })));
+
+		// Clear the builder state so this run's builder, if it runs at all,
+		// leaves a buildinfo behind. Editing the imported module changes no bust
+		// file, so only the drift bust can delete the caches.
+		removeBuilderState(directory);
+		editRules(directory);
+
+		const drifted = withoutGitEnvironment(() => {
+			return plan(args, runContext(directory, { mutate: true }));
+		});
+
+		expect(typedPass(drifted)!.shouldRun).toBe(true);
+		// The bust already deleted this pass's cache, so every file is dirty and
+		// the builder can only produce invalidation nothing will read.
+		expect(builderStateFiles(directory, `tsbuildinfo-typeaware-${TEST_KEY}`)).toStrictEqual([]);
+	});
 
 	it("un-skips the typed pass when a module the config imports changed", () => {
 		expect.assertions(2);
