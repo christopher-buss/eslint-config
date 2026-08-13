@@ -25,7 +25,7 @@ import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { stateDirectory } from "../src/lint-cli/lib/state.ts";
-import { computeAffectedFiles } from "../src/lint-cli/lib/typescript/affected.ts";
+import { computeAffectedFiles, hasBuilderState } from "../src/lint-cli/lib/typescript/affected.ts";
 import { allPasses, composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
@@ -876,7 +876,7 @@ function anyCacheExists(directory: string, key: string): boolean {
  * @param key - The config-variant key whose caches were busted.
  * @returns The expected `BustOutcome.cleared` value.
  */
-function clearedPaths(directory: string, key: string): Array<string> {
+function allClearedPaths(directory: string, key: string): Array<string> {
 	return ALL_CACHE_FILES.map((name) => path.join(directory, cacheFileFor(name, key)));
 }
 
@@ -911,7 +911,7 @@ describe("applyConfigDriftBust", () => {
 		const outcome = bustConfig(runFor(directory));
 
 		expect(outcome).toStrictEqual({
-			cleared: clearedPaths(directory, TEST_KEY),
+			cleared: allClearedPaths(directory, TEST_KEY),
 			firstRun: false,
 		});
 		// Unlike the package.json bust, the fast (syntactic) cache is dropped
@@ -946,14 +946,14 @@ describe("applyConfigDriftBust", () => {
 		editRules(directory);
 
 		expect(bustConfig(runFor(directory))).toStrictEqual({
-			cleared: clearedPaths(directory, TEST_KEY),
+			cleared: allClearedPaths(directory, TEST_KEY),
 			firstRun: false,
 		});
 		// The no-agent run must not consume the drift on the agent's behalf.
 		expect(everyCacheExists(directory, AGENT_KEY)).toBe(true);
 
 		expect(bustConfig(runFor(directory, AGENT_ENVIRONMENT))).toStrictEqual({
-			cleared: clearedPaths(directory, AGENT_KEY),
+			cleared: allClearedPaths(directory, AGENT_KEY),
 			firstRun: false,
 		});
 		expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
@@ -1059,6 +1059,27 @@ describe("computeConfigHash discovery", () => {
 
 		expect(before).toBeDefined();
 		expect(after).toBe(before);
+	});
+});
+
+describe("hasBuilderState", () => {
+	it("ignores a temp file left behind by an interrupted write", () => {
+		expect.assertions(2);
+
+		// Both the buildinfo emit and `writeState` stage through a sibling
+		// `<name>.<pid>.tmp`, so a killed run leaves one under the same prefix
+		// the scan matches. Counting it as state would re-enable the builder skip
+		// with nothing on disk for the next run to invalidate against.
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const stray = path.join(stateDirectory(directory), `${TYPE_AWARE_BUILD_INFO}-abc.4242.tmp`);
+		fs.mkdirSync(path.dirname(stray), { recursive: true });
+		fs.writeFileSync(stray, "");
+
+		expect(hasBuilderState(runFor(directory), "only")).toBe(false);
+
+		computeAffectedFiles(runFor(directory), "only");
+
+		expect(hasBuilderState(runFor(directory), "only")).toBe(true);
 	});
 });
 

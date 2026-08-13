@@ -74,6 +74,13 @@ const warned = new Set<string>();
 const BUILD_INFO_STATE = "tsbuildinfo";
 
 /**
+ * State-file base name for the gate paired with each buildinfo. Deliberately
+ * not a `tsbuildinfo-` suffix, so anything enumerating a variant's buildinfo
+ * files does not pick a gate up as one (see {@link gateStatePath}).
+ */
+const GATE_STATE = "tsgate";
+
+/**
  * Compute the set of files whose type-aware lint results may have changed since
  * the previous run, using TypeScript's builder API. The builder does a native
  * shape-hash BFS: it recomputes each dependent's emitted-`.d.ts` shape hash and
@@ -195,7 +202,14 @@ export function hasBuilderState(
 	// "always build", with no error and nothing to fail on.
 	const prefix = `${path.basename(statePath(cwd, BUILD_INFO_STATE, modeSuffix(mode), key))}-`;
 	try {
-		return fs.readdirSync(stateDirectory(cwd)).some((name) => name.startsWith(prefix));
+		// Both writers in this directory stage through a sibling
+		// `<name>.<pid>.tmp` (see `persistBuilderState` and `writeState`), which
+		// shares the prefix. A run killed mid-write leaves one behind for good,
+		// and counting it as state would re-enable the skip with nothing on disk
+		// to invalidate against.
+		return fs
+			.readdirSync(stateDirectory(cwd))
+			.some((name) => name.startsWith(prefix) && !name.endsWith(".tmp"));
 	} catch {
 		return false;
 	}
@@ -272,7 +286,7 @@ function gateStatePath(
 	key: string,
 	projectId: string,
 ): string {
-	return statePath(cwd, "tsgate", modeSuffix(mode), key, projectId);
+	return statePath(cwd, GATE_STATE, modeSuffix(mode), key, projectId);
 }
 
 /**

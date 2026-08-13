@@ -40,7 +40,7 @@ export interface BustOutcome {
 	 * Listed whether or not the file was there to delete — an absent cache
 	 * means "everything is dirty" just as a deleted one does.
 	 */
-	cleared: Array<string>;
+	cleared: ReadonlyArray<string>;
 	/** True when no prior hash existed (state stored, no bust). */
 	firstRun: boolean;
 }
