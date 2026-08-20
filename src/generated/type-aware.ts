@@ -22,6 +22,7 @@ export const typeAwarePrefixes: ReadonlySet<string> = new Set([
   "package-json",
   "perfectionist",
   "pnpm",
+  "project-structure",
   "promise",
   "react",
   "react-jsx",

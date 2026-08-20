@@ -890,6 +890,49 @@ otherwise, you can install them manually:
 pnpm i -D eslint-plugin-eslint-plugin
 ```
 
+#### Co-located Tests
+
+`projectStructure` requires every source file to sit next to its test file,
+through
+[eslint-plugin-project-structure](https://github.com/Igorkowalski94/eslint-plugin-project-structure).
+`src/place-service.ts` then has to be joined by `src/place-service.spec.ts`.
+Only `enforceExistence` is driven here, so the rule never enforces naming:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	projectStructure: {
+		// The plugin's name placeholders, plus `{ext}` for the extension of the
+		// file that matched. Default: ["{node-name}.spec.{ext}"]
+		enforceExistence: "__tests__/{node-name}.test.{ext}",
+		// Default: every source file the preset lints
+		files: ["src/**/*.{ts,tsx}"],
+		// Default: tests, `.d.ts` files and build configs
+		ignores: ["**/index.ts"],
+		// Default: `process.cwd()`
+		projectRoot: import.meta.dirname,
+		// Restricts the check to one subtree. Default: all of `projectRoot`
+		structureRoot: "src",
+	},
+});
+```
+
+```bash
+pnpm i -D eslint-plugin-project-structure
+```
+
+`{node-name}` matches the kebab-case filenames the preset enforces; the others
+are `{nodeName}`, `{NodeName}`, `{node_name}` and `{NODE_NAME}`. A file already
+matching a template is exempt from it. A source file with no test disables the
+rule at the source.
+
+Two caveats. Deleting `foo.spec.ts` does not change `foo.ts`, so a cached run
+replays the old clean result — the check is only sound uncached. And the plugin
+writes `projectStructure.cache.json` into `projectRoot` while it has something
+to report, so gitignore it.
+
 ### Git hooks
 
 If you want to apply lint and auto-fix before every commit, use

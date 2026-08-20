@@ -3229,6 +3229,7 @@ export const enabledPresetRuleNames: ReadonlySet<string> = new Set([
 	"prefer-rest-params",
 	"prefer-spread",
 	"prefer-template",
+	"project-structure/folder-structure",
 	"promise/always-return",
 	"promise/catch-or-return",
 	"promise/no-multiple-resolved",
