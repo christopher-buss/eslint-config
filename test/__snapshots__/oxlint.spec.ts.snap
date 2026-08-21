@@ -1782,6 +1782,8 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -2589,10 +2591,13 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -2601,11 +2606,17 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
           "name": "antfu",
           "specifier": "<pkg>:eslint-plugin-antfu",
+        },
+        {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
@@ -2614,6 +2625,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -4701,6 +4713,8 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -6642,10 +6656,13 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -6654,11 +6671,17 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
           "name": "antfu",
           "specifier": "<pkg>:eslint-plugin-antfu",
+        },
+        {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
@@ -6667,6 +6690,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -9080,6 +9104,8 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -10718,10 +10744,13 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -10730,11 +10759,17 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
           "name": "antfu",
           "specifier": "<pkg>:eslint-plugin-antfu",
+        },
+        {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
@@ -10743,6 +10778,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -13159,6 +13195,8 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -16096,6 +16134,8 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
         "src/**",
       ],
       "files": [
@@ -17192,10 +17232,13 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -17204,11 +17247,17 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
+        "**/vitest.shared.{,c,m}[jt]s{,x}",
+        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
           "name": "antfu",
           "specifier": "<pkg>:eslint-plugin-antfu",
+        },
+        {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
         },
         {
           "name": "small-rules",
@@ -17217,6 +17266,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },

@@ -68,8 +68,10 @@ export function disables({
 			rules: {
 				"antfu/no-top-level-await": "off",
 				"no-console": "off",
+				"roblox/no-null": "off",
 				"small-rules/require-async-suffix": "off",
 				"ts/explicit-function-return-type": "off",
+				"unicorn/no-null": "off",
 			},
 		},
 		{
