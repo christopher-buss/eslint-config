@@ -123,10 +123,6 @@ export const GLOB_BUILD_CONFIGS: Array<string> = [
 	`**/config/${GLOB_SRC}`,
 	`**/*config.${GLOB_SRC_EXT}`,
 	`**/*config.*.${GLOB_SRC_EXT}`,
-	// Config fragments the tool loads by convention, without `config` in the
-	// name.
-	`**/vitest.shared.${GLOB_SRC_EXT}`,
-	`**/vitest.workspace.${GLOB_SRC_EXT}`,
 ];
 
 export const GLOB_ALL_SRC = [

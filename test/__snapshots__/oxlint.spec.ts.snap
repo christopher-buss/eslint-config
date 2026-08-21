@@ -1782,8 +1782,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -2591,8 +2589,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
@@ -2606,8 +2602,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -2781,6 +2775,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -4713,8 +4708,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -6656,8 +6649,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
@@ -6671,8 +6662,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -6846,6 +6835,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -9104,8 +9094,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -10744,8 +10732,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
@@ -10759,8 +10745,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -10934,6 +10918,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -13195,8 +13180,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -16134,8 +16117,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
         "src/**",
       ],
       "files": [
@@ -17232,8 +17213,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "rules": {
         "no-console": "off",
@@ -17247,8 +17226,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "**/config/**/*.{,c,m}[jt]s{,x}",
         "**/*config.{,c,m}[jt]s{,x}",
         "**/*config.*.{,c,m}[jt]s{,x}",
-        "**/vitest.shared.{,c,m}[jt]s{,x}",
-        "**/vitest.workspace.{,c,m}[jt]s{,x}",
       ],
       "jsPlugins": [
         {
@@ -17422,6 +17399,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {

@@ -144,6 +144,7 @@ export function oxlintDisables({
 					"small-rules/require-async-suffix": "off",
 					"sonar/file-name-differ-from-class": "off",
 					"unicorn/filename-case": "off",
+					"unicorn/no-null": "off",
 				},
 			}),
 			...createOxlintConfigs({
