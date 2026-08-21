@@ -1184,8 +1184,10 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
+      "-roblox/no-null",
       "-small-rules/require-async-suffix",
       "-ts/explicit-function-return-type",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -1273,6 +1275,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "-small-rules/require-async-suffix",
       "-sonar/file-name-differ-from-class",
       "-unicorn/filename-case",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -2870,8 +2873,10 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
+      "-roblox/no-null",
       "-small-rules/require-async-suffix",
       "-ts/explicit-function-return-type",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -2959,6 +2964,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "-small-rules/require-async-suffix",
       "-sonar/file-name-differ-from-class",
       "-unicorn/filename-case",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -5320,8 +5326,10 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
+      "-roblox/no-null",
       "-small-rules/require-async-suffix",
       "-ts/explicit-function-return-type",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -5409,6 +5417,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "-small-rules/require-async-suffix",
       "-sonar/file-name-differ-from-class",
       "-unicorn/filename-case",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -8188,8 +8197,10 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     "rules": [
       "-antfu/no-top-level-await",
       "-no-console",
+      "-roblox/no-null",
       "-small-rules/require-async-suffix",
       "-ts/explicit-function-return-type",
+      "-unicorn/no-null",
     ],
   },
   {
@@ -8277,6 +8288,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "-small-rules/require-async-suffix",
       "-sonar/file-name-differ-from-class",
       "-unicorn/filename-case",
+      "-unicorn/no-null",
     ],
   },
   {

@@ -2593,6 +2593,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -2608,12 +2609,17 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
+        },
+        {
           "name": "small-rules",
           "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -2769,6 +2775,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -6646,6 +6653,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -6661,12 +6669,17 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
+        },
+        {
           "name": "small-rules",
           "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -6822,6 +6835,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -10722,6 +10736,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -10737,12 +10752,17 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
+        },
+        {
           "name": "small-rules",
           "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -10898,6 +10918,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -17196,6 +17217,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "rules": {
         "no-console": "off",
         "typescript/explicit-function-return-type": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
@@ -17211,12 +17233,17 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "specifier": "<pkg>:eslint-plugin-antfu",
         },
         {
+          "name": "roblox",
+          "specifier": "<pkg>:eslint-plugin-roblox-ts",
+        },
+        {
           "name": "small-rules",
           "specifier": "<pkg>:@pobammer-ts/small-rules",
         },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
+        "roblox/no-null": "off",
         "small-rules/require-async-suffix": "off",
       },
     },
@@ -17372,6 +17399,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "rules": {
         "import/no-default-export": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-null": "off",
       },
     },
     {
