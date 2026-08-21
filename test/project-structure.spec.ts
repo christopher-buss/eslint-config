@@ -133,6 +133,17 @@ describe("projectStructure", () => {
 		).resolves.toStrictEqual([]);
 	});
 
+	it("exempts a sibling-folder target the test globs do not cover", async () => {
+		expect.assertions(1);
+
+		await expect(
+			lint(
+				{ "src/checks/value.ts": SOURCE, "src/value.ts": SOURCE },
+				{ enforceExistence: "checks/{node-name}.{ext}" },
+			),
+		).resolves.toStrictEqual([]);
+	});
+
 	it("restricts the check to structureRoot", async () => {
 		expect.assertions(1);
 

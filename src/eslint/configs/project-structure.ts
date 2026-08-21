@@ -89,10 +89,15 @@ export async function projectStructure({
  */
 function buildChildren(templates: Array<string>): Array<StructureRule> {
 	// A file already matching a template is exempt from it, so `foo.spec.ts` is
-	// not asked for a `foo.spec.spec.ts`.
-	const children: Array<StructureRule> = templates
-		.filter((template) => !template.includes("/"))
-		.map((template) => ({ name: template.replaceAll(/\{[^{}]*\}/g, "*") }));
+	// not asked for a `foo.spec.spec.ts`. A rule matches one path segment, so
+	// the exemption is keyed on the template's basename and applies in every
+	// folder - `specs/{node-name}.{ext}` has to exempt the file it lands on
+	// wherever `folder-structure` reaches it.
+	const children: Array<StructureRule> = templates.map((template) => {
+		return {
+			name: (template.split("/").pop() ?? template).replaceAll(/\{[^{}]*\}/g, "*"),
+		};
+	});
 
 	for (const extension of GLOB_SRC_EXTENSIONS) {
 		children.push({
