@@ -32,7 +32,7 @@ catalogs:
   dev:
     "@antfu/ni": 30.5.0
     "@eslint-react/shared": 5.17.3
-    "@eslint/config-inspector": 3.1.0
+    "@eslint/config-inspector": 3.3.0
     "@isentinel/tsconfig": 1.2.0
     "@rbxts/types": 1.0.943
     "@stylistic/eslint-plugin-migrate": 4.4.1
