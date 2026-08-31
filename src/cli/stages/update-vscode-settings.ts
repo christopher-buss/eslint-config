@@ -15,8 +15,8 @@ export async function updateVscodeSettings(result: PromptResult): Promise<void> 
 	}
 
 	const cwd = process.cwd();
-	const dotVscodePath: string = path.join(cwd, ".vscode");
-	const settingsPath: string = path.join(dotVscodePath, "settings.json");
+	const dotVscodePath = path.join(cwd, ".vscode");
+	const settingsPath = path.join(dotVscodePath, "settings.json");
 
 	if (!fs.existsSync(dotVscodePath)) {
 		await fsp.mkdir(dotVscodePath, { recursive: true });

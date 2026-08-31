@@ -14,7 +14,7 @@ import picomatch from "picomatch";
 
 import { isentinel } from "../src/oxlint/index.ts";
 import type { OxlintFactoryOptions } from "../src/oxlint/index.ts";
-import type { ScopeRules } from "./typegen-defaults-shared.ts";
+import type { RawScopeRules, ScopeRules } from "./typegen-defaults-shared.ts";
 import {
 	assertExtractionSane,
 	combineProbes,
@@ -84,8 +84,8 @@ interface VariantExtraction {
  * @param file - Representative file path for the scope.
  * @returns The merged raw rule entries.
  */
-function mergedRulesFromConfig(config: OxlintConfig, file: string): Record<string, unknown> {
-	const merged: Record<string, unknown> = {};
+function mergedRulesFromConfig(config: OxlintConfig, file: string): RawScopeRules {
+	const merged: RawScopeRules = {};
 	const overrides = config.overrides ?? [];
 
 	for (const override of overrides) {
@@ -128,7 +128,7 @@ function extractScopes(
 	);
 }
 
-function extractVariant(variant: Variant): Record<string, ScopeRules> {
+function extractVariant(variant: Variant): VariantExtraction {
 	const variantOptions = VARIANT_OPTIONS[variant];
 
 	const baseScopes = extractScopes(variantOptions, ["main"]);
@@ -152,9 +152,9 @@ function extractVariant(variant: Variant): Record<string, ScopeRules> {
 const extractions: Record<string, Record<string, ScopeRules>> = {};
 for (const variant of VARIANT_KEYS) {
 	const extraction = extractVariant(variant);
-	extractions[variant] = extraction;
-	assertExtractionSane(`oxlint ${variant}`, extraction, "main", "no-alert");
-	logVariantCounts("oxlint ", variant, extraction);
+	extractions[variant] = { ...extraction };
+	assertExtractionSane(`oxlint ${variant}`, extractions[variant], "main", "no-alert");
+	logVariantCounts("oxlint ", variant, extractions[variant]);
 }
 
 const banner = `/* eslint-disable */

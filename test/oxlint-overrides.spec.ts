@@ -31,10 +31,13 @@ const SOURCE_FILE = "src/sample.ts";
  * @param options - Factory options to merge over the shared base.
  * @returns The generated config and the warning messages.
  */
-function buildWithWarnings(options: Omit<OxlintFactoryOptions, "name">): {
+/** A generated config, plus whatever the build warned about. */
+interface BuildResult {
 	config: OxlintConfig;
 	warnings: Array<string>;
-} {
+}
+
+function buildWithWarnings(options: Omit<OxlintFactoryOptions, "name">): BuildResult {
 	const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 	try {

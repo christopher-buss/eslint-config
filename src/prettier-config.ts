@@ -23,6 +23,9 @@ import process from "node:process";
 import type { Options as PrettierOptions } from "prettier";
 import { getStaticYAMLValue, parseYAML } from "yaml-eslint-parser";
 
+import type { JsonObject } from "./guards.ts";
+import { isRecord } from "./guards.ts";
+
 /** Preset defaults, overridden by any project-level configuration. */
 export const PRETTIER_DEFAULTS = {
 	arrowParens: "always",
@@ -123,16 +126,13 @@ function readFileOrUndefined(filePath: string): string | undefined {
 	}
 }
 
-function parseJsonLike(contents: string): unknown {
+function parseJsonLike(contents: string): JsonObject | undefined {
 	try {
-		return getStaticJSONValue(parseJSON(contents, { jsonSyntax: "json5" }));
+		const parsed: unknown = getStaticJSONValue(parseJSON(contents, { jsonSyntax: "json5" }));
+		return isRecord(parsed) ? parsed : undefined;
 	} catch {
 		return undefined;
 	}
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function readPackageJsonPrettierKey(filePath: string): PrettierOptions | undefined {
@@ -167,9 +167,10 @@ function requireConfigModule(filePath: string): PrettierOptions | undefined {
 	}
 }
 
-function parseYamlLike(contents: string): unknown {
+function parseYamlLike(contents: string): JsonObject | undefined {
 	try {
-		return getStaticYAMLValue(parseYAML(contents));
+		const parsed: unknown = getStaticYAMLValue(parseYAML(contents));
+		return isRecord(parsed) ? parsed : undefined;
 	} catch {
 		return undefined;
 	}

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import process from "node:process";
 import { describe, it } from "vitest";
 
+import type { JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
@@ -22,6 +23,7 @@ import {
 } from "./oxlint-helpers.ts";
 import { oxlintBinary } from "./oxlint-run.ts";
 import { snapshotFixtures } from "./snapshot-fixtures.ts";
+import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 interface OxlintRuleInfo {
 	scope: string;
@@ -31,8 +33,8 @@ interface OxlintRuleInfo {
 
 interface HybridVariant {
 	name: string;
-	eslintOptions: Record<string, unknown>;
-	oxlintOptions: Record<string, unknown>;
+	eslintOptions: FactoryOptions;
+	oxlintOptions: FactoryOptions;
 }
 
 /**
@@ -579,7 +581,7 @@ function reactPerformanceEntries(config: OxlintConfig): Array<ReactPerformanceEn
  * @param entry - An emitted rule entry, bare or with options.
  * @returns The bare severity of that entry.
  */
-function entrySeverity(entry: ReactPerformanceEntry): unknown {
+function entrySeverity(entry: ReactPerformanceEntry): ReactPerformanceEntry {
 	return Array.isArray(entry) ? entry[0] : entry;
 }
 
@@ -741,6 +743,7 @@ describe("scoped roblox complement", () => {
  * @param config - The generated config to serialize.
  * @returns A JSON-safe structure.
  */
-function serializeOxlintConfig(config: OxlintConfig): unknown {
-	return JSON.parse(JSON.stringify(config, redactMachinePaths));
+function serializeOxlintConfig(config: OxlintConfig): JsonValue {
+	const serialized: unknown = JSON.parse(JSON.stringify(config, redactMachinePaths));
+	return isRecord(serialized) ? serialized : null;
 }

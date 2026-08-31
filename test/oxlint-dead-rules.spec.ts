@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
+import type { TypedFlatConfigItem } from "../src/eslint/types.ts";
 import { isentinel } from "../src/index.ts";
+import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 const baseOptions = {
 	gitignore: false,
@@ -14,17 +15,14 @@ const baseOptions = {
 const DEAD_HEADER = "oxlint owns in hybrid mode";
 
 async function collectDeadWarnings(
-	options: Record<string, unknown>,
+	options: FactoryOptions & { rules?: NonNullable<TypedFlatConfigItem["rules"]> },
 	...userConfigs: Array<TypedFlatConfigItem>
 ): Promise<Array<string>> {
 	const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 	let messages: Array<string>;
 	try {
-		const composer = await isentinel(
-			options as OptionsConfig & TypedFlatConfigItem & { namedConfigs?: false },
-			...userConfigs,
-		);
+		const composer = await isentinel(options, ...userConfigs);
 		void [...composer];
 		messages = warn.mock.calls.map((call) => String(call[0]));
 	} finally {

@@ -19,6 +19,7 @@ import ts from "typescript";
 
 import { packageExtensions } from "../pnpm-plugin/extensions.mjs";
 import { isRecord } from "../src/guards.ts";
+import type { JsonObject } from "../src/guards.ts";
 
 /**
  * Every declaration extension whose imports are part of a package's surface.
@@ -145,7 +146,7 @@ export function findPublishedDependencies(): Map<string, string> {
  * @param directory - The package directory.
  * @returns The parsed manifest, or undefined when there is no readable one.
  */
-function readManifest(directory: string): Record<string, unknown> | undefined {
+function readManifest(directory: string): JsonObject | undefined {
 	let manifest: unknown;
 	try {
 		manifest = JSON.parse(readFileSync(path.join(directory, MANIFEST_FILE), "utf8"));
@@ -162,7 +163,7 @@ function readManifest(directory: string): Record<string, unknown> | undefined {
  * @param manifest - A parsed package manifest.
  * @returns The declared package names, including the package's own name.
  */
-function declaredPackages(manifest: Record<string, unknown>): Set<string> {
+function declaredPackages(manifest: JsonObject): Set<string> {
 	const declared = new Set<string>();
 
 	for (const field of DEPENDENCY_FIELDS) {
@@ -270,6 +271,18 @@ function referencedPackages(file: string): Array<string> {
 
 /** Whether a package supplies declarations, keyed by its real directory. */
 const declarationSupport = new Map<string, boolean>();
+
+/**
+ * Diffs what each package imports against what the table accounts for.
+ *
+ * @param published - Each reachable package name mapped to its directory.
+ * @returns The uncovered imports, and the entries no longer needed.
+ */
+/** Imports no table entry covers, and table entries nothing needs. */
+interface CoverageAudit {
+	uncovered: Map<string, Array<string>>;
+	unused: Map<string, Array<string>>;
+}
 
 /**
  * Whether an installed package supplies declarations of its own. One that does
@@ -397,16 +410,7 @@ function tableCoverage(): Map<string, Array<string>> {
 	return coverage;
 }
 
-/**
- * Diffs what each package imports against what the table accounts for.
- *
- * @param published - Each reachable package name mapped to its directory.
- * @returns The uncovered imports, and the entries no longer needed.
- */
-function auditCoverage(published: Map<string, string>): {
-	uncovered: Map<string, Array<string>>;
-	unused: Map<string, Array<string>>;
-} {
+function auditCoverage(published: Map<string, string>): CoverageAudit {
 	const coverage = tableCoverage();
 	const uncovered = new Map<string, Array<string>>();
 	const unused = new Map<string, Array<string>>();

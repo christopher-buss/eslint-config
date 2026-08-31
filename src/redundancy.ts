@@ -251,6 +251,9 @@ type NormalizeSeverity<S> = S extends 2 | "error"
 			? "off"
 			: never;
 
+/* eslint-disable-next-line flawless/no-unknown-returns -- a structural
+   "is this a function" matcher, never called; see
+   https://github.com/christopher-buss/eslint-plugin-flawless/issues/42 */
 type DeepWritable<T> = T extends (...parameters: ReadonlyArray<never>) => unknown
 	? T
 	: T extends object

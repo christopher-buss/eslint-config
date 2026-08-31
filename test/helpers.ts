@@ -3,6 +3,7 @@ import type { Linter } from "eslint";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import type { JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/index.ts";
@@ -52,6 +53,25 @@ const TSCONFIG_ROBLOX = JSON.stringify(
 	undefined,
 	"\t",
 );
+
+/** A flat config item's `languageOptions`, as the factory emits it. */
+type LanguageOptions = NonNullable<TypedFlatConfigItem["languageOptions"]>;
+
+/** `languageOptions` reduced to the fields the snapshots compare. */
+type SerializedLanguageOptions = Omit<LanguageOptions, "globals" | "parser"> & {
+	parser?: string;
+};
+
+/** One config item, reduced to the fields the snapshots compare. */
+interface SerializedConfig {
+	name?: string;
+	files?: NonNullable<TypedFlatConfigItem["files"]>;
+	ignores?: NonNullable<TypedFlatConfigItem["ignores"]>;
+	languageOptions?: SerializedLanguageOptions;
+	plugins?: Array<string>;
+	rules?: Array<string>;
+	settings?: NonNullable<TypedFlatConfigItem["settings"]>;
+}
 
 /**
  * The fatal messages of a lint run: parse failures, missing plugins and crashed
@@ -107,7 +127,7 @@ export async function runFixtureLint(
  * @param value - The candidate value.
  * @returns The redacted value, or the input unchanged.
  */
-export function redactMachinePaths(_key: string, value: unknown): unknown {
+export function redactMachinePaths(_key: string, value: JsonValue): JsonValue {
 	if (typeof value === "string" && value.startsWith("file:///")) {
 		const index = value.lastIndexOf("/node_modules/");
 		if (index !== -1) {
@@ -131,9 +151,7 @@ export function redactMachinePaths(_key: string, value: unknown): unknown {
  * @param configs - The resolved flat config items.
  * @returns Plain objects with non-deterministic fields stripped.
  */
-export function serializeConfigs(
-	configs: Array<TypedFlatConfigItem>,
-): Array<Record<string, unknown>> {
+export function serializeConfigs(configs: Array<TypedFlatConfigItem>): Array<SerializedConfig> {
 	return configs.map((config) => serializeSingleConfig(config));
 }
 
@@ -241,25 +259,23 @@ function extractParserName(parser: unknown): string {
  * @param languageOptions - The languageOptions object to serialize.
  * @returns A copy safe for snapshot comparison.
  */
-function serializeLanguageOptions(
-	languageOptions: Record<string, unknown>,
-): Record<string, unknown> {
-	const result: Record<string, unknown> = { ...languageOptions };
-
-	if (result["parser"] !== undefined && result["parser"] !== null) {
-		result["parser"] = extractParserName(result["parser"]);
-	}
-
-	delete result["globals"];
-
-	if (isRecord(result["parserOptions"])) {
-		const cleaned = { ...result["parserOptions"] };
+function serializeLanguageOptions({
+	globals: _globals,
+	parser,
+	parserOptions,
+	...rest
+}: LanguageOptions): SerializedLanguageOptions {
+	const cleaned = isRecord(parserOptions) ? { ...parserOptions } : undefined;
+	if (cleaned !== undefined) {
 		delete cleaned["tsconfigRootDir"];
 		delete cleaned["projectService"];
-		result["parserOptions"] = cleaned;
 	}
 
-	return result;
+	return {
+		...rest,
+		...(parser !== undefined && parser !== null ? { parser: extractParserName(parser) } : {}),
+		...(cleaned !== undefined ? { parserOptions: cleaned } : {}),
+	};
 }
 
 /**
@@ -272,7 +288,7 @@ function serializeLanguageOptions(
  * @param rules - The rules record from a config item.
  * @returns Sorted rule entries.
  */
-function serializeRules(rules: Record<string, unknown>): Array<string> {
+function serializeRules(rules: NonNullable<TypedFlatConfigItem["rules"]>): Array<string> {
 	const result: Array<string> = [];
 
 	for (const [ruleName, ruleValue] of Object.entries(rules)) {
@@ -308,36 +324,16 @@ function serializeRules(rules: Record<string, unknown>): Array<string> {
  * @param config - The flat config item to serialize.
  * @returns A plain object safe for snapshot comparison.
  */
-function serializeSingleConfig(config: TypedFlatConfigItem): Record<string, unknown> {
-	const serialized: Record<string, unknown> = {};
-
-	if (config.name !== undefined) {
-		serialized["name"] = config.name;
-	}
-
-	if (config.files !== undefined) {
-		serialized["files"] = config.files;
-	}
-
-	if (config.ignores !== undefined) {
-		serialized["ignores"] = config.ignores;
-	}
-
-	if (config.plugins !== undefined) {
-		serialized["plugins"] = Object.keys(config.plugins).sort();
-	}
-
-	if (config.languageOptions !== undefined) {
-		serialized["languageOptions"] = serializeLanguageOptions(config.languageOptions);
-	}
-
-	if (config.rules !== undefined) {
-		serialized["rules"] = serializeRules(config.rules as Record<string, unknown>);
-	}
-
-	if (config.settings !== undefined) {
-		serialized["settings"] = config.settings;
-	}
-
-	return serialized;
+function serializeSingleConfig(config: TypedFlatConfigItem): SerializedConfig {
+	return {
+		...(config.name !== undefined ? { name: config.name } : {}),
+		...(config.files !== undefined ? { files: config.files } : {}),
+		...(config.ignores !== undefined ? { ignores: config.ignores } : {}),
+		...(config.plugins !== undefined ? { plugins: Object.keys(config.plugins).sort() } : {}),
+		...(config.languageOptions !== undefined
+			? { languageOptions: serializeLanguageOptions(config.languageOptions) }
+			: {}),
+		...(config.rules !== undefined ? { rules: serializeRules(config.rules) } : {}),
+		...(config.settings !== undefined ? { settings: config.settings } : {}),
+	};
 }

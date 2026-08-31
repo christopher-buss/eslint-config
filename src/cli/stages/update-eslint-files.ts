@@ -7,6 +7,7 @@ import path from "node:path";
 import process from "node:process";
 import parseGitignore from "parse-gitignore-ts";
 
+import { isRecord } from "../../guards.ts";
 import type { PromptResult } from "../types.ts";
 import { getEslintConfigContent } from "../utils.ts";
 
@@ -18,10 +19,12 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const pathPackageJSON = path.join(cwd, "package.json");
 
 	const packageContent = await fsp.readFile(pathPackageJSON, "utf-8");
-	const parsedPackage: Record<string, any> = JSON.parse(packageContent);
+	const parsedPackage: unknown = JSON.parse(packageContent);
 
 	const configFileName =
-		parsedPackage["type"] === "module" ? "eslint.config.js" : "eslint.config.mjs";
+		isRecord(parsedPackage) && parsedPackage["type"] === "module"
+			? "eslint.config.js"
+			: "eslint.config.mjs";
 	const pathFlatConfig = path.join(cwd, configFileName);
 
 	const eslintIgnores: Array<string> = [];
@@ -54,7 +57,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const mainConfig = configLines.map((index) => `  ${index}`).join("\n");
 	const additionalConfig: Array<string> = [];
 
-	const eslintConfigContent: string = getEslintConfigContent(mainConfig, additionalConfig);
+	const eslintConfigContent = getEslintConfigContent(mainConfig, additionalConfig);
 
 	await fsp.writeFile(pathFlatConfig, eslintConfigContent);
 	log.success(ansis.green(`Created ${configFileName}`));

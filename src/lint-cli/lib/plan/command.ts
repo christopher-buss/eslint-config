@@ -76,9 +76,9 @@ export function composeEslintCommand(
 	// (a user-exported ESLINT_TYPE_AWARE) is REMOVED rather than leaked — a leak
 	// would make the factory split the full config (e.g. --fix applying only
 	// type-aware fixes).
-	const environment: Record<string, string | undefined> = {
+	const environment = {
 		ESLINT_TYPE_AWARE: context.typeAwareEnv,
-	};
+	} satisfies Readonly<Record<string, string | undefined>>;
 
 	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
 }

@@ -7,6 +7,7 @@
  */
 import fs from "node:fs/promises";
 
+import type { JsonValue } from "../src/guards.ts";
 import type { VariantKey } from "../src/redundancy.ts";
 
 /**
@@ -18,6 +19,9 @@ export type RuleEntryJson = Array<unknown> | string | { severityOnly: string };
 
 /** Effective entries for one scope in one variant. */
 export type ScopeRules = Record<string, RuleEntryJson>;
+
+/** A rules map as a factory emitted it, keyed by rule name. */
+export type RawScopeRules = Record<string, JsonValue>;
 
 /** The variant axes selected by one extraction run. */
 export interface VariantAxes {
@@ -37,12 +41,12 @@ export const VARIANT_KEYS = [
 ] as const satisfies ReadonlyArray<VariantKey>;
 
 /** Factory options selecting each variant; exhaustive by construction. */
-export const VARIANT_OPTIONS: Record<VariantKey, VariantAxes> = {
+export const VARIANT_OPTIONS = {
 	game_roblox: { roblox: true, type: "game" },
 	game_std: { roblox: false, type: "game" },
 	package_roblox: { roblox: true, type: "package" },
 	package_std: { roblox: false, type: "package" },
-};
+} satisfies Record<VariantKey, VariantAxes>;
 
 /**
  * Two divergent formatter environments; any rule whose merged options differ
@@ -55,16 +59,16 @@ export const FORMATTER_PROBES = [
 ] as const;
 
 /** Includes oxlint's `allow`/`deny` aliases; harmless on the ESLint side. */
-const SEVERITY_NAMES: Record<number | string, string> = {
-	0: "off",
-	1: "warn",
-	2: "error",
-	allow: "off",
-	deny: "error",
-	error: "error",
-	off: "off",
-	warn: "warn",
-};
+const SEVERITY_NAMES = new Map([
+	["0", "off"],
+	["1", "warn"],
+	["2", "error"],
+	["allow", "off"],
+	["deny", "error"],
+	["error", "error"],
+	["off", "off"],
+	["warn", "warn"],
+]);
 
 /** Patterns marking option payloads as machine- or repo-specific. */
 const ENVIRONMENT_PATTERN = /file:\/\/|[A-Za-z]:[\\/]|\/(?:home|Users)\//;
@@ -78,15 +82,18 @@ const MAX_OPTIONS_LENGTH = 2000;
  * @param rawEntry - The rule entry as found in the merged config.
  * @returns The normalized entry and whether options were dropped.
  */
-export function normalizeEntry(rawEntry: unknown): {
+/** A normalized entry, plus whether its options had to be dropped. */
+export interface NormalizedEntry {
 	entry: RuleEntryJson;
 	severityOnly: boolean;
-} {
+}
+
+export function normalizeEntry(rawEntry: unknown): NormalizedEntry {
 	const asArray: Array<unknown> = Array.isArray(rawEntry) ? rawEntry : [rawEntry];
 	const rawSeverity = asArray[0];
 	const severity =
 		typeof rawSeverity === "number" || typeof rawSeverity === "string"
-			? SEVERITY_NAMES[rawSeverity]
+			? SEVERITY_NAMES.get(String(rawSeverity))
 			: undefined;
 	if (severity === undefined) {
 		throw new Error(`Unknown severity in entry: ${JSON.stringify(rawEntry)}`);
@@ -118,36 +125,12 @@ export function normalizeEntry(rawEntry: unknown): {
  * @param second - Merged rules under the second formatter probe.
  * @returns The combined scope rules.
  */
-export function combineProbes(
-	first: Record<string, unknown>,
-	second: Record<string, unknown>,
-): ScopeRules {
-	const rules: ScopeRules = {};
-
-	for (const [name, rawEntry] of Object.entries(first)) {
-		const normalized = normalizeEntry(rawEntry);
-		const secondRaw = second[name];
-		const other = secondRaw === undefined ? undefined : normalizeEntry(secondRaw);
-		if (other === undefined) {
-			continue;
-		}
-
-		const matches = JSON.stringify(other.entry) === JSON.stringify(normalized.entry);
-		if (!matches || normalized.severityOnly || other.severityOnly) {
-			if (severityOf(normalized.entry) !== severityOf(other.entry)) {
-				continue;
-			}
-
-			// The real default carries options that could not be captured;
-			// the marker keeps that distinct from a truly bare severity.
-			rules[name] = { severityOnly: severityOf(normalized.entry) };
-			continue;
-		}
-
-		rules[name] = normalized.entry;
-	}
-
-	return rules;
+export function combineProbes(first: RawScopeRules, second: RawScopeRules): ScopeRules {
+	return Object.fromEntries(
+		Object.entries(first)
+			.map(([name, rawEntry]) => [name, combineEntry(rawEntry, second[name])] as const)
+			.filter((pair): pair is readonly [string, RuleEntryJson] => pair[1] !== undefined),
+	);
 }
 
 /**
@@ -158,16 +141,12 @@ export function combineProbes(
  * @returns The delta entries.
  */
 export function deltaAgainst(scope: ScopeRules, chain: ReadonlyArray<ScopeRules>): ScopeRules {
-	const delta: ScopeRules = {};
-
-	for (const [name, entry] of Object.entries(scope)) {
-		const baseline = chain.find((map) => name in map)?.[name];
-		if (baseline === undefined || JSON.stringify(baseline) !== JSON.stringify(entry)) {
-			delta[name] = entry;
-		}
-	}
-
-	return delta;
+	return Object.fromEntries(
+		Object.entries(scope).filter(([name, entry]) => {
+			const baseline = chain.find((map) => name in map)?.[name];
+			return baseline === undefined || JSON.stringify(baseline) !== JSON.stringify(entry);
+		}),
+	);
 }
 
 /**
@@ -277,6 +256,39 @@ function severityOf(entry: RuleEntryJson): string {
 	}
 
 	return entry.severityOnly;
+}
+
+/**
+ * Combine one rule's two probe entries, dropping it when the probes disagree
+ * about more than its options.
+ *
+ * @param firstRaw - The entry under the first formatter probe.
+ * @param secondRaw - The entry under the second probe, if the rule is there.
+ * @returns The combined entry, or `undefined` to drop the rule.
+ */
+function combineEntry(
+	firstRaw: JsonValue,
+	secondRaw: JsonValue | undefined,
+): RuleEntryJson | undefined {
+	if (secondRaw === undefined) {
+		return undefined;
+	}
+
+	const normalized = normalizeEntry(firstRaw);
+	const other = normalizeEntry(secondRaw);
+
+	const matches = JSON.stringify(other.entry) === JSON.stringify(normalized.entry);
+	if (matches && !normalized.severityOnly && !other.severityOnly) {
+		return normalized.entry;
+	}
+
+	if (severityOf(normalized.entry) !== severityOf(other.entry)) {
+		return undefined;
+	}
+
+	// The real default carries options that could not be captured; the marker
+	// keeps that distinct from a truly bare severity.
+	return { severityOnly: severityOf(normalized.entry) };
 }
 
 function emitScopeInterface(name: string, perVariant: (variant: VariantKey) => ScopeRules): string {

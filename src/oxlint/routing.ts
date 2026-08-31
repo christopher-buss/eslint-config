@@ -41,15 +41,19 @@ export type OxlintRoute =
  * of why a rule they expected oxlint to run is still running in ESLint. Name
  * the rules, not just the category.
  */
-export const staysInEslint: Readonly<Record<string, string>> = {
+/** Why a type-aware custom rule cannot move to an oxlint jsPlugin. */
+const TYPE_AWARE_REASON = "Type-aware custom rule; oxlint jsPlugins have no type information";
+
+export const staysInEslint = {
 	"e18e/* (optionally type-aware)":
 		"Four e18e rules (prefer-array-at, prefer-array-to-reversed, prefer-array-to-sorted, prefer-spread-syntax) run without type information but detect more with it, so they stay in ESLint (see optionallyTypeAwareRules); the rest run in oxlint as a jsPlugin",
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
-		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, max-lines-per-function, no-conditional-in-test, no-export-default-arrow, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-expect-assertions-count, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) run in oxlint. flawless/no-redundant-tsconfig-options and every flawless/toml-* and flawless/yaml-* rule lint non-JS files and stay in ESLint",
-	"flawless/prefer-read-only-props":
-		"Type-aware custom rule; oxlint jsPlugins have no type information",
+		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, max-lines-per-function, no-conditional-empty-object-spread, no-conditional-in-test, no-export-default-arrow, no-floating-point-equality, no-known-value-widening, no-object-parameters, no-reflect-get, no-reflect-set, no-shape-in-symbol-names, no-unsafe-dictionary-type, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-expect-assertions-count, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) run in oxlint. flawless/no-redundant-tsconfig-options and every flawless/toml-* and flawless/yaml-* rule lint non-JS files and stay in ESLint",
+	"flawless/no-redundant-type-annotation": TYPE_AWARE_REASON,
+	"flawless/no-unknown-returns": TYPE_AWARE_REASON,
+	"flawless/prefer-read-only-props": TYPE_AWARE_REASON,
 	"format-lua/*": "Oxlint cannot lint Lua files",
 	"jest/* (type-aware)":
 		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
@@ -59,21 +63,20 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"The @eslint-react type-aware rules (no-implicit-children/key/ref, no-leaked-conditional-rendering, no-unused-props) need type information but do NOT declare requiresTypeChecking, so the metadata-based parity test cannot catch them; they are excluded manually and stay in ESLint",
 	"roblox/* (type-aware)":
 		"Type-aware custom rules (lua-truthiness etc.); oxlint jsPlugins have no type information",
-	"sentinel/explicit-size-check":
-		"Type-aware custom rule; oxlint jsPlugins have no type information",
+	"sentinel/explicit-size-check": TYPE_AWARE_REASON,
 	"type-aware jsPlugin rules":
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise, ts/prefer-destructuring (also has no native oxlint port)",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"unicorn/no-useless-coercion":
 		"Optionally type-aware: values whose type is only known through TypeScript (a `string`-typed parameter, say) are missed without parser services, so it stays in ESLint (see optionallyTypeAwareRules)",
-};
+} satisfies Readonly<Record<string, string>>;
 
 /** Rules covered by a differently named native Oxc implementation. */
-export const oxcCoveredRules: Readonly<Record<string, string>> = {
-	"sonar/no-all-duplicated-branches": "oxc/branches-sharing-code",
-	"unicorn/no-accidental-bitwise-operator": "oxc/bad-bitwise-operator",
-};
+export const oxcCoveredRules = new Map([
+	["sonar/no-all-duplicated-branches", "oxc/branches-sharing-code"],
+	["unicorn/no-accidental-bitwise-operator", "oxc/bad-bitwise-operator"],
+]);
 
 const TYPE_AWARE_METADATA_EXCEPTIONS: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
@@ -108,13 +111,17 @@ function isNonJsFlawlessName(name: string): boolean {
 	);
 }
 
-const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
-	"style/jsx-function-call-newline": "Formatting-rule ownership remains with ESLint and oxfmt.",
-	"unicorn/no-missing-local-resource":
+const KNOWN_INCOMPATIBLE_RULES = new Map([
+	["style/jsx-function-call-newline", "Formatting-rule ownership remains with ESLint and oxfmt."],
+	[
+		"unicorn/no-missing-local-resource",
 		"The preset only enables this rule for Markdown virtual files, which Oxlint cannot lint.",
-	"unicorn/no-unsafe-string-replacement":
+	],
+	[
+		"unicorn/no-unsafe-string-replacement",
 		"Oxlint jsPlugin scope analysis cannot resolve template-literal replacements safely.",
-};
+	],
+]);
 
 /**
  * Rules that take the ESLint plugin even though Oxlint ports them natively.
@@ -136,7 +143,7 @@ const JS_PLUGIN_PREFERRED_RULES: ReadonlySet<string> = new Set([
  * @returns Its internal route.
  */
 export function resolveOxlintRule(rule: string): OxlintRoute {
-	const alternate = oxcCoveredRules[rule];
+	const alternate = oxcCoveredRules.get(rule);
 	if (alternate !== undefined) {
 		return {
 			kind: "native",
@@ -153,7 +160,7 @@ export function resolveOxlintRule(rule: string): OxlintRoute {
 	const native = nativeRoute(rule);
 	const { prefix } = splitRuleName(rule);
 	const prefersJsPlugin =
-		JS_PLUGIN_PREFERRED_RULES.has(rule) || oxlintFamilyPolicies[prefix] === "js-plugin";
+		JS_PLUGIN_PREFERRED_RULES.has(rule) || oxlintFamilyPolicies.get(prefix) === "js-plugin";
 
 	if (prefersJsPlugin) {
 		return jsPluginRoute(rule, native) ?? native ?? { kind: "unmanaged" };
@@ -196,7 +203,7 @@ export function routeTarget(route: OxlintRoute): OxlintTarget | undefined {
 export function buildOxlintRuleMapping(): Readonly<Record<string, OxlintTarget>> {
 	return Object.fromEntries(
 		[...effectivePresetRuleNames].flatMap((rule): Array<[string, OxlintTarget]> => {
-			if (rule in oxcCoveredRules) {
+			if (oxcCoveredRules.has(rule)) {
 				return [];
 			}
 
@@ -215,14 +222,14 @@ function eslintOnlyReason(rule: string): string | undefined {
 		return "The rule needs type information that Oxlint jsPlugins cannot provide.";
 	}
 
-	const incompatible = KNOWN_INCOMPATIBLE_RULES[rule];
+	const incompatible = KNOWN_INCOMPATIBLE_RULES.get(rule);
 	if (incompatible !== undefined) {
 		return incompatible;
 	}
 
 	const { name, prefix } = splitRuleName(rule);
 	if (
-		oxlintFamilyPolicies[prefix] === "eslint-only" ||
+		oxlintFamilyPolicies.get(prefix) === "eslint-only" ||
 		(prefix === "flawless" && isNonJsFlawlessName(name))
 	) {
 		return "The rule targets a non-JavaScript file type that Oxlint does not lint.";
@@ -286,7 +293,7 @@ let cachedMapping: Readonly<Record<string, OxlintTarget>> | undefined;
  * @returns Whether Oxlint covers the rule.
  */
 export function isPresetRuleOxlintCovered(rule: string): boolean {
-	return rule in presetRuleMapping() || rule in oxcCoveredRules;
+	return rule in presetRuleMapping() || oxcCoveredRules.has(rule);
 }
 
 /**
@@ -296,7 +303,7 @@ export function isPresetRuleOxlintCovered(rule: string): boolean {
  * @returns Whether a differently named native Oxc rule covers it.
  */
 export function isOxcCoveredRule(rule: string): boolean {
-	return rule in oxcCoveredRules;
+	return oxcCoveredRules.has(rule);
 }
 
 /**

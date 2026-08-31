@@ -8,20 +8,20 @@
  * Prefix translation for rules that run via jsPlugins. Native Oxlint plugin
  * prefixes are reserved, so those jsPlugins use `-js` aliases.
  */
-export const oxlintJsPluginPrefixRenames: Readonly<Record<string, string>> = {
-	"": "eslint-js",
-	"import": "import-js",
-	"jest": "jest-js",
-	"jsdoc": "jsdoc-js",
-	"node": "node-js",
-	"promise": "promise-js",
-	"react": "react-x",
-	"unicorn": "unicorn-js",
-	"vitest": "vitest-js",
-};
+export const oxlintJsPluginPrefixRenames = new Map([
+	["", "eslint-js"],
+	["import", "import-js"],
+	["jest", "jest-js"],
+	["jsdoc", "jsdoc-js"],
+	["node", "node-js"],
+	["promise", "promise-js"],
+	["react", "react-x"],
+	["unicorn", "unicorn-js"],
+	["vitest", "vitest-js"],
+]);
 
 /** JsPlugin package specifiers keyed by their Oxlint-side alias. */
-export const oxlintJsPlugins: Readonly<Record<string, string>> = {
+export const oxlintJsPlugins = {
 	"@cspell": "@cspell/eslint-plugin",
 	"antfu": "eslint-plugin-antfu",
 	"better-max-params": "eslint-plugin-better-max-params",
@@ -54,7 +54,10 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"unicorn-js": "eslint-plugin-unicorn",
 	"unused-imports": "eslint-plugin-unused-imports",
 	"vitest-js": "@vitest/eslint-plugin",
-} as const;
+} as const satisfies Readonly<Record<string, string>>;
+
+/** Runtime index for the public jsPlugin specifier table. */
+export const oxlintJsPluginSpecifiers = new Map(Object.entries(oxlintJsPlugins));
 
 /**
  * Whether a preset config is a pruning view rather than a rule declaration.
@@ -127,51 +130,49 @@ const NATIVE_FIRST = "native-first";
  * family here is what marks it reviewed, so the entry matters even when the
  * value is the default.
  */
-export const oxlintFamilyPolicies: Readonly<
-	Record<string, "eslint-only" | "js-plugin" | "native-first" | "unmanaged">
-> = {
-	"": NATIVE_FIRST,
-	"@cspell": NATIVE_FIRST,
-	"antfu": NATIVE_FIRST,
-	"better-max-params": NATIVE_FIRST,
-	"comment-length": NATIVE_FIRST,
-	"de-morgan": NATIVE_FIRST,
-	"e18e": NATIVE_FIRST,
-	"erasable-syntax-only": NATIVE_FIRST,
-	"eslint-comments": ESLINT_ONLY,
-	"eslint-plugin": NATIVE_FIRST,
-	"flawless": NATIVE_FIRST,
-	"format-lua": ESLINT_ONLY,
-	"import": NATIVE_FIRST,
-	"isentinel": "unmanaged",
-	"jest": "js-plugin",
+export const oxlintFamilyPolicies = new Map([
+	["", NATIVE_FIRST],
+	["@cspell", NATIVE_FIRST],
+	["antfu", NATIVE_FIRST],
+	["better-max-params", NATIVE_FIRST],
+	["comment-length", NATIVE_FIRST],
+	["de-morgan", NATIVE_FIRST],
+	["e18e", NATIVE_FIRST],
+	["erasable-syntax-only", NATIVE_FIRST],
+	["eslint-comments", ESLINT_ONLY],
+	["eslint-plugin", NATIVE_FIRST],
+	["flawless", NATIVE_FIRST],
+	["format-lua", ESLINT_ONLY],
+	["import", NATIVE_FIRST],
+	["isentinel", "unmanaged"],
+	["jest", "js-plugin"],
 	// Oxlint has a native `jest` plugin but no `jest-extended` counterpart, so
 	// native-first lands on the jsPlugin either way.
-	"jest-extended": NATIVE_FIRST,
-	"jsdoc": NATIVE_FIRST,
-	"jsonc": ESLINT_ONLY,
-	"markdown": ESLINT_ONLY,
-	"node": NATIVE_FIRST,
-	"package-json": ESLINT_ONLY,
-	"perfectionist": NATIVE_FIRST,
-	"pnpm": ESLINT_ONLY,
-	"promise": NATIVE_FIRST,
-	"react": "js-plugin",
-	"react-jsx": NATIVE_FIRST,
-	"react-naming-convention": NATIVE_FIRST,
-	"roblox": NATIVE_FIRST,
-	"sentinel": NATIVE_FIRST,
-	"small-rules": NATIVE_FIRST,
-	"sonar": NATIVE_FIRST,
-	"style": NATIVE_FIRST,
-	"testing-library": "js-plugin",
-	"toml": ESLINT_ONLY,
-	"ts": NATIVE_FIRST,
-	"unicorn": NATIVE_FIRST,
-	"unused-imports": NATIVE_FIRST,
-	"vitest": NATIVE_FIRST,
-	"yaml": ESLINT_ONLY,
-};
+	["jest-extended", NATIVE_FIRST],
+	["jsdoc", NATIVE_FIRST],
+	["jsonc", ESLINT_ONLY],
+	["markdown", ESLINT_ONLY],
+	["node", NATIVE_FIRST],
+	["package-json", ESLINT_ONLY],
+	["perfectionist", NATIVE_FIRST],
+	["pnpm", ESLINT_ONLY],
+	["promise", NATIVE_FIRST],
+	["react", "js-plugin"],
+	["react-jsx", NATIVE_FIRST],
+	["react-naming-convention", NATIVE_FIRST],
+	["roblox", NATIVE_FIRST],
+	["sentinel", NATIVE_FIRST],
+	["small-rules", NATIVE_FIRST],
+	["sonar", NATIVE_FIRST],
+	["style", NATIVE_FIRST],
+	["testing-library", "js-plugin"],
+	["toml", ESLINT_ONLY],
+	["ts", NATIVE_FIRST],
+	["unicorn", NATIVE_FIRST],
+	["unused-imports", NATIVE_FIRST],
+	["vitest", NATIVE_FIRST],
+	["yaml", ESLINT_ONLY],
+]);
 
 /**
  * TypeScript extension rules whose equivalence to an Oxlint core rule is
@@ -190,9 +191,7 @@ export const TS_EXTENSION_TO_CORE: ReadonlySet<string> = new Set([
 /**
  * Unicorn rules renamed upstream but still exposed under the old Oxlint name.
  */
-const UNICORN_NATIVE_RENAMES: Readonly<Record<string, string>> = {
-	"no-for-each": "no-array-for-each",
-};
+const UNICORN_NATIVE_RENAMES = new Map([["no-for-each", "no-array-for-each"]]);
 
 /**
  * Split a canonical ESLint rule name into its prefix and local rule name.
@@ -200,7 +199,13 @@ const UNICORN_NATIVE_RENAMES: Readonly<Record<string, string>> = {
  * @param rule - The canonical ESLint rule name.
  * @returns Its prefix and local name.
  */
-export function splitRuleName(rule: string): { name: string; prefix: string } {
+/** A canonical ESLint rule name, split into its two halves. */
+export interface RuleNameParts {
+	name: string;
+	prefix: string;
+}
+
+export function splitRuleName(rule: string): RuleNameParts {
 	const slashIndex = rule.indexOf("/");
 	if (slashIndex === -1) {
 		return { name: rule, prefix: "" };
@@ -228,7 +233,7 @@ export function candidateNativeOxlintName(rule: string): string {
 	}
 
 	if (prefix === "unicorn") {
-		return `unicorn/${UNICORN_NATIVE_RENAMES[name] ?? name}`;
+		return `unicorn/${UNICORN_NATIVE_RENAMES.get(name) ?? name}`;
 	}
 
 	return rule;
@@ -244,8 +249,8 @@ export function jsPluginAdapterFor(
 	rule: string,
 ): undefined | { oxlintName: string; pluginAlias: string; specifier: string } {
 	const { name, prefix } = splitRuleName(rule);
-	const pluginAlias = oxlintJsPluginPrefixRenames[prefix] ?? prefix;
-	const specifier = oxlintJsPlugins[pluginAlias];
+	const pluginAlias = oxlintJsPluginPrefixRenames.get(prefix) ?? prefix;
+	const specifier = oxlintJsPluginSpecifiers.get(pluginAlias);
 	if (specifier === undefined) {
 		return undefined;
 	}

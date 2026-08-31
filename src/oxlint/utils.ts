@@ -5,12 +5,12 @@ import type { ExternalPluginEntry, OxlintOverride } from "oxlint";
 import { enabledPresetRuleNames } from "../generated/oxlint-capabilities.ts";
 import { oxlintNativeRuleNames } from "../generated/oxlint-native.ts";
 import type { Rules } from "../types.ts";
+import { oxlintJsPluginSpecifiers } from "./adapters.ts";
 import { recordDroppedOverride, recordOverrideRules } from "./override-diagnostics.ts";
 import {
 	collapsesToTsCoreRule,
 	isOxcCoveredRule,
 	isTsCoreCounterpartRule,
-	oxlintJsPlugins,
 	resolveOxlintRule,
 	translateRuleToOxlint,
 } from "./routing.ts";
@@ -349,7 +349,7 @@ export function splitOxlintRules(
 				nativeRules[translated] = value;
 				nativePlugins.add(nativePrefix);
 			} else {
-				const specifier = oxlintJsPlugins[prefix];
+				const specifier = oxlintJsPluginSpecifiers.get(prefix);
 				if (specifier !== undefined && canResolveJsPlugin(specifier)) {
 					jsPluginRules[translated] = value;
 					jsPluginPrefixes.add(prefix);
@@ -412,7 +412,7 @@ export function splitOxlintRules(
 
 	const jsPlugins: Array<ExternalPluginEntry> = [];
 	for (const prefix of jsPluginPrefixes) {
-		const specifier = oxlintJsPlugins[prefix];
+		const specifier = oxlintJsPluginSpecifiers.get(prefix);
 		if (specifier === undefined) {
 			throw new Error(`[@isentinel/eslint-config] Unknown oxlint jsPlugin prefix: ${prefix}`);
 		}

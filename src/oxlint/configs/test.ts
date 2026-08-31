@@ -6,12 +6,10 @@ import type {
 	OptionsFiles,
 	OptionsHasRoblox,
 	OptionsIsInEditor,
-	OptionsJest,
 	OptionsOverrides,
 	OptionsProjectType,
 	OptionsStylistic,
 	OptionsTestFramework,
-	OptionsVitest,
 } from "../../types.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
@@ -46,9 +44,9 @@ export function oxlintTest({
 	OptionsProjectType &
 	OptionsStylistic &
 	OptionsTestFramework = {}): Array<TypedOxlintConfigItem> {
-	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
+	const vitestOptions = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
-	const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};
+	const jestOptions = typeof jest === "object" ? jest : {};
 	const jestEnabled = jest === true || typeof jest === "object";
 	const enableJest = jestEnabled || (!vitestEnabled && (type === "game" || isRoblox));
 	const enableVitest = vitestEnabled || (!jestEnabled && type === "package" && !isRoblox);

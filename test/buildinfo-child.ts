@@ -26,7 +26,14 @@ const result = computeAffectedFiles(resolveRunContext(cwd, {}, true), undefined)
  *
  * @returns The serializable answer.
  */
-function toPayload(): Record<string, unknown> {
+/** The answer this child writes back to the parent test. */
+interface BuildinfoPayload {
+	affected?: Array<string>;
+	firstRun?: boolean;
+	skipped: boolean;
+}
+
+function toPayload(): BuildinfoPayload {
 	if (result === undefined) {
 		return { skipped: true };
 	}

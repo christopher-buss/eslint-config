@@ -6,6 +6,7 @@ import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { isRecord } from "../../guards.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
+import type { OxfmtOptions } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { resolveJsPluginSpecifier, splitOxlintRules } from "../utils.ts";
 
@@ -14,7 +15,7 @@ const require = createRequire(import.meta.url);
 export function oxlintOxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles & {
-			oxfmtOptions?: Record<string, unknown>;
+			oxfmtOptions?: OxfmtOptions;
 		},
 ): Array<TypedOxlintConfigItem> {
 	const {

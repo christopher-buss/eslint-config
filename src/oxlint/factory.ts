@@ -1,11 +1,5 @@
 import { isPackageExists } from "local-pkg";
-import type {
-	DummyRuleMap,
-	ExternalPluginEntry,
-	OxlintConfig,
-	OxlintOverride,
-	RuleCategories,
-} from "oxlint";
+import type { ExternalPluginEntry, OxlintConfig, OxlintOverride, RuleCategories } from "oxlint";
 import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
@@ -215,9 +209,7 @@ export function isentinel(
 	// Shared with the ESLint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
-	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
-		formatterOptions.prettierOptions,
-	);
+	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({
@@ -382,7 +374,21 @@ export function isentinel(
 			isInEditor,
 			stylistic: stylisticOptions,
 		}),
-		oxlintFlawless({ stylistic: stylisticOptions }, prettierSettings),
+		oxlintFlawless({ roblox: enableRoblox, stylistic: stylisticOptions }, prettierSettings),
+		// The complement re-applies the non-roblox rules last, so it wins for
+		// files outside the roblox scope.
+		...(needsComplementOverlay
+			? [
+					oxlintFlawless(
+						{
+							excludeFiles: robloxScopedFiles,
+							roblox: false,
+							stylistic: stylisticOptions,
+						},
+						prettierSettings,
+					),
+				]
+			: []),
 		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		oxlintDisables({
 			configDirectory: options.configDirectory,
@@ -573,7 +579,7 @@ export function isentinel(
 					override.rules,
 					defaultSeverity,
 					severityExcludeRules,
-				) as DummyRuleMap;
+				);
 			}
 		}
 	}
