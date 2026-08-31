@@ -41,6 +41,7 @@ import {
 	oxfmt,
 	perfectionist,
 	pnpm,
+	projectStructure,
 	promise,
 	react,
 	roblox,
@@ -248,6 +249,7 @@ export async function isentinel(
 		markdown: enableMarkdown = true,
 		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
+		projectStructure: enableProjectStructure = false,
 		react: enableReact = false,
 		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
@@ -493,6 +495,12 @@ export async function isentinel(
 				...testOptions,
 			}),
 		);
+	}
+
+	// Composed in "only" mode too, with its rule stripped by the split: the
+	// source disable comments have to resolve in the type-aware pass as well.
+	if (enableProjectStructure !== false) {
+		configs.push(projectStructure(resolveSubOptions(options, "projectStructure")));
 	}
 
 	if (enableReact !== false) {

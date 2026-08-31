@@ -150,6 +150,7 @@
 		"eslint-plugin-jest": "catalog:peer",
 		"eslint-plugin-jest-extended": "catalog:peer",
 		"eslint-plugin-n": "catalog:peer",
+		"eslint-plugin-project-structure": "catalog:peer",
 		"eslint-plugin-react-jsx": "catalog:peer",
 		"eslint-plugin-react-naming-convention": "catalog:peer",
 		"eslint-plugin-react-x": "catalog:peer",
@@ -174,6 +175,7 @@
 		"eslint-plugin-jest": "^29.15.0",
 		"eslint-plugin-jest-extended": "^3.0.0",
 		"eslint-plugin-n": "^17.0.0 || ^18.0.0",
+		"eslint-plugin-project-structure": "^3.14.0",
 		"eslint-plugin-react-jsx": "^5.10.0",
 		"eslint-plugin-react-naming-convention": "^5.10.0",
 		"eslint-plugin-react-x": "^5.10.0",
@@ -195,6 +197,9 @@
 			"optional": true
 		},
 		"eslint-plugin-n": {
+			"optional": true
+		},
+		"eslint-plugin-project-structure": {
 			"optional": true
 		},
 		"eslint-plugin-react-jsx": {
