@@ -928,6 +928,10 @@ are `{nodeName}`, `{NodeName}`, `{node_name}` and `{NODE_NAME}`. A file already
 matching a template is exempt from it. A source file with no test disables the
 rule at the source.
 
+The rule needs no type information, so oxlint runs it too: the same option is
+accepted by the oxlint factory, and hybrid mode (`oxlint: true`) hands the check
+to oxlint.
+
 Two caveats. Deleting `foo.spec.ts` does not change `foo.ts`, so a cached run
 replays the old clean result — the check is only sound uncached. And the plugin
 writes `projectStructure.cache.json` into `projectRoot` while it has something

@@ -57,6 +57,7 @@ interface OverrideSiteChains {
 	e18e: MainChain;
 	eslintPlugin: FeatureChain;
 	javascript: MainChain;
+	projectStructure: FeatureChain;
 	react: ReactChain;
 	roblox: MainChain;
 	typescript: MainChain;
