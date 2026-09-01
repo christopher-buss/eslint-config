@@ -40,6 +40,7 @@ export const oxlintJsPlugins: Readonly<Record<string, string>> = {
 	"oxfmt": "eslint-plugin-oxfmt",
 	"oxlint-comments": "oxlint-plugin-oxlint-comments",
 	"perfectionist": "eslint-plugin-perfectionist",
+	"project-structure": "eslint-plugin-project-structure",
 	"promise-js": "eslint-plugin-promise",
 	"react-jsx": "eslint-plugin-react-jsx",
 	"react-naming-convention": "eslint-plugin-react-naming-convention",

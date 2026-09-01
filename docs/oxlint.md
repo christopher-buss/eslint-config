@@ -335,10 +335,10 @@ export default isentinel({
 ```
 
 Standalone mode keeps spell checking (CSpell), directive-comment hygiene
-(`oxlint-comments`), formatting (oxfmt) and the custom roblox-ts rules by
-running the ESLint plugins as jsPlugins. Note the limitations above: JSON, YAML,
-TOML, Markdown, pnpm and the type-aware custom rules are only available through
-ESLint.
+(`oxlint-comments`), formatting (oxfmt), the co-located test check
+(`projectStructure`) and the custom roblox-ts rules by running the ESLint
+plugins as jsPlugins. Note the limitations above: JSON, YAML, TOML, Markdown,
+pnpm and the type-aware custom rules are only available through ESLint.
 
 ## Categories, linter options, env and globals
 

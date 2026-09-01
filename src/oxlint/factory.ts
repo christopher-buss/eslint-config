@@ -38,6 +38,7 @@ import { oxlintNode } from "./configs/node.ts";
 import { oxlintOxc } from "./configs/oxc.ts";
 import { oxlintOxfmt } from "./configs/oxfmt.ts";
 import { oxlintPerfectionist } from "./configs/perfectionist.ts";
+import { oxlintProjectStructure } from "./configs/project-structure.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
 import { oxlintRoblox } from "./configs/roblox.ts";
@@ -139,6 +140,7 @@ export function isentinel(
 		jsx: enableJsx = true,
 		options: linterOptions,
 		oxc: enableOxc = true,
+		projectStructure: enableProjectStructure = false,
 		react: enableReact = false,
 		root: customRootGlobs,
 		rules = {},
@@ -367,6 +369,10 @@ export function isentinel(
 				...getOverrides(options, "eslintPlugin"),
 			}),
 		);
+	}
+
+	if (enableProjectStructure !== false) {
+		configs.push(oxlintProjectStructure(resolveSubOptions(options, "projectStructure")));
 	}
 
 	if (enableOxc) {

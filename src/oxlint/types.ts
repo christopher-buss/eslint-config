@@ -62,7 +62,6 @@ export type OxlintOptionsConfig = Omit<
 	| "naming"
 	| "oxlint"
 	| "pnpm"
-	| "projectStructure"
 	| "toml"
 	| "yaml"
 >;
