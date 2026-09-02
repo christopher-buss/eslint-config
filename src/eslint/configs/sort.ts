@@ -459,6 +459,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"blockExoticSubdeps",
 								"cacheDir",
 								"catalogMode",
+								"catalogPrune",
 								"cleanupUnusedCatalogs",
 								"dedupeDirectDeps",
 								"dedupePeerDependents",
@@ -468,6 +469,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"enablePrePostScripts",
 								"engineStrict",
 								"extendNodePath",
+								"globalShims",
 								"hoist",
 								"hoistPattern",
 								"hoistWorkspacePackages",
@@ -483,6 +485,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"managePackageManagerVersions",
 								"minimumReleaseAge",
 								"minimumReleaseAgeExclude",
+								"minimumReleaseAgeExcludePrune",
 								"minimumReleaseAgeIgnoreMissingTime",
 								"minimumReleaseAgeStrict",
 								"modulesDir",
@@ -505,6 +508,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"shamefullyHoist",
 								"sharedWorkspaceLockfile",
 								"shellEmulator",
+								"sideEffectsCache",
 								"stateDir",
 								"strictDepBuilds",
 								"strictPeerDependencies",
@@ -518,6 +522,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"updateConfig",
 								"updateNotifier",
 								"verifyDepsBeforeRun",
+								"virtualStoreType",
 							],
 
 							// Lockfile
@@ -551,6 +556,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 								"onlyBuiltDependenciesFile",
 								"packageExtensions",
 								"peerDependencyRules",
+								"tasks",
 							],
 
 							// Unlisted keys: sort alphabetically, last.
@@ -575,7 +581,7 @@ export function sortPnpmWorkspace(): Array<TypedFlatConfigItem> {
 					{
 						order: { natural: true, type: "asc" },
 						pathPattern:
-							"^(supportedArchitectures\\.(cpu|libc|os)|updateConfig\\.ignoreDependencies|peerDependencyRules\\.(allowAny|ignoreMissing)|auditConfig\\.(ignoreCves|ignoreGhsas))$",
+							"^(supportedArchitectures\\.(cpu|libc|os)|update\\.ignoreDeps|updateConfig\\.ignoreDependencies|peerDependencyRules\\.(allowAny|ignoreMissing)|audit\\.ignore|auditConfig\\.(ignoreCves|ignoreGhsas)|sideEffectsCache\\.remote\\.packages|tasks\\.[^.]+\\.dependsOn)$",
 					},
 				],
 			},
