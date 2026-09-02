@@ -6,6 +6,7 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - eslint-plugin-flawless
 
+minimumReleaseAgeExcludePrune: true
 savePrefix: ""
 shellEmulator: true
 strictPeerDependencies: false
