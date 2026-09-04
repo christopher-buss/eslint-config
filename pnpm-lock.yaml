@@ -104,8 +104,8 @@ catalogs:
       specifier: 0.4.2
       version: 0.4.2
     eslint-plugin-eslint-plugin:
-      specifier: 7.5.0
-      version: 7.5.0
+      specifier: 7.6.2
+      version: 7.6.2
     eslint-plugin-jest:
       specifier: 29.16.0
       version: 29.16.0
@@ -531,7 +531,7 @@ importers:
         version: 0.4.2(@typescript-eslint/parser@8.65.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-eslint-plugin:
         specifier: catalog:peer
-        version: 7.5.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 7.6.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-jest:
         specifier: catalog:peer
         version: 29.16.0(@typescript-eslint/eslint-plugin@8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -2717,8 +2717,8 @@ packages:
     peerDependencies:
       eslint: '>=8'
 
-  eslint-plugin-eslint-plugin@7.5.0:
-    resolution: {integrity: sha512-WrYbQ1MXW5Di5/NrTxTCS8FXFjJqMW5wmZ9RbrdBuYy++W1SefFvDf1EM5FT9pwRiUkF2hnLtnbOSN2LhLYP2A==}
+  eslint-plugin-eslint-plugin@7.6.2:
+    resolution: {integrity: sha512-MWE0tzCq0VatvFzELsTfmnMZHFZEQc2lK7HjeLLFiQDUPD8M1pCDlpOuQxGBzjbFvyvz4bfYjI03HQlbS5qdQQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
     peerDependencies:
       eslint: '>=9.0.0'
@@ -6126,7 +6126,7 @@ snapshots:
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-compat-utils: 0.5.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
 
-  eslint-plugin-eslint-plugin@7.5.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-eslint-plugin@7.6.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
