@@ -5,13 +5,14 @@ import { applyHashBust, CONFIG_DRIFT, PACKAGE_RESOLUTION } from "../cache/bust.t
 import { computeConfigHash } from "../cache/config-hash.ts";
 import { maxMtimeMs, sweepStaleCaches } from "../cache/entries.ts";
 import { computePackageJsonHash } from "../cache/package-hash.ts";
-import type { LintCliOptions } from "../cli/types.ts";
+import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import { resolveAgentsFormatter } from "../exec/resolve.ts";
 import { collectRepoFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
 import { resolveIgnoredFiles } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { resolveWorkerLimits } from "./concurrency.ts";
+import { planFixChild } from "./fix.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { selectPasses } from "./passes.ts";
 import type { PassPlan, SizingInputs } from "./sizing.ts";
@@ -68,12 +69,24 @@ export interface StagedPlan {
 	 * Size the passes held back from {@link StagedPlan.eager}: runs the
 	 * TypeScript builder and folds its invalidation into the type-aware cache.
 	 * `undefined` when nothing was held back, which is also the whole plan for
-	 * `--print` and `--fix`.
+	 * `--print`.
 	 *
 	 * Call once, and only after the eager children have spawned — it mutates
 	 * the type-aware cache the child it plans is about to read.
 	 */
 	resolveDeferred: (() => Array<PassPlan>) | undefined;
+	/**
+	 * Compose the one ESLint child that applies fixes, from what the passes
+	 * reported. `undefined` unless the run is a mutating `--fix`.
+	 *
+	 * Call once, and only after every check child has exited: it reads their
+	 * caches for the verdict and mutates the full-config cache the child it
+	 * composes is about to read.
+	 *
+	 * Returns `undefined` when nothing was reported, which is the common case
+	 * and the whole point — no fix child spawns at all.
+	 */
+	resolveFixChild: ((passes: Array<PassPlan>) => ChildCommand | undefined) | undefined;
 }
 
 /** What the staging decision needs to know beyond the descriptors. */
@@ -138,6 +151,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 				targetsOutsideCwd: false,
 			},
 			resolveDeferred: undefined,
+			resolveFixChild: undefined,
 		};
 	}
 
@@ -213,9 +227,11 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 		options,
 	};
 
-	const staged = stageDescriptors(descriptors, options, run, {
+	const staged = stageDescriptors(descriptors, run, {
 		multiPass: inputs.multiPass,
-		oxlint: oxlintDecision.run,
+		// A `--fix` run spawns its oxlint child alone, ahead of the checks, so
+		// oxlint is never the sibling that keeps a lone check child company.
+		oxlint: oxlintDecision.run && !options.fix,
 		targetsOutsideCwd: sizingFiles.targetsOutsideCwd,
 	});
 
@@ -232,6 +248,17 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 		},
 		resolveDeferred:
 			staged.deferred.length > 0 ? () => sizePasses(staged.deferred, run, inputs) : undefined,
+		resolveFixChild:
+			mutate && options.fix
+				? (passes) => {
+						return planFixChild(passes, run, {
+							agentsFormatterPath,
+							files: sizingFiles,
+							limits,
+							options,
+						});
+					}
+				: undefined,
 	};
 }
 
@@ -245,12 +272,10 @@ function resolveOxlintTypeAware(options: LintCliOptions): boolean {
  * runs the TypeScript builder is ever held back — that is the whole cost being
  * moved off the critical path.
  *
- * Everything else stays eager, and four cases opt out of staging entirely:
+ * Everything else stays eager, and three cases opt out of staging entirely:
  *
  * - `--print` (`mutate` false) runs no builder anyway and must stay one pure
  *   snapshot printed in a single go;
- * - `--fix` runs its children one at a time, so a later spawn buys nothing and
- *   there is no reason to reopen the write race the sequential path prevents;
  * - a run with no eager child at all, where holding the builder-backed pass
  *   back would only delay the whole run;
  * - a run whose one eager child could end up alone, because the type-aware pass
@@ -259,14 +284,12 @@ function resolveOxlintTypeAware(options: LintCliOptions): boolean {
  *   prefixed, piped harness for no gain.
  *
  * @param descriptors - The selected passes, in run order.
- * @param options - The parsed CLI options.
  * @param run - The run context.
  * @param staging - The oxlint decision and the auto-skip inputs.
  * @returns The two stages, each in run order.
  */
 function stageDescriptors(
 	descriptors: Array<PassDescriptor>,
-	options: LintCliOptions,
 	run: RunContext,
 	staging: StagingInputs,
 ): StagedDescriptors {
@@ -274,7 +297,7 @@ function stageDescriptors(
 	const deferred = descriptors.filter((descriptor) => descriptor.invalidation !== "none");
 	const unstaged: StagedDescriptors = { deferred: [], eager: descriptors };
 
-	if (!run.mutate || options.fix || deferred.length === 0) {
+	if (!run.mutate || deferred.length === 0) {
 		return unstaged;
 	}
 

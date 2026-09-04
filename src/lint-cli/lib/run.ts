@@ -2,12 +2,27 @@ import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
 import { parseArguments } from "./cli/options.ts";
+import type { ChildCommand, LintCliOptions } from "./cli/types.ts";
 import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
 import { execute, executeStaged } from "./exec/execute.ts";
 import { formatCommandLine } from "./exec/shell.ts";
 import { compose, composePasses } from "./plan/compose.ts";
 import { plan } from "./plan/plan.ts";
+import type { StagedPlan } from "./plan/plan.ts";
+import type { PassPlan } from "./plan/sizing.ts";
+
+/** A finished check stage: its exit code and the passes it planned. */
+interface CheckOutcome {
+	/** The aggregated exit code of the check children. */
+	code: number;
+	/**
+	 * Every pass the run planned, auto-skipped ones included. A skipped pass
+	 * still owns a cache whose verdict stands, which is what narrows a fix run
+	 * (see `collectFixTargets`).
+	 */
+	passes: Array<PassPlan>;
+}
 
 /**
  * Parse, validate, compose and run the hybrid oxlint + ESLint invocation.
@@ -57,24 +72,77 @@ export async function runLint(
 		process.stderr.write(notice);
 	}
 
-	const { resolveDeferred } = staged;
-	if (resolveDeferred === undefined) {
-		// `--fix` must be sequential: two children writing the same files at once
-		// would race. A lone child gains nothing from the concurrently harness.
-		return execute(commands, cwd, options.fix || commands.length <= 1);
+	const { resolveFixChild } = staged;
+	if (resolveFixChild === undefined) {
+		const checkOnly = await runChecks(commands, cwd, staged, options);
+		return checkOnly.code;
 	}
 
-	// A staged run is concurrent by construction (the planner only stages when
-	// at least one other child is already linting), so it never takes the
-	// sequential path. The type-aware pass is planned — TypeScript builder and
-	// all — only once the children above are running, and its notice is emitted
-	// as soon as it is known rather than held to the end of the run.
-	return executeStaged(commands, cwd, () => {
-		const later = composePasses(resolveDeferred(), staged.eager, options);
+	// oxlint writes the files the ESLint checks read, so it goes first and
+	// alone; the checks then lint what it left behind, exactly as they would in
+	// a check run.
+	const oxlintCode = await execute(
+		commands.filter((command) => command.bin === "oxlint"),
+		cwd,
+		true,
+	);
+	const checks = await runChecks(
+		commands.filter((command) => command.bin === "eslint"),
+		cwd,
+		staged,
+		options,
+	);
+
+	const fixChild = resolveFixChild(checks.passes);
+	if (fixChild === undefined) {
+		return oxlintCode || checks.code;
+	}
+
+	// The fix child re-lints every file the checks reported, under a config that
+	// is a superset of theirs, so what it reports is what survives fixing. Its
+	// code replaces theirs rather than joining it, or a run that fixed
+	// everything it found would still fail.
+	return oxlintCode || (await execute([fixChild], cwd, true));
+}
+
+/**
+ * Run a run's ESLint check children and report which passes they covered.
+ *
+ * A staged run is concurrent by construction (the planner only stages when at
+ * least one other child is already linting). Its type-aware pass is planned —
+ * TypeScript builder and all — only once the children above are running, and
+ * its notice is emitted as soon as it is known rather than held to the end of
+ * the run.
+ *
+ * @param commands - The composed check children.
+ * @param cwd - The working directory.
+ * @param staged - The staged plan the commands came from.
+ * @param options - The parsed CLI options.
+ * @returns The aggregated exit code and every pass that was planned.
+ */
+async function runChecks(
+	commands: Array<ChildCommand>,
+	cwd: string,
+	staged: StagedPlan,
+	options: LintCliOptions,
+): Promise<CheckOutcome> {
+	const passes = [...staged.eager.passes];
+	const { resolveDeferred } = staged;
+	if (resolveDeferred === undefined) {
+		return { code: await execute(commands, cwd, commands.length <= 1), passes };
+	}
+
+	const code = await executeStaged(commands, cwd, () => {
+		const deferred = resolveDeferred();
+		passes.push(...deferred);
+
+		const later = composePasses(deferred, staged.eager, options);
 		if (later.notice !== undefined) {
 			process.stderr.write(later.notice);
 		}
 
 		return later.commands;
 	});
+
+	return { code, passes };
 }

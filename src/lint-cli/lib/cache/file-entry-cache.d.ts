@@ -1,9 +1,17 @@
 // Minimal ambient types for the subset of `file-entry-cache` v8 the lint
 // runner uses. The package ships no type declarations of its own.
 declare module "file-entry-cache" {
+	// What ESLint stores beside each entry's size/mtime: the lint result it
+	// replays for an unchanged file. Only `messages` matters to the runner --
+	// a non-empty list is a file the last check run had something to say about.
+	interface FileEntryMeta {
+		results?: { messages?: Array<unknown> };
+	}
+
 	interface FileDescriptor {
 		key: string;
 		changed?: boolean;
+		meta: FileEntryMeta;
 		notFound?: boolean;
 	}
 
@@ -11,6 +19,7 @@ declare module "file-entry-cache" {
 	// individual entries and persist them without pruning the (unvisited)
 	// remainder of the cache.
 	interface FlatCache {
+		getKey: (key: string) => FileEntryMeta | undefined;
 		keys: () => Array<string>;
 		removeKey: (key: string) => void;
 		save: (noPrune?: boolean) => void;

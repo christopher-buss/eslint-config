@@ -53,13 +53,16 @@ import {
 	resolveWorkerLimits,
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
+import { collectFixTargets } from "../src/lint-cli/lib/plan/fix.ts";
 import {
 	FAST_PASS,
 	FULL_PASS,
 	maxWorkersFor,
 	TYPED_PASS,
 } from "../src/lint-cli/lib/plan/passes.ts";
+import type { PassDescriptor } from "../src/lint-cli/lib/plan/passes.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
+import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
 import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
@@ -71,6 +74,7 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		ci: false,
 		concurrency: "off",
 		eslintLabel: "eslint",
+		fix: false,
 		paths: ["."],
 		typeAwareEnv: undefined,
 		...overrides,
@@ -577,6 +581,29 @@ describe("cache helpers", () => {
 
 		expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(2);
 	});
+
+	it("reports the cached files a check run left messages on", () => {
+		expect.assertions(2);
+
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const fileA = path.join(directory, "a.ts");
+		const fileB = path.join(directory, "b.ts");
+		fs.writeFileSync(fileA, "const a = 1;");
+		fs.writeFileSync(fileB, "const b = 2;");
+
+		const cache = fileEntryCache.createFromFile(cacheFile, false);
+		cache.getFileDescriptor(fileA).meta.results = { messages: [{ ruleId: "no-op" }] };
+		cache.getFileDescriptor(fileB).meta.results = { messages: [] };
+		cache.reconcile();
+
+		const loaded = openCache(cacheFile, false);
+
+		expect(loaded!.filesWithMessages([fileA, fileB])).toStrictEqual([fileA]);
+		// A file the caller did not ask about is never reported, however dirty
+		// its entry: each pass only owns the targets it linted.
+		expect(loaded!.filesWithMessages([fileB])).toStrictEqual([]);
+	});
 });
 
 describe("collectRepoFiles lintable set", () => {
@@ -775,6 +802,19 @@ describe("command composition", () => {
 		expect(command.args).not.toContain("--cache-strategy");
 	});
 
+	it("adds --fix only for the child the context marks as the fix pass", () => {
+		expect.assertions(2);
+
+		// `--fix` belongs to the one narrow child that applies fixes, never to
+		// the check children of the same run.
+		expect(composeEslintCommand(options({ fix: true }), baseContext()).args).not.toContain(
+			"--fix",
+		);
+		expect(
+			composeEslintCommand(options({ fix: true }), baseContext({ fix: true })).args,
+		).toContain("--fix");
+	});
+
 	it("points ESLint at the agents formatter", () => {
 		expect.assertions(1);
 
@@ -964,14 +1004,19 @@ describe("compose --print", () => {
 		);
 	});
 
-	it("composes the sequential full-config fix pass", () => {
+	it("composes a fix run's check children without --fix", () => {
 		expect.assertions(1);
 
 		const directory = temporaryDirectory();
 
+		// The fix child is conditional on what the checks report, so it cannot
+		// be composed up front and never appears in a printed plan.
 		expect(printLines(["--fix"], directory)).toStrictEqual([
 			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
-			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off --fix .`,
+			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+				"--no-warn-ignored --concurrency off .",
+			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+				"--no-warn-ignored --concurrency off .",
 		]);
 	});
 });
@@ -1082,8 +1127,8 @@ describe("plan staging", () => {
 		expect(ci.deferred).toStrictEqual(["eslint"]);
 	});
 
-	it("never stages --print or --fix", () => {
-		expect.assertions(2);
+	it("never stages --print", () => {
+		expect.assertions(1);
 
 		const directory = hybridDirectory();
 		const printed = withoutGitEnvironment(() => {
@@ -1091,7 +1136,18 @@ describe("plan staging", () => {
 		});
 
 		expect(printed.resolveDeferred).toBeUndefined();
-		expect(stagedLabels(["--fix"], directory).deferred).toStrictEqual([]);
+	});
+
+	it("never stages a fix run, whose oxlint child is not a sibling", () => {
+		expect.assertions(2);
+
+		// A fix run spawns oxlint alone, ahead of the checks, so the fast pass
+		// would be the only eager child and could end up alone once the typed
+		// pass auto-skips.
+		const { deferred, eager } = stagedLabels(["--fix"], hybridDirectory());
+
+		expect(eager).toStrictEqual(["fast", "typed"]);
+		expect(deferred).toStrictEqual([]);
 	});
 
 	it("never stages a run whose eager half could end up a lone child", () => {
@@ -1453,6 +1509,118 @@ function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
 	};
 }
 
+describe("collectFixTargets", () => {
+	/**
+	 * A pass whose cache records the given files, each carrying a message when
+	 * listed in `reported`.
+	 *
+	 * @param directory - The fixture root the cache file lives in.
+	 * @param descriptor - The pass the cache belongs to.
+	 * @param linted - Absolute paths the pass linted.
+	 * @param reported - Absolute paths whose entry carries a message.
+	 * @returns The planned pass, marked as having run.
+	 */
+	function passWithCache(
+		directory: string,
+		descriptor: PassDescriptor,
+		linted: Array<string>,
+		reported: Array<string>,
+	): PassPlan {
+		const cacheFile = cacheFileFor(descriptor.cacheFileBase, resolveCacheKey({}));
+		const cache = fileEntryCache.createFromFile(path.join(directory, cacheFile), false);
+		for (const file of linted) {
+			// `reconcile` drops any entry whose file is gone, so the fixture has
+			// to exist on disk for its cached verdict to survive.
+			fs.writeFileSync(file, "export const value = 1;");
+			cache.getFileDescriptor(file).meta.results = {
+				messages: reported.includes(file) ? [{ ruleId: "no-op" }] : [],
+			};
+		}
+
+		cache.reconcile();
+		return {
+			cacheFile,
+			concurrency: "off",
+			descriptor,
+			shouldRun: true,
+			skipReason: undefined,
+		};
+	}
+
+	it("unions the files every pass that ran reported a message on", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const readme = path.join(directory, "README.md");
+		const service = path.join(directory, "service.ts");
+		const clean = path.join(directory, "clean.ts");
+
+		const passes = [
+			passWithCache(directory, FAST_PASS, [readme, service, clean], [readme]),
+			passWithCache(directory, TYPED_PASS, [service, clean], [service]),
+		];
+
+		expect(
+			collectFixTargets(passes, runContext(directory), {
+				files: repoFiles({
+					lintable: [readme, service, clean],
+					typeAware: [service, clean],
+				}),
+				options: options({ fix: true }),
+			}),
+		).toStrictEqual([readme, service]);
+	});
+
+	it("reports nothing when every pass came back clean", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const service = path.join(directory, "service.ts");
+		const passes = [passWithCache(directory, FAST_PASS, [service], [])];
+
+		expect(
+			collectFixTargets(passes, runContext(directory), {
+				files: repoFiles({ lintable: [service], typeAware: [service] }),
+				options: options({ fix: true }),
+			}),
+		).toStrictEqual([]);
+	});
+
+	it("falls back to the run's paths when there is no cache to read", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+
+		// `--no-cache` leaves no record of which files had messages, so the fix
+		// child cannot be narrowed and lints what it was asked to.
+		expect(
+			collectFixTargets(passes, runContext(directory), {
+				files: repoFiles(),
+				options: options({ cache: false, fix: true, paths: ["src"] }),
+			}),
+		).toStrictEqual(["src"]);
+	});
+
+	it("still reads the cache of an auto-skipped pass", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const service = path.join(directory, "service.ts");
+		const skipped = passWithCache(directory, TYPED_PASS, [service], [service]);
+
+		// The pass skipped because nothing type-relevant changed, so its cached
+		// verdict is the current one. Ignoring it would leave a standing fixable
+		// error unfixed until something unrelated moved.
+		expect(
+			collectFixTargets([{ ...skipped, shouldRun: false }], runContext(directory), {
+				files: repoFiles({ lintable: [service], typeAware: [service] }),
+				options: options({ fix: true }),
+			}),
+		).toStrictEqual([service]);
+	});
+});
+
 function setMtimeInPast(filePath: string): void {
 	const past = Date.now() / 1000 - 60;
 	fs.utimesSync(filePath, past, past);
@@ -1784,6 +1952,86 @@ describe("runLint tsgolint check ordering", () => {
 		const printed = spy.mock.calls.map((call) => String(call[0])).join("");
 
 		expect(printed).toContain("oxlint --type-aware");
+	});
+});
+
+describe("runLint --fix", () => {
+	/**
+	 * A fixture whose ESLint children are fakes that record their argv, with a
+	 * warm fast cache reporting a message on one file.
+	 *
+	 * @param reported - Fixture-relative paths the cache reports a message on.
+	 * @returns The fixture root and the argv log path.
+	 */
+	function fixFixture(reported: Array<string>): { argvLog: string; directory: string } {
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-fix-run-"));
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+		writeHybridStatus(directory, true);
+
+		const argvLog = path.join(directory, "argv.log");
+		const body =
+			'const fs=require("node:fs");' +
+			'const line=process.argv.slice(2).join(" ")+String.fromCharCode(10);' +
+			`fs.appendFileSync(${JSON.stringify(argvLog)},line);` +
+			"process.exit(0);";
+		writeFakeToolBin(directory, "oxlint", body);
+		writeFakeToolBin(directory, "eslint", body);
+
+		const cacheFile = path.join(directory, keyedCacheFile(CACHE_FILE_FAST));
+		const cache = fileEntryCache.createFromFile(cacheFile, false);
+		for (const relative of reported) {
+			const file = path.join(directory, relative);
+			fs.writeFileSync(file, "export const value = 1;");
+			cache.getFileDescriptor(file).meta.results = { messages: [{ ruleId: "no-op" }] };
+		}
+
+		cache.reconcile();
+		return { argvLog, directory };
+	}
+
+	/**
+	 * Every child argv line a run produced, in spawn order.
+	 *
+	 * @param argvLog - The log the fake bins append to.
+	 * @returns The recorded argv lines.
+	 */
+	function spawnedArgv(argvLog: string): Array<string> {
+		return fs.existsSync(argvLog)
+			? fs.readFileSync(argvLog, "utf8").trim().split("\n").filter(Boolean)
+			: [];
+	}
+
+	it("spawns no fix child when the checks reported nothing", async () => {
+		expect.assertions(2);
+
+		const { argvLog, directory } = fixFixture([]);
+		const code = await withoutGitEnvironment(async () => {
+			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		});
+
+		expect(code).toBe(0);
+		expect(spawnedArgv(argvLog).filter((line) => line.includes("--fix"))).toStrictEqual([
+			"--fix --no-error-on-unmatched-pattern .",
+		]);
+	});
+
+	it("hands the fix child only the files the checks reported", async () => {
+		expect.assertions(2);
+
+		const { argvLog, directory } = fixFixture(["dirty.ts"]);
+		const code = await withoutGitEnvironment(async () => {
+			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		});
+		const fixChild = spawnedArgv(argvLog).at(-1);
+
+		expect(code).toBe(0);
+		expect(fixChild).toBe(
+			`--cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} ` +
+				`--no-warn-ignored --concurrency off --fix ${path.join(directory, "dirty.ts")}`,
+		);
 	});
 });
 

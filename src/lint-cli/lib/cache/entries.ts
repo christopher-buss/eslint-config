@@ -10,6 +10,20 @@ import { CACHE_FILE_PREFIX } from "./constants.ts";
  */
 export interface DirtyCache {
 	/**
+	 * The candidate files whose cached result carries at least one message.
+	 *
+	 * ESLint stores each file's lint result beside its size and mtime, and
+	 * replays it verbatim on a cache hit — which is why a warm check run still
+	 * reports the whole repo. So the cache a check pass just wrote *is* that
+	 * pass's verdict, and this reads the verdict back without linting again.
+	 *
+	 * Reads non-destructively.
+	 *
+	 * @param files - Absolute paths of the candidate files.
+	 * @returns The candidates the pass had something to say about.
+	 */
+	filesWithMessages: (files: Array<string>) => Array<string>;
+	/**
 	 * The candidate files that changed or are absent from the cache. Reads
 	 * non-destructively — it never reconciles or writes the cache back.
 	 *
@@ -147,6 +161,7 @@ export function openCache(cacheFilePath: string, useChecksum: boolean): DirtyCac
 	// removeEntries' save(true) writes that store minus the removed keys.
 	const cache = fileEntryCache.createFromFile(cacheFilePath, useChecksum);
 	return {
+		filesWithMessages: (files) => filesWithMessagesIn(cache, files),
 		getUpdatedFiles: (files) => cache.getUpdatedFiles(files),
 		removeEntries: (files) => removeEntriesFrom(cache, files),
 	};
@@ -190,14 +205,44 @@ function removeCacheFile(cacheFilePath: string): void {
 	}
 }
 
-function removeEntriesFrom(
-	cache: ReturnType<typeof fileEntryCache.createFromFile>,
-	files: Iterable<string>,
-): number {
+/**
+ * Index a cache's entry keys by their normalized form, so a caller holding
+ * paths from elsewhere — TypeScript's forward slashes, a git listing — can find
+ * the entry ESLint wrote under an OS-native path.
+ *
+ * @param cache - The loaded cache to index.
+ * @returns Normalized path to the key the cache stores it under.
+ */
+function keyIndex(cache: ReturnType<typeof fileEntryCache.createFromFile>): Map<string, string> {
 	const keyByNormalized = new Map<string, string>();
 	for (const key of cache.cache.keys()) {
 		keyByNormalized.set(normalizePath(key), key);
 	}
+
+	return keyByNormalized;
+}
+
+function filesWithMessagesIn(
+	cache: ReturnType<typeof fileEntryCache.createFromFile>,
+	files: Array<string>,
+): Array<string> {
+	const keyByNormalized = keyIndex(cache);
+	return files.filter((file) => {
+		const key = keyByNormalized.get(normalizePath(file));
+		if (key === undefined) {
+			return false;
+		}
+
+		const messages = cache.cache.getKey(key)?.results?.messages;
+		return messages !== undefined && messages.length > 0;
+	});
+}
+
+function removeEntriesFrom(
+	cache: ReturnType<typeof fileEntryCache.createFromFile>,
+	files: Iterable<string>,
+): number {
+	const keyByNormalized = keyIndex(cache);
 
 	let removed = 0;
 	for (const file of files) {

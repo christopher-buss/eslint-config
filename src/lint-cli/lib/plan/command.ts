@@ -65,7 +65,7 @@ export function composeEslintCommand(
 		args.push("--format", context.agentsFormatterPath);
 	}
 
-	if (options.fix) {
+	if (context.fix) {
 		args.push("--fix");
 	}
 
