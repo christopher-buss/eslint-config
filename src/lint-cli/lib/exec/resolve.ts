@@ -7,6 +7,13 @@ import { isRecord } from "../../../guards.ts";
 import { CliError } from "../cli/types.ts";
 import { readFileIfPresent } from "../state.ts";
 
+/**
+ * A synthetic basename for `createRequire`, which resolves relative to a file
+ * rather than a directory. Spelled so it can never collide with a real consumer
+ * module.
+ */
+export const RESOLVE_ANCHOR = "__isentinel-lint__.js";
+
 /** Memoised {@link resolveLocalBin} results, keyed by `cwd\0name`. */
 const localBinCache = new Map<string, string>();
 
@@ -104,7 +111,13 @@ function readBinEntry(manifestPath: string, name: string): string | undefined {
 		return undefined;
 	}
 
-	const parsed: unknown = JSON.parse(raw);
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return undefined;
+	}
+
 	if (!isRecord(parsed)) {
 		return undefined;
 	}
@@ -121,9 +134,9 @@ function readBinEntry(manifestPath: string, name: string): string | undefined {
 /**
  * Locate a package's manifest exactly as a `require` call from `cwd` would.
  *
- * `createRequire` resolves relative to the *file* it is handed, so `cwd` is
- * joined with a sentinel filename that never has to exist — passing the bare
- * directory would start the walk one level too high.
+ * Reads the manifest as a subpath, so a package whose `exports` map hides
+ * `./package.json` counts as unresolvable. Both packages this serves publish
+ * it, and one that does not could not be spawned from its `bin` field anyway.
  *
  * @param name - The package name to resolve.
  * @param cwd - The directory to resolve from.
@@ -131,7 +144,7 @@ function readBinEntry(manifestPath: string, name: string): string | undefined {
  *   the package is not installed.
  */
 function resolveManifest(name: string, cwd: string): string | undefined {
-	const require = createRequire(path.join(cwd, "resolve-local-bin.js"));
+	const require = createRequire(path.join(cwd, RESOLVE_ANCHOR));
 	try {
 		return require.resolve(`${name}/package.json`);
 	} catch {

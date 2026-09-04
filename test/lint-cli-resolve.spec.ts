@@ -81,4 +81,14 @@ describe("resolveLocalBin", () => {
 
 		expect(() => resolveLocalBin("eslint", root)).toThrow(/does not declare/u);
 	});
+
+	it("reports a manifest it cannot parse rather than throwing a parse error", () => {
+		expect.assertions(1);
+
+		const root = temporaryDirectory();
+		const installed = installPackage(root, "eslint", { name: "eslint" });
+		fs.writeFileSync(path.join(installed, "package.json"), "{ truncated");
+
+		expect(() => resolveLocalBin("eslint", root)).toThrow(CliError);
+	});
 });
