@@ -213,7 +213,9 @@ function removeCacheFile(cacheFilePath: string): void {
  * @param cache - The loaded cache to index.
  * @returns Normalized path to the key the cache stores it under.
  */
-function keyIndex(cache: ReturnType<typeof fileEntryCache.createFromFile>): Map<string, string> {
+function keysByNormalizedPath(
+	cache: ReturnType<typeof fileEntryCache.createFromFile>,
+): Map<string, string> {
 	const keyByNormalized = new Map<string, string>();
 	for (const key of cache.cache.keys()) {
 		keyByNormalized.set(normalizePath(key), key);
@@ -226,7 +228,7 @@ function filesWithMessagesIn(
 	cache: ReturnType<typeof fileEntryCache.createFromFile>,
 	files: Array<string>,
 ): Array<string> {
-	const keyByNormalized = keyIndex(cache);
+	const keyByNormalized = keysByNormalizedPath(cache);
 	return files.filter((file) => {
 		const key = keyByNormalized.get(normalizePath(file));
 		if (key === undefined) {
@@ -242,7 +244,7 @@ function removeEntriesFrom(
 	cache: ReturnType<typeof fileEntryCache.createFromFile>,
 	files: Iterable<string>,
 ): number {
-	const keyByNormalized = keyIndex(cache);
+	const keyByNormalized = keysByNormalizedPath(cache);
 
 	let removed = 0;
 	for (const file of files) {

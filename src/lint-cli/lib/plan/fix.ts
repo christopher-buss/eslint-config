@@ -12,27 +12,23 @@ import type { WorkerLimits } from "./concurrency.ts";
 import { FULL_PASS } from "./passes.ts";
 import type { PassPlan } from "./sizing.ts";
 
-/** What the fix child is derived from, beyond the passes and the run. */
+/** Everything composing a run's fix child needs beyond its passes. */
 export interface FixInputs {
-	/** The lint-target lists the passes were sized against. */
-	files: RepoFiles;
-	/** The parsed CLI options. */
-	options: LintCliOptions;
-}
-
-/** Everything composing the fix child needs on top of {@link FixInputs}. */
-export interface FixChildInputs extends FixInputs {
 	/**
 	 * Absolute path to the agent ESLint formatter (empty unless `--agents`).
 	 */
 	agentsFormatterPath: string;
+	/** The lint-target lists the passes were sized against. */
+	files: RepoFiles;
 	/** The resolved worker limits, for sizing the child. */
 	limits: WorkerLimits;
+	/** The parsed CLI options. */
+	options: LintCliOptions;
 }
 
 /**
- * The files a `--fix` run should hand its fix child: everything the check
- * passes had a message about, in pass order and without duplicates.
+ * The files the check passes had a message about, in pass order and without
+ * duplicates.
  *
  * Read out of each pass's own cache rather than out of its output. ESLint
  * stores the lint result beside every entry and replays it on a cache hit, so
@@ -43,24 +39,18 @@ export interface FixChildInputs extends FixInputs {
  * Each pass only contributes the targets it lints: the type-aware pass never
  * sees the JSON and Markdown the fast pass covers.
  *
- * With `--no-cache` there is no verdict to read, so the child cannot be
- * narrowed and gets the run's own paths — the whole tree, as before.
- *
  * @param passes - The planned passes, run and auto-skipped alike.
  * @param run - The run context.
- * @param inputs - The lint-target lists and CLI options.
- * @returns The fix child's target paths.
+ * @param files - The lint-target lists to look the verdict up against.
+ * @returns The reported files, empty when every pass came back clean.
  */
 export function collectFixTargets(
 	passes: Array<PassPlan>,
 	run: RunContext,
-	{ files, options }: FixInputs,
+	files: RepoFiles,
 ): Array<string> {
-	if (!options.cache) {
-		return options.paths;
-	}
-
 	const targets = new Set<string>();
+
 	for (const pass of passes) {
 		const cache = openCache(path.resolve(run.cwd, pass.cacheFile), run.ci);
 		const candidates = pass.descriptor.typeAwareOnly ? files.typeAware : files.lintable;
@@ -75,16 +65,21 @@ export function collectFixTargets(
 
 /**
  * Compose the one ESLint child a `--fix` run spawns after its checks, or
- * `undefined` when the checks reported nothing and there is nothing to fix.
+ * `undefined` when they reported nothing and there is nothing to fix.
  *
  * The child runs the full config — a superset of both check configs, so it can
  * fix anything either of them found — over only the reported files. Being one
- * child, it is also the run's only writer.
+ * child, it is also the run's only ESLint writer.
  *
  * Its cache entries for those files are dropped first. The full config's cache
  * gets none of the invalidation the check caches do (no builder runs against
  * it), so it can hold a stale clean entry for a file the checks have since
  * found a message on, and ESLint would skip the very file it was handed.
+ *
+ * Two cases have no verdict to narrow by, and fall back to the run's own paths
+ * — the whole tree, as a fix run always used to lint: `--no-cache`, which
+ * records nothing, and an out-of-cwd target, which the repo listing the passes
+ * were sized against cannot see (see {@link RepoFiles.targetsOutsideCwd}).
  *
  * @param passes - The planned passes whose verdicts narrow the child.
  * @param run - The run context.
@@ -94,20 +89,20 @@ export function collectFixTargets(
 export function planFixChild(
 	passes: Array<PassPlan>,
 	run: RunContext,
-	inputs: FixChildInputs,
+	inputs: FixInputs,
 ): ChildCommand | undefined {
-	const targets = collectFixTargets(passes, run, inputs);
+	const { files, limits, options } = inputs;
+	const narrowable = options.cache && !files.targetsOutsideCwd;
+	const targets = narrowable ? collectFixTargets(passes, run, files) : options.paths;
 	if (targets.length === 0) {
 		return undefined;
 	}
 
 	const cacheFile = cacheFileFor(CACHE_FILE_DEFAULT, run.key);
-	const cacheLocation = path.resolve(run.cwd, cacheFile);
-	if (inputs.options.cache) {
-		openCache(cacheLocation, run.ci)?.removeEntries(targets);
+	if (narrowable) {
+		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(targets);
 	}
 
-	const { limits, options } = inputs;
 	return composeEslintCommand(options, {
 		agentsFormatterPath: inputs.agentsFormatterPath,
 		cacheLocation: cacheFile,

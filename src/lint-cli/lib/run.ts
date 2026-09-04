@@ -81,17 +81,9 @@ export async function runLint(
 	// oxlint writes the files the ESLint checks read, so it goes first and
 	// alone; the checks then lint what it left behind, exactly as they would in
 	// a check run.
-	const oxlintCode = await execute(
-		commands.filter((command) => command.bin === "oxlint"),
-		cwd,
-		true,
-	);
-	const checks = await runChecks(
-		commands.filter((command) => command.bin === "eslint"),
-		cwd,
-		staged,
-		options,
-	);
+	const byBin = Object.groupBy(commands, (command) => command.bin);
+	const oxlintCode = await execute(byBin.oxlint ?? [], cwd, true);
+	const checks = await runChecks(byBin.eslint ?? [], cwd, staged, options);
 
 	const fixChild = resolveFixChild(checks.passes);
 	if (fixChild === undefined) {
@@ -101,7 +93,9 @@ export async function runLint(
 	// The fix child re-lints every file the checks reported, under a config that
 	// is a superset of theirs, so what it reports is what survives fixing. Its
 	// code replaces theirs rather than joining it, or a run that fixed
-	// everything it found would still fail.
+	// everything it found would still fail. The one thing that hides is a check
+	// child that died fatally while its sibling still reported files — rare, and
+	// the fix child runs the same type-aware rules, so it dies too.
 	return oxlintCode || (await execute([fixChild], cwd, true));
 }
 

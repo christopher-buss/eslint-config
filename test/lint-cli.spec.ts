@@ -53,7 +53,7 @@ import {
 	resolveWorkerLimits,
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
-import { collectFixTargets } from "../src/lint-cli/lib/plan/fix.ts";
+import { collectFixTargets, planFixChild } from "../src/lint-cli/lib/plan/fix.ts";
 import {
 	FAST_PASS,
 	FULL_PASS,
@@ -1561,13 +1561,11 @@ describe("collectFixTargets", () => {
 		];
 
 		expect(
-			collectFixTargets(passes, runContext(directory), {
-				files: repoFiles({
-					lintable: [readme, service, clean],
-					typeAware: [service, clean],
-				}),
-				options: options({ fix: true }),
-			}),
+			collectFixTargets(
+				passes,
+				runContext(directory),
+				repoFiles({ lintable: [readme, service, clean], typeAware: [service, clean] }),
+			),
 		).toStrictEqual([readme, service]);
 	});
 
@@ -1579,27 +1577,37 @@ describe("collectFixTargets", () => {
 		const passes = [passWithCache(directory, FAST_PASS, [service], [])];
 
 		expect(
-			collectFixTargets(passes, runContext(directory), {
-				files: repoFiles({ lintable: [service], typeAware: [service] }),
-				options: options({ fix: true }),
-			}),
+			collectFixTargets(
+				passes,
+				runContext(directory),
+				repoFiles({ lintable: [service], typeAware: [service] }),
+			),
 		).toStrictEqual([]);
 	});
 
-	it("falls back to the run's paths when there is no cache to read", () => {
-		expect.assertions(1);
+	it("falls back to the run's paths when there is no verdict to narrow by", () => {
+		expect.assertions(2);
 
 		const directory = temporaryDirectory();
 		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+		const fixInputs = {
+			agentsFormatterPath: "",
+			files: repoFiles(),
+			limits: { filesPerWorker: 20, maxWorkers: 4, typedMaxWorkers: 2 },
+			options: options({ cache: false, fix: true, paths: ["src"] }),
+		};
 
-		// `--no-cache` leaves no record of which files had messages, so the fix
-		// child cannot be narrowed and lints what it was asked to.
+		// `--no-cache` records no verdict, and an out-of-cwd target is missing
+		// from the listing the verdict is looked up against. Either way the fix
+		// child cannot be narrowed and lints what the run was asked to.
+		expect(planFixChild(passes, runContext(directory), fixInputs)!.args.at(-1)).toBe("src");
 		expect(
-			collectFixTargets(passes, runContext(directory), {
-				files: repoFiles(),
-				options: options({ cache: false, fix: true, paths: ["src"] }),
-			}),
-		).toStrictEqual(["src"]);
+			planFixChild(passes, runContext(directory), {
+				...fixInputs,
+				files: repoFiles({ targetsOutsideCwd: true }),
+				options: options({ fix: true, paths: ["src"] }),
+			})!.args.at(-1),
+		).toBe("src");
 	});
 
 	it("still reads the cache of an auto-skipped pass", () => {
@@ -1613,10 +1621,11 @@ describe("collectFixTargets", () => {
 		// verdict is the current one. Ignoring it would leave a standing fixable
 		// error unfixed until something unrelated moved.
 		expect(
-			collectFixTargets([{ ...skipped, shouldRun: false }], runContext(directory), {
-				files: repoFiles({ lintable: [service], typeAware: [service] }),
-				options: options({ fix: true }),
-			}),
+			collectFixTargets(
+				[{ ...skipped, shouldRun: false }],
+				runContext(directory),
+				repoFiles({ lintable: [service], typeAware: [service] }),
+			),
 		).toStrictEqual([service]);
 	});
 });
