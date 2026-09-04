@@ -1,4 +1,12 @@
+import type { Options as PrettierOptions } from "prettier";
+
 import type { OxfmtOptions } from "../utils.ts";
+
+/** One value from a Prettier config, as it is carried over to oxfmt. */
+type PrettierOptionValue = PrettierOptions[keyof PrettierOptions];
+
+/** Prettier keys that survive the migration, before oxfmt's own keys win. */
+type OxfmtSettings = Record<string, PrettierOptionValue>;
 
 const UNSUPPORTED_PRETTIER_KEYS = new Set([
 	"experimentalOperatorPosition",
@@ -40,24 +48,12 @@ const defaultSortImports = {
  * @param prettierOptions - The Prettier options to migrate.
  * @returns The migrated oxfmt options.
  */
-export function migratePrettierOptions(
-	prettierOptions: Record<string, unknown>,
-): Record<string, unknown> {
-	const oxfmtOptions: Record<string, unknown> = {};
-
-	for (const [key, value] of Object.entries(prettierOptions)) {
-		if (UNSUPPORTED_PRETTIER_KEYS.has(key)) {
-			continue;
-		}
-
-		if (key === "endOfLine" && value === "auto") {
-			continue;
-		}
-
-		oxfmtOptions[key] = value;
-	}
-
-	return oxfmtOptions;
+export function migratePrettierOptions(prettierOptions: PrettierOptions): OxfmtSettings {
+	return Object.fromEntries(
+		Object.entries(prettierOptions).filter(([key, value]) => {
+			return !UNSUPPORTED_PRETTIER_KEYS.has(key) && (key !== "endOfLine" || value !== "auto");
+		}),
+	);
 }
 
 /**
@@ -74,7 +70,7 @@ export function buildOxfmtOptions({
 }: {
 	oxfmtConfigOptions?: OxfmtOptions;
 	oxfmtOptions?: OxfmtOptions;
-	prettierOptions?: Record<string, unknown>;
+	prettierOptions?: PrettierOptions;
 }): OxfmtOptions {
 	return {
 		sortImports: defaultSortImports,

@@ -56,6 +56,9 @@ export type TypedFlatConfigItem = Omit<
 	 *
 	 * @see {@link https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration|Using plugins in your configuration}
 	 */
+	/* eslint-disable-next-line flawless/no-unsafe-dictionary-type -- flat config
+	   accepts any plugin object; `ESLint.Plugin` rejects the rule-module types
+	   real plugins declare. */
 	plugins?: Record<string, any>;
 
 	/**

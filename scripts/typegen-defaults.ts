@@ -27,7 +27,7 @@ import process from "node:process";
 import { isentinel } from "../src/eslint/index.ts";
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
 import { isRecord } from "../src/guards.ts";
-import type { ScopeRules } from "./typegen-defaults-shared.ts";
+import type { RawScopeRules, ScopeRules } from "./typegen-defaults-shared.ts";
 import {
 	assertExtractionSane,
 	combineProbes,
@@ -103,7 +103,7 @@ interface VariantExtraction {
 async function mergedRulesPerFile(
 	configs: Array<TypedFlatConfigItem>,
 	files: ReadonlyArray<string>,
-): Promise<Array<Record<string, unknown>>> {
+): Promise<Array<RawScopeRules>> {
 	const eslint = new ESLint({
 		baseConfig: configs,
 		cwd,

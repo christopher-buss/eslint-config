@@ -9,6 +9,7 @@ import {
 import { arrowStyleRules, flawlessRules } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
+	OptionsHasRoblox,
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
@@ -18,13 +19,27 @@ import type {
 import type { PrettierOptions } from "./oxfmt.ts";
 
 export async function flawless(
-	options: OptionsOverridesTypeAware &
+	options: OptionsHasRoblox &
+		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+		OptionsTypeScriptWithTypes & {
+			/**
+			 * When set, re-apply the non-roblox rules to every source file
+			 * except these globs (the roblox scope), so the complement is
+			 * linted as standard-TS/Node land.
+			 */
+			complementIgnores?: Array<string>;
+		} = {},
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { overridesTypeAware = {}, stylistic = true, typeAware = true } = options;
+	const {
+		complementIgnores,
+		overridesTypeAware = {},
+		roblox = true,
+		stylistic = true,
+		typeAware = true,
+	} = options;
 
 	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
 
@@ -39,7 +54,16 @@ export async function flawless(
 	const tabWidth =
 		typeof prettierOptions.tabWidth === "number" ? prettierOptions.tabWidth : undefined;
 
+	const sharedRuleOptions = {
+		maxLen: stylisticOptions.maxLen,
+		printWidth,
+		stylistic,
+		tabWidth,
+	};
+
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+		"flawless/no-redundant-type-annotation": "error",
+		"flawless/no-unknown-returns": "error",
 		"flawless/prefer-read-only-props": "error",
 	};
 
@@ -53,12 +77,7 @@ export async function flawless(
 		{
 			name: "isentinel/flawless/rules",
 			files: [GLOB_SRC],
-			rules: flawlessRules({
-				maxLen: stylisticOptions.maxLen,
-				printWidth,
-				stylistic,
-				tabWidth,
-			}),
+			rules: flawlessRules({ ...sharedRuleOptions, roblox }),
 		},
 		...(stylistic !== false
 			? [
@@ -70,6 +89,18 @@ export async function flawless(
 							printWidth,
 							tabWidth,
 						}),
+					},
+				]
+			: []),
+		// The complement re-applies the non-roblox rules last, so it wins for
+		// files outside the roblox scope.
+		...(complementIgnores
+			? [
+					{
+						name: "isentinel/flawless/complement",
+						files: [GLOB_SRC],
+						ignores: complementIgnores,
+						rules: flawlessRules({ ...sharedRuleOptions, roblox: false }),
 					},
 				]
 			: []),

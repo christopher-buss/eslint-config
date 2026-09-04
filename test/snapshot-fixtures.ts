@@ -10,9 +10,17 @@
  * (`redactMachinePaths`).
  */
 
+import type { OptionsConfig } from "../src/eslint/types.ts";
+
+/**
+ * Options a fixture hands to either factory. `ignores` is narrowed to the glob
+ * form the oxlint factory accepts; each factory validates the rest itself.
+ */
+export type FactoryOptions = Omit<OptionsConfig, "ignores"> & { ignores?: Array<string> };
+
 export interface SnapshotFixture {
 	name: string;
-	options: Record<string, unknown>;
+	options: FactoryOptions;
 }
 
 const base = {

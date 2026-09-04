@@ -58,7 +58,15 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "**/*.{,c,m}[jt]s{,x}",
     ],
     "name": "isentinel/flawless/rules",
-    "rules": [],
+    "rules": [
+      "flawless/no-conditional-empty-object-spread",
+      "flawless/no-export-default-arrow",
+      "flawless/no-floating-point-equality",
+      "flawless/no-known-value-widening",
+      "flawless/no-object-parameters",
+      "flawless/no-shape-in-symbol-names",
+      "flawless/no-unsafe-dictionary-type",
+    ],
   },
   {
     "files": [
@@ -71,6 +79,8 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-redundant-type-annotation",
+      "flawless/no-unknown-returns",
       "flawless/prefer-read-only-props",
     ],
   },
@@ -1380,8 +1390,15 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     "rules": [
       "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":100,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":4,"useOxfmt":{"printWidth":100}}]",
       "flawless/max-lines-per-function (warn) [{"max":30,"skipBlankLines":true,"skipComments":true}]",
+      "flawless/no-conditional-empty-object-spread",
       "flawless/no-export-default-arrow",
       "flawless/no-floating-point-equality",
+      "flawless/no-known-value-widening",
+      "flawless/no-object-parameters",
+      "flawless/no-reflect-get",
+      "flawless/no-reflect-set",
+      "flawless/no-shape-in-symbol-names",
+      "flawless/no-unsafe-dictionary-type",
       "flawless/prefer-parameter-destructuring (warn)",
     ],
   },
@@ -1405,6 +1422,8 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-redundant-type-annotation",
+      "flawless/no-unknown-returns",
       "flawless/prefer-read-only-props",
     ],
   },
@@ -3903,8 +3922,13 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     "rules": [
       "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":100,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":4,"useOxfmt":{"printWidth":100}}]",
       "flawless/max-lines-per-function (warn) [{"max":30,"skipBlankLines":true,"skipComments":true}]",
+      "flawless/no-conditional-empty-object-spread",
       "flawless/no-export-default-arrow",
       "flawless/no-floating-point-equality",
+      "flawless/no-known-value-widening",
+      "flawless/no-object-parameters",
+      "flawless/no-shape-in-symbol-names",
+      "flawless/no-unsafe-dictionary-type",
       "flawless/prefer-parameter-destructuring (warn)",
     ],
   },
@@ -3928,6 +3952,8 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-redundant-type-annotation",
+      "flawless/no-unknown-returns",
       "flawless/prefer-read-only-props",
     ],
   },
@@ -6356,8 +6382,13 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     "rules": [
       "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":100,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":4,"useOxfmt":{"printWidth":100}}]",
       "flawless/max-lines-per-function (warn) [{"max":30,"skipBlankLines":true,"skipComments":true}]",
+      "flawless/no-conditional-empty-object-spread",
       "flawless/no-export-default-arrow",
       "flawless/no-floating-point-equality",
+      "flawless/no-known-value-widening",
+      "flawless/no-object-parameters",
+      "flawless/no-shape-in-symbol-names",
+      "flawless/no-unsafe-dictionary-type",
       "flawless/prefer-parameter-destructuring (warn)",
     ],
   },
@@ -6372,6 +6403,29 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
   },
   {
     "files": [
+      "**/*.{,c,m}[jt]s{,x}",
+    ],
+    "ignores": [
+      "src/**",
+    ],
+    "name": "isentinel/flawless/complement",
+    "rules": [
+      "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":100,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":4,"useOxfmt":{"printWidth":100}}]",
+      "flawless/max-lines-per-function (warn) [{"max":30,"skipBlankLines":true,"skipComments":true}]",
+      "flawless/no-conditional-empty-object-spread",
+      "flawless/no-export-default-arrow",
+      "flawless/no-floating-point-equality",
+      "flawless/no-known-value-widening",
+      "flawless/no-object-parameters",
+      "flawless/no-reflect-get",
+      "flawless/no-reflect-set",
+      "flawless/no-shape-in-symbol-names",
+      "flawless/no-unsafe-dictionary-type",
+      "flawless/prefer-parameter-destructuring (warn)",
+    ],
+  },
+  {
+    "files": [
       "**/*.{,c,m}ts",
       "**/*.{,c,m}tsx",
     ],
@@ -6381,6 +6435,8 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-redundant-type-annotation",
+      "flawless/no-unknown-returns",
       "flawless/prefer-read-only-props",
     ],
   },

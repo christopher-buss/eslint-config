@@ -32,6 +32,14 @@ export default isentinel(
 		},
 	},
 	{
+		name: "local/conditional-spread",
+		rules: {
+			// Conditional empty-object spreads are how every config module here
+			// builds optional keys; the preset ships the rule for consumers.
+			"flawless/no-conditional-empty-object-spread": "off",
+		},
+	},
+	{
 		name: "local/require-async-suffix",
 		files: ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
 		rules: {

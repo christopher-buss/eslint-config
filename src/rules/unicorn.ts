@@ -45,11 +45,11 @@ export function unicornNameReplacements({
 }: OptionsHasRoblox & {
 	nameReplacements?: UnicornNameReplacements;
 } = {}): UnicornNameReplacements {
-	return {
-		...abbreviations,
-		...(roblox ? { buf: false } : {}),
-		...nameReplacements,
-	};
+	return Object.fromEntries([
+		...Object.entries(abbreviations),
+		...(roblox ? [["buf", false] as const] : []),
+		...Object.entries(nameReplacements ?? {}),
+	]);
 }
 
 /**

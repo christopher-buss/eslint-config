@@ -22,7 +22,6 @@ import {
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
-import type { PrettierOptions } from "./configs/index.ts";
 import {
 	comments,
 	disables,
@@ -362,9 +361,7 @@ export async function isentinel(
 	// Shared with the oxlint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
-	const prettierSettings: PrettierOptions = resolvePrettierSettings(
-		formatterOptions.prettierOptions,
-	);
+	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -381,7 +378,14 @@ export async function isentinel(
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
-		flawless({ stylistic: stylisticOptions }, prettierSettings),
+		flawless(
+			{
+				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
+				roblox: enableRoblox,
+				stylistic: stylisticOptions,
+			},
+			prettierSettings,
+		),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
 		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),

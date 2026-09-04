@@ -11,12 +11,10 @@ import type {
 	OptionsFiles,
 	OptionsHasRoblox,
 	OptionsIsInEditor,
-	OptionsJest,
 	OptionsOverrides,
 	OptionsProjectType,
 	OptionsStylistic,
 	OptionsTestFramework,
-	OptionsVitest,
 	TypedFlatConfigItem,
 } from "../types.ts";
 
@@ -41,9 +39,9 @@ export async function test({
 	OptionsProjectType &
 	OptionsStylistic &
 	OptionsTestFramework = {}): Promise<Array<TypedFlatConfigItem>> {
-	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
+	const vitestOptions = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
-	const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};
+	const jestOptions = typeof jest === "object" ? jest : {};
 	const jestEnabled = jest === true || typeof jest === "object";
 	const enableJest = jestEnabled || (!vitestEnabled && (type === "game" || isRoblox));
 	const enableVitest = vitestEnabled || (!jestEnabled && type === "package" && !isRoblox);

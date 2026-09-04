@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ConfirmOverwrite } from "../src/cli/stages/update-package-json.ts";
+import type { ConfirmOverwrite, PackageScripts } from "../src/cli/stages/update-package-json.ts";
 import { LINT_SCRIPTS, mergeLintScripts } from "../src/cli/stages/update-package-json.ts";
 
 describe("mergeLintScripts", () => {
 	it("adds both lint scripts when absent", async () => {
 		expect.assertions(3);
 
-		const scripts: Record<string, string> = {};
+		const scripts: PackageScripts = {};
 
 		const result = await mergeLintScripts(scripts, { skipPrompt: false });
 
@@ -19,7 +19,7 @@ describe("mergeLintScripts", () => {
 	it("adds only the missing script alongside unrelated scripts", async () => {
 		expect.assertions(2);
 
-		const scripts: Record<string, string> = { build: "tsc" };
+		const scripts: PackageScripts = { build: "tsc" };
 
 		const result = await mergeLintScripts(scripts, { skipPrompt: false });
 
@@ -34,7 +34,7 @@ describe("mergeLintScripts", () => {
 	it("leaves identical existing scripts untouched without prompting", async () => {
 		expect.assertions(4);
 
-		const scripts: Record<string, string> = { ...LINT_SCRIPTS };
+		const scripts: PackageScripts = { ...LINT_SCRIPTS };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>();
 
 		const result = await mergeLintScripts(scripts, {
@@ -51,7 +51,7 @@ describe("mergeLintScripts", () => {
 	it("preserves differing scripts in skip-prompt mode and never prompts", async () => {
 		expect.assertions(4);
 
-		const scripts: Record<string, string> = {
+		const scripts: PackageScripts = {
 			"lint": "eslint",
 			"lint:fix": "eslint --fix",
 		};
@@ -71,7 +71,7 @@ describe("mergeLintScripts", () => {
 	it("adds missing scripts but preserves differing ones in skip-prompt mode", async () => {
 		expect.assertions(3);
 
-		const scripts: Record<string, string> = { lint: "eslint" };
+		const scripts: PackageScripts = { lint: "eslint" };
 
 		const result = await mergeLintScripts(scripts, { skipPrompt: true });
 
@@ -83,7 +83,7 @@ describe("mergeLintScripts", () => {
 	it("overwrites a differing script when the user confirms", async () => {
 		expect.assertions(3);
 
-		const scripts: Record<string, string> = { "lint": "eslint", "lint:fix": "eslint --fix" };
+		const scripts: PackageScripts = { "lint": "eslint", "lint:fix": "eslint --fix" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(true);
 
 		const result = await mergeLintScripts(scripts, {
@@ -99,7 +99,7 @@ describe("mergeLintScripts", () => {
 	it("keeps a differing script when the user declines", async () => {
 		expect.assertions(4);
 
-		const scripts: Record<string, string> = { lint: "eslint" };
+		const scripts: PackageScripts = { lint: "eslint" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(false);
 
 		const result = await mergeLintScripts(scripts, {

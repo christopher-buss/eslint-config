@@ -1,4 +1,3 @@
-// cspell:words typeaware lintable mtimes CLAUDECODE extensionless
 import fileEntryCache from "file-entry-cache";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -7,6 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 
+// cspell:words typeaware lintable mtimes CLAUDECODE extensionless
+import type { JsonObject } from "../src/guards.ts";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
 import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/lib/cache/bust.ts";
@@ -1030,11 +1031,17 @@ describe("plan", () => {
 });
 
 describe("plan staging", () => {
+	/** The pass labels a plan staged, split by when they resolve. */
+	interface StagedLabels {
+		deferred: Array<string>;
+		eager: Array<string>;
+	}
+
 	function stagedLabels(
 		argv: Array<string>,
 		directory: string,
 		environment: NodeJS.ProcessEnv = {},
-	): { deferred: Array<string>; eager: Array<string> } {
+	): StagedLabels {
 		const staged = withoutGitEnvironment(() => {
 			return plan(
 				parseArguments(argv, environment),
@@ -1148,7 +1155,7 @@ describe("resolveFastFilesPerWorker", () => {
 });
 
 describe("applyPackageJsonBust", () => {
-	function writePackageJson(directory: string, value: Record<string, unknown>): void {
+	function writePackageJson(directory: string, value: JsonObject): void {
 		fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify(value));
 	}
 
@@ -1916,12 +1923,12 @@ describe("full-pass env hygiene", () => {
 
 		// Merged over an inherited value, the undefined entry removes the key
 		// (Node drops undefined env entries at spawn time).
-		const merged: Record<string, string | undefined> = {
+		const merged = {
 			ESLINT_TYPE_AWARE: "only",
 			...command.env,
-		};
+		} satisfies Readonly<Record<string, string | undefined>>;
 
-		expect(merged["ESLINT_TYPE_AWARE"]).toBeUndefined();
+		expect(merged.ESLINT_TYPE_AWARE).toBeUndefined();
 	});
 
 	it("keeps setting ESLINT_TYPE_AWARE for the fast and typed passes", () => {

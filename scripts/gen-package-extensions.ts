@@ -22,6 +22,7 @@ import type { PnpmWorkspaceYaml } from "pnpm-workspace-yaml";
 
 import { packageExtensions } from "../pnpm-plugin/extensions.mjs";
 import { isRecord } from "../src/guards.ts";
+import { stableStringify } from "../src/lint-cli/lib/stable-json.ts";
 
 /** The fields pnpm reads from a `packageExtensions` entry. */
 interface RenderedExtension {
@@ -34,7 +35,15 @@ const WORKSPACE_FILE = new URL("../pnpm-workspace.yaml", import.meta.url);
 
 const EXTENSIONS_KEY = "packageExtensions";
 
-const collator = new Intl.Collator();
+/**
+ * Renders the table into the shape pnpm expects. Entries that only carry
+ * `ignore` are dropped: they exist to tell the check script an import is
+ * accounted for, and inject nothing.
+ *
+ * @returns The `packageExtensions` block.
+ */
+/** The rendered `packageExtensions` block, keyed by pnpm selector. */
+type RenderedExtensions = Record<string, RenderedExtension>;
 
 /**
  * The selector pnpm matches an entry against. A `fixedIn` becomes a semver
@@ -53,59 +62,36 @@ function selectorFor({ name, fixedIn }: (typeof packageExtensions)[number]): str
 }
 
 /**
- * Renders the table into the shape pnpm expects. Entries that only carry
- * `ignore` are dropped: they exist to tell the check script an import is
- * accounted for, and inject nothing.
+ * Render one entry: the dependencies it injects, and the `optional` markers
+ * every injected peer needs.
  *
- * @returns The `packageExtensions` block.
+ * @param extension - The table entry to render.
+ * @returns The pnpm-shaped entry, empty when it injects nothing.
  */
-function renderExtensions(): Record<string, RenderedExtension> {
-	const rendered: Record<string, RenderedExtension> = {};
-
-	for (const extension of packageExtensions) {
-		const entry: RenderedExtension = {};
-
-		if (extension.dependencies !== undefined) {
-			entry.dependencies = { ...extension.dependencies };
-		}
-
-		if (extension.peerDependencies !== undefined) {
-			entry.peerDependencies = { ...extension.peerDependencies };
-			entry.peerDependenciesMeta = Object.fromEntries(
-				Object.keys(extension.peerDependencies).map(
-					(name) => [name, { optional: true }] as const,
-				),
-			);
-		}
-
-		if (Object.keys(entry).length > 0) {
-			rendered[selectorFor(extension)] = entry;
-		}
-	}
-
-	return rendered;
+function renderExtension({
+	dependencies,
+	peerDependencies,
+}: (typeof packageExtensions)[number]): RenderedExtension {
+	return {
+		...(dependencies !== undefined ? { dependencies: { ...dependencies } } : {}),
+		...(peerDependencies !== undefined
+			? {
+					peerDependencies: { ...peerDependencies },
+					peerDependenciesMeta: Object.fromEntries(
+						Object.keys(peerDependencies).map(
+							(name) => [name, { optional: true }] as const,
+						),
+					),
+				}
+			: {}),
+	};
 }
 
-/**
- * Rewrites a value with every object key sorted, so two blocks that differ only
- * in key order compare equal.
- *
- * @param value - The value to rewrite.
- * @returns The same value with sorted keys throughout.
- */
-function canonical(value: unknown): unknown {
-	if (Array.isArray(value)) {
-		return value.map(canonical);
-	}
-
-	if (typeof value !== "object" || value === null) {
-		return value;
-	}
-
+function renderExtensions(): RenderedExtensions {
 	return Object.fromEntries(
-		Object.entries(value)
-			.toSorted(([left], [right]) => collator.compare(left, right))
-			.map(([key, nested]) => [key, canonical(nested)] as const),
+		packageExtensions
+			.map((extension) => [selectorFor(extension), renderExtension(extension)] as const)
+			.filter(([, entry]) => Object.keys(entry).length > 0),
 	);
 }
 
@@ -124,7 +110,7 @@ function isRendered(
 	// `toJSON` is typed `any`, so it is narrowed before anything reads a key.
 	const document: unknown = workspace.getDocument().toJSON();
 	const current = isRecord(document) ? document[EXTENSIONS_KEY] : undefined;
-	return JSON.stringify(canonical(current)) === JSON.stringify(canonical(desired));
+	return stableStringify(current) === stableStringify(desired);
 }
 
 /**

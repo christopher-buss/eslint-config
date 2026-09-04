@@ -88,6 +88,20 @@ interface Variant {
 }
 
 /**
+ * Compare a rule's ESLint hits against its translated oxlint hits.
+ *
+ * @param rule - The canonical native rule name.
+ * @param eslintHits - ESLint hits keyed by canonical rule.
+ * @param oxlintHits - Oxlint hits keyed by normalized identifier.
+ * @returns The eslint-only and oxlint-only hit lists.
+ */
+/** Hits one engine reported and the other did not. */
+interface RuleDiff {
+	eslintOnly: Array<Hit>;
+	oxlintOnly: Array<Hit>;
+}
+
+/**
  * Reduce an absolute path to `parentDir/basename`. A bare basename collides
  * across the repo (for example `src/eslint/factory.ts` and
  * `src/oxlint/factory.ts`), which would manufacture false divergence.
@@ -250,19 +264,11 @@ function hitKey(hit: Hit): string {
 	return `${hit.file}:${hit.line}`;
 }
 
-/**
- * Compare a rule's ESLint hits against its translated oxlint hits.
- *
- * @param rule - The canonical native rule name.
- * @param eslintHits - ESLint hits keyed by canonical rule.
- * @param oxlintHits - Oxlint hits keyed by normalized identifier.
- * @returns The eslint-only and oxlint-only hit lists.
- */
 function diffRule(
 	rule: string,
 	eslintHits: Map<string, Array<Hit>>,
 	oxlintHits: Map<string, Array<Hit>>,
-): { eslintOnly: Array<Hit>; oxlintOnly: Array<Hit> } {
+): RuleDiff {
 	const left = eslintHits.get(rule) ?? [];
 	const right = oxlintHits.get(translateRuleToOxlint(rule)) ?? [];
 	const leftKeys = new Set(left.map(hitKey));

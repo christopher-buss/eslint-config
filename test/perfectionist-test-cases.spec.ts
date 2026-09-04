@@ -23,7 +23,13 @@ const config: Linter.Config = {
  * @param source - The snippet to fix.
  * @returns The fixed source, and any message the fixer could not resolve.
  */
-function fix(source: string): { messages: Array<string>; output: string } {
+/** The fixed source, and any message the fixer could not resolve. */
+interface FixResult {
+	messages: Array<string>;
+	output: string;
+}
+
+function fix(source: string): FixResult {
 	const linter = new Linter();
 	const result = linter.verifyAndFix(source, config, "rule.test.js");
 	return {

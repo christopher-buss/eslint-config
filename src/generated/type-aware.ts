@@ -44,6 +44,8 @@ export const typeAwarePrefixes: ReadonlySet<string> = new Set([
 export const typeAwareRuleIds: ReadonlySet<string> = new Set([
   "eslint-plugin/no-property-in-node",
   "flawless/naming-convention",
+  "flawless/no-redundant-type-annotation",
+  "flawless/no-unknown-returns",
   "flawless/prefer-read-only-props",
   "jest/no-error-equal",
   "jest/no-unnecessary-assertion",

@@ -1,7 +1,9 @@
 // cspell:words buildinfo mtimes relativised
 import crypto from "node:crypto";
 import path from "node:path";
+import type TypeScript from "typescript";
 
+import type { JsonObject } from "../../../guards.ts";
 import { MANIFEST_FIELDS, manifestSubset } from "../cache/package-hash.ts";
 import { findWorkspaceMembers, findWorkspaceRoot } from "../files/workspace.ts";
 import { stableStringify } from "../stable-json.ts";
@@ -55,18 +57,16 @@ export function computeResolutionGate(cwd: string): string | undefined {
 		return undefined;
 	}
 
-	const manifests: Record<string, unknown> = { ".": local };
+	const manifests: JsonObject = { ".": local };
 	for (const directory of [root, ...members]) {
 		// Keyed by the member's path relative to the root so the digest does not
 		// move with the checkout, and sorted by `stableStringify` regardless of
 		// the order the walk found them in.
-		manifests[path.relative(root, directory) || "<root>"] = manifestSubset(
-			directory,
-			MANIFEST_FIELDS,
-		);
+		manifests[path.relative(root, directory) || "<root>"] =
+			manifestSubset(directory, MANIFEST_FIELDS) ?? null;
 	}
 
-	const lockfiles: Record<string, unknown> = {};
+	const lockfiles: JsonObject = {};
 	const lockfileDirectories = new Set([cwd, root]);
 	for (const directory of lockfileDirectories) {
 		for (const name of LOCKFILES) {
@@ -102,7 +102,7 @@ export function computeResolutionGate(cwd: string): string | undefined {
  */
 export function buildGateValue(
 	resolution: string | undefined,
-	options: Record<string, unknown>,
+	options: TypeScript.CompilerOptions,
 ): string | undefined {
 	if (resolution === undefined) {
 		return undefined;

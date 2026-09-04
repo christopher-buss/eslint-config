@@ -9,12 +9,12 @@ import { resolveLocalBin } from "./resolve.ts";
 import { buildShellCommand } from "./shell.ts";
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
-const PREFIX_COLOR: Record<ToolLabel, "blue" | "cyan" | "magenta"> = {
+const PREFIX_COLOR = {
 	eslint: "blue",
 	fast: "blue",
 	oxc: "magenta",
 	typed: "cyan",
-};
+} satisfies Record<ToolLabel, "blue" | "cyan" | "magenta">;
 
 /** An output stream whose writes are withheld until it is released. */
 interface HeldOutput {

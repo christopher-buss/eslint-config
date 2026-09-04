@@ -67,7 +67,7 @@ export async function typescript(
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = typescriptTypeAwareRules({ roblox });
+	const typeAwareRules = typescriptTypeAwareRules({ roblox });
 
 	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
 	// Eager: `pluginTs.configs` is spread into the rules below, at composition

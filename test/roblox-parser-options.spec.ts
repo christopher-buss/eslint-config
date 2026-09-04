@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
 
+import type { JsonObject } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/index.ts";
@@ -44,10 +45,7 @@ async function buildConfigs(typescript: TypescriptOptions): Promise<Array<TypedF
  * @param name - The name of the parser config entry.
  * @returns The entry's parser options, or an empty record when absent.
  */
-function parserOptionsOf(
-	configs: Array<TypedFlatConfigItem>,
-	name: string,
-): Record<string, unknown> {
+function parserOptionsOf(configs: Array<TypedFlatConfigItem>, name: string): JsonObject {
 	const config = configs.find((item) => item.name === name);
 	const parserOptions = config?.languageOptions?.["parserOptions"];
 	return isRecord(parserOptions) ? parserOptions : {};
@@ -61,10 +59,7 @@ function parserOptionsOf(
  * @param filePath - The file to resolve the config for.
  * @returns The effective parser options.
  */
-async function resolveParserOptions(
-	eslint: ESLint,
-	filePath: string,
-): Promise<Record<string, unknown>> {
+async function resolveParserOptions(eslint: ESLint, filePath: string): Promise<JsonObject> {
 	const config: unknown = await eslint.calculateConfigForFile(filePath);
 	const languageOptions = isRecord(config) ? config["languageOptions"] : undefined;
 	const parserOptions = isRecord(languageOptions) ? languageOptions["parserOptions"] : undefined;
