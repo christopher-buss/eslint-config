@@ -9,7 +9,10 @@ import { CACHE_FILE_PREFIX } from "./constants.ts";
 
 // The platforms whose default filesystem reaches one file under either case.
 // Both ship a case-sensitive option nobody defaults to; over-folding there is
-// the behaviour every release before this one had.
+// the behaviour every release before this one had. TypeScript's own
+// `useCaseSensitiveFileNames` short-circuits on exactly these two, which is why
+// the `canonical` helpers under `typescript/` can key off it and this cannot —
+// they run only where TypeScript resolved, and this runs on every lint.
 const CASE_INSENSITIVE_PLATFORMS = new Set<NodeJS.Platform>(["darwin", "win32"]);
 
 /**
@@ -46,9 +49,9 @@ export interface DirtyCache {
 	 * files whose type-aware results may have changed because a file they
 	 * import changed.
 	 *
-	 * Matching is path-normalized (case-insensitive, separator-agnostic)
-	 * because TypeScript reports forward-slash paths while ESLint keys the
-	 * cache with the OS-native paths it linted.
+	 * Matching is path-normalized (see {@link normalizePath}) because
+	 * TypeScript reports forward-slash paths while ESLint keys the cache with
+	 * the OS-native paths it linted.
 	 *
 	 * @param files - Absolute paths whose cache entries should be removed.
 	 * @returns The number of entries actually removed.

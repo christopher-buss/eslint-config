@@ -86,8 +86,9 @@ export function collectFixTargets(
  *
  * A raw path names no file whose cache entry can be dropped, so a child
  * carrying one runs without the cache rather than risk a stale clean entry
- * making ESLint skip it. It writes no cache either — the cost of fixing a
- * target this run could not form an opinion about.
+ * making ESLint skip it. That costs only the write: the covered files' entries
+ * have just been dropped, so the cache would have saved that child no linting
+ * anyway.
  *
  * @param passes - The planned passes whose verdicts narrow the child.
  * @param run - The run context.
@@ -100,17 +101,16 @@ export function planFixChild(
 	inputs: FixInputs,
 ): ChildCommand | undefined {
 	const { files, limits, options } = inputs;
+	const covered = options.cache ? collectFixTargets(passes, run, files) : [];
 	const uncovered = options.cache ? files.outsideCwdTargets : options.paths;
-	const targets = options.cache
-		? [...collectFixTargets(passes, run, files), ...uncovered]
-		: uncovered;
+	const targets = [...covered, ...uncovered];
 	if (targets.length === 0) {
 		return undefined;
 	}
 
 	const cacheFile = cacheFileFor(CACHE_FILE_DEFAULT, run.key);
-	if (options.cache) {
-		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(targets);
+	if (covered.length > 0) {
+		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(covered);
 	}
 
 	return composeEslintCommand(

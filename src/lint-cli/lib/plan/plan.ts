@@ -227,12 +227,13 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 		options,
 	};
 
+	const targetsOutsideCwd = files.outsideCwdTargets.length > 0;
 	const staged = stageDescriptors(descriptors, run, {
 		multiPass: inputs.multiPass,
 		// A `--fix` run spawns its oxlint child alone, ahead of the checks, so
 		// oxlint is never the sibling that keeps a lone check child company.
 		oxlint: oxlintDecision.run && !options.fix,
-		targetsOutsideCwd: sizingFiles.outsideCwdTargets.length > 0,
+		targetsOutsideCwd,
 	});
 
 	return {
@@ -244,7 +245,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 			oxlintReason: oxlintDecision.reason,
 			oxlintTypeAware,
 			passes: sizePasses(staged.eager, run, inputs),
-			targetsOutsideCwd: files.outsideCwdTargets.length > 0,
+			targetsOutsideCwd,
 		},
 		resolveDeferred:
 			staged.deferred.length > 0 ? () => sizePasses(staged.deferred, run, inputs) : undefined,
