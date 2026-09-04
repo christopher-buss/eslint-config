@@ -283,10 +283,13 @@ Other behaviours:
 
 - Treats `--fix` as a check followed by a fix, in three steps. `oxlint --fix`
   goes first and alone, since it rewrites the files the ESLint children are
-  about to read. The two ESLint passes then run as ordinary **checks** —
-  concurrent, own caches, no writes. Finally **one** ESLint child applies fixes
+  about to read. The run's ESLint passes then run as ordinary **checks** —
+  concurrent, own caches, no writes. By default those are the fast and
+  type-aware passes; an explicit `--type-aware` checks whichever passes that
+  mode selects instead (`full` the single full pass, `only` the type-aware pass
+  alone, `off` the fast pass alone). Finally **one** ESLint child applies fixes
   to **only the files those checks had messages about**, using the full config
-  (a superset of both, so it can fix anything either found).
+  (a superset of every pass, so it can fix anything any of them found).
 
   When the checks report nothing, which is the common case, that last child
   never spawns and `--fix` costs what a check run costs. Being the run's only
@@ -297,7 +300,11 @@ Other behaviours:
   cache is that pass's whole-tree verdict — including for a pass that
   auto-skipped, whose verdict stands precisely because nothing it cares about
   changed. `--no-cache` leaves no verdict to read, so the fix child falls back
-  to linting everything it was given.
+  to linting everything it was given. A target outside the working directory is
+  invisible to the listing the verdict is read against, so it is handed to the
+  fix child as it stands, alongside the reported files; that child runs without
+  the cache, since a stale entry for a file no verdict covers would let ESLint
+  skip it.
 
 - Lets every child run to completion and returns non-zero if any failed — an
   ordinary lint error in one tool no longer kills the others mid-run.

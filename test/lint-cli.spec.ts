@@ -2199,6 +2199,24 @@ describe("runLint --fix", () => {
 	}
 
 	/**
+	 * A tool bin that brackets a 200ms lifetime with a line in a shared log, so
+	 * a child that overlapped another leaves its `start` inside that one's
+	 * `start`/`end` pair.
+	 *
+	 * @param logPath - The log file every child appends to.
+	 * @param name - The name the child logs itself under.
+	 * @returns The bin source.
+	 */
+	function loggingBin(logPath: string, name: string): string {
+		const log = JSON.stringify(logPath);
+		return (
+			'const fs=require("node:fs");' +
+			`fs.appendFileSync(${log},"${name}:start\\n");` +
+			`setTimeout(()=>{fs.appendFileSync(${log},"${name}:end\\n");process.exit(0);},200);`
+		);
+	}
+
+	/**
 	 * Every child argv line a run produced, in spawn order.
 	 *
 	 * @param argvLog - The log the fake bins append to.
@@ -2239,6 +2257,35 @@ describe("runLint --fix", () => {
 				`--no-warn-ignored --concurrency off --fix ${path.join(directory, "dirty.ts")}`,
 		);
 	});
+
+	it("runs the oxlint child alone, before the ESLint checks", async () => {
+		expect.assertions(2);
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-fix-order-"));
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+		writeHybridStatus(directory, true);
+
+		const logPath = path.join(directory, "children.log");
+		writeFakeToolBin(directory, "oxlint", loggingBin(logPath, "oxlint"));
+		writeFakeToolBin(directory, "eslint", loggingBin(logPath, "eslint"));
+
+		const code = await withoutGitEnvironment(async () => {
+			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		});
+		const lines = fs.readFileSync(logPath, "utf8").trim().split("\n");
+
+		expect(code).toBe(0);
+
+		// `oxlint --fix` rewrites the files the ESLint children are about to
+		// read, so its whole lifetime precedes theirs. The checks that follow
+		// are deliberately concurrent, which is why only this boundary is
+		// asserted: an ESLint child starting inside oxlint's lifetime lands
+		// between these two lines.
+		expect(lines.slice(0, 2)).toStrictEqual(["oxlint:start", "oxlint:end"]);
+	}, 20_000);
 });
 
 describe("target normalization", () => {
