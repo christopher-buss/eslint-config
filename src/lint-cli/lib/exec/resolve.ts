@@ -1,9 +1,18 @@
-import { getPackageInfoSync } from "local-pkg";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isRecord } from "../../../guards.ts";
 import { CliError } from "../cli/types.ts";
+import { readFileIfPresent } from "../state.ts";
+
+/**
+ * A synthetic basename for `createRequire`, which resolves relative to a file
+ * rather than a directory. Spelled so it can never collide with a real consumer
+ * module.
+ */
+export const RESOLVE_ANCHOR = "__isentinel-lint__.js";
 
 /** Memoised {@link resolveLocalBin} results, keyed by `cwd\0name`. */
 const localBinCache = new Map<string, string>();
@@ -14,6 +23,10 @@ const localBinCache = new Map<string, string>();
  * file lets the caller spawn it with `process.execPath` and no shell, avoiding
  * Windows `.cmd`/`.ps1` quoting hazards. Memoised so the two ESLint passes
  * resolve the same bin once.
+ *
+ * The walk is Node's own rather than a hand-rolled one: inside a worktree
+ * nested in its own checkout the two disagree, and taking the ancestor's copy
+ * silently runs a different version of the linter than every other tool sees.
  *
  * @param name - The package name to resolve (for example `eslint`).
  * @param cwd - The directory to resolve from.
@@ -26,20 +39,19 @@ export function resolveLocalBin(name: string, cwd: string): string {
 		return cached;
 	}
 
-	const info = getPackageInfoSync(name, { paths: [cwd] });
-	if (info === undefined) {
+	const manifestPath = resolveManifest(name, cwd);
+	if (manifestPath === undefined) {
 		throw new CliError(
 			`Could not find "${name}". Install it in this project to run isentinel-lint.`,
 		);
 	}
 
-	const { bin } = info.packageJson;
-	const relative = typeof bin === "string" ? bin : bin?.[name];
+	const relative = readBinEntry(manifestPath, name);
 	if (relative === undefined) {
 		throw new CliError(`Package "${name}" does not declare a "${name}" bin entry.`);
 	}
 
-	const resolved = path.resolve(info.rootPath, relative);
+	const resolved = path.resolve(path.dirname(manifestPath), relative);
 	localBinCache.set(cacheKey, resolved);
 	return resolved;
 }
@@ -82,4 +94,60 @@ export function resolveIgnoredHelper(): string {
 	return fs.existsSync(built)
 		? built
 		: fileURLToPath(new URL("../../ignored-child.ts", import.meta.url));
+}
+
+/**
+ * The path a package's manifest declares as the bin of the package's own name,
+ * relative to the package root. Both the shorthand string form and the map form
+ * count.
+ *
+ * @param manifestPath - The absolute path to the package's `package.json`.
+ * @param name - The bin name to look for.
+ * @returns The declared relative path, or undefined when there is none.
+ */
+function readBinEntry(manifestPath: string, name: string): string | undefined {
+	const raw = readFileIfPresent(manifestPath);
+	if (raw === undefined) {
+		return undefined;
+	}
+
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return undefined;
+	}
+
+	if (!isRecord(parsed)) {
+		return undefined;
+	}
+
+	const { bin } = parsed;
+	if (typeof bin === "string") {
+		return bin;
+	}
+
+	const entry = isRecord(bin) ? bin[name] : undefined;
+	return typeof entry === "string" ? entry : undefined;
+}
+
+/**
+ * Locate a package's manifest exactly as a `require` call from `cwd` would.
+ *
+ * Reads the manifest as a subpath, so a package whose `exports` map hides
+ * `./package.json` counts as unresolvable. Both packages this serves publish
+ * it, and one that does not could not be spawned from its `bin` field anyway.
+ *
+ * @param name - The package name to resolve.
+ * @param cwd - The directory to resolve from.
+ * @returns The absolute path to the package's `package.json`, or undefined when
+ *   the package is not installed.
+ */
+function resolveManifest(name: string, cwd: string): string | undefined {
+	const require = createRequire(path.join(cwd, RESOLVE_ANCHOR));
+	try {
+		return require.resolve(`${name}/package.json`);
+	} catch {
+		return undefined;
+	}
 }
