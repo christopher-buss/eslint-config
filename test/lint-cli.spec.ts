@@ -1,12 +1,16 @@
 // cspell:words typeaware lintable mtimes CLAUDECODE extensionless
 import fileEntryCache from "file-entry-cache";
+import { getPackageInfoSync } from "local-pkg";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { satisfies } from "semver";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
 import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/lib/cache/bust.ts";
@@ -109,6 +113,26 @@ function temporaryDirectory(): string {
 	return directory;
 }
 
+/**
+ * Lint a directory with the real ESLint, leaving the cache it writes behind.
+ *
+ * @param cwd - The directory to lint.
+ * @param cacheFile - Where ESLint should write its cache.
+ */
+function lintWithCache(cwd: string, cacheFile: string): void {
+	const manifest = createRequire(`${process.cwd()}/`).resolve("eslint/package.json");
+	const bin = path.join(path.dirname(manifest), "bin", "eslint.js");
+
+	try {
+		execFileSync(process.execPath, [bin, "--cache", "--cache-location", cacheFile, "."], {
+			cwd,
+			stdio: "ignore",
+		});
+	} catch {
+		// ESLint exits non-zero on the errors this fixture is built to produce.
+	}
+}
+
 function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
 	return computeWorkerCount({ dirtyCount: dirty, filesPerWorker: perWorker, maxWorkers: max });
 }
@@ -127,7 +151,7 @@ function keyedCacheFile(baseName: string, environment: NodeJS.ProcessEnv = {}): 
 }
 
 function seedFileCache(cacheFile: string, files: Array<string>): void {
-	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
+	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile));
 	for (const file of files) {
 		cache.getFileDescriptor(file);
 	}
@@ -568,7 +592,7 @@ describe("cache helpers", () => {
 		fs.writeFileSync(fileA, "const a = 1;");
 		fs.writeFileSync(fileB, "const b = 2;");
 
-		const cache = fileEntryCache.createFromFile(cacheFile, false);
+		const cache = fileEntryCache.createFromFile(cacheFile);
 		cache.getFileDescriptor(fileA);
 		cache.reconcile();
 
@@ -582,27 +606,103 @@ describe("cache helpers", () => {
 		expect(dirtyFiles(cacheFile, [fileA, fileB])).toHaveLength(2);
 	});
 
+	/**
+	 * The version range ESLint declares for one of its own dependencies.
+	 *
+	 * @param name - The dependency to look up.
+	 * @returns The declared semver range.
+	 */
+	function eslintDependencyRange(name: string): string {
+		const manifest = createRequire(`${process.cwd()}/`).resolve("eslint/package.json");
+		const parsed: unknown = JSON.parse(fs.readFileSync(manifest, "utf8"));
+		const dependencies = isRecord(parsed) ? parsed["dependencies"] : undefined;
+		return String(isRecord(dependencies) ? dependencies[name] : undefined);
+	}
+
+	it("resolves a file-entry-cache ESLint would load itself", () => {
+		expect.assertions(1);
+
+		// The runner and ESLint read and write the same `.eslintcache` files
+		// through their own copies of this library, so the runner's copy has to
+		// be one ESLint would load itself. A version outside that range writes
+		// entries ESLint parses as none, turning every surgical removal into a
+		// silent wipe of the whole cache.
+		const resolved = getPackageInfoSync("file-entry-cache", { paths: [process.cwd()] });
+
+		expect(satisfies(resolved!.version!, eslintDependencyRange("file-entry-cache"))).toBe(true);
+	});
+
+	it("removes one entry from a cache without disturbing the rest", () => {
+		expect.assertions(2);
+
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const files = ["a.ts", "b.ts", "c.ts"].map((name) => path.join(directory, name));
+		for (const file of files) {
+			fs.writeFileSync(file, "export const value = 1;");
+		}
+
+		const seeded = fileEntryCache.createFromFile(cacheFile);
+		for (const file of files) {
+			seeded.getFileDescriptor(file);
+		}
+
+		seeded.reconcile();
+
+		expect(openCache(cacheFile, false)!.removeEntries([files[0]!])).toBe(1);
+		expect(fileEntryCache.createFromFile(cacheFile).cache.keys()).toStrictEqual(files.slice(1));
+	});
+
+	it("leaves a changed file dirty after a removal writes the cache", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const cacheFile = path.join(directory, ".eslintcache");
+		const edited = path.join(directory, "edited.js");
+		const dropped = path.join(directory, "dropped.js");
+		fs.writeFileSync(edited, "const a = 1;\n");
+		fs.writeFileSync(dropped, "const b = 2;\n");
+		fs.writeFileSync(path.join(directory, "eslint.config.mjs"), "export default [];\n");
+
+		lintWithCache(directory, cacheFile);
+		fs.writeFileSync(edited, "const a = 42;\n");
+		setMtimeInFuture(edited);
+
+		// Asking a cache which files changed restamps every entry it looked at
+		// with the file's current size and mtime. Persisting that would leave
+		// the edited file looking freshly linted and skip it next run.
+		const loaded = openCache(cacheFile, false)!;
+		loaded.getUpdatedFiles([edited, dropped]);
+		loaded.removeEntries([dropped]);
+
+		expect(openCache(cacheFile, false)!.getUpdatedFiles([edited])).toStrictEqual([edited]);
+	});
+
 	it("reports the cached files a check run left messages on", () => {
 		expect.assertions(2);
 
 		const directory = temporaryDirectory();
 		const cacheFile = path.join(directory, ".eslintcache");
-		const fileA = path.join(directory, "a.ts");
-		const fileB = path.join(directory, "b.ts");
-		fs.writeFileSync(fileA, "const a = 1;");
-		fs.writeFileSync(fileB, "const b = 2;");
+		const dirty = path.join(directory, "dirty.js");
+		const clean = path.join(directory, "clean.js");
+		fs.writeFileSync(dirty, "var value = 1;\n");
+		fs.writeFileSync(clean, "const value = 1;\n");
+		fs.writeFileSync(
+			path.join(directory, "eslint.config.mjs"),
+			'export default [{ rules: { "no-var": "error" } }];\n',
+		);
 
-		const cache = fileEntryCache.createFromFile(cacheFile, false);
-		cache.getFileDescriptor(fileA).meta.results = { messages: [{ ruleId: "no-op" }] };
-		cache.getFileDescriptor(fileB).meta.results = { messages: [] };
-		cache.reconcile();
+		// Seeded by ESLint itself: where it puts a file's messages is its own
+		// business, and hand-writing the layout here would only assert that the
+		// runner agrees with itself.
+		lintWithCache(directory, cacheFile);
 
 		const loaded = openCache(cacheFile, false);
 
-		expect(loaded!.filesWithMessages([fileA, fileB])).toStrictEqual([fileA]);
+		expect(loaded!.filesWithMessages([dirty, clean])).toStrictEqual([dirty]);
 		// A file the caller did not ask about is never reported, however dirty
 		// its entry: each pass only owns the targets it linted.
-		expect(loaded!.filesWithMessages([fileB])).toStrictEqual([]);
+		expect(loaded!.filesWithMessages([clean])).toStrictEqual([]);
 	});
 });
 
@@ -1527,13 +1627,13 @@ describe("collectFixTargets", () => {
 		reported: Array<string>,
 	): PassPlan {
 		const cacheFile = cacheFileFor(descriptor.cacheFileBase, resolveCacheKey({}));
-		const cache = fileEntryCache.createFromFile(path.join(directory, cacheFile), false);
+		const cache = fileEntryCache.createFromFile(path.join(directory, cacheFile));
 		for (const file of linted) {
 			// `reconcile` drops any entry whose file is gone, so the fixture has
 			// to exist on disk for its cached verdict to survive.
 			fs.writeFileSync(file, "export const value = 1;");
-			cache.getFileDescriptor(file).meta.results = {
-				messages: reported.includes(file) ? [{ ruleId: "no-op" }] : [],
+			cache.getFileDescriptor(file).meta.data = {
+				results: { messages: reported.includes(file) ? [{ ruleId: "no-op" }] : [] },
 			};
 		}
 
@@ -1990,11 +2090,13 @@ describe("runLint --fix", () => {
 		writeFakeToolBin(directory, "eslint", body);
 
 		const cacheFile = path.join(directory, keyedCacheFile(CACHE_FILE_FAST));
-		const cache = fileEntryCache.createFromFile(cacheFile, false);
+		const cache = fileEntryCache.createFromFile(cacheFile);
 		for (const relative of reported) {
 			const file = path.join(directory, relative);
 			fs.writeFileSync(file, "export const value = 1;");
-			cache.getFileDescriptor(file).meta.results = { messages: [{ ruleId: "no-op" }] };
+			cache.getFileDescriptor(file).meta.data = {
+				results: { messages: [{ ruleId: "no-op" }] },
+			};
 		}
 
 		cache.reconcile();

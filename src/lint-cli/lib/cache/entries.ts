@@ -1,4 +1,5 @@
 import fileEntryCache from "file-entry-cache";
+import type { FileEntryCache } from "file-entry-cache";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -6,7 +7,8 @@ import { toPosix } from "../paths.ts";
 import { CACHE_FILE_PREFIX } from "./constants.ts";
 
 /**
- * A loaded ESLint cache, reused for both the dirty query and surgical removal.
+ * A loaded ESLint cache: the queries a pass runs against it, and the surgical
+ * removal that writes it back.
  */
 export interface DirtyCache {
 	/**
@@ -17,15 +19,15 @@ export interface DirtyCache {
 	 * reports the whole repo. So the cache a check pass just wrote *is* that
 	 * pass's verdict, and this reads the verdict back without linting again.
 	 *
-	 * Reads non-destructively.
+	 * Never writes the cache back.
 	 *
 	 * @param files - Absolute paths of the candidate files.
 	 * @returns The candidates the pass had something to say about.
 	 */
 	filesWithMessages: (files: Array<string>) => Array<string>;
 	/**
-	 * The candidate files that changed or are absent from the cache. Reads
-	 * non-destructively — it never reconciles or writes the cache back.
+	 * The candidate files that changed or are absent from the cache. Never
+	 * reconciles or writes the cache back.
 	 *
 	 * @param files - Absolute paths of the candidate files.
 	 * @returns The files that need re-linting.
@@ -40,14 +42,22 @@ export interface DirtyCache {
 	 *
 	 * Matching is path-normalized (case-insensitive, separator-agnostic)
 	 * because TypeScript reports forward-slash paths while ESLint keys the
-	 * cache with the OS-native paths it linted. Persists via the underlying
-	 * flat-cache with pruning disabled, so untouched (unvisited) entries
-	 * survive.
+	 * cache with the OS-native paths it linted.
 	 *
 	 * @param files - Absolute paths whose cache entries should be removed.
 	 * @returns The number of entries actually removed.
 	 */
 	removeEntries: (files: Iterable<string>) => number;
+}
+
+/**
+ * The slice of a cache entry the runner reads: the lint result ESLint stores
+ * beside the file's size and mtime and replays for an unchanged file. A
+ * non-empty message list is a file the last check run had something to say
+ * about.
+ */
+interface CachedEntry {
+	data?: { results?: { messages?: Array<unknown> } };
 }
 
 /**
@@ -142,9 +152,12 @@ export function normalizePath(filePath: string): string {
 
 /**
  * Open an ESLint cache for reuse, or `undefined` when the file is missing (the
- * caller then treats every target file as dirty). The returned handle backs
- * both {@link DirtyCache.getUpdatedFiles} and {@link DirtyCache.removeEntries}
- * so a pass parses the cache once instead of twice.
+ * caller then treats every target file as dirty).
+ *
+ * The two reads share one parsed handle. The removal parses its own, because
+ * asking a cache which files changed restamps every entry it looked at with
+ * that file's current size and mtime: persisting that handle would hand ESLint
+ * the previous run's results under a stamp saying they are current.
  *
  * @param cacheFilePath - The ESLint cache file to open.
  * @param useChecksum - Compare by content checksum instead of metadata.
@@ -155,15 +168,11 @@ export function openCache(cacheFilePath: string, useChecksum: boolean): DirtyCac
 		return undefined;
 	}
 
-	// Reusing one handle for both getUpdatedFiles and removeEntries is safe:
-	// verified against file-entry-cache@8 that getUpdatedFiles compares existing
-	// entries without mutating the persisted store (nothing calls setKey), and
-	// removeEntries' save(true) writes that store minus the removed keys.
-	const cache = fileEntryCache.createFromFile(cacheFilePath, useChecksum);
+	const cache = load(cacheFilePath, useChecksum);
 	return {
 		filesWithMessages: (files) => filesWithMessagesIn(cache, files),
 		getUpdatedFiles: (files) => cache.getUpdatedFiles(files),
-		removeEntries: (files) => removeEntriesFrom(cache, files),
+		removeEntries: (files) => removeEntriesFrom(load(cacheFilePath, useChecksum), files),
 	};
 }
 
@@ -206,6 +215,22 @@ function removeCacheFile(cacheFilePath: string): void {
 }
 
 /**
+ * Load a cache file the way ESLint's own `LintResultCache` does. The two read
+ * and write the same entries, and a reader whose change detection disagrees
+ * with the writer's reports every file as dirty.
+ *
+ * @param cacheFilePath - The ESLint cache file to load.
+ * @param useChecksum - Compare by content checksum instead of metadata.
+ * @returns The loaded cache.
+ */
+function load(cacheFilePath: string, useChecksum: boolean): FileEntryCache {
+	return fileEntryCache.createFromFile(cacheFilePath, {
+		useCheckSum: useChecksum,
+		useModifiedTime: !useChecksum,
+	});
+}
+
+/**
  * Index a cache's entry keys by their normalized form, so a caller holding
  * paths from elsewhere — TypeScript's forward slashes, a git listing — can find
  * the entry ESLint wrote under an OS-native path.
@@ -213,9 +238,7 @@ function removeCacheFile(cacheFilePath: string): void {
  * @param cache - The loaded cache to index.
  * @returns Normalized path to the key the cache stores it under.
  */
-function keysByNormalizedPath(
-	cache: ReturnType<typeof fileEntryCache.createFromFile>,
-): Map<string, string> {
+function keysByNormalizedPath(cache: FileEntryCache): Map<string, string> {
 	const keyByNormalized = new Map<string, string>();
 	for (const key of cache.cache.keys()) {
 		keyByNormalized.set(normalizePath(key), key);
@@ -224,10 +247,7 @@ function keysByNormalizedPath(
 	return keyByNormalized;
 }
 
-function filesWithMessagesIn(
-	cache: ReturnType<typeof fileEntryCache.createFromFile>,
-	files: Array<string>,
-): Array<string> {
+function filesWithMessagesIn(cache: FileEntryCache, files: Array<string>): Array<string> {
 	const keyByNormalized = keysByNormalizedPath(cache);
 	return files.filter((file) => {
 		const key = keyByNormalized.get(normalizePath(file));
@@ -235,15 +255,12 @@ function filesWithMessagesIn(
 			return false;
 		}
 
-		const messages = cache.cache.getKey(key)?.results?.messages;
+		const messages = cache.cache.getKey<CachedEntry | undefined>(key)?.data?.results?.messages;
 		return messages !== undefined && messages.length > 0;
 	});
 }
 
-function removeEntriesFrom(
-	cache: ReturnType<typeof fileEntryCache.createFromFile>,
-	files: Iterable<string>,
-): number {
+function removeEntriesFrom(cache: FileEntryCache, files: Iterable<string>): number {
 	const keyByNormalized = keysByNormalizedPath(cache);
 
 	let removed = 0;
@@ -256,11 +273,9 @@ function removeEntriesFrom(
 	}
 
 	if (removed > 0) {
-		// noPrune: keep every entry we did not explicitly remove.
-		// `getUpdatedFiles` only reads the flat cache (never `setKey`), so
-		// reusing a handle that already ran the dirty query persists the same
-		// keys.
-		cache.cache.save(true);
+		// The flat cache writes back whatever it holds, so every entry this
+		// handle did not remove survives.
+		cache.cache.save();
 	}
 
 	return removed;
