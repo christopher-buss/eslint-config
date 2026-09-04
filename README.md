@@ -285,11 +285,12 @@ Other behaviours:
   goes first and alone, since it rewrites the files the ESLint children are
   about to read. The run's ESLint passes then run as ordinary **checks** —
   concurrent, own caches, no writes. By default those are the fast and
-  type-aware passes; an explicit `--type-aware` checks whichever passes that
-  mode selects instead (`full` the single full pass, `only` the type-aware pass
-  alone, `off` the fast pass alone). Finally **one** ESLint child applies fixes
-  to **only the files those checks had messages about**, using the full config
-  (a superset of every pass, so it can fix anything any of them found).
+  type-aware passes — the single full pass in CI; an explicit `--type-aware`
+  checks whichever passes that mode selects instead (`full` the single full
+  pass, `only` the type-aware pass alone, `off` the fast pass alone). Finally
+  **one** ESLint child applies fixes to **only the files those checks had
+  messages about**, using the full config (a superset of every pass, so it can
+  fix anything any of them found).
 
   When the checks report nothing, which is the common case, that last child
   never spawns and `--fix` costs what a check run costs. Being the run's only
