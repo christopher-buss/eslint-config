@@ -219,8 +219,8 @@ catalogs:
       specifier: 63.2.2
       version: 63.2.2
     eslint-plugin-jsonc:
-      specifier: 3.3.0
-      version: 3.3.0
+      specifier: 3.4.2
+      version: 3.4.2
     eslint-plugin-oxfmt:
       specifier: 0.18.0
       version: 0.18.0
@@ -401,7 +401,7 @@ importers:
         version: 63.2.2(@typescript-eslint/types@8.65.0(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-jsonc:
         specifier: catalog:prod
-        version: 3.3.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 3.4.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
         version: 0.18.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.63.0)
@@ -2781,8 +2781,8 @@ packages:
       '@typescript-eslint/types':
         optional: true
 
-  eslint-plugin-jsonc@3.3.0:
-    resolution: {integrity: sha512-CsTR8aDcShDg6A71ZppLaWiPoSo2J1Ivjm5/c4Mnb9sxgwWq+WG2PgeoAnj7SwzDPJB75tlHvLrGy6ntooIitg==}
+  eslint-plugin-jsonc@3.4.2:
+    resolution: {integrity: sha512-q5xzjCYFQuhFomTbctXzd3STfDJ8XduvaigjQmMEbP2gzSKrc58y3Fv6D775/cIK1/sRUn+4kpljiU2iW8k0zw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -6205,11 +6205,11 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jsonc@3.3.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-jsonc@3.4.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       '@eslint/core': 1.2.1
-      '@eslint/plugin-kit': 0.7.2
+      '@eslint/plugin-kit': 0.7.3
       '@ota-meshi/ast-token-store': 0.3.0
       '@types/estree': 1.0.9
       diff-sequences: 29.6.3
