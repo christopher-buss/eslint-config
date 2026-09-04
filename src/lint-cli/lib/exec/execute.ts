@@ -27,12 +27,13 @@ interface HeldOutput {
 /**
  * Run the composed children and aggregate their exit codes.
  *
- * Sequential when the caller asks for it — `--fix` must not have two children
- * writing the same files at once, and a lone child gains nothing from the
- * concurrently harness. Otherwise every child runs at once. Either way all of
- * them run to completion: an ordinary lint failure in one no longer kills its
- * siblings, so the user keeps every result. The returned code is non-zero when
- * any child exited non-zero.
+ * Sequential when the caller asks for it: a lone child gains nothing from the
+ * concurrently harness, and the writers of a `--fix` run (the oxlint child, and
+ * later the one ESLint child that fixes) are each spawned on their own so
+ * nothing is reading a file while one of them rewrites it. Otherwise every
+ * child runs at once. Either way all of them run to completion: an ordinary
+ * lint failure in one no longer kills its siblings, so the user keeps every
+ * result. The returned code is non-zero when any child exited non-zero.
  *
  * @param commands - The child commands to run.
  * @param cwd - The working directory.

@@ -192,7 +192,7 @@ function runFor(directory: string, environment: NodeJS.ProcessEnv = {}): RunCont
 }
 
 function seedCache(cacheFile: string, files: Array<string>): void {
-	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile), false);
+	const cache = fileEntryCache.create(path.basename(cacheFile), path.dirname(cacheFile));
 	for (const file of files) {
 		cache.getFileDescriptor(file);
 	}
@@ -205,7 +205,7 @@ function cacheHasEntry(cacheFile: string, file: string): boolean {
 		return false;
 	}
 
-	const cache = fileEntryCache.createFromFile(cacheFile, false);
+	const cache = fileEntryCache.createFromFile(cacheFile);
 	const target = normalizePath(file);
 	return cache.cache.keys().some((key) => normalizePath(key) === target);
 }

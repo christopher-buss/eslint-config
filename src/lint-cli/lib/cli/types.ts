@@ -36,7 +36,10 @@ export interface LintCliOptions {
 	eslint: boolean;
 	/** Extra arguments forwarded verbatim to ESLint. */
 	eslintArgs: Array<string>;
-	/** Apply fixes: `oxlint --fix` then `eslint --fix`, sequentially. */
+	/**
+	 * Apply fixes. The ESLint passes still run as checks; one further ESLint
+	 * child then fixes the files they reported messages on.
+	 */
 	fix: boolean;
 	/** Whether to pass `--type-aware` to oxlint. */
 	oxlint: boolean;
@@ -88,6 +91,12 @@ export interface ComposeContext {
 	concurrency: "off" | number;
 	/** Label for the composed ESLint child (`eslint`, `fast` or `typed`). */
 	eslintLabel: ToolLabel;
+	/**
+	 * Whether this child applies fixes. Only the one narrow child a `--fix` run
+	 * spawns after its checks sets this; the check children of that same run
+	 * never write, which is what lets them stay concurrent.
+	 */
+	fix: boolean;
 	/** Target paths to lint. */
 	paths: Array<string>;
 	/**

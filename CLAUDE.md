@@ -133,8 +133,10 @@ Two bins:
 - `isentinel-lint` (`src/lint-cli/`) - the hybrid lint runner. It sequences an
   oxlint child and one or two ESLint children, splitting ESLint into a syntactic
   "fast" pass and a type-aware "typed" pass (`passes.ts`, `ESLINT_TYPE_AWARE`),
-  each with its own cache keyed by config variant. Worker counts are sized from
-  a git-derived dirty count (`files.ts`, `concurrency.ts`) that is corrected for
+  each with its own cache keyed by config variant. `--fix` adds one further
+  full-config child over just the files those passes reported messages on, read
+  back out of their caches (`plan/fix.ts`). Worker counts are sized from a
+  git-derived dirty count (`files.ts`, `concurrency.ts`) that is corrected for
   ESLint-ignored files (`ignored.ts`) and busted on config drift
   (`config-hash.ts`); `run.ts` is the entry point.
 

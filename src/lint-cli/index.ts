@@ -12,7 +12,8 @@ files actually need re-linting and managing per-mode caches.
 Flags:
   --eslint                 Run only ESLint.
   --oxlint                 Run only oxlint.
-  --fix                    Apply fixes: oxlint --fix then eslint --fix.
+  --fix                    Check as usual, then fix only the files the checks
+                           reported, in one further ESLint child.
   --agents, --no-agents    Emit agent-friendly output. On by default when an AI
                            agent session is detected (AI_AGENT, CLAUDECODE, ...).
   --type-aware=off|only|full
