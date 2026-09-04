@@ -255,8 +255,8 @@ Other behaviours:
   (see `FAST_FILES_PER_WORKER`) than the type-aware pass.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
   `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
-  (type-aware pass), and `.eslintcache-<key>` (the full single-pass config used
-  by `--fix`, CI and `--type-aware=full`). A change to an
+  (type-aware pass), and `.eslintcache-<key>` (the full config, used by CI,
+  `--type-aware=full` and the fix child below). A change to an
   ESLint/oxlint/Prettier/tsconfig file or a lockfile clears each cache that is
   actually older than that change; a change to the root `package.json`
   resolution surface (`exports`, `imports`, `main`, `module`, `types`,
@@ -281,16 +281,38 @@ Other behaviours:
   value naming that branch. It is folded into the key, giving those configs
   separate caches too.
 
-- Runs `--fix` sequentially (`oxlint --fix`, then `eslint --fix`) so two writers
-  never race on the same files.
+- Treats `--fix` as a check followed by a fix, in three steps. `oxlint --fix`
+  goes first and alone, since it rewrites the files the ESLint children are
+  about to read. The two ESLint passes then run as ordinary **checks** —
+  concurrent, own caches, no writes. Finally **one** ESLint child applies fixes
+  to **only the files those checks had messages about**, using the full config
+  (a superset of both, so it can fix anything either found).
+
+  When the checks report nothing, which is the common case, that last child
+  never spawns and `--fix` costs what a check run costs. Being the run's only
+  ESLint writer, it also cannot race anything.
+
+  The file list comes from the check passes' own caches: ESLint stores each
+  file's result beside its cache entry and replays it on a cache hit, so a warm
+  cache is that pass's whole-tree verdict — including for a pass that
+  auto-skipped, whose verdict stands precisely because nothing it cares about
+  changed. `--no-cache` leaves no verdict to read, so the fix child falls back
+  to linting everything it was given.
+
 - Lets every child run to completion and returns non-zero if any failed — an
   ordinary lint error in one tool no longer kills the others mid-run.
 
 > **Unused eslint-disable directives.** The default two-pass mode does **not**
 > report unused `eslint-disable` directives: a directive naming a rule that
 > lives in the _other_ pass would look unused to the pass that runs it and
-> produce a false positive. `--fix`, CI and `--type-aware=full` runs use the
-> single full config and still report unused directives.
+> produce a false positive. CI and `--type-aware=full` runs use the single full
+> config and still report them.
+>
+> A local `--fix` inherits this from its checks. The fix child runs the full
+> config and would report an unused directive, but it only ever sees the files
+> the checks reported, and a file whose _only_ problem is an unused directive is
+> not one of them — so those directives survive a local fix run. In CI the check
+> is the full config, so they are reported and removed as before.
 
 ### Hybrid detection
 
@@ -317,7 +339,7 @@ Any trailing positional arguments are treated as paths to lint (default `.`).
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `--eslint`                     | Run only ESLint.                                                                                                                   |
 | `--oxlint`                     | Run only oxlint.                                                                                                                   |
-| `--fix`                        | Apply fixes: `oxlint --fix` then `eslint --fix` (sequential).                                                                      |
+| `--fix`                        | Check as usual, then fix only the files the checks reported (one child).                                                           |
 | `--agents`, `--no-agents`      | Force agent-friendly output from both linters on or off (default: on in an agent session).                                         |
 | `--type-aware=off\|only\|full` | Force a single ESLint pass: `off` fast-only, `only` type-aware-only, `full` the whole config in one pass. Cannot mix with `--fix`. |
 | `--no-oxlint-type-aware`       | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).                                                                      |
