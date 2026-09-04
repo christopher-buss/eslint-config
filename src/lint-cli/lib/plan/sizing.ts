@@ -218,7 +218,7 @@ function passDirtyCount(
 function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPlan {
 	const cacheFile = cacheFileFor(descriptor.cacheFileBase, context.run.key);
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
-	const conservative = context.files.targetsOutsideCwd;
+	const conservative = context.files.outsideCwdTargets.length > 0;
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.run.environment);
 	const maxWorkers = maxWorkersFor(descriptor, context.limits);
 

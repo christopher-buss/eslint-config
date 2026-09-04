@@ -60,12 +60,14 @@ export interface RepoFiles {
 	/** Absolute paths of the lintable files within the lint targets. */
 	lintable: Array<string>;
 	/**
-	 * True when a lint target resolves outside `cwd` (a `..`-prefixed relative
-	 * path, or an absolute path not under `cwd`). Such targets are absent from
-	 * the cwd-relative listing, so it under-counts them; the runner then must
-	 * not auto-skip the typed pass, and sizes conservatively.
+	 * The raw lint targets that resolve outside `cwd` (a `..`-prefixed relative
+	 * path, or an absolute path not under `cwd`), as the run was given them.
+	 * Such targets are absent from the cwd-relative listing, so it under-counts
+	 * them; the runner then must not auto-skip the typed pass, and sizes
+	 * conservatively. A `--fix` run has no verdict to narrow them by either, so
+	 * it hands them to its fix child as they stand.
 	 */
-	targetsOutsideCwd: boolean;
+	outsideCwdTargets: Array<string>;
 	/** The type-aware (TS/JS-family) subset of {@link RepoFiles.lintable}. */
 	typeAware: Array<string>;
 }
@@ -85,7 +87,9 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 	const relatives = listFiles(cwd, ["."]);
 	const isBustFile = picomatch([...CACHE_BUST_PATTERNS], { dot: true });
 	const normalizedTargets = targets.map((target) => normalizeTarget(target, cwd));
-	const targetsOutsideCwd = normalizedTargets.some((target) => isOutsideCwd(target));
+	const outsideCwdTargets = targets.filter((target) => {
+		return isOutsideCwd(normalizeTarget(target, cwd));
+	});
 	const isWithinTargets = matchTargets(normalizedTargets);
 
 	const bustFiles = collectAncestorBustFiles(cwd);
@@ -107,7 +111,7 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 
 	const configFiles = bustFiles.filter(isConfigEntryPoint);
 
-	return { bustFiles, configFiles, lintable, targetsOutsideCwd, typeAware };
+	return { bustFiles, configFiles, lintable, outsideCwdTargets, typeAware };
 }
 
 /**

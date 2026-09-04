@@ -59,6 +59,7 @@ import {
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
 import { collectFixTargets, planFixChild } from "../src/lint-cli/lib/plan/fix.ts";
+import type { FixInputs } from "../src/lint-cli/lib/plan/fix.ts";
 import {
 	FAST_PASS,
 	FULL_PASS,
@@ -1614,7 +1615,7 @@ function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
 		bustFiles: [],
 		configFiles: [],
 		lintable: [],
-		targetsOutsideCwd: false,
+		outsideCwdTargets: [],
 		typeAware: [],
 		...overrides,
 	};
@@ -1696,29 +1697,112 @@ describe("collectFixTargets", () => {
 		).toStrictEqual([]);
 	});
 
-	it("falls back to the run's paths when there is no verdict to narrow by", () => {
-		expect.assertions(2);
-
-		const directory = temporaryDirectory();
-		const passes = [passWithCache(directory, FAST_PASS, [], [])];
-		const fixInputs = {
+	/**
+	 * The inputs a `--fix` run hands the fix child, with the pieces each test
+	 * varies.
+	 *
+	 * @param overrides - The files and options to plan against.
+	 * @returns The composed inputs.
+	 */
+	function fixInputs(overrides: Partial<FixInputs> = {}): FixInputs {
+		return {
 			agentsFormatterPath: "",
 			files: repoFiles(),
 			limits: { filesPerWorker: 20, maxWorkers: 4, typedMaxWorkers: 2 },
-			options: options({ cache: false, fix: true, paths: ["src"] }),
+			options: options({ fix: true, paths: ["src"] }),
+			...overrides,
 		};
+	}
 
-		// `--no-cache` records no verdict, and an out-of-cwd target is missing
-		// from the listing the verdict is looked up against. Either way the fix
-		// child cannot be narrowed and lints what the run was asked to.
-		expect(planFixChild(passes, runContext(directory), fixInputs)!.args.at(-1)).toBe("src");
-		expect(
-			planFixChild(passes, runContext(directory), {
-				...fixInputs,
-				files: repoFiles({ targetsOutsideCwd: true }),
-				options: options({ fix: true, paths: ["src"] }),
-			})!.args.at(-1),
-		).toBe("src");
+	it("falls back to the run's paths when --no-cache leaves no verdict", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+		const inputs = fixInputs({
+			options: options({ cache: false, fix: true, paths: ["src"] }),
+		});
+
+		expect(planFixChild(passes, runContext(directory), inputs)!.args.at(-1)).toBe("src");
+	});
+
+	it("still lints an outside-cwd target after clean checks", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+
+		// The cwd-relative listing the verdict is looked up against cannot see
+		// a target outside cwd, so no verdict covers it — narrowing it away
+		// would mean never fixing it.
+		const child = planFixChild(
+			passes,
+			runContext(directory),
+			fixInputs({ files: repoFiles({ outsideCwdTargets: ["../sibling"] }) }),
+		);
+
+		expect(child!.args.at(-1)).toBe("../sibling");
+	});
+
+	it("keeps the narrowing for the in-cwd half of a mixed run", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const dirty = path.join(directory, "dirty.ts");
+		const clean = path.join(directory, "clean.ts");
+		const passes = [passWithCache(directory, FAST_PASS, [dirty, clean], [dirty])];
+
+		const child = planFixChild(
+			passes,
+			runContext(directory),
+			fixInputs({
+				files: repoFiles({
+					lintable: [dirty, clean],
+					outsideCwdTargets: ["../sibling"],
+				}),
+				options: options({ fix: true, paths: ["src", "../sibling"] }),
+			}),
+		);
+
+		expect(child!.args.slice(-2)).toStrictEqual([dirty, "../sibling"]);
+	});
+
+	it("denies the cache to a child carrying a target no verdict covers", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+
+		// A raw target names no file the cache can be invalidated by path, so a
+		// stale clean entry would let ESLint skip the very file it was handed.
+		const child = planFixChild(
+			passes,
+			runContext(directory),
+			fixInputs({ files: repoFiles({ outsideCwdTargets: ["../sibling"] }) }),
+		);
+
+		expect(child!.args).not.toContain("--cache");
+	});
+
+	it("drops the full-config cache entry of every file it hands the child", () => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory();
+		const dirty = path.join(directory, "dirty.ts");
+		const passes = [passWithCache(directory, FAST_PASS, [dirty], [dirty])];
+		const fullCache = path.join(
+			directory,
+			cacheFileFor(CACHE_FILE_DEFAULT, resolveCacheKey({})),
+		);
+		seedFileCache(fullCache, [dirty]);
+
+		planFixChild(
+			passes,
+			runContext(directory),
+			fixInputs({ files: repoFiles({ lintable: [dirty] }) }),
+		);
+
+		expect(openCache(fullCache, false)!.getUpdatedFiles([dirty])).toStrictEqual([dirty]);
 	});
 
 	it("still reads the cache of an auto-skipped pass", () => {
@@ -2171,7 +2255,7 @@ describe("target normalization", () => {
 		});
 
 		expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
-		expect(files.targetsOutsideCwd).toBe(false);
+		expect(files.outsideCwdTargets).toStrictEqual([]);
 	});
 
 	it("flags a relative target that escapes cwd", () => {
@@ -2182,7 +2266,7 @@ describe("target normalization", () => {
 
 		const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["../sibling"]));
 
-		expect(files.targetsOutsideCwd).toBe(true);
+		expect(files.outsideCwdTargets).toStrictEqual(["../sibling"]);
 	});
 
 	it("flags an absolute target outside cwd", () => {
@@ -2193,7 +2277,7 @@ describe("target normalization", () => {
 
 		const files = withoutGitEnvironment(() => collectRepoFiles(directory, [outside]));
 
-		expect(files.targetsOutsideCwd).toBe(true);
+		expect(files.outsideCwdTargets).toStrictEqual([outside]);
 	});
 
 	it("still treats './' and trailing slashes as match-all in-cwd targets", () => {
@@ -2207,9 +2291,9 @@ describe("target normalization", () => {
 		const trailing = withoutGitEnvironment(() => collectRepoFiles(directory, ["src/"]));
 
 		expect(dot.lintable).toHaveLength(1);
-		expect(dot.targetsOutsideCwd).toBe(false);
+		expect(dot.outsideCwdTargets).toStrictEqual([]);
 		expect(trailing.lintable).toHaveLength(1);
-		expect(trailing.targetsOutsideCwd).toBe(false);
+		expect(trailing.outsideCwdTargets).toStrictEqual([]);
 	});
 });
 

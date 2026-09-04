@@ -76,10 +76,18 @@ export function collectFixTargets(
  * it), so it can hold a stale clean entry for a file the checks have since
  * found a message on, and ESLint would skip the very file it was handed.
  *
- * Two cases have no verdict to narrow by, and fall back to the run's own paths
- * — the whole tree, as a fix run always used to lint: `--no-cache`, which
- * records nothing, and an out-of-cwd target, which the repo listing the passes
- * were sized against cannot see (see {@link RepoFiles.targetsOutsideCwd}).
+ * The child's targets are the union of what the verdicts cover and what they
+ * cannot. `--no-cache` records no verdict at all, so the whole run falls back
+ * to its own paths — the whole tree, as a fix run always used to lint. An
+ * out-of-cwd target is invisible to the cwd-relative listing the verdicts are
+ * looked up against (see {@link RepoFiles.outsideCwdTargets}), so it is passed
+ * through as it stands while every in-cwd file stays narrowed to what the
+ * checks reported.
+ *
+ * A raw path names no file whose cache entry can be dropped, so a child
+ * carrying one runs without the cache rather than risk a stale clean entry
+ * making ESLint skip it. It writes no cache either — the cost of fixing a
+ * target this run could not form an opinion about.
  *
  * @param passes - The planned passes whose verdicts narrow the child.
  * @param run - The run context.
@@ -92,31 +100,36 @@ export function planFixChild(
 	inputs: FixInputs,
 ): ChildCommand | undefined {
 	const { files, limits, options } = inputs;
-	const narrowable = options.cache && !files.targetsOutsideCwd;
-	const targets = narrowable ? collectFixTargets(passes, run, files) : options.paths;
+	const uncovered = options.cache ? files.outsideCwdTargets : options.paths;
+	const targets = options.cache
+		? [...collectFixTargets(passes, run, files), ...uncovered]
+		: uncovered;
 	if (targets.length === 0) {
 		return undefined;
 	}
 
 	const cacheFile = cacheFileFor(CACHE_FILE_DEFAULT, run.key);
-	if (narrowable) {
+	if (options.cache) {
 		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(targets);
 	}
 
-	return composeEslintCommand(options, {
-		agentsFormatterPath: inputs.agentsFormatterPath,
-		cacheLocation: cacheFile,
-		ci: run.ci,
-		concurrency:
-			options.concurrency ??
-			computeWorkerCount({
-				dirtyCount: targets.length,
-				filesPerWorker: limits.filesPerWorker,
-				maxWorkers: limits.typedMaxWorkers,
-			}),
-		eslintLabel: FULL_PASS.label,
-		fix: true,
-		paths: targets,
-		typeAwareEnv: FULL_PASS.typeAwareEnv,
-	});
+	return composeEslintCommand(
+		{ ...options, cache: options.cache && uncovered.length === 0 },
+		{
+			agentsFormatterPath: inputs.agentsFormatterPath,
+			cacheLocation: cacheFile,
+			ci: run.ci,
+			concurrency:
+				options.concurrency ??
+				computeWorkerCount({
+					dirtyCount: targets.length,
+					filesPerWorker: limits.filesPerWorker,
+					maxWorkers: limits.typedMaxWorkers,
+				}),
+			eslintLabel: FULL_PASS.label,
+			fix: true,
+			paths: targets,
+			typeAwareEnv: FULL_PASS.typeAwareEnv,
+		},
+	);
 }

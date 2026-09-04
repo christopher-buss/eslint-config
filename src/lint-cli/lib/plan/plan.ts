@@ -232,7 +232,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 		// A `--fix` run spawns its oxlint child alone, ahead of the checks, so
 		// oxlint is never the sibling that keeps a lone check child company.
 		oxlint: oxlintDecision.run && !options.fix,
-		targetsOutsideCwd: sizingFiles.targetsOutsideCwd,
+		targetsOutsideCwd: sizingFiles.outsideCwdTargets.length > 0,
 	});
 
 	return {
@@ -244,7 +244,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 			oxlintReason: oxlintDecision.reason,
 			oxlintTypeAware,
 			passes: sizePasses(staged.eager, run, inputs),
-			targetsOutsideCwd: files.targetsOutsideCwd,
+			targetsOutsideCwd: files.outsideCwdTargets.length > 0,
 		},
 		resolveDeferred:
 			staged.deferred.length > 0 ? () => sizePasses(staged.deferred, run, inputs) : undefined,
