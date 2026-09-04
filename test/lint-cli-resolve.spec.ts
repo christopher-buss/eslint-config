@@ -24,12 +24,8 @@ function installPackage(root: string, name: string, packageJson: object): string
 	return directory;
 }
 
-function installEslint(root: string, version: string): string {
-	return installPackage(root, "eslint", {
-		name: "eslint",
-		bin: { eslint: "./bin/eslint.js" },
-		version,
-	});
+function installEslint(root: string): string {
+	return installPackage(root, "eslint", { name: "eslint", bin: { eslint: "./bin/eslint.js" } });
 }
 
 function nestedDirectory(root: string): string {
@@ -44,8 +40,8 @@ describe("resolveLocalBin", () => {
 
 		const root = temporaryDirectory();
 		const nested = nestedDirectory(root);
-		installEslint(root, "10.8.1");
-		const near = installEslint(nested, "10.10.0");
+		installEslint(root);
+		const near = installEslint(nested);
 
 		expect(resolveLocalBin("eslint", nested)).toBe(path.join(near, "bin", "eslint.js"));
 	});
@@ -55,7 +51,7 @@ describe("resolveLocalBin", () => {
 
 		const root = temporaryDirectory();
 		const nested = nestedDirectory(root);
-		const far = installEslint(root, "10.8.1");
+		const far = installEslint(root);
 
 		expect(resolveLocalBin("eslint", nested)).toBe(path.join(far, "bin", "eslint.js"));
 	});
@@ -64,11 +60,7 @@ describe("resolveLocalBin", () => {
 		expect.assertions(1);
 
 		const root = temporaryDirectory();
-		const installed = installPackage(root, "oxlint", {
-			name: "oxlint",
-			bin: "bin/oxlint.js",
-			version: "1.0.0",
-		});
+		const installed = installPackage(root, "oxlint", { name: "oxlint", bin: "bin/oxlint.js" });
 
 		expect(resolveLocalBin("oxlint", root)).toBe(path.join(installed, "bin", "oxlint.js"));
 	});
@@ -85,7 +77,7 @@ describe("resolveLocalBin", () => {
 		expect.assertions(1);
 
 		const root = temporaryDirectory();
-		installPackage(root, "eslint", { name: "eslint", version: "10.10.0" });
+		installPackage(root, "eslint", { name: "eslint" });
 
 		expect(() => resolveLocalBin("eslint", root)).toThrow(/does not declare/u);
 	});

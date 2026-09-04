@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { isRecord } from "../../../guards.ts";
 import { CliError } from "../cli/types.ts";
+import { readFileIfPresent } from "../state.ts";
 
 /** Memoised {@link resolveLocalBin} results, keyed by `cwd\0name`. */
 const localBinCache = new Map<string, string>();
@@ -98,7 +99,12 @@ export function resolveIgnoredHelper(): string {
  * @returns The declared relative path, or undefined when there is none.
  */
 function readBinEntry(manifestPath: string, name: string): string | undefined {
-	const parsed: unknown = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+	const raw = readFileIfPresent(manifestPath);
+	if (raw === undefined) {
+		return undefined;
+	}
+
+	const parsed: unknown = JSON.parse(raw);
 	if (!isRecord(parsed)) {
 		return undefined;
 	}
