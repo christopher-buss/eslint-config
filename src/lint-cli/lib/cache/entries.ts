@@ -2,9 +2,15 @@ import fileEntryCache from "file-entry-cache";
 import type { FileEntryCache } from "file-entry-cache";
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
 
 import { toPosix } from "../paths.ts";
 import { CACHE_FILE_PREFIX } from "./constants.ts";
+
+// The platforms whose default filesystem reaches one file under either case.
+// Both ship a case-sensitive option nobody defaults to; over-folding there is
+// the behaviour every release before this one had.
+const CASE_INSENSITIVE_PLATFORMS = new Set<NodeJS.Platform>(["darwin", "win32"]);
 
 /**
  * A loaded ESLint cache: the queries a pass runs against it, and the surgical
@@ -138,16 +144,26 @@ export function sweepStaleCaches(
 }
 
 /**
- * Normalize a path for cache-key comparison: absolute, forward-slash and
- * lower-cased. TypeScript emits forward-slash paths while ESLint keys the cache
- * with OS-native ones, and Windows paths are case-insensitive — this collapses
+ * Normalize a path for cache-key comparison: absolute and forward-slash, plus
+ * lower-cased where the platform's filesystem is case-insensitive. TypeScript
+ * emits forward-slash paths while ESLint keys the cache with OS-native ones,
+ * and Windows and macOS reach the same file under either case — this collapses
  * all of those into a single comparable form.
  *
+ * Case survives everywhere else: on a case-sensitive filesystem `src/Foo.ts`
+ * and `src/foo.ts` are two files with two cache entries, and folding them
+ * together would let one shadow the other's verdict.
+ *
  * @param filePath - The path to normalize.
+ * @param platform - The platform whose filesystem the paths live on.
  * @returns The canonical key.
  */
-export function normalizePath(filePath: string): string {
-	return toPosix(path.resolve(filePath)).toLowerCase();
+export function normalizePath(
+	filePath: string,
+	platform: NodeJS.Platform = process.platform,
+): string {
+	const resolved = toPosix(path.resolve(filePath));
+	return CASE_INSENSITIVE_PLATFORMS.has(platform) ? resolved.toLowerCase() : resolved;
 }
 
 /**

@@ -25,6 +25,7 @@ import {
 import {
 	isCacheStale,
 	maxMtimeMs,
+	normalizePath,
 	openCache,
 	sweepStaleCaches,
 } from "../src/lint-cli/lib/cache/entries.ts";
@@ -404,6 +405,16 @@ describe("resolveWorkerLimits", () => {
 });
 
 describe("cache helpers", () => {
+	it("folds case only where the filesystem is case-insensitive", () => {
+		expect.assertions(2);
+
+		const upper = path.resolve("/repo/src/Foo.ts");
+		const lower = path.resolve("/repo/src/foo.ts");
+
+		expect(normalizePath(upper, "linux")).not.toBe(normalizePath(lower, "linux"));
+		expect(normalizePath(upper, "win32")).toBe(normalizePath(lower, "win32"));
+	});
+
 	it("detects a bust file newer than the cache", () => {
 		expect.assertions(1);
 
