@@ -157,10 +157,10 @@ catalogs:
       version: 8.0.3
     '@isentinel/dict-rbxts':
       specifier: latest
-      version: 1.0.21
+      version: 1.0.22
     '@isentinel/dict-roblox':
       specifier: latest
-      version: 1.0.14
+      version: 1.0.15
     '@oxlint/plugins':
       specifier: 1.78.0
       version: 1.78.0
@@ -219,8 +219,8 @@ catalogs:
       specifier: 63.2.2
       version: 63.2.2
     eslint-plugin-jsonc:
-      specifier: 3.3.0
-      version: 3.3.0
+      specifier: 3.4.2
+      version: 3.4.2
     eslint-plugin-oxfmt:
       specifier: 0.18.0
       version: 0.18.0
@@ -338,10 +338,10 @@ importers:
         version: 8.0.3(supports-color@10.2.2)
       '@isentinel/dict-rbxts':
         specifier: catalog:prod
-        version: 1.0.21
+        version: 1.0.22
       '@isentinel/dict-roblox':
         specifier: catalog:prod
-        version: 1.0.14
+        version: 1.0.15
       '@oxlint/plugins':
         specifier: catalog:prod
         version: 1.78.0
@@ -401,7 +401,7 @@ importers:
         version: 63.2.2(@typescript-eslint/types@8.65.0(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-jsonc:
         specifier: catalog:prod
-        version: 3.3.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 3.4.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
         version: 0.18.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.63.0)
@@ -1089,12 +1089,12 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@isentinel/dict-rbxts@1.0.21':
-    resolution: {integrity: sha512-I5gO11EBTNF4Zbi3S6sPRy9RkcuAqaf8DE6g8G0iDLdJxcPCxjFsGFJeeEJz9R/yklyiMSyM7Pz2GwgHrxH0/g==}
+  '@isentinel/dict-rbxts@1.0.22':
+    resolution: {integrity: sha512-df4xpwV0nX9dEcpsYldRz0cYCxjLIi/4ATC6oVuTZ/2JJjcWfj+bciKJV71T9MtiUF6tTF7tL/gFUKHwB7VzBQ==}
     engines: {node: '>=22'}
 
-  '@isentinel/dict-roblox@1.0.14':
-    resolution: {integrity: sha512-fMH9b0NHjf6rTbOtE0HMRHv/T1Oa1blSjSXR/z0h30FTcG0jwZDXDYPj7bmbJXutUptUa88gq0f7p9RKbS0z3Q==}
+  '@isentinel/dict-roblox@1.0.15':
+    resolution: {integrity: sha512-YCX8PRL2y63fAvm1VsshGLXAwxpocyfVaHNqwKZREZNiTMPTMEbVDpjbaoU+iCAf8e8GY/SLQp9XC0RwTWCcJA==}
     engines: {node: '>=20.18.0'}
 
   '@isentinel/tsconfig@1.2.0':
@@ -2781,8 +2781,8 @@ packages:
       '@typescript-eslint/types':
         optional: true
 
-  eslint-plugin-jsonc@3.3.0:
-    resolution: {integrity: sha512-CsTR8aDcShDg6A71ZppLaWiPoSo2J1Ivjm5/c4Mnb9sxgwWq+WG2PgeoAnj7SwzDPJB75tlHvLrGy6ntooIitg==}
+  eslint-plugin-jsonc@3.4.2:
+    resolution: {integrity: sha512-q5xzjCYFQuhFomTbctXzd3STfDJ8XduvaigjQmMEbP2gzSKrc58y3Fv6D775/cIK1/sRUn+4kpljiU2iW8k0zw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -4908,9 +4908,9 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@isentinel/dict-rbxts@1.0.21': {}
+  '@isentinel/dict-rbxts@1.0.22': {}
 
-  '@isentinel/dict-roblox@1.0.14': {}
+  '@isentinel/dict-roblox@1.0.15': {}
 
   '@isentinel/tsconfig@1.2.0(typescript@6.0.3)':
     dependencies:
@@ -6205,11 +6205,11 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jsonc@3.3.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-jsonc@3.4.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       '@eslint/core': 1.2.1
-      '@eslint/plugin-kit': 0.7.2
+      '@eslint/plugin-kit': 0.7.3
       '@ota-meshi/ast-token-store': 0.3.0
       '@types/estree': 1.0.9
       diff-sequences: 29.6.3
