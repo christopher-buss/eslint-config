@@ -2,7 +2,7 @@ import { ESLint } from "eslint";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import type { ProjectStructureConfig } from "../src/eslint/types.ts";
 import { isentinel } from "../src/index.ts";
@@ -197,7 +197,7 @@ async function lintWithOxlint(
 }
 
 describe("projectStructure", () => {
-	it.for(CASES)("$name", async (structureCase) => {
+	it.for(CASES)("$name", async (structureCase, { expect }) => {
 		expect.assertions(1);
 
 		await expect(lint(structureCase.files, structureCase.options)).resolves.toStrictEqual(
@@ -207,7 +207,7 @@ describe("projectStructure", () => {
 });
 
 describe("oxlintProjectStructure", () => {
-	it.for(CASES)("$name", { timeout }, async (structureCase) => {
+	it.for(CASES)("$name", { timeout }, async (structureCase, { expect }) => {
 		expect.assertions(1);
 
 		const directory = `project-structure-${structureCase.name.replaceAll(/\W+/g, "-")}`;

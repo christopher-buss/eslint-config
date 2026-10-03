@@ -770,6 +770,21 @@ otherwise, you can install them manually:
 pnpm i -D eslint-plugin-react-x eslint-plugin-react-jsx eslint-plugin-react-naming-convention eslint-plugin-jest
 ```
 
+#### Anti-Slop
+
+Enable `eslint-plugin-flawless` rules that catch patterns AI-written code tends
+to produce (object-typed parameters, `unknown` returns, unsafe dictionary types,
+conditional empty-object spreads, `Reflect` access) with `antiSlop: true`:
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	antiSlop: true,
+});
+```
+
 #### Naming Conventions
 
 Enable the opinionated `flawless/naming-convention` rules with `naming: true`,

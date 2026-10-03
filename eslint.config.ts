@@ -32,26 +32,6 @@ export default isentinel(
 		},
 	},
 	{
-		name: "local/flawless-pending",
-		rules: {
-			// New preset rules this repo does not satisfy yet; the preset ships
-			// them on for consumers.
-			"flawless/no-conditional-empty-object-spread": "off",
-			"flawless/no-known-value-widening": "off",
-			"flawless/no-materialized-filter-map": "off",
-			"flawless/no-object-parameters": "off",
-			"flawless/no-redundant-type-annotation": "off",
-			"flawless/no-reflect-get": "off",
-			"flawless/no-reflect-set": "off",
-			"flawless/no-shape-in-symbol-names": "off",
-			"flawless/no-shared-mocks": "off",
-			"flawless/no-unknown-returns": "off",
-			"flawless/no-unsafe-dictionary-type": "off",
-			"flawless/prefer-mock-throw": "off",
-			"flawless/prefer-vitest-local-context": "off",
-		},
-	},
-	{
 		name: "local/require-async-suffix",
 		files: ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
 		rules: {

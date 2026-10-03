@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { stylisticRuleNames } from "../src/generated/stylistic.ts";
 import { interopDefault } from "../src/utils.ts";
 
 describe("stylistic rule-name snapshot", () => {
-	it("matches the installed @stylistic/eslint-plugin", async () => {
+	it("matches the installed @stylistic/eslint-plugin", async ({ expect }) => {
 		expect.assertions(1);
 
 		const plugin = await interopDefault(import("@stylistic/eslint-plugin"));

@@ -431,6 +431,7 @@ for (const config of presetConfigs) {
 const commonFactoryOptions = {
 	// Shared with `PRESET_CONFIGS` so the two views cannot disagree.
 
+	antiSlop: true,
 	e18e: { nodeMajor: GENERATOR_NODE_MAJOR },
 	eslintPlugin: true,
 	gitignore: false,

@@ -1,15 +1,17 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { flawlessRules } from "../../rules/flawless.ts";
-import type { OptionsHasRoblox, OptionsStylistic } from "../../types.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
+import type { OptionsStylistic } from "../../types.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
 export function oxlintFlawless(
 	{
+		antiSlop = false,
 		excludeFiles,
 		roblox = true,
 		stylistic = true,
-	}: OptionsHasRoblox & OptionsStylistic & { excludeFiles?: Array<string> } = {},
+	}: FlawlessRuleOptions & OptionsStylistic & { excludeFiles?: Array<string> } = {},
 	prettierOptions: Record<string, unknown> = {},
 ): Array<TypedOxlintConfigItem> {
 	const stylisticOptions = typeof stylistic === "object" ? stylistic : {};
@@ -19,6 +21,7 @@ export function oxlintFlawless(
 		...(excludeFiles ? { excludeFiles } : {}),
 		files: [GLOB_SRC],
 		rules: flawlessRules({
+			antiSlop,
 			maxLen: stylisticOptions.maxLen,
 			printWidth:
 				typeof prettierOptions["printWidth"] === "number"

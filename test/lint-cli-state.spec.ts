@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it, onTestFinished } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it } from "vitest";
 
 import {
 	readFileIfPresent,
@@ -14,7 +15,7 @@ import {
 	writeState,
 } from "../src/lint-cli/lib/state.ts";
 
-function temporaryDirectory(): string {
+function temporaryDirectory(onTestFinished: TestContext["onTestFinished"]): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-state-"));
 
 	onTestFinished(() => {
@@ -25,7 +26,7 @@ function temporaryDirectory(): string {
 }
 
 describe("statePath", () => {
-	it("hyphen-joins its parts inside the cache directory", () => {
+	it("hyphen-joins its parts inside the cache directory", ({ expect }) => {
 		expect.assertions(3);
 
 		expect(statePath("/project", "ignored", "aaaa1111")).not.toBe(
@@ -41,20 +42,20 @@ describe("statePath", () => {
 });
 
 describe("readState", () => {
-	it("round-trips a payload through a directory it creates", () => {
+	it("round-trips a payload through a directory it creates", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example", "key");
 		writeState(file, { hash: "abc" });
 
 		expect(readState<{ hash: string }>(file)).toStrictEqual({ hash: "abc" });
 	});
 
-	it("returns undefined when the file is missing or malformed", () => {
+	it("returns undefined when the file is missing or malformed", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example");
 
 		expect(readState(file)).toBeUndefined();
@@ -65,10 +66,10 @@ describe("readState", () => {
 		expect(readState(file)).toBeUndefined();
 	});
 
-	it("rejects state written by another schema version", () => {
+	it("rejects state written by another schema version", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example");
 		writeState(file, "payload");
 		fs.writeFileSync(file, JSON.stringify({ data: "payload", version: STATE_VERSION + 1 }));
@@ -81,10 +82,10 @@ describe("readState", () => {
 });
 
 describe("writeState", () => {
-	it("leaves no temp file behind when the write fails", () => {
+	it("leaves no temp file behind when the write fails", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		// The cache home as a file makes creating the state directory throw.
 		fs.mkdirSync(path.join(directory, "node_modules"));
 		fs.writeFileSync(path.join(directory, "node_modules", ".cache"), "");
@@ -97,10 +98,10 @@ describe("writeState", () => {
 });
 
 describe("swapState", () => {
-	it("reports changed for state it cannot read back", () => {
+	it("reports changed for state it cannot read back", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example", "key");
 		fs.mkdirSync(path.dirname(file), { recursive: true });
 		fs.writeFileSync(file, JSON.stringify({ data: "one", version: STATE_VERSION + 1 }));
@@ -112,10 +113,13 @@ describe("swapState", () => {
 		expect(swapState(file, "one")).toBe("unchanged");
 	});
 
-	it("reports first, unchanged and changed across successive runs", () => {
+	it("reports first, unchanged and changed across successive runs", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(4);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example", "key");
 
 		expect(swapState(file, "one")).toBe("first");
@@ -128,10 +132,10 @@ describe("swapState", () => {
 });
 
 describe("touchState", () => {
-	it("refreshes an existing mtime and ignores a missing file", () => {
+	it("refreshes an existing mtime and ignores a missing file", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 		const file = statePath(directory, "example");
 		writeState(file, { oxlint: true });
 		const past = Date.now() / 1000 - 60;
@@ -150,10 +154,13 @@ describe("touchState", () => {
 });
 
 describe("readFileIfPresent", () => {
-	it("returns undefined instead of throwing for an unreadable file", () => {
+	it("returns undefined instead of throwing for an unreadable file", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = temporaryDirectory();
+		const directory = temporaryDirectory(onTestFinished);
 
 		expect(readFileIfPresent(path.join(directory, "absent"))).toBeUndefined();
 		// A directory is readable as a path but not as a file.

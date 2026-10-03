@@ -1,12 +1,13 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it, onTestFinished } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it } from "vitest";
 
 import { CliError } from "../src/lint-cli/lib/cli/types.ts";
 import { resolveLocalBin } from "../src/lint-cli/lib/exec/resolve.ts";
 
-function temporaryDirectory(): string {
+function temporaryDirectory(onTestFinished: TestContext["onTestFinished"]): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-resolve-"));
 
 	onTestFinished(() => {
@@ -35,10 +36,10 @@ function nestedDirectory(root: string): string {
 }
 
 describe("resolveLocalBin", () => {
-	it("prefers the nearest node_modules over an ancestor's", () => {
+	it("prefers the nearest node_modules over an ancestor's", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 		const nested = nestedDirectory(root);
 		installEslint(root);
 		const near = installEslint(nested);
@@ -46,46 +47,49 @@ describe("resolveLocalBin", () => {
 		expect(resolveLocalBin("eslint", nested)).toBe(path.join(near, "bin", "eslint.js"));
 	});
 
-	it("falls back to an ancestor's node_modules", () => {
+	it("falls back to an ancestor's node_modules", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 		const nested = nestedDirectory(root);
 		const far = installEslint(root);
 
 		expect(resolveLocalBin("eslint", nested)).toBe(path.join(far, "bin", "eslint.js"));
 	});
 
-	it("resolves a string bin against the package root", () => {
+	it("resolves a string bin against the package root", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 		const installed = installPackage(root, "oxlint", { name: "oxlint", bin: "bin/oxlint.js" });
 
 		expect(resolveLocalBin("oxlint", root)).toBe(path.join(installed, "bin", "oxlint.js"));
 	});
 
-	it("reports a package it cannot find", () => {
+	it("reports a package it cannot find", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 
 		expect(() => resolveLocalBin("eslint", root)).toThrow(CliError);
 	});
 
-	it("reports a package that declares no matching bin entry", () => {
+	it("reports a package that declares no matching bin entry", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 		installPackage(root, "eslint", { name: "eslint" });
 
 		expect(() => resolveLocalBin("eslint", root)).toThrow(/does not declare/u);
 	});
 
-	it("reports a manifest it cannot parse rather than throwing a parse error", () => {
+	it("reports a manifest it cannot parse rather than throwing a parse error", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(1);
 
-		const root = temporaryDirectory();
+		const root = temporaryDirectory(onTestFinished);
 		const installed = installPackage(root, "eslint", { name: "eslint" });
 		fs.writeFileSync(path.join(installed, "package.json"), "{ truncated");
 

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
@@ -34,19 +34,19 @@ function settingsFor(
 }
 
 describe("resolvePrettierSettings", () => {
-	it("falls back to the preset defaults", () => {
+	it("falls back to the preset defaults", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(settingsFor({})).toStrictEqual({ ...PRETTIER_DEFAULTS });
 	});
 
-	it("reads .prettierrc as JSON", () => {
+	it("reads .prettierrc as JSON", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(settingsFor({ ".prettierrc": '{"printWidth": 80}' })["printWidth"]).toBe(80);
 	});
 
-	it("reads .prettierrc.yaml", () => {
+	it("reads .prettierrc.yaml", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({ ".prettierrc.yaml": "printWidth: 70\ntabWidth: 2\n" });
@@ -54,7 +54,7 @@ describe("resolvePrettierSettings", () => {
 		expect(settings).toMatchObject({ printWidth: 70, tabWidth: 2 });
 	});
 
-	it("reads the package.json prettier key", () => {
+	it("reads the package.json prettier key", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({
@@ -64,7 +64,7 @@ describe("resolvePrettierSettings", () => {
 		expect(settings["printWidth"]).toBe(60);
 	});
 
-	it("ignores a package.json prettier key naming a shareable config", () => {
+	it("ignores a package.json prettier key naming a shareable config", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({
@@ -74,7 +74,7 @@ describe("resolvePrettierSettings", () => {
 		expect(settings["printWidth"]).toBe(PRETTIER_DEFAULTS.printWidth);
 	});
 
-	it("translates EditorConfig properties", () => {
+	it("translates EditorConfig properties", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({
@@ -97,7 +97,7 @@ describe("resolvePrettierSettings", () => {
 		});
 	});
 
-	it("applies EditorConfig sections matching source files", () => {
+	it("applies EditorConfig sections matching source files", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({
@@ -115,7 +115,7 @@ describe("resolvePrettierSettings", () => {
 		expect(settings["tabWidth"]).toBe(3);
 	});
 
-	it("lets a Prettier config win over EditorConfig", () => {
+	it("lets a Prettier config win over EditorConfig", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({
@@ -126,7 +126,7 @@ describe("resolvePrettierSettings", () => {
 		expect(settings["printWidth"]).toBe(80);
 	});
 
-	it("lets explicit factory options win over everything", () => {
+	it("lets explicit factory options win over everything", ({ expect }) => {
 		expect.assertions(1);
 
 		const settings = settingsFor({ ".prettierrc": '{"printWidth": 80}' }, { printWidth: 55 });
@@ -147,7 +147,7 @@ function arrowOptions(rules: unknown): unknown {
 }
 
 describe("factory parity", () => {
-	it("gives both engines the same arrow-return-style options", async () => {
+	it("gives both engines the same arrow-return-style options", async ({ expect }) => {
 		expect.assertions(2);
 
 		const eslintConfigs = await isentinel({ roblox: false, type: "package" });

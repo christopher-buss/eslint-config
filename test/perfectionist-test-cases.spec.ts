@@ -1,6 +1,6 @@
 import { Linter } from "eslint";
 import pluginPerfectionist from "eslint-plugin-perfectionist";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { eslintPluginRules } from "../src/rules/eslint-plugin.ts";
 import { perfectionistRules, perfectionistSettings } from "../src/rules/perfectionist.ts";
@@ -33,7 +33,7 @@ function fix(source: string): { messages: Array<string>; output: string } {
 }
 
 describe("rule-test case sorting", () => {
-	it("orders inline test cases like eslint-plugin expects", () => {
+	it("orders inline test cases like eslint-plugin expects", ({ expect }) => {
 		expect.assertions(2);
 
 		const { messages, output } = fix(
@@ -49,7 +49,7 @@ describe("rule-test case sorting", () => {
 		expect(messages).toStrictEqual([]);
 	});
 
-	it("orders test cases extracted to a variable", () => {
+	it("orders test cases extracted to a variable", ({ expect }) => {
 		expect.assertions(2);
 
 		const { messages, output } = fix(
@@ -62,7 +62,7 @@ describe("rule-test case sorting", () => {
 		expect(messages).toStrictEqual([]);
 	});
 
-	it("leaves objects outside a test case alphabetical", () => {
+	it("leaves objects outside a test case alphabetical", ({ expect }) => {
 		expect.assertions(2);
 
 		const { messages, output } = fix('const other = { zebra: 1, apple: 2, code: "c" };');
@@ -73,7 +73,7 @@ describe("rule-test case sorting", () => {
 		expect(messages).toStrictEqual([]);
 	});
 
-	it("leaves test-case ordering to perfectionist alone", () => {
+	it("leaves test-case ordering to perfectionist alone", ({ expect }) => {
 		expect.assertions(1);
 
 		// Both rules order the same objects, and their orders disagree, so every

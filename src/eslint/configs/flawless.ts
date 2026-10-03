@@ -7,9 +7,9 @@ import {
 	GLOB_TSX,
 } from "../../globs.ts";
 import { arrowStyleRules, flawlessRules, flawlessTypeAwareRules } from "../../rules/flawless.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
-	OptionsHasRoblox,
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
@@ -19,7 +19,7 @@ import type {
 import type { PrettierOptions } from "./oxfmt.ts";
 
 export async function flawless(
-	options: OptionsHasRoblox &
+	options: FlawlessRuleOptions &
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
@@ -34,6 +34,7 @@ export async function flawless(
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
+		antiSlop = false,
 		complementIgnores,
 		overridesTypeAware = {},
 		roblox = true,
@@ -55,6 +56,7 @@ export async function flawless(
 		typeof prettierOptions.tabWidth === "number" ? prettierOptions.tabWidth : undefined;
 
 	const sharedRuleOptions = {
+		antiSlop,
 		maxLen: stylisticOptions.maxLen,
 		printWidth,
 		stylistic,
@@ -105,7 +107,7 @@ export async function flawless(
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
 						rules: {
-							...flawlessTypeAwareRules({ roblox }),
+							...flawlessTypeAwareRules({ antiSlop, roblox }),
 							...overridesTypeAware,
 						},
 					},
@@ -120,7 +122,7 @@ export async function flawless(
 						files: filesTypeAware,
 						ignores: [...ignoresTypeAware, ...complementIgnores],
 						rules: {
-							...flawlessTypeAwareRules({ roblox: false }),
+							...flawlessTypeAwareRules({ antiSlop, roblox: false }),
 							...overridesTypeAware,
 						},
 					},

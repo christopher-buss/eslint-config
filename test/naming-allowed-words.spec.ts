@@ -2,7 +2,7 @@ import tsParser from "@typescript-eslint/parser";
 
 import { ESLint } from "eslint";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { naming } from "../src/eslint/configs/naming.ts";
 import type { NamingConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
@@ -84,13 +84,13 @@ async function lint(code: string, options: NamingConfig): Promise<Array<string>>
 }
 
 describe("naming allowedWords", () => {
-	it("emits no settings by default", async () => {
+	it("emits no settings by default", async ({ expect }) => {
 		expect.assertions(1);
 
 		expect(findAllowedWords(await naming())).toBeUndefined();
 	});
 
-	it("uses the generated Roblox list when enabled", async () => {
+	it("uses the generated Roblox list when enabled", async ({ expect }) => {
 		expect.assertions(1);
 
 		expect(findAllowedWords(await naming({ allowedWords: true }))).toStrictEqual(
@@ -98,7 +98,7 @@ describe("naming allowedWords", () => {
 		);
 	});
 
-	it("uses an explicit list verbatim", async () => {
+	it("uses an explicit list verbatim", async ({ expect }) => {
 		expect.assertions(1);
 
 		expect(findAllowedWords(await naming({ allowedWords: ["CFrame", "MyAPI"] }))).toStrictEqual(
@@ -106,7 +106,7 @@ describe("naming allowedWords", () => {
 		);
 	});
 
-	it("treats an empty list as off", async () => {
+	it("treats an empty list as off", async ({ expect }) => {
 		expect.assertions(1);
 
 		// Otherwise the config would ship a setting that says nothing, and a
@@ -114,7 +114,7 @@ describe("naming allowedWords", () => {
 		expect(findAllowedWords(await naming({ allowedWords: [] }))).toBeUndefined();
 	});
 
-	it("rejects a Roblox name by default", async () => {
+	it("rejects a Roblox name by default", async ({ expect }) => {
 		expect.assertions(1);
 
 		await expect(lint("const targetCFrame = 1;", {})).resolves.toStrictEqual([
@@ -122,7 +122,7 @@ describe("naming allowedWords", () => {
 		]);
 	});
 
-	it("accepts a Roblox name once enabled", async () => {
+	it("accepts a Roblox name once enabled", async ({ expect }) => {
 		expect.assertions(2);
 
 		await expect(
@@ -134,7 +134,7 @@ describe("naming allowedWords", () => {
 		);
 	});
 
-	it("accepts a name that only collides with what follows it", async () => {
+	it("accepts a name that only collides with what follows it", async ({ expect }) => {
 		expect.assertions(2);
 
 		// `Motor6D` holds no pair of its own; it only breaks once the next
@@ -147,7 +147,7 @@ describe("naming allowedWords", () => {
 		).resolves.toStrictEqual([]);
 	});
 
-	it("accepts a word at the start of the name", async () => {
+	it("accepts a word at the start of the name", async ({ expect }) => {
 		expect.assertions(2);
 
 		// `strictCamelCase` lowercases the first hump, so the word can only ever
@@ -160,7 +160,7 @@ describe("naming allowedWords", () => {
 		);
 	});
 
-	it("only accepts the lowercased initial at the start", async () => {
+	it("only accepts the lowercased initial at the start", async ({ expect }) => {
 		expect.assertions(1);
 
 		// Anywhere else the word has to be spelled as the API spells it, so a
@@ -173,7 +173,7 @@ describe("naming allowedWords", () => {
 		]);
 	});
 
-	it("accepts a property name, not just a type name", async () => {
+	it("accepts a property name, not just a type name", async ({ expect }) => {
 		expect.assertions(1);
 
 		// `ZIndex` is a `GuiObject` property; no type carries the name.
@@ -182,7 +182,7 @@ describe("naming allowedWords", () => {
 		);
 	});
 
-	it("rejects a method name", async () => {
+	it("rejects a method name", async ({ expect }) => {
 		expect.assertions(1);
 
 		// `Color3.ToHSV` is spelled out at the call site, where no naming rule
@@ -193,7 +193,7 @@ describe("naming allowedWords", () => {
 		]);
 	});
 
-	it("does not become a blanket escape", async () => {
+	it("does not become a blanket escape", async ({ expect }) => {
 		expect.assertions(1);
 
 		// `XY` is not a Roblox name, so nothing folds it.
@@ -202,7 +202,7 @@ describe("naming allowedWords", () => {
 		]);
 	});
 
-	it("still checks the rest of the name", async () => {
+	it("still checks the rest of the name", async ({ expect }) => {
 		expect.assertions(2);
 
 		await expect(

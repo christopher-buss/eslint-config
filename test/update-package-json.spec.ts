@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, it, vi } from "vitest";
 
 import type { ConfirmOverwrite } from "../src/cli/stages/update-package-json.ts";
 import { LINT_SCRIPTS, mergeLintScripts } from "../src/cli/stages/update-package-json.ts";
 
 describe("mergeLintScripts", () => {
-	it("adds both lint scripts when absent", async () => {
+	it("adds both lint scripts when absent", async ({ expect }) => {
 		expect.assertions(3);
 
 		const scripts: Record<string, string> = {};
@@ -16,7 +16,7 @@ describe("mergeLintScripts", () => {
 		expect(result.overwritten).toStrictEqual([]);
 	});
 
-	it("adds only the missing script alongside unrelated scripts", async () => {
+	it("adds only the missing script alongside unrelated scripts", async ({ expect }) => {
 		expect.assertions(2);
 
 		const scripts: Record<string, string> = { build: "tsc" };
@@ -31,7 +31,7 @@ describe("mergeLintScripts", () => {
 		expect(result.added).toStrictEqual(["lint", "lint:fix"]);
 	});
 
-	it("leaves identical existing scripts untouched without prompting", async () => {
+	it("leaves identical existing scripts untouched without prompting", async ({ expect }) => {
 		expect.assertions(4);
 
 		const scripts: Record<string, string> = { ...LINT_SCRIPTS };
@@ -48,7 +48,7 @@ describe("mergeLintScripts", () => {
 		expect(confirmOverwrite).not.toHaveBeenCalled();
 	});
 
-	it("preserves differing scripts in skip-prompt mode and never prompts", async () => {
+	it("preserves differing scripts in skip-prompt mode and never prompts", async ({ expect }) => {
 		expect.assertions(4);
 
 		const scripts: Record<string, string> = {
@@ -68,7 +68,9 @@ describe("mergeLintScripts", () => {
 		expect(confirmOverwrite).not.toHaveBeenCalled();
 	});
 
-	it("adds missing scripts but preserves differing ones in skip-prompt mode", async () => {
+	it("adds missing scripts but preserves differing ones in skip-prompt mode", async ({
+		expect,
+	}) => {
 		expect.assertions(3);
 
 		const scripts: Record<string, string> = { lint: "eslint" };
@@ -80,7 +82,7 @@ describe("mergeLintScripts", () => {
 		expect(result.overwritten).toStrictEqual([]);
 	});
 
-	it("overwrites a differing script when the user confirms", async () => {
+	it("overwrites a differing script when the user confirms", async ({ expect }) => {
 		expect.assertions(3);
 
 		const scripts: Record<string, string> = { "lint": "eslint", "lint:fix": "eslint --fix" };
@@ -96,7 +98,7 @@ describe("mergeLintScripts", () => {
 		expect(confirmOverwrite).toHaveBeenCalledTimes(2);
 	});
 
-	it("keeps a differing script when the user declines", async () => {
+	it("keeps a differing script when the user declines", async ({ expect }) => {
 		expect.assertions(4);
 
 		const scripts: Record<string, string> = { lint: "eslint" };

@@ -348,6 +348,15 @@ export interface OptionsE18e extends OptionsOverrides {
 
 export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjectType {
 	/**
+	 * Enable the anti-slop rules: `eslint-plugin-flawless` rules that catch
+	 * patterns AI-written code tends to produce (object-typed parameters,
+	 * `unknown` returns, unsafe dictionary types, `Reflect` access, ...).
+	 *
+	 * @default false
+	 */
+	antiSlop?: boolean;
+
+	/**
 	 * Automatically rename plugins in the config.
 	 *
 	 * @default true

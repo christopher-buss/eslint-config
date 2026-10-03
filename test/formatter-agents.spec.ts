@@ -1,7 +1,7 @@
 import type { ESLint, Linter } from "eslint";
 import path from "node:path";
 import process from "node:process";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import eslintFormatterAgents from "../src/formatter-agents.ts";
 
@@ -60,19 +60,19 @@ function makeResult(
 const DATA: ESLint.LintResultData = { cwd: ROOT, rulesMeta: {} };
 
 describe("eslintFormatterAgents", () => {
-	it("returns an empty string when nothing was reported", () => {
+	it("returns an empty string when nothing was reported", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(eslintFormatterAgents([makeResult("clean.ts", [])], DATA)).toBe("");
 	});
 
-	it("returns an empty string for empty result lists", () => {
+	it("returns an empty string for empty result lists", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(eslintFormatterAgents([], DATA)).toBe("");
 	});
 
-	it("formats errors and warnings sorted by position within a file", () => {
+	it("formats errors and warnings sorted by position within a file", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
@@ -104,7 +104,7 @@ describe("eslintFormatterAgents", () => {
 		`);
 	});
 
-	it("labels fatal parse errors as errors under the eslint rule id", () => {
+	it("labels fatal parse errors as errors under the eslint rule id", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
@@ -129,7 +129,7 @@ describe("eslintFormatterAgents", () => {
 		`);
 	});
 
-	it("sorts messages across multiple files by relative path", () => {
+	it("sorts messages across multiple files by relative path", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
@@ -151,7 +151,7 @@ describe("eslintFormatterAgents", () => {
 		`);
 	});
 
-	it("breaks position ties by severity then rule id", () => {
+	it("breaks position ties by severity then rule id", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
@@ -173,7 +173,7 @@ describe("eslintFormatterAgents", () => {
 		`);
 	});
 
-	it("collapses message whitespace onto a single line", () => {
+	it("collapses message whitespace onto a single line", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents(
@@ -197,7 +197,7 @@ describe("eslintFormatterAgents", () => {
 		`);
 	});
 
-	it("ignores suppressed messages and fixable counts", () => {
+	it("ignores suppressed messages and fixable counts", ({ expect }) => {
 		expect.assertions(1);
 
 		const result = makeResult(
@@ -209,7 +209,7 @@ describe("eslintFormatterAgents", () => {
 		expect(eslintFormatterAgents([{ ...result, fixableErrorCount: 5 }], DATA)).toBe("");
 	});
 
-	it("relativizes against process.cwd() when no run data is provided", () => {
+	it("relativizes against process.cwd() when no run data is provided", ({ expect }) => {
 		expect.assertions(1);
 
 		const output = eslintFormatterAgents([

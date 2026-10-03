@@ -22,7 +22,6 @@ import {
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
-import type { PrettierOptions } from "./configs/index.ts";
 import {
 	comments,
 	disables,
@@ -237,6 +236,7 @@ export async function isentinel(
 	>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>> {
 	const {
+		antiSlop = false,
 		autoRenamePlugins = true,
 		componentExts: componentExtensions = [],
 		e18e: enableE18e = true,
@@ -362,9 +362,7 @@ export async function isentinel(
 	// Shared with the oxlint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
-	const prettierSettings: PrettierOptions = resolvePrettierSettings(
-		formatterOptions.prettierOptions,
-	);
+	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -390,6 +388,7 @@ export async function isentinel(
 				...("typeAware" in typescriptOptions
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
+				antiSlop,
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},

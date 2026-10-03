@@ -1,4 +1,3 @@
-import type { SpawnSyncReturns } from "node:child_process";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -117,7 +116,7 @@ function spawnOxlint(workingDirectory: string): {
 	runContext: string;
 	stdout: string;
 } {
-	const result: SpawnSyncReturns<string> = spawnSync(
+	const result = spawnSync(
 		oxlintBinary(),
 		["-c", ".oxlintrc.json", "--disable-nested-config", "-f", "json", "."],
 		{

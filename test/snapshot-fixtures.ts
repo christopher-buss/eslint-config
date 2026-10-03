@@ -29,11 +29,21 @@ export const snapshotFixtures: Array<SnapshotFixture> = [
 	},
 	{
 		name: "package",
-		options: { ...base, roblox: false, test: { jest: true }, type: "package" },
+		options: {
+			...base,
+			antiSlop: true,
+			roblox: false,
+			test: { jest: true },
+			type: "package",
+		},
 	},
 	{
 		name: "scoped-roblox",
-		options: { ...base, roblox: { files: ["src/**"], filesTypeAware: ["src/**"] } },
+		options: {
+			...base,
+			antiSlop: true,
+			roblox: { files: ["src/**"], filesTypeAware: ["src/**"] },
+		},
 	},
 	{
 		name: "minimal",
