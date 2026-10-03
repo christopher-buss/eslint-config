@@ -2,7 +2,6 @@
 import path from "node:path";
 
 import { cacheFileFor } from "../cache/constants.ts";
-import type { DirtyCache } from "../cache/entries.ts";
 import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
 import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
 import type { LintCliOptions } from "../cli/types.ts";
@@ -132,7 +131,7 @@ function mutatingDirtyCount(
 		return targetFiles.length;
 	}
 
-	const cache: DirtyCache | undefined = openCache(cacheLocation, run.ci);
+	const cache = openCache(cacheLocation, run.ci);
 	const dirty = new Set(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);

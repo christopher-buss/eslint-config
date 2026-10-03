@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
 import { isentinel as oxlintIsentinel, oxlintRuleMapping } from "../src/oxlint/index.ts";
@@ -95,7 +95,7 @@ function mustStayInEslint(rule: string): boolean {
 }
 
 describe("oxlint native-only hybrid mode", () => {
-	it("should load only the directive jsPlugin when jsPlugins is false", () => {
+	it("should load only the directive jsPlugin when jsPlugins is false", ({ expect }) => {
 		expect.assertions(2);
 
 		const config = oxlintIsentinel({
@@ -121,7 +121,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(unregisteredRules(config)).toStrictEqual([]);
 	});
 
-	it("should keep the oxlint-comments rules enabled in native-only mode", () => {
+	it("should keep the oxlint-comments rules enabled in native-only mode", ({ expect }) => {
 		expect.assertions(2);
 
 		const enabled = enabledOxlintRules(nativeOnlyOxlintConfig());
@@ -131,7 +131,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(directiveRules.length).toBeGreaterThan(3);
 	});
 
-	it("should keep jsPlugin-mapped rules in ESLint", async () => {
+	it("should keep jsPlugin-mapped rules in ESLint", async ({ expect }) => {
 		expect.assertions(3);
 
 		const eslintOnly = await eslintRules({});
@@ -153,7 +153,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(movedInNativeMode).toStrictEqual([]);
 	});
 
-	it("should still hand the native rules to oxlint", async () => {
+	it("should still hand the native rules to oxlint", async ({ expect }) => {
 		expect.assertions(3);
 
 		const eslintOnly = await eslintRules({});
@@ -175,7 +175,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(missing).toStrictEqual([]);
 	});
 
-	it("should keep formatting of real TS files in ESLint", async () => {
+	it("should keep formatting of real TS files in ESLint", async ({ expect }) => {
 		expect.assertions(2);
 
 		// Full hybrid leaves real JS/TS files to oxlint's oxfmt jsPlugin and
@@ -196,7 +196,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(nativeRules.has("oxfmt/oxfmt")).toBe(true);
 	});
 
-	it("should stamp the hybrid marker", async () => {
+	it("should stamp the hybrid marker", async ({ expect }) => {
 		expect.assertions(1);
 
 		const composer = await isentinel({
@@ -209,7 +209,7 @@ describe("oxlint native-only hybrid mode", () => {
 		expect(marker!.settings!["isentinel/oxlint"]).toBe(true);
 	});
 
-	it("should not double-lint a rule in both engines", async () => {
+	it("should not double-lint a rule in both engines", async ({ expect }) => {
 		expect.assertions(1);
 
 		const native = await eslintRules({ oxlint: "native" });

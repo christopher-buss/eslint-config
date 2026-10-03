@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { deriveRobloxAllowedWords } from "../scripts/roblox-allowed-words-shared.ts";
 import { ROBLOX_ALLOWED_WORDS } from "../src/generated/roblox-allowed-words.ts";
 
 describe("roblox allowed-words snapshot", () => {
-	it("matches the installed @rbxts/types", async () => {
+	it("matches the installed @rbxts/types", async ({ expect }) => {
 		expect.assertions(1);
 
 		// The naming config reads the snapshot instead of parsing ~4MB of
@@ -14,7 +14,7 @@ describe("roblox allowed-words snapshot", () => {
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(await deriveRobloxAllowedWords());
 	});
 
-	it("keeps the names that already hold two capitals", () => {
+	it("keeps the names that already hold two capitals", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(ROBLOX_ALLOWED_WORDS).toStrictEqual(
@@ -28,7 +28,7 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
-	it("keeps the names that end in a capital", () => {
+	it("keeps the names that end in a capital", ({ expect }) => {
 		expect.assertions(1);
 
 		// Fine alone, but they collide with the next word's capital once
@@ -38,7 +38,7 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
-	it("keeps property names, not just type names", () => {
+	it("keeps property names, not just type names", ({ expect }) => {
 		expect.assertions(1);
 
 		// No type is called `ZIndex` or `TextureID`; they are properties, and a
@@ -48,7 +48,7 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
-	it("drops method names", () => {
+	it("drops method names", ({ expect }) => {
 		expect.assertions(1);
 
 		// A call is written at the call site, where the API spelling is already
@@ -60,7 +60,7 @@ describe("roblox allowed-words snapshot", () => {
 		);
 	});
 
-	it("drops one-character words", () => {
+	it("drops one-character words", ({ expect }) => {
 		expect.assertions(1);
 
 		// `Vector3.X` and friends qualify under the trailing-capital arm, but
@@ -69,7 +69,7 @@ describe("roblox allowed-words snapshot", () => {
 		expect(ROBLOX_ALLOWED_WORDS.filter((word) => word.length < 2)).toStrictEqual([]);
 	});
 
-	it("drops names a shorter word already resolves", () => {
+	it("drops names a shorter word already resolves", ({ expect }) => {
 		expect.assertions(1);
 
 		// `CFrame` matches at a hump boundary inside the first three, `Path2D`

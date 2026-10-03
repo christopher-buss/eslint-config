@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { react } from "../src/eslint/configs/react.ts";
 import { isRecord } from "../src/guards.ts";
@@ -135,7 +135,7 @@ function findRestrictedImports(configs: Array<TypedFlatConfigItem>, name: string
 }
 
 describe("react testing-library support", () => {
-	it("does not register testing-library by default", async () => {
+	it("does not register testing-library by default", async ({ expect }) => {
 		expect.assertions(3);
 
 		const { configuredTestingRules, settings, testingSetup } =
@@ -146,7 +146,9 @@ describe("react testing-library support", () => {
 		expect(settings).not.toHaveProperty("testing-library/utils-module");
 	});
 
-	it("registers the plugin, rules, and Lua utilities setting when enabled", async () => {
+	it("registers the plugin, rules, and Lua utilities setting when enabled", async ({
+		expect,
+	}) => {
 		expect.assertions(3);
 
 		const { configuredTestingRules, settings, testingPlugins } =
@@ -157,7 +159,7 @@ describe("react testing-library support", () => {
 		expect(settings).toHaveProperty("testing-library/utils-module", "testing-library-lua");
 	});
 
-	it("restricts direct DOM Testing Library imports", async () => {
+	it("restricts direct DOM Testing Library imports", async ({ expect }) => {
 		expect.assertions(1);
 
 		const restrictedDomImport = await getRestrictedDomImportRules();
@@ -165,7 +167,7 @@ describe("react testing-library support", () => {
 		expect(restrictedDomImport).toStrictEqual(RESTRICTED_DOM_IMPORT);
 	});
 
-	it("shares Testing Library rules with oxlint", () => {
+	it("shares Testing Library rules with oxlint", ({ expect }) => {
 		expect.assertions(4);
 
 		const { configuredTestingRules, restrictedDomImport, testingJsPlugins, utilsModule } =
@@ -181,7 +183,7 @@ describe("react testing-library support", () => {
 });
 
 describe("dom import restriction composition", () => {
-	it("merges object-style restrictions without changing project policy", () => {
+	it("merges object-style restrictions without changing project policy", ({ expect }) => {
 		expect.assertions(1);
 
 		const merged = mergeRestrictedDomImportRule(
@@ -198,7 +200,7 @@ describe("dom import restriction composition", () => {
 		expect(merged).toStrictEqual(COMPOSED_RESTRICTED_IMPORTS);
 	});
 
-	it("supports legacy and severity-only entries", () => {
+	it("supports legacy and severity-only entries", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(mergeRestrictedDomImportRule(["error", PROJECT_PACKAGE], DOM_PACKAGE)).toStrictEqual(
@@ -210,7 +212,7 @@ describe("dom import restriction composition", () => {
 		]);
 	});
 
-	it("preserves explicit disables and project-owned duplicates", () => {
+	it("preserves explicit disables and project-owned duplicates", ({ expect }) => {
 		expect.assertions(3);
 
 		const disabled: RestrictedImportRule = [0, { paths: [PROJECT_PACKAGE] }];
@@ -226,7 +228,7 @@ describe("dom import restriction composition", () => {
 		expect(mergeRestrictedDomImportRule(duplicate, DOM_PACKAGE)).toBe(duplicate);
 	});
 
-	it("composes top-level and appended ESLint rules", async () => {
+	it("composes top-level and appended ESLint rules", async ({ expect }) => {
 		expect.assertions(2);
 
 		const options = {
@@ -266,7 +268,7 @@ describe("dom import restriction composition", () => {
 		);
 	});
 
-	it("composes the native oxlint rule in native-only mode", () => {
+	it("composes the native oxlint rule in native-only mode", ({ expect }) => {
 		expect.assertions(1);
 
 		const config = oxlintIsentinel({

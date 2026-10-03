@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import {
 	applyExtensions,
@@ -45,7 +45,7 @@ const EXTENSION_INJECTIONS = packageExtensions.map((extension) => {
 });
 
 describe("packageExtensions", () => {
-	it("has one entry per package, sorted by name", () => {
+	it("has one entry per package, sorted by name", ({ expect }) => {
 		expect.assertions(2);
 
 		const names = packageExtensions.map((extension) => extension.name);
@@ -55,7 +55,7 @@ describe("packageExtensions", () => {
 		expect(names).toStrictEqual(names.toSorted());
 	});
 
-	it.for(EXTENSION_INJECTIONS)("gives $name something to inject", ({ injected }) => {
+	it.for(EXTENSION_INJECTIONS)("gives $name something to inject", ({ injected }, { expect }) => {
 		expect.assertions(1);
 
 		expect(injected.length).toBeGreaterThan(0);
@@ -65,7 +65,7 @@ describe("packageExtensions", () => {
 	// repairs unresolved, and the type an error type all the same.
 	it.for(providers)(
 		"resolves $provider from $dependent",
-		({ dependent, directory, provider }) => {
+		({ dependent, directory, provider }, { expect }) => {
 			expect.assertions(1);
 
 			expect(resolveDependency(directory, dependent, provider)).toBeDefined();
@@ -74,7 +74,7 @@ describe("packageExtensions", () => {
 });
 
 describe("applyExtensions", () => {
-	it("injects declarations as optional peers", () => {
+	it("injects declarations as optional peers", ({ expect }) => {
 		expect.assertions(2);
 
 		const manifest = applyExtensions({
@@ -86,7 +86,7 @@ describe("applyExtensions", () => {
 		expect(manifest.peerDependenciesMeta).toStrictEqual({ eslint: { optional: true } });
 	});
 
-	it("leaves an existing declaration untouched", () => {
+	it("leaves an existing declaration untouched", ({ expect }) => {
 		expect.assertions(2);
 
 		const manifest = applyExtensions({
@@ -99,7 +99,7 @@ describe("applyExtensions", () => {
 		expect(manifest.peerDependencies).toBeUndefined();
 	});
 
-	it("returns unlisted manifests unchanged", () => {
+	it("returns unlisted manifests unchanged", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(applyExtensions({ name: "not-in-the-table", version: "1.0.0" })).toStrictEqual({
@@ -111,7 +111,7 @@ describe("applyExtensions", () => {
 	// The shipped hook carries the whole table but applies only the entries a
 	// consumer's program loads. Everything else repairs a package ESLint loads
 	// at runtime, where resolution was never broken.
-	it("leaves an entry no consumer loads alone", () => {
+	it("leaves an entry no consumer loads alone", ({ expect }) => {
 		expect.assertions(2);
 
 		const names = publishedExtensions.map((extension) => extension.name);
@@ -125,7 +125,7 @@ describe("applyExtensions", () => {
 });
 
 describe("publishedExtensions", () => {
-	it("is the flagged subset of the table", () => {
+	it("is the flagged subset of the table", ({ expect }) => {
 		expect.assertions(2);
 
 		const flagged = packageExtensions.filter((extension) => extension.consumerFacing === true);
@@ -134,7 +134,7 @@ describe("publishedExtensions", () => {
 		expect(publishedExtensions.length).toBeLessThan(packageExtensions.length);
 	});
 
-	it("injects something for every entry it carries", () => {
+	it("injects something for every entry it carries", ({ expect }) => {
 		expect.assertions(1);
 
 		const providerCounts = publishedExtensions.map((extension) => {
@@ -148,7 +148,7 @@ describe("publishedExtensions", () => {
 describe("extendManifest", () => {
 	const table = [{ name: "example", dependencies: { "@types/estree": "^1" }, fixedIn: "2.0.0" }];
 
-	it("extends a version below the upstream fix", () => {
+	it("extends a version below the upstream fix", ({ expect }) => {
 		expect.assertions(1);
 
 		const manifest = extendManifest({ name: "example", version: "1.9.9" }, table);
@@ -156,7 +156,7 @@ describe("extendManifest", () => {
 		expect(manifest.dependencies).toStrictEqual({ "@types/estree": "^1" });
 	});
 
-	it.for(["2.0.0", "2.0.1", "10.0.0"])("leaves %s alone", (version) => {
+	it.for(["2.0.0", "2.0.1", "10.0.0"])("leaves %s alone", (version, { expect }) => {
 		expect.assertions(1);
 
 		const manifest = extendManifest({ name: "example", version }, table);
@@ -164,7 +164,7 @@ describe("extendManifest", () => {
 		expect(manifest.dependencies).toBeUndefined();
 	});
 
-	it("treats a prerelease as its release version", () => {
+	it("treats a prerelease as its release version", ({ expect }) => {
 		expect.assertions(1);
 
 		const manifest = extendManifest({ name: "example", version: "2.0.0-beta.1" }, table);

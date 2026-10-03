@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
@@ -31,7 +31,7 @@ function findUnicornRules(
 
 describe("config snapshots", () => {
 	describe.for(snapshotFixtures)("$name", ({ name, options }) => {
-		it("should match the config snapshot", async () => {
+		it("should match the config snapshot", async ({ expect }) => {
 			expect.assertions(1);
 
 			const configs = await isentinel({ name: `test/${name}`, ...options });
@@ -40,7 +40,7 @@ describe("config snapshots", () => {
 		});
 	});
 
-	it("should enable non-roblox unicorn rules for package configs", async () => {
+	it("should enable non-roblox unicorn rules for package configs", async ({ expect }) => {
 		expect.assertions(4);
 
 		const packageConfigs = await isentinel({
@@ -72,7 +72,7 @@ describe("config snapshots", () => {
 		expect(gameRules).not.toHaveProperty("unicorn/no-accidental-bitwise-operator");
 	});
 
-	it("should scope roblox rules and apply node rules to the complement", async () => {
+	it("should scope roblox rules and apply node rules to the complement", async ({ expect }) => {
 		expect.assertions(9);
 
 		const configs = [
@@ -130,7 +130,7 @@ describe("config snapshots", () => {
 		]);
 	});
 
-	it("should not add node rules to the default roblox config", async () => {
+	it("should not add node rules to the default roblox config", async ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = [
@@ -147,7 +147,7 @@ describe("config snapshots", () => {
 		expect(configs.find((config) => config.name === "isentinel/node/rules")).toBeUndefined();
 	});
 
-	it("should prepend naming selectors before the defaults", async () => {
+	it("should prepend naming selectors before the defaults", async ({ expect }) => {
 		expect.assertions(3);
 
 		const variableSelector = { format: ["snake_case" as const], selector: "variable" as const };

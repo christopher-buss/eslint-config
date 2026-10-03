@@ -2,7 +2,7 @@ import { ESLint } from "eslint";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { isentinel } from "../src/index.ts";
 import { toPosix } from "../src/lint-cli/lib/paths.ts";
@@ -43,7 +43,7 @@ async function prepare(): Promise<{ eslint: ESLint; projectDirectory: string }> 
 }
 
 describe("ignores", () => {
-	it("should not ignore .claude/settings.json", async () => {
+	it("should not ignore .claude/settings.json", async ({ expect }) => {
 		expect.assertions(1);
 
 		const { eslint, projectDirectory } = await prepare();
@@ -53,7 +53,7 @@ describe("ignores", () => {
 		).resolves.toBe(false);
 	});
 
-	it("should still ignore other .claude files", async () => {
+	it("should still ignore other .claude files", async ({ expect }) => {
 		expect.assertions(2);
 
 		const { eslint, projectDirectory } = await prepare();
@@ -68,7 +68,7 @@ describe("ignores", () => {
 		).resolves.toBe(true);
 	});
 
-	it("should lint .claude/settings.json when linting the directory", async () => {
+	it("should lint .claude/settings.json when linting the directory", async ({ expect }) => {
 		expect.assertions(1);
 
 		const { eslint, projectDirectory } = await prepare();

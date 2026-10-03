@@ -1,10 +1,16 @@
-import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
+import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface ArrowStyleRuleOptions {
 	maxLen?: number;
 	maxLength?: number;
 	printWidth?: number;
 	tabWidth?: number;
+}
+
+/** Options for the flawless rule maps. */
+export interface FlawlessRuleOptions extends OptionsHasRoblox {
+	/** Add the anti-slop rules. */
+	antiSlop?: boolean;
 }
 
 /**
@@ -39,31 +45,97 @@ export function arrowStyleRules({
 /**
  * Base (non-React) flawless rules shared between the ESLint and oxlint
  * factories. The React flawless rules live in the react rule map; the
- * type-aware `flawless/naming-convention`, the test-only
- * `flawless/padding-after-expect-assertions`, and the non-JS
- * `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
+ * type-aware rules live in {@link flawlessTypeAwareRules}, plus the type-aware
+ * `flawless/naming-convention` in its own config; the test-only rules, and the
+ * non-JS `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
  * `flawless/yaml-*` rules are configured by their own configs.
  *
- * @param options - Shared stylistic and arrow rule options.
+ * @param options - Shared stylistic, arrow and anti-slop rule options.
  * @returns The rule map.
  */
 export function flawlessRules({
+	antiSlop = false,
+	roblox = true,
 	stylistic = true,
 	...arrowOptions
-}: ArrowStyleRuleOptions & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
-	if (stylistic === false) {
-		return {};
-	}
-
+}: ArrowStyleRuleOptions &
+	FlawlessRuleOptions &
+	OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
 	return {
-		"flawless/max-lines-per-function": [
-			"warn",
-			{ max: 30, skipBlankLines: true, skipComments: true },
-		],
 		"flawless/no-export-default-arrow": "error",
 		"flawless/no-floating-point-equality": "error",
-		"flawless/prefer-parameter-destructuring": "warn",
 
-		...arrowStyleRules(arrowOptions),
+		...(stylistic === false
+			? {}
+			: {
+					"flawless/max-lines-per-function": [
+						"warn",
+						{ max: 30, skipBlankLines: true, skipComments: true },
+					] as const,
+					"flawless/prefer-parameter-destructuring": "warn",
+
+					...arrowStyleRules(arrowOptions),
+				}),
+
+		...(antiSlop ? antiSlopRules({ roblox }) : {}),
+	};
+}
+
+/**
+ * Type-aware flawless rules. ESLint only: oxlint jsPlugins have no type
+ * information.
+ *
+ * @param options - Anti-slop and roblox options.
+ * @returns The rule map.
+ */
+export function flawlessTypeAwareRules({
+	antiSlop = false,
+	roblox = true,
+}: FlawlessRuleOptions = {}): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/no-redundant-type-annotation": "error",
+		"flawless/prefer-read-only-props": "error",
+
+		...(antiSlop ? antiSlopTypeAwareRules({ roblox }) : {}),
+	};
+}
+
+/**
+ * Syntactic anti-slop rules: patterns AI-written code tends to produce.
+ *
+ * `flawless/no-reflect-get` is complement-only: `Reflect` has no declaration
+ * in `@rbxts/types`, so it can only fire in standard-TS/Node land.
+ *
+ * @param options - Whether the rules target roblox-ts.
+ * @returns The rule map.
+ */
+function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/no-conditional-empty-object-spread": "error",
+		"flawless/no-known-value-widening": "error",
+		"flawless/no-object-parameters": "error",
+		"flawless/no-shape-in-symbol-names": "error",
+		"flawless/no-unsafe-dictionary-type": "error",
+
+		...(roblox ? {} : { "flawless/no-reflect-get": "error" }),
+	};
+}
+
+/**
+ * Type-aware anti-slop rules.
+ *
+ * `flawless/no-reflect-set` is complement-only, like `flawless/no-reflect-get`.
+ * Roblox-ts has no iterator helpers, so `flawless/no-materialized-filter-map`
+ * only suggests the array forms there.
+ *
+ * @param options - Whether the rules target roblox-ts.
+ * @returns The rule map.
+ */
+function antiSlopTypeAwareRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/no-materialized-filter-map": ["error", { iteratorHelpers: !roblox }],
+		"flawless/no-unknown-returns": "error",
+
+		...(roblox ? {} : { "flawless/no-reflect-set": "error" }),
 	};
 }

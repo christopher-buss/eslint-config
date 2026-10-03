@@ -1,5 +1,5 @@
 import process from "node:process";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { isAgentAutofixDisabled, isInAgentSession } from "../src/utils.ts";
 
@@ -24,20 +24,20 @@ function withTty<T>(isTty: boolean, run: () => T): T {
 }
 
 describe("isInAgentSession", () => {
-	it("returns false for a bare environment", () => {
+	it("returns false for a bare environment", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(isInAgentSession({})).toBe(false);
 	});
 
-	it("honours the AI_AGENT override", () => {
+	it("honours the AI_AGENT override", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(isInAgentSession({ AI_AGENT: "junie" })).toBe(true);
 		expect(isInAgentSession({ AI_AGENT: "" })).toBe(false);
 	});
 
-	it("detects the plain marker variables", () => {
+	it("detects the plain marker variables", ({ expect }) => {
 		expect.assertions(1);
 
 		const markers = [
@@ -61,7 +61,7 @@ describe("isInAgentSession", () => {
 		);
 	});
 
-	it("matches pi through PATH and devin through EDITOR", () => {
+	it("matches pi through PATH and devin through EDITOR", ({ expect }) => {
 		expect.assertions(5);
 
 		expect(isInAgentSession({ PATH: "/usr/bin:/home/u/.pi/agent/bin" })).toBe(true);
@@ -71,14 +71,14 @@ describe("isInAgentSession", () => {
 		expect(isInAgentSession({ EDITOR: "vim" })).toBe(false);
 	});
 
-	it("matches kiro only when stdout is not a TTY", () => {
+	it("matches kiro only when stdout is not a TTY", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(withTty(false, () => isInAgentSession({ TERM_PROGRAM: "kiro" }))).toBe(true);
 		expect(withTty(true, () => isInAgentSession({ TERM_PROGRAM: "kiro" }))).toBe(false);
 	});
 
-	it("declines inside git hooks and lint-staged", () => {
+	it("declines inside git hooks and lint-staged", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(isInAgentSession({ CLAUDECODE: "1", GIT_HOOK: "1" })).toBe(false);
@@ -89,7 +89,7 @@ describe("isInAgentSession", () => {
 });
 
 describe("isAgentAutofixDisabled", () => {
-	it("is off unless asked for", () => {
+	it("is off unless asked for", ({ expect }) => {
 		expect.assertions(4);
 
 		expect(isAgentAutofixDisabled({})).toBe(false);
@@ -98,7 +98,7 @@ describe("isAgentAutofixDisabled", () => {
 		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "" })).toBe(false);
 	});
 
-	it("takes effect without an agent session, for hooks", () => {
+	it("takes effect without an agent session, for hooks", ({ expect }) => {
 		expect.assertions(3);
 
 		expect(isAgentAutofixDisabled({ ESLINT_AGENT_NO_AUTOFIX: "1" })).toBe(true);

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, it, vi } from "vitest";
 
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
 import { isentinel } from "../src/index.ts";
@@ -35,7 +35,7 @@ async function collectDeadWarnings(
 }
 
 describe("oxlint hybrid dead-rule warnings", () => {
-	it("should warn when a trailing user config references a mapped rule", async () => {
+	it("should warn when a trailing user config references a mapped rule", async ({ expect }) => {
 		expect.assertions(3);
 
 		const warnings = await collectDeadWarnings(
@@ -51,7 +51,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings[0]).toContain("user/console");
 	});
 
-	it("should warn for options-level rules as an unnamed config", async () => {
+	it("should warn for options-level rules as an unnamed config", async ({ expect }) => {
 		expect.assertions(3);
 
 		const warnings = await collectDeadWarnings({
@@ -65,7 +65,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings[0]).toContain("an unnamed config");
 	});
 
-	it("should warn for the oxfmt formatting rule", async () => {
+	it("should warn for the oxfmt formatting rule", async ({ expect }) => {
 		expect.assertions(2);
 
 		const warnings = await collectDeadWarnings(
@@ -80,7 +80,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings[0]).toContain("oxfmt/oxfmt");
 	});
 
-	it("should not warn for Markdown-scoped user configs", async () => {
+	it("should not warn for Markdown-scoped user configs", async ({ expect }) => {
 		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
@@ -95,7 +95,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings).toStrictEqual([]);
 	});
 
-	it("should not warn for rules that stay in ESLint", async () => {
+	it("should not warn for rules that stay in ESLint", async ({ expect }) => {
 		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
@@ -110,7 +110,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings).toStrictEqual([]);
 	});
 
-	it("should not warn when oxlint hybrid mode is disabled", async () => {
+	it("should not warn when oxlint hybrid mode is disabled", async ({ expect }) => {
 		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(
@@ -124,7 +124,7 @@ describe("oxlint hybrid dead-rule warnings", () => {
 		expect(warnings).toStrictEqual([]);
 	});
 
-	it("should be suppressible via oxlintWarnDeadRules", async () => {
+	it("should be suppressible via oxlintWarnDeadRules", async ({ expect }) => {
 		expect.assertions(1);
 
 		const warnings = await collectDeadWarnings(

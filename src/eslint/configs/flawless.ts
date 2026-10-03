@@ -6,7 +6,8 @@ import {
 	GLOB_TS,
 	GLOB_TSX,
 } from "../../globs.ts";
-import { arrowStyleRules, flawlessRules } from "../../rules/flawless.ts";
+import { arrowStyleRules, flawlessRules, flawlessTypeAwareRules } from "../../rules/flawless.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
 	OptionsOverridesTypeAware,
@@ -18,13 +19,28 @@ import type {
 import type { PrettierOptions } from "./oxfmt.ts";
 
 export async function flawless(
-	options: OptionsOverridesTypeAware &
+	options: FlawlessRuleOptions &
+		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
-		OptionsTypeScriptWithTypes = {},
+		OptionsTypeScriptWithTypes & {
+			/**
+			 * When set, re-apply the non-roblox rules to every source file
+			 * except these globs (the roblox scope), so the complement is
+			 * linted as standard-TS/Node land.
+			 */
+			complementIgnores?: Array<string>;
+		} = {},
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
-	const { overridesTypeAware = {}, stylistic = true, typeAware = true } = options;
+	const {
+		antiSlop = false,
+		complementIgnores,
+		overridesTypeAware = {},
+		roblox = true,
+		stylistic = true,
+		typeAware = true,
+	} = options;
 
 	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
 
@@ -39,8 +55,12 @@ export async function flawless(
 	const tabWidth =
 		typeof prettierOptions.tabWidth === "number" ? prettierOptions.tabWidth : undefined;
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = {
-		"flawless/prefer-read-only-props": "error",
+	const sharedRuleOptions = {
+		antiSlop,
+		maxLen: stylisticOptions.maxLen,
+		printWidth,
+		stylistic,
+		tabWidth,
 	};
 
 	return [
@@ -53,12 +73,7 @@ export async function flawless(
 		{
 			name: "isentinel/flawless/rules",
 			files: [GLOB_SRC],
-			rules: flawlessRules({
-				maxLen: stylisticOptions.maxLen,
-				printWidth,
-				stylistic,
-				tabWidth,
-			}),
+			rules: flawlessRules({ ...sharedRuleOptions, roblox }),
 		},
 		...(stylistic !== false
 			? [
@@ -73,6 +88,18 @@ export async function flawless(
 					},
 				]
 			: []),
+		// The complement re-applies the non-roblox rules last, so it wins for
+		// files outside the roblox scope.
+		...(complementIgnores
+			? [
+					{
+						name: "isentinel/flawless/complement",
+						files: [GLOB_SRC],
+						ignores: complementIgnores,
+						rules: flawlessRules({ ...sharedRuleOptions, roblox: false }),
+					},
+				]
+			: []),
 		...(isTypeAware
 			? [
 					{
@@ -80,7 +107,22 @@ export async function flawless(
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
 						rules: {
-							...typeAwareRules,
+							...flawlessTypeAwareRules({ antiSlop, roblox }),
+							...overridesTypeAware,
+						},
+					},
+				]
+			: []),
+		// Type-aware counterpart of the complement above. `overridesTypeAware`
+		// is re-spread so user overrides still beat it.
+		...(isTypeAware && complementIgnores
+			? [
+					{
+						name: "isentinel/flawless/rules-type-aware/complement",
+						files: filesTypeAware,
+						ignores: [...ignoresTypeAware, ...complementIgnores],
+						rules: {
+							...flawlessTypeAwareRules({ antiSlop, roblox: false }),
 							...overridesTypeAware,
 						},
 					},
