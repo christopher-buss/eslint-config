@@ -1,10 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Options as PrettierOptions } from "prettier";
 import { describe, expect, it } from "vitest";
 
-import type { JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import { isentinel as oxlint } from "../src/oxlint/index.ts";
@@ -20,8 +18,8 @@ import { PRETTIER_DEFAULTS, resolvePrettierSettings } from "../src/prettier-conf
  */
 function settingsFor(
 	files: Record<string, string>,
-	prettierOptions: PrettierOptions = {},
-): PrettierOptions {
+	prettierOptions: Record<string, unknown> = {},
+): Record<string, unknown> {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "isentinel-prettier-"));
 
 	try {
@@ -45,7 +43,7 @@ describe("resolvePrettierSettings", () => {
 	it("reads .prettierrc as JSON", () => {
 		expect.assertions(1);
 
-		expect(settingsFor({ ".prettierrc": '{"printWidth": 80}' }).printWidth).toBe(80);
+		expect(settingsFor({ ".prettierrc": '{"printWidth": 80}' })["printWidth"]).toBe(80);
 	});
 
 	it("reads .prettierrc.yaml", () => {
@@ -63,7 +61,7 @@ describe("resolvePrettierSettings", () => {
 			"package.json": '{"name": "x", "prettier": {"printWidth": 60}}',
 		});
 
-		expect(settings.printWidth).toBe(60);
+		expect(settings["printWidth"]).toBe(60);
 	});
 
 	it("ignores a package.json prettier key naming a shareable config", () => {
@@ -73,7 +71,7 @@ describe("resolvePrettierSettings", () => {
 			"package.json": '{"name": "x", "prettier": "@company/prettier-config"}',
 		});
 
-		expect(settings.printWidth).toBe(PRETTIER_DEFAULTS.printWidth);
+		expect(settings["printWidth"]).toBe(PRETTIER_DEFAULTS.printWidth);
 	});
 
 	it("translates EditorConfig properties", () => {
@@ -114,7 +112,7 @@ describe("resolvePrettierSettings", () => {
 			].join("\n"),
 		});
 
-		expect(settings.tabWidth).toBe(3);
+		expect(settings["tabWidth"]).toBe(3);
 	});
 
 	it("lets a Prettier config win over EditorConfig", () => {
@@ -125,7 +123,7 @@ describe("resolvePrettierSettings", () => {
 			".prettierrc": '{"printWidth": 80}',
 		});
 
-		expect(settings.printWidth).toBe(80);
+		expect(settings["printWidth"]).toBe(80);
 	});
 
 	it("lets explicit factory options win over everything", () => {
@@ -133,7 +131,7 @@ describe("resolvePrettierSettings", () => {
 
 		const settings = settingsFor({ ".prettierrc": '{"printWidth": 80}' }, { printWidth: 55 });
 
-		expect(settings.printWidth).toBe(55);
+		expect(settings["printWidth"]).toBe(55);
 	});
 });
 
@@ -143,7 +141,7 @@ describe("resolvePrettierSettings", () => {
  * @param rules - The rule map to read from.
  * @returns The rule's options object, if the rule is present.
  */
-function arrowOptions(rules: unknown): JsonValue | undefined {
+function arrowOptions(rules: unknown): unknown {
 	const entry = isRecord(rules) ? rules["flawless/arrow-return-style"] : undefined;
 	return Array.isArray(entry) ? entry[1] : undefined;
 }

@@ -2,6 +2,7 @@
 import path from "node:path";
 
 import { cacheFileFor } from "../cache/constants.ts";
+import type { DirtyCache } from "../cache/entries.ts";
 import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
 import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
 import type { LintCliOptions } from "../cli/types.ts";
@@ -131,7 +132,7 @@ function mutatingDirtyCount(
 		return targetFiles.length;
 	}
 
-	const cache = openCache(cacheLocation, run.ci);
+	const cache: DirtyCache | undefined = openCache(cacheLocation, run.ci);
 	const dirty = new Set(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);
@@ -217,7 +218,7 @@ function passDirtyCount(
 function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPlan {
 	const cacheFile = cacheFileFor(descriptor.cacheFileBase, context.run.key);
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
-	const conservative = context.files.targetsOutsideCwd;
+	const conservative = context.files.outsideCwdTargets.length > 0;
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.run.environment);
 	const maxWorkers = maxWorkersFor(descriptor, context.limits);
 

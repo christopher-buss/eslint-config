@@ -16,7 +16,6 @@ import {
 	enabledFromEffective,
 	enabledOxlintRules,
 } from "./oxlint-helpers.ts";
-import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 const baseOptions = {
 	gitignore: false,
@@ -25,7 +24,7 @@ const baseOptions = {
 	pnpm: false,
 } as const;
 
-async function eslintRules(options: FactoryOptions): Promise<Set<string>> {
+async function eslintRules(options: Record<string, unknown>): Promise<Set<string>> {
 	const composer = await isentinel({ name: "test/native-only", ...baseOptions, ...options });
 	return enabledEslintRules([...composer]);
 }

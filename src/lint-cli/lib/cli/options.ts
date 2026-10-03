@@ -42,7 +42,10 @@ export function parseArguments(
 		.parserConfiguration({ "boolean-negation": true, "populate--": true })
 		.option("eslint", { description: "Run only ESLint.", type: "boolean" })
 		.option("oxlint", { description: "Run only oxlint.", type: "boolean" })
-		.option("fix", { description: "Apply fixes (oxlint then ESLint).", type: "boolean" })
+		.option("fix", {
+			description: "Fix the files the checks reported.",
+			type: "boolean",
+		})
 		.option("agents", {
 			description: "Agent-friendly output (default: on in an agent session).",
 			type: "boolean",
@@ -82,7 +85,7 @@ export function parseArguments(
 
 	if (fix && typeAware !== undefined) {
 		throw new CliError(
-			"Cannot combine --fix with --type-aware; --fix always uses the full config.",
+			"Cannot combine --fix with --type-aware; the fix child always uses the full config.",
 		);
 	}
 

@@ -39,16 +39,13 @@ export function arrowStyleRules({
 /**
  * Base (non-React) flawless rules shared between the ESLint and oxlint
  * factories. The React flawless rules live in the react rule map; the
- * type-aware `flawless/naming-convention`,
- * `flawless/no-redundant-type-annotation`, `flawless/no-unknown-returns` and
- * `flawless/prefer-read-only-props`, the test-only
- * `flawless/padding-after-expect-assertions`, and the non-JS
- * `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
+ * type-aware rules live in {@link flawlessTypeAwareRules}, plus the type-aware
+ * `flawless/naming-convention` in its own config; the test-only rules, and the
+ * non-JS `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
  * `flawless/yaml-*` rules are configured by their own configs.
  *
- * `flawless/no-reflect-get` and `flawless/no-reflect-set` are complement-only:
- * `Reflect` has no declaration in `@rbxts/types`, so they can only fire in
- * standard-TS/Node land.
+ * `flawless/no-reflect-get` is complement-only: `Reflect` has no declaration
+ * in `@rbxts/types`, so it can only fire in standard-TS/Node land.
  *
  * @param options - Shared stylistic and arrow rule options.
  * @returns The rule map.
@@ -83,7 +80,30 @@ export function flawlessRules({
 			? {}
 			: {
 					"flawless/no-reflect-get": "error",
-					"flawless/no-reflect-set": "error",
 				}),
+	};
+}
+
+/**
+ * Type-aware flawless rules. ESLint only: oxlint jsPlugins have no type
+ * information.
+ *
+ * `flawless/no-reflect-set` is complement-only, like `flawless/no-reflect-get`.
+ * Roblox-ts has no iterator helpers, so `flawless/no-materialized-filter-map`
+ * only suggests the array forms there.
+ *
+ * @param options - Whether the rules target roblox-ts.
+ * @returns The rule map.
+ */
+export function flawlessTypeAwareRules({
+	roblox = true,
+}: OptionsHasRoblox = {}): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/no-materialized-filter-map": ["error", { iteratorHelpers: !roblox }],
+		"flawless/no-redundant-type-annotation": "error",
+		"flawless/no-unknown-returns": "error",
+		"flawless/prefer-read-only-props": "error",
+
+		...(roblox ? {} : { "flawless/no-reflect-set": "error" }),
 	};
 }

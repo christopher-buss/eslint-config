@@ -1,6 +1,4 @@
-import type { RuleOptions } from "../typegen.d.ts";
 import type { OptionsProjectType, TypedFlatConfigItem } from "../types.ts";
-import type { ExtractRuleOptions } from "../utils.ts";
 
 type PatternType =
 	| Array<string>
@@ -30,9 +28,7 @@ const constructorGroup = {
 
 export interface PerfectionistRuleOptions extends OptionsProjectType {
 	customClassGroups?: Array<string>;
-	sortObjects?: Partial<
-		ExtractRuleOptions<NonNullable<RuleOptions["perfectionist/sort-objects"]>>[0]
-	>;
+	sortObjects?: Record<string, unknown>;
 }
 
 /** Shared perfectionist plugin settings for both factories. */
@@ -106,16 +102,13 @@ export function perfectionistRules(
 		createUnsortedMethod("public"),
 	];
 
-	/** One `customGroups` entry for a method selector. */
-	interface UnsortedMethodGroup {
+	function createUnsortedMethod(methodType: MethodType): {
 		groupName: MethodType;
 		modifiers: [MethodType];
 		newlinesInside: number;
 		selector: "method";
 		type: "natural" | "unsorted";
-	}
-
-	function createUnsortedMethod(methodType: MethodType): UnsortedMethodGroup {
+	} {
 		return {
 			groupName: methodType,
 			modifiers: [methodType] as const,

@@ -33,15 +33,8 @@ interface EslintModule {
 	ESLint: new (options: { cwd: string }) => EslintLike;
 }
 
-/** The subset of one resolved config entry this helper reads. */
-interface ResolvedConfigEntry {
-	basePath?: unknown;
-	files?: unknown;
-	ignores?: unknown;
-}
-
 /** The subset of the resolved config array this helper reads. */
-interface ConfigArrayLike extends Array<ResolvedConfigEntry> {
+interface ConfigArrayLike extends Array<Record<string, unknown>> {
 	basePath: string;
 	getConfigStatus: (filePath: string) => string;
 }
@@ -128,9 +121,9 @@ async function loadConfigArray(cwd: string): Promise<ConfigArrayLike | undefined
  * @param config - One entry of the resolved config array.
  * @returns True when `ignores` is the config's only substantive key.
  */
-function isGlobalIgnore(config: ResolvedConfigEntry): boolean {
+function isGlobalIgnore(config: Record<string, unknown>): boolean {
 	return (
-		config.ignores !== undefined &&
+		config["ignores"] !== undefined &&
 		Object.keys(config).filter((key) => !META_KEYS.has(key)).length === 1
 	);
 }
@@ -157,7 +150,7 @@ function serializeEntry({
 	basePath,
 	files,
 	ignores,
-}: ResolvedConfigEntry): PredicateEntry | undefined {
+}: Record<string, unknown>): PredicateEntry | undefined {
 	const entry: PredicateEntry = {};
 
 	if (files !== undefined) {
@@ -202,7 +195,7 @@ function serializeEntries(configArray: ConfigArrayLike): Array<PredicateEntry> |
 	const entries: Array<PredicateEntry> = [];
 
 	for (const config of configArray) {
-		if (config.files === undefined && !isGlobalIgnore(config)) {
+		if (config["files"] === undefined && !isGlobalIgnore(config)) {
 			continue;
 		}
 

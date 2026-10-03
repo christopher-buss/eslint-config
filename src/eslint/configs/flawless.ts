@@ -6,7 +6,7 @@ import {
 	GLOB_TS,
 	GLOB_TSX,
 } from "../../globs.ts";
-import { arrowStyleRules, flawlessRules } from "../../rules/flawless.ts";
+import { arrowStyleRules, flawlessRules, flawlessTypeAwareRules } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
 	OptionsHasRoblox,
@@ -61,12 +61,6 @@ export async function flawless(
 		tabWidth,
 	};
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = {
-		"flawless/no-redundant-type-annotation": "error",
-		"flawless/no-unknown-returns": "error",
-		"flawless/prefer-read-only-props": "error",
-	};
-
 	return [
 		{
 			name: "isentinel/flawless/setup",
@@ -111,7 +105,22 @@ export async function flawless(
 						files: filesTypeAware,
 						ignores: ignoresTypeAware,
 						rules: {
-							...typeAwareRules,
+							...flawlessTypeAwareRules({ roblox }),
+							...overridesTypeAware,
+						},
+					},
+				]
+			: []),
+		// Type-aware counterpart of the complement above. `overridesTypeAware`
+		// is re-spread so user overrides still beat it.
+		...(isTypeAware && complementIgnores
+			? [
+					{
+						name: "isentinel/flawless/rules-type-aware/complement",
+						files: filesTypeAware,
+						ignores: [...ignoresTypeAware, ...complementIgnores],
+						rules: {
+							...flawlessTypeAwareRules({ roblox: false }),
 							...overridesTypeAware,
 						},
 					},

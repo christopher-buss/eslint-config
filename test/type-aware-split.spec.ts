@@ -6,12 +6,11 @@ import { isentinel } from "../src/index.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import { effectiveEslintRules } from "./oxlint-helpers.ts";
-import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 interface SplitVariant {
 	name: string;
 	files: Array<string>;
-	options: FactoryOptions;
+	options: Record<string, unknown>;
 }
 
 const baseOptions = {
@@ -65,7 +64,7 @@ const variants: Array<SplitVariant> = [
  * @param options - Factory options shared by the three configs.
  * @returns The three resolved config arrays.
  */
-async function buildSplitConfigs(options: FactoryOptions): Promise<{
+async function buildSplitConfigs(options: Record<string, unknown>): Promise<{
 	fast: Array<TypedFlatConfigItem>;
 	full: Array<TypedFlatConfigItem>;
 	slow: Array<TypedFlatConfigItem>;

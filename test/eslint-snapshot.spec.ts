@@ -24,8 +24,8 @@ function findNamingRule(
 }
 
 function findUnicornRules(
-	configs: Array<TypedFlatConfigItem>,
-): TypedFlatConfigItem["rules"] | undefined {
+	configs: Array<{ name?: string; rules?: Record<string, unknown> }>,
+): Record<string, unknown> | undefined {
 	return configs.find((config) => config.name === "isentinel/unicorn/rules")?.rules;
 }
 

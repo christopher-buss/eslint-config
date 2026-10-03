@@ -1,4 +1,4 @@
-import { GLOB_MARKDOWN_CODE } from "../globs.ts";
+import { GLOB_MARKDOWN_CODE, GLOB_SRC_EXTENSIONS } from "../globs.ts";
 import {
 	isPresetRuleJsPlugin,
 	isPresetRuleOxlintCovered,
@@ -9,6 +9,28 @@ import type { OxlintRoute } from "../oxlint/routing.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 const HYBRID_FORMATTING_RULES = new Set(["oxfmt/oxfmt"]);
+
+/** The real file extensions oxlint can parse. */
+const JS_TS_EXTENSIONS: ReadonlySet<string> = new Set(GLOB_SRC_EXTENSIONS);
+
+/** A glob wildcard, which makes an extension fragment match anything. */
+const GLOB_WILDCARD = /[*?]/;
+
+/** One brace or bracket group, with no nesting. */
+const GLOB_GROUP = /\{[^{}]*\}|\[[^[\]]*\]/gu;
+
+/**
+ * {@link GLOB_GROUP} as a capturing splitter, so the groups survive a split.
+ */
+const GLOB_GROUP_SPLIT = /(\{[^{}]*\}|\[[^[\]]*\])/u;
+
+/**
+ * Any glob group delimiter, left over when a group is nested or unterminated.
+ */
+const GLOB_GROUP_DELIMITER = /[{}[\]]/u;
+
+/** A single character, used to list the members of a bracket group. */
+const GLOB_ANY_CHARACTER = /./gu;
 
 /**
  * How much of the mapping oxlint owns in hybrid mode.
@@ -29,8 +51,10 @@ interface DeadRuleReference {
  * Warn when a user-supplied config references a rule that oxlint owns in hybrid
  * mode (`oxlint: true`). The preset drops every oxlint-covered rule from the
  * ESLint side and lets oxlint format real JS/TS files, so such entries silently
- * do nothing. Markdown-scoped configs are exempt: oxlint cannot lint Markdown
- * virtual files, so the preset re-enables those rules there.
+ * do nothing. Configs oxlint cannot reach are exempt: Markdown-scoped ones
+ * (oxlint cannot lint Markdown virtual files, so the preset re-enables those
+ * rules there) and ones scoped to a non-JS/TS language, which oxlint never
+ * parses.
  *
  * @param configs - The resolved flat config items.
  * @param mode - The hybrid mode; in `native` mode jsPlugin rules and formatting
@@ -78,6 +102,11 @@ export function warnMissingTsgolint(): void {
  * sibling is inserted directly after the original so later configs (for
  * example the markdown disables) still take precedence.
  *
+ * Configs scoped to a language oxlint does not parse are skipped outright: it
+ * reads only the JS/TS family, so handing it `oxfmt/oxfmt` for YAML, JSON, CSS
+ * or GraphQL would drop the formatter from ESLint without any engine picking it
+ * up. See {@link targetsJsOrTs}.
+ *
  * @param configs - The resolved flat config items (mutated in place).
  * @param typeAware - Whether oxlint runs type-aware (oxlint-tsgolint present).
  *   When `false`, tsgolint rules are kept in ESLint so they do not vanish from
@@ -96,7 +125,8 @@ export function dropOxlintCoveredRules(
 			!config.name.startsWith("isentinel/") ||
 			config.name.endsWith("/markdown-code") ||
 			config.rules === undefined ||
-			targetsMarkdown(config.files)
+			targetsMarkdown(config.files) ||
+			!targetsJsOrTs(config.files)
 		) {
 			continue;
 		}
@@ -178,6 +208,125 @@ function targetsMarkdown(files: TypedFlatConfigItem["files"]): boolean {
 	);
 }
 
+/**
+ * The strings one part of a {@link GLOB_GROUP_SPLIT} split can stand for: the
+ * comma-separated members of a brace group, the individual characters of a
+ * bracket group, or the literal text itself. A part that still holds a group
+ * delimiter is a nested or unterminated group, which is not expanded.
+ *
+ * @param part - One part of a glob fragment split on its groups.
+ * @returns The alternatives, or `undefined` when the part is not expandable.
+ */
+function groupAlternatives(part: string): Array<string> | undefined {
+	const body = part.slice(1, -1);
+	if (part.startsWith("{")) {
+		return body.split(",");
+	}
+
+	if (part.startsWith("[")) {
+		return body.match(GLOB_ANY_CHARACTER) ?? [];
+	}
+
+	return GLOB_GROUP_DELIMITER.test(part) ? undefined : [part];
+}
+
+/**
+ * Expand the brace and character-class alternatives of a glob fragment.
+ *
+ * Only the closed forms the preset's globs use are handled (`{,c,m}`, `[jt]`);
+ * anything with a wildcard, a nested group or an unterminated group yields
+ * `undefined`, meaning "could be anything". Callers treat that as a match, so
+ * an unknown pattern keeps the pre-existing drop behavior.
+ *
+ * @param fragment - The glob fragment to expand.
+ * @returns Every literal string the fragment can produce, or `undefined` when
+ *   the fragment is not a closed set of literals.
+ */
+function expandGlobAlternatives(fragment: string): Array<string> | undefined {
+	if (GLOB_WILDCARD.test(fragment)) {
+		return undefined;
+	}
+
+	let results = [""];
+	for (const part of fragment.split(GLOB_GROUP_SPLIT)) {
+		const alternatives = groupAlternatives(part);
+		if (alternatives === undefined) {
+			return undefined;
+		}
+
+		results = results.flatMap((prefix) => {
+			return alternatives.map((alternative) => prefix + alternative);
+		});
+	}
+
+	return results;
+}
+
+/**
+ * The index of the extension dot in a glob's last path segment, or `-1` when it
+ * has none. Dots inside a brace or bracket group are masked out first: they
+ * belong to an alternative, not to the extension boundary.
+ *
+ * @param segment - The last path segment of a `files` pattern.
+ * @returns The index of the extension dot, or `-1`.
+ */
+function extensionDotIndex(segment: string): number {
+	const masked = segment.replaceAll(GLOB_GROUP, (group) => "\0".repeat(group.length));
+	return masked.lastIndexOf(".");
+}
+
+/**
+ * Whether a single `files` pattern can match a file oxlint reads.
+ *
+ * Oxlint parses only the JS/TS family, so a pattern whose extension is a closed
+ * set of non-JS/TS extensions (`**\/*.y{,a}ml`, `**\/*.json{,5,c}`) describes
+ * files oxlint never sees. A pattern whose last segment has no extension, or
+ * whose extension is not a closed set, matches conservatively.
+ *
+ * @param pattern - The `files` pattern to classify.
+ * @returns Whether oxlint can lint something the pattern matches.
+ */
+function patternTargetsJsOrTs(pattern: string): boolean {
+	const segment = pattern.slice(pattern.lastIndexOf("/") + 1);
+	const dot = extensionDotIndex(segment);
+	if (dot === -1) {
+		return true;
+	}
+
+	const extensions = expandGlobAlternatives(segment.slice(dot + 1));
+	if (extensions === undefined) {
+		return true;
+	}
+
+	return extensions.some((extension) => JS_TS_EXTENSIONS.has(extension));
+}
+
+/**
+ * Whether a config's `files` reach any file oxlint can lint.
+ *
+ * Hybrid mode only hands a rule to oxlint for the files oxlint actually parses.
+ * A config scoped to YAML, JSON, CSS or GraphQL is invisible to oxlint, so its
+ * rules must stay in ESLint or they run in neither engine — the case that
+ * silently dropped `oxfmt/oxfmt` from every non-JS formatting config.
+ *
+ * @param files - The config's `files` patterns; nested arrays are AND-combined,
+ *   so they only reach JS/TS when every member does.
+ * @returns Whether oxlint can lint something the config targets.
+ */
+function targetsJsOrTs(files: TypedFlatConfigItem["files"]): boolean {
+	if (files === undefined || files.length === 0) {
+		return true;
+	}
+
+	return files.some((entry) => {
+		if (typeof entry === "string") {
+			return patternTargetsJsOrTs(entry);
+		}
+
+		return entry.every((pattern) => patternTargetsJsOrTs(pattern));
+	});
+}
+
 function findDeadMappedRules(
 	configs: Array<TypedFlatConfigItem>,
 	mode: OxlintHybridMode,
@@ -185,7 +334,12 @@ function findDeadMappedRules(
 	const references: Array<DeadRuleReference> = [];
 
 	for (const config of configs) {
-		if (config.rules === undefined || isPresetConfig(config) || targetsMarkdown(config.files)) {
+		if (
+			config.rules === undefined ||
+			isPresetConfig(config) ||
+			targetsMarkdown(config.files) ||
+			!targetsJsOrTs(config.files)
+		) {
 			continue;
 		}
 

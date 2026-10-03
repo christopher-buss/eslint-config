@@ -12,10 +12,10 @@ import { dependenciesMap } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 
 /** Scripts the wizard wires up so `pnpm lint` drives the hybrid runner. */
-export const LINT_SCRIPTS = {
+export const LINT_SCRIPTS: Record<string, string> = {
 	"lint": "isentinel-lint",
 	"lint:fix": "isentinel-lint --fix",
-} satisfies Record<string, string>;
+};
 
 /** Whether an existing script should be overwritten by the new value. */
 export type ConfirmOverwrite = (
@@ -23,9 +23,6 @@ export type ConfirmOverwrite = (
 	existing: string,
 	desired: string,
 ) => Promise<boolean>;
-
-/** A `package.json` `scripts` block. */
-export type PackageScripts = Record<string, string | undefined>;
 
 /** Outcome of merging {@link LINT_SCRIPTS} into a scripts block. */
 export interface ScriptMergeResult {
@@ -46,7 +43,7 @@ export interface ScriptMergeResult {
  * @returns Which scripts were added and which were overwritten.
  */
 export async function mergeLintScripts(
-	scripts: PackageScripts,
+	scripts: Partial<Record<string, string>>,
 	options: { confirmOverwrite?: ConfirmOverwrite; skipPrompt: boolean },
 ): Promise<ScriptMergeResult> {
 	const added: Array<string> = [];

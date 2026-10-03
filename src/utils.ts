@@ -14,9 +14,8 @@ import { minVersion } from "semver";
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
-import type { JsonObject } from "./guards.ts";
 import { isRecord } from "./guards.ts";
-import type { Awaitable, ConfigSettings, TypedFlatConfigItem } from "./types.ts";
+import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
 
@@ -97,15 +96,6 @@ export const parserPlain = {
 };
 
 export type ResolvedOptions<T> = T extends boolean ? never : NonNullable<T>;
-
-/** The scoping and rule overrides a sub-config option carries. */
-export interface ResolvedOverrides {
-	files?: NonNullable<TypedFlatConfigItem["files"]>;
-	filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
-	ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
-	overrides: TypedFlatConfigItem["rules"];
-	overridesTypeAware: TypedFlatConfigItem["rules"];
-}
 
 /**
  * Combine array and non-array configs into a single array.
@@ -245,7 +235,7 @@ export function resolveWithDefaults<T>(value: boolean | T | undefined, defaults:
  * @returns The targeted Node major, or `undefined` when nothing declares one.
  */
 export function resolveNodeMajor(
-	settings?: Readonly<ConfigSettings>,
+	settings?: Readonly<Record<string, unknown>>,
 	cwd: string = process.cwd(),
 ): number | undefined {
 	const configured = readSettingsNodeVersion(settings);
@@ -261,7 +251,7 @@ export function resolveNodeMajor(
 			return undefined;
 		}
 
-		let manifest: JsonObject = {};
+		let manifest: Record<string, unknown> = {};
 		try {
 			const parsed: unknown = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 			if (isRecord(parsed)) {
@@ -304,7 +294,16 @@ export function toSourceGlob(glob: string): string {
 	return glob.startsWith("!") ? `!${glob.slice(1)}.${GLOB_SRC_EXT}` : `${glob}.${GLOB_SRC_EXT}`;
 }
 
-export function getOverrides(options: OptionsConfig, key: keyof OptionsConfig): ResolvedOverrides {
+export function getOverrides(
+	options: OptionsConfig,
+	key: keyof OptionsConfig,
+): {
+	files?: NonNullable<TypedFlatConfigItem["files"]>;
+	filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
+	ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
+	overrides: TypedFlatConfigItem["rules"];
+	overridesTypeAware: TypedFlatConfigItem["rules"];
+} {
 	const sub = resolveSubOptions(options, key);
 	if (!isRecord(sub)) {
 		return { overrides: {}, overridesTypeAware: {} };
@@ -313,14 +312,20 @@ export function getOverrides(options: OptionsConfig, key: keyof OptionsConfig): 
 	// `sub` is a resolved sub-option object; its optional fields carry the types
 	// declared on the public `OptionsConfig`, which the widened `key` erases.
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typed sub-option fields erased by the generic key
-	const typedSub = sub as Partial<ResolvedOverrides>;
+	const shape = sub as {
+		files?: NonNullable<TypedFlatConfigItem["files"]>;
+		filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
+		ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
+		overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
+		overridesTypeAware?: NonNullable<TypedFlatConfigItem["rules"]>;
+	};
 
 	return {
-		files: typedSub.files,
-		filesTypeAware: typedSub.filesTypeAware,
-		ignoresTypeAware: typedSub.ignoresTypeAware,
-		overrides: { ...typedSub.overrides },
-		overridesTypeAware: { ...typedSub.overridesTypeAware },
+		files: shape.files,
+		filesTypeAware: shape.filesTypeAware,
+		ignoresTypeAware: shape.ignoresTypeAware,
+		overrides: { ...shape.overrides },
+		overridesTypeAware: { ...shape.overridesTypeAware },
 	};
 }
 
@@ -556,15 +561,14 @@ export function mergeGlobs(
  * ];
  * ```
  *
- * @template Entry - The rule entry type, preserved through the rename.
  * @param rules - The rules object to rename.
  * @param map - A map of prefixes to rename.
  * @returns The renamed rules object.
  */
-export function renameRules<Entry>(
-	rules: Record<string, Entry>,
+export function renameRules(
+	rules: Record<string, any>,
 	map: Record<string, string>,
-): Record<string, Entry> {
+): Record<string, any> {
 	return Object.fromEntries(
 		Object.entries(rules).map(([key, value]) => {
 			for (const [from, to] of Object.entries(map)) {
@@ -724,19 +728,16 @@ export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
  * Override the severity of all rules in a rules object, preserving rule
  * options. Rules set to `"off"` are not affected.
  *
- * @template Entry - The rule entry type, preserved through the override.
  * @param rules - The rules object to override.
  * @param severity - The target severity level.
  * @param excludeRules - Rules to exclude from the severity override.
  * @returns A new rules object with overridden severities.
  */
-export function overrideRuleSeverity<Entry>(
-	rules: Record<string, Entry>,
+export function overrideRuleSeverity(
+	rules: Record<string, any>,
 	severity: "error" | "warn",
 	excludeRules: ReadonlySet<string> = new Set(),
-): Record<string, Entry> {
-	// The transformed entries keep the shape their family declares: a bare
-	// severity stays a severity, and `[severity, ...options]` keeps its options.
+): Record<string, any> {
 	return Object.fromEntries(
 		Object.entries(rules).map(([key, value]) => {
 			if (value === "off" || value === 0 || excludeRules.has(key)) {
@@ -744,18 +745,16 @@ export function overrideRuleSeverity<Entry>(
 			}
 
 			if (Array.isArray(value)) {
-				const [currentSeverity, ...options] = value as Array<unknown>;
+				const [currentSeverity, ...options] = value;
 				if (currentSeverity === "off" || currentSeverity === 0) {
 					return [key, value];
 				}
 
-				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- swapping the severity of a valid entry leaves it valid for its family
-				return [key, [severity, ...options] as Entry];
+				return [key, [severity, ...options]];
 			}
 
 			if (value === "error" || value === "warn" || value === 1 || value === 2) {
-				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a bare severity is a valid entry for every family
-				return [key, severity as Entry];
+				return [key, severity];
 			}
 
 			return [key, value];
@@ -763,7 +762,7 @@ export function overrideRuleSeverity<Entry>(
 	);
 }
 
-export function shouldEnableFeature<T extends NonNullable<unknown>>(
+export function shouldEnableFeature<T extends Record<string, any>>(
 	options: boolean | T | undefined,
 	key: keyof T,
 	defaultValue = true,
@@ -801,7 +800,7 @@ function parseNodeMajor(range: string): number | undefined {
  * @param settings - The shared settings object, if any.
  * @returns The configured range, or `undefined` when unset.
  */
-function readSettingsNodeVersion(settings?: Readonly<ConfigSettings>): string | undefined {
+function readSettingsNodeVersion(settings?: Readonly<Record<string, unknown>>): string | undefined {
 	for (const key of ["n", "node"]) {
 		const setting = settings?.[key];
 		const version = isRecord(setting) ? setting["version"] : undefined;
@@ -821,7 +820,7 @@ function readSettingsNodeVersion(settings?: Readonly<ConfigSettings>): string | 
  * @param manifest - The parsed manifest.
  * @returns The declared range, or `undefined` when the manifest declares none.
  */
-function readNodeRange({ devEngines, engines }: JsonObject): string | undefined {
+function readNodeRange({ devEngines, engines }: Record<string, unknown>): string | undefined {
 	if (isRecord(engines) && typeof engines["node"] === "string") {
 		return engines["node"];
 	}
@@ -830,7 +829,7 @@ function readNodeRange({ devEngines, engines }: JsonObject): string | undefined 
 	const runtimes = Array.isArray(runtime) ? runtime : [runtime];
 
 	const match = runtimes.find(
-		(entry): entry is JsonObject => isRecord(entry) && entry["name"] === "node",
+		(entry): entry is Record<string, unknown> => isRecord(entry) && entry["name"] === "node",
 	);
 	const version = match?.["version"];
 	return typeof version === "string" ? version : undefined;

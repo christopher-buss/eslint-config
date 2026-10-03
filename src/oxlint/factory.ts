@@ -1,5 +1,11 @@
 import { isPackageExists } from "local-pkg";
-import type { ExternalPluginEntry, OxlintConfig, OxlintOverride, RuleCategories } from "oxlint";
+import type {
+	DummyRuleMap,
+	ExternalPluginEntry,
+	OxlintConfig,
+	OxlintOverride,
+	RuleCategories,
+} from "oxlint";
 import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
@@ -32,6 +38,7 @@ import { oxlintNode } from "./configs/node.ts";
 import { oxlintOxc } from "./configs/oxc.ts";
 import { oxlintOxfmt } from "./configs/oxfmt.ts";
 import { oxlintPerfectionist } from "./configs/perfectionist.ts";
+import { oxlintProjectStructure } from "./configs/project-structure.ts";
 import { oxlintPromise } from "./configs/promise.ts";
 import { oxlintReact } from "./configs/react.ts";
 import { oxlintRoblox } from "./configs/roblox.ts";
@@ -133,6 +140,7 @@ export function isentinel(
 		jsx: enableJsx = true,
 		options: linterOptions,
 		oxc: enableOxc = true,
+		projectStructure: enableProjectStructure = false,
 		react: enableReact = false,
 		root: customRootGlobs,
 		rules = {},
@@ -209,7 +217,9 @@ export function isentinel(
 	// Shared with the ESLint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
-	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
+	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
+		formatterOptions.prettierOptions,
+	);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({
@@ -359,6 +369,10 @@ export function isentinel(
 				...getOverrides(options, "eslintPlugin"),
 			}),
 		);
+	}
+
+	if (enableProjectStructure !== false) {
+		configs.push(oxlintProjectStructure(resolveSubOptions(options, "projectStructure")));
 	}
 
 	if (enableOxc) {
@@ -579,7 +593,7 @@ export function isentinel(
 					override.rules,
 					defaultSeverity,
 					severityExcludeRules,
-				);
+				) as DummyRuleMap;
 			}
 		}
 	}

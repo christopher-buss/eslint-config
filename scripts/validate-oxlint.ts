@@ -9,7 +9,6 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import type { DummyRuleMap } from "oxlint";
 
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/oxlint/index.ts";
@@ -81,7 +80,7 @@ const variants = [
 const jsPluginPrefixes = new Set<string>();
 const configRules = new Set<string>();
 
-function collectRules(rules: DummyRuleMap | undefined): void {
+function collectRules(rules: Record<string, unknown> | undefined): void {
 	const entries = Object.entries(rules ?? {});
 	for (const [key, value] of entries) {
 		if (value !== undefined) {

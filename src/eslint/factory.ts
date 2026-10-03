@@ -22,6 +22,7 @@ import {
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
+import type { PrettierOptions } from "./configs/index.ts";
 import {
 	comments,
 	disables,
@@ -40,6 +41,7 @@ import {
 	oxfmt,
 	perfectionist,
 	pnpm,
+	projectStructure,
 	promise,
 	react,
 	roblox,
@@ -247,6 +249,7 @@ export async function isentinel(
 		markdown: enableMarkdown = true,
 		oxlint: enableOxlint = false,
 		pnpm: enableCatalogs = findUpSync("pnpm-workspace.yaml") !== undefined,
+		projectStructure: enableProjectStructure = false,
 		react: enableReact = false,
 		root: customRootGlobs,
 		spellCheck: enableSpellCheck,
@@ -359,7 +362,9 @@ export async function isentinel(
 	// Shared with the oxlint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
-	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
+	const prettierSettings: PrettierOptions = resolvePrettierSettings(
+		formatterOptions.prettierOptions,
+	);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -379,6 +384,12 @@ export async function isentinel(
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
+				...("tsconfigPath" in typescriptOptions
+					? { tsconfigPath: typescriptOptions.tsconfigPath }
+					: {}),
+				...("typeAware" in typescriptOptions
+					? { typeAware: typescriptOptions.typeAware }
+					: {}),
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
@@ -497,6 +508,12 @@ export async function isentinel(
 				...testOptions,
 			}),
 		);
+	}
+
+	// Composed in "only" mode too, with its rule stripped by the split: the
+	// source disable comments have to resolve in the type-aware pass as well.
+	if (enableProjectStructure !== false) {
+		configs.push(projectStructure(resolveSubOptions(options, "projectStructure")));
 	}
 
 	if (enableReact !== false) {

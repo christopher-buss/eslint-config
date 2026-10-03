@@ -22,6 +22,7 @@ export const typeAwarePrefixes: ReadonlySet<string> = new Set([
   "package-json",
   "perfectionist",
   "pnpm",
+  "project-structure",
   "promise",
   "react",
   "react-jsx",
@@ -43,7 +44,9 @@ export const typeAwarePrefixes: ReadonlySet<string> = new Set([
 export const typeAwareRuleIds: ReadonlySet<string> = new Set([
   "eslint-plugin/no-property-in-node",
   "flawless/naming-convention",
+  "flawless/no-materialized-filter-map",
   "flawless/no-redundant-type-annotation",
+  "flawless/no-reflect-set",
   "flawless/no-unknown-returns",
   "flawless/prefer-read-only-props",
   "jest/no-error-equal",

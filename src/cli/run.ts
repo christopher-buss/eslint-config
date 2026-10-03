@@ -19,16 +19,6 @@ export interface CliRunOptions {
 	yes?: boolean;
 }
 
-/**
- * The prompt answers, read back loosely: `group`'s generics cannot express the
- * early-returning generators, so each field is validated below instead.
- */
-interface GroupedAnswers {
-	frameworks?: unknown;
-	uncommittedConfirmed?: unknown;
-	updateVscodeSettings?: unknown;
-}
-
 export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	const argumentSkipPrompt = !!(process.env["SKIP_PROMPT"] ?? "") || options.yes;
 	const argumentTemplate = options.frameworks
@@ -54,7 +44,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	};
 
 	if (argumentSkipPrompt !== true) {
-		const grouped: GroupedAnswers = await group(
+		const grouped: Record<string, unknown> = await group(
 			{
 				uncommittedConfirmed: async () => {
 					if (isGitClean()) {

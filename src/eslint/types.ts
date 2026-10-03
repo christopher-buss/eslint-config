@@ -95,6 +95,41 @@ export interface NamingConfig extends OptionsOverridesTypeAware {
 	selectorsTsx?: Array<NamingSelector>;
 }
 
+export interface ProjectStructureConfig extends OptionsOverrides {
+	/**
+	 * The files each linted source file has to sit next to, as
+	 * `enforceExistence` templates. Takes the plugin's name placeholders
+	 * (`{nodeName}`, `{NodeName}`, `{node-name}`, `{node_name}`,
+	 * `{NODE_NAME}`) plus `{ext}` for the extension of the file that matched.
+	 * A file already matching a template is exempt from it.
+	 *
+	 * @default ["{node-name}.spec.{ext}"]
+	 */
+	enforceExistence?: Array<string> | string;
+
+	/**
+	 * Files exempt from the check.
+	 *
+	 * @default [...GLOB_TESTS, GLOB_DTS, ...GLOB_BUILD_CONFIGS]
+	 */
+	ignores?: Array<string>;
+
+	/**
+	 * The folder the enforced paths resolve against, and where the plugin
+	 * writes `projectStructure.cache.json` when it reports.
+	 *
+	 * @default process.cwd()
+	 */
+	projectRoot?: string;
+
+	/**
+	 * Restricts the check to one subtree of `projectRoot`, as a relative path.
+	 *
+	 * @default undefined - the whole of `projectRoot`
+	 */
+	structureRoot?: string;
+}
+
 export interface OptionsTypeScriptParserOptions {
 	/**
 	 * Glob patterns for files that should be type aware.
@@ -485,6 +520,15 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * @see https://github.com/antfu/pnpm-workspace-utils
 	 */
 	pnpm?: boolean | OptionsPnpm;
+
+	/**
+	 * Require every source file to have a co-located test file, via
+	 * [eslint-plugin-project-structure](https://github.com/Igorkowalski94/eslint-plugin-project-structure).
+	 *
+	 * @default false
+	 * @requires eslint-plugin-project-structure
+	 */
+	projectStructure?: boolean | ProjectStructureConfig;
 
 	/**
 	 * Enable react rules.

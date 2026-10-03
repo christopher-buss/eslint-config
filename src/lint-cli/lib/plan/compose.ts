@@ -56,6 +56,9 @@ export function composePasses(
 				ci: runPlan.ci,
 				concurrency: pass.concurrency,
 				eslintLabel: pass.descriptor.label,
+				// Every pass is a check. A `--fix` run applies its fixes in one
+				// further child, composed once these have reported.
+				fix: false,
 				paths: options.paths,
 				typeAwareEnv: pass.descriptor.typeAwareEnv,
 			}),

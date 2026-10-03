@@ -69,6 +69,7 @@ interface OverrideSiteChains {
 	jsonc: [JsoncRuleDefaults];
 	markdown: [MarkdownRuleDefaults];
 	naming: FeatureChain;
+	projectStructure: FeatureChain;
 	react: ReactChain;
 	roblox: MainChain;
 	toml: [TomlRuleDefaults];

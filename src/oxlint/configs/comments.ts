@@ -1,5 +1,3 @@
-import type { Options as PrettierOptions } from "prettier";
-
 import { GLOB_SRC } from "../../globs.ts";
 import { commentLengthRules, commentsRules } from "../../rules/comments.ts";
 import type { OptionsStylistic } from "../../types.ts";
@@ -10,7 +8,7 @@ export function oxlintComments({
 	prettierOptions = {},
 	stylistic = true,
 }: OptionsStylistic & {
-	prettierOptions?: PrettierOptions;
+	prettierOptions?: Record<string, unknown>;
 } = {}): Array<TypedOxlintConfigItem> {
 	return [
 		{
@@ -51,8 +49,8 @@ export function oxlintComments({
 						multiLineMaxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
 						semanticComments: ["oxlint-disable", "oxlint-enable"],
 						tabSize:
-							typeof prettierOptions.tabWidth === "number"
-								? prettierOptions.tabWidth
+							typeof prettierOptions["tabWidth"] === "number"
+								? prettierOptions["tabWidth"]
 								: 4,
 					}),
 				})

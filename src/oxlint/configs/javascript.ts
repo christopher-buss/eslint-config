@@ -12,9 +12,6 @@ import type {
 import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
-/** Oxlint's globals map: a name to the access it is granted. */
-type GlobalsMap = Record<string, "readonly" | "writable">;
-
 export function oxlintJavascript(
 	options: OptionsFiles &
 		OptionsHasRoblox &
@@ -52,11 +49,11 @@ export function oxlintJavascript(
 function toGlobals(
 	source: Record<string, boolean>,
 	override?: "readonly" | "writable",
-): GlobalsMap {
-	return Object.fromEntries(
-		Object.entries(source).map(([key, value]) => [
-			key,
-			override ?? (value ? "writable" : "readonly"),
-		]),
-	);
+): Record<string, "readonly" | "writable"> {
+	const result: Record<string, "readonly" | "writable"> = {};
+	for (const [key, value] of Object.entries(source)) {
+		result[key] = override ?? (value ? "writable" : "readonly");
+	}
+
+	return result;
 }

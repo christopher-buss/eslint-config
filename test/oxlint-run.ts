@@ -1,3 +1,4 @@
+import type { SpawnSyncReturns } from "node:child_process";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -31,20 +32,6 @@ interface OxlintDiagnostic {
 	code?: string;
 	filename: string;
 	labels: Array<{ span: { line: number } }>;
-}
-
-/**
- * Spawn oxlint and parse its JSON report.
- *
- * @param workingDirectory - The directory to lint.
- * @returns The raw diagnostics, plus the run details used in error messages.
- * @throws {Error} When oxlint cannot run, or emits output that is not JSON.
- */
-/** One oxlint run: its diagnostics, plus the details error messages quote. */
-interface OxlintRun {
-	diagnostics: Array<unknown>;
-	runContext: string;
-	stdout: string;
 }
 
 /**
@@ -118,8 +105,19 @@ export function runOxlintFix(workingDirectory: string, file: string): void {
 	}
 }
 
-function spawnOxlint(workingDirectory: string): OxlintRun {
-	const result = spawnSync(
+/**
+ * Spawn oxlint and parse its JSON report.
+ *
+ * @param workingDirectory - The directory to lint.
+ * @returns The raw diagnostics, plus the run details used in error messages.
+ * @throws {Error} When oxlint cannot run, or emits output that is not JSON.
+ */
+function spawnOxlint(workingDirectory: string): {
+	diagnostics: Array<unknown>;
+	runContext: string;
+	stdout: string;
+} {
+	const result: SpawnSyncReturns<string> = spawnSync(
 		oxlintBinary(),
 		["-c", ".oxlintrc.json", "--disable-nested-config", "-f", "json", "."],
 		{

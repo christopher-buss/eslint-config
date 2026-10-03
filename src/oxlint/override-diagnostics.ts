@@ -13,11 +13,11 @@ export interface DroppedOverride {
 	rule: string;
 }
 
-const REASON_TEXT = {
+const REASON_TEXT: Readonly<Record<DroppedOverrideReason, string>> = {
 	"eslint-only": "oxlint cannot run this rule; it stays in ESLint",
 	"missing-plugin": "the plugin that owns it is not installed",
 	"native-only": "it needs a jsPlugin, and `jsPlugins: false` is set",
-} satisfies Readonly<Record<DroppedOverrideReason, string>>;
+};
 
 /**
  * Override diagnostics for the config build in progress: the entries that never
@@ -31,18 +31,6 @@ const REASON_TEXT = {
  */
 const droppedOverrides: Array<DroppedOverride> = [];
 const overrideRules = new Set<string>();
-
-/**
- * Take everything recorded since the last call, emptying both buffers.
- *
- * @returns The dropped overrides (deduplicated by rule and reason) and the
- *   oxlint names of the overrides that were emitted.
- */
-/** What one config build did with the overrides it was handed. */
-export interface OverrideDiagnostics {
-	dropped: Array<DroppedOverride>;
-	emitted: ReadonlySet<string>;
-}
 
 /**
  * Record an override that never reached the generated config.
@@ -66,7 +54,16 @@ export function recordOverrideRules(rules: Iterable<string>): void {
 	}
 }
 
-export function takeOverrideDiagnostics(): OverrideDiagnostics {
+/**
+ * Take everything recorded since the last call, emptying both buffers.
+ *
+ * @returns The dropped overrides (deduplicated by rule and reason) and the
+ *   oxlint names of the overrides that were emitted.
+ */
+export function takeOverrideDiagnostics(): {
+	dropped: Array<DroppedOverride>;
+	emitted: ReadonlySet<string>;
+} {
 	const taken = droppedOverrides.splice(0);
 	const emitted = new Set(overrideRules);
 	overrideRules.clear();

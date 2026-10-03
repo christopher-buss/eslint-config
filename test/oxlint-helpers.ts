@@ -11,12 +11,11 @@ const MATCH_OPTIONS = { dot: true } as const;
 /**
  * Add every enabled rule from a rule map to the given set.
  *
- * @template Entry - The rule entry type.
  * @param rules - The rule map to scan.
  * @param enabled - The set collecting enabled rule names.
  */
-export function collectEnabledRules<Entry>(
-	rules: Record<string, Entry> | undefined,
+export function collectEnabledRules(
+	rules: Record<string, unknown> | undefined,
 	enabled: Set<string>,
 ): void {
 	const entries = Object.entries(rules ?? {});
@@ -61,12 +60,11 @@ export function enabledEslintRules(configs: Array<TypedFlatConfigItem>): Set<str
 /**
  * Apply a rule map onto an effective-severity map (later entries win).
  *
- * @template Entry - The rule entry type.
  * @param rules - The rule map to apply.
  * @param effective - The effective severity map (mutated).
  */
-export function applyRules<Entry>(
-	rules: Record<string, Entry> | undefined,
+export function applyRules(
+	rules: Record<string, unknown> | undefined,
 	effective: Map<string, Severity>,
 ): void {
 	const entries = Object.entries(rules ?? {});

@@ -2,10 +2,8 @@ import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
 import { oxlintNativeRuleNames } from "../src/generated/oxlint-native.ts";
-import type { JsonObject, JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
-import { oxlintJsPluginSpecifiers } from "../src/oxlint/adapters.ts";
 import {
 	isOxlintCovered,
 	isentinel as oxlintIsentinel,
@@ -20,12 +18,11 @@ import {
 	effectiveOxlintRules,
 	registeredNativePlugins,
 } from "./oxlint-helpers.ts";
-import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 interface ParityVariant {
 	name: string;
 	files: Array<string>;
-	options: FactoryOptions;
+	options: Record<string, unknown>;
 }
 
 /**
@@ -268,16 +265,6 @@ describe("oxlint hybrid hand-off", () => {
 });
 
 /**
- * Read the `rules` record off a dynamically imported plugin module, tolerating
- * both default and namespace exports.
- *
- * @param module_ - The imported module namespace.
- * @returns The plugin's rule definitions, or an empty record.
- */
-/** A rules map keyed by rule name, read as data. */
-type OxlintRuleMap = Record<string, JsonValue>;
-
-/**
  * Collect all enabled jsPlugin-prefixed rules per plugin alias from a
  * generated oxlint config.
  *
@@ -294,10 +281,9 @@ function collectEmittedJsPluginRules(
 	/**
 	 * Record the jsPlugin-prefixed enabled rules of one rule map.
 	 *
-	 * @template Entry - The rule entry type.
 	 * @param rules - The rule map to scan.
 	 */
-	function collectFrom<Entry>(rules: Record<string, Entry> | undefined): void {
+	function collectFrom(rules: Record<string, unknown> | undefined): void {
 		const entries = Object.entries(rules ?? {});
 		for (const [rule, value] of entries) {
 			const severity = Array.isArray(value) ? (value[0] as unknown) : value;
@@ -345,7 +331,14 @@ function jsPluginSpecifiers(config: OxlintConfig): Map<string, string> {
 	return specifiers;
 }
 
-function extractPluginRules(module_: unknown): OxlintRuleMap {
+/**
+ * Read the `rules` record off a dynamically imported plugin module, tolerating
+ * both default and namespace exports.
+ *
+ * @param module_ - The imported module namespace.
+ * @returns The plugin's rule definitions, or an empty record.
+ */
+function extractPluginRules(module_: unknown): Record<string, unknown> {
 	if (!isRecord(module_)) {
 		return {};
 	}
@@ -615,7 +608,7 @@ describe("oxlint env and globals", () => {
 				(
 					override,
 				): override is (typeof overrides)[number] & {
-					globals: JsonObject;
+					globals: Record<string, unknown>;
 				} => {
 					return override.globals !== undefined;
 				},
@@ -652,7 +645,7 @@ function enabledJsdocRules(effective: Map<string, Severity>, translate: boolean)
  * @returns The eslint and oxlint enabled jsdoc rule sets for `src/index.ts`.
  */
 async function jsdocRuleSets(
-	options: FactoryOptions,
+	options: Record<string, unknown>,
 ): Promise<{ eslint: Set<string>; oxlint: Set<string> }> {
 	const eslintOnly = [...(await isentinel({ name: "test/jsdoc-eslint", ...options }))];
 	const oxlintConfig = oxlintIsentinel({ name: "test/jsdoc-oxlint", ...options });
@@ -689,7 +682,7 @@ describe("oxlint jsdoc parity", () => {
 });
 
 describe("oxlint jsPlugin type-awareness", () => {
-	const jsPluginVariants: Array<JsonObject> = [
+	const jsPluginVariants: Array<Record<string, unknown>> = [
 		{ ...baseOptions },
 		{
 			...baseOptions,
@@ -730,7 +723,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 			expect(registered.size).toBeGreaterThan(0);
 
 			for (const [prefix, specifier] of registered) {
-				const packageName = oxlintJsPluginSpecifiers.get(prefix)!;
+				const packageName = oxlintJsPlugins[prefix]!;
 
 				expect(isPackageExists(packageName), `${packageName} should be installed`).toBe(
 					true,

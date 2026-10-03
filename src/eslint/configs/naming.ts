@@ -3,7 +3,6 @@ import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
 	NamingConfig,
-	NamingSelector,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
@@ -430,7 +429,7 @@ export async function naming(
  *
  * @returns The naming-convention selectors for `@rbxts/react` types.
  */
-function reactSelectors(): Array<NamingSelector> {
+function reactSelectors(): Array<Record<string, unknown>> {
 	return [
 		{
 			// React components and contexts conventionally use PascalCase

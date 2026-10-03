@@ -71,34 +71,6 @@ const rootDirectory = path.resolve(path.dirname(scriptPath), "..");
 const distributionDirectory = path.join(rootDirectory, "dist");
 
 /**
- * Builds a program from the public entry points and sorts every declaration it
- * loaded by owner.
- *
- * @param mode - The resolution mode to build under.
- * @returns The packages loaded, and the files belonging to no package — our own
- *   emitted declarations.
- */
-/** Files a probe compile pulled in: ours, and the packages they came from. */
-interface LoadedFiles {
-	ours: Array<string>;
-	packages: Set<string>;
-}
-
-/**
- * Diffs the flags against the derived set.
- *
- * @param injecting - The entries that inject something, so have a flag that can
- *   be wrong.
- * @param loaded - The packages a consumer's program loads.
- * @returns The names flagged too little and too much.
- */
-/** Entries whose `consumerFacing` flag disagrees with what actually loaded. */
-interface FlagAudit {
-	missing: Array<string>;
-	stale: Array<string>;
-}
-
-/**
  * Reduces a loaded file path to the package that owns it. The last
  * `node_modules` segment wins, which is what identifies the package under
  * either store layout: a global virtual store path ends in
@@ -218,7 +190,18 @@ function createProbeHost(
 	return host;
 }
 
-function loadedFiles(mode: (typeof RESOLUTION_MODES)[number]): LoadedFiles {
+/**
+ * Builds a program from the public entry points and sorts every declaration it
+ * loaded by owner.
+ *
+ * @param mode - The resolution mode to build under.
+ * @returns The packages loaded, and the files belonging to no package — our own
+ *   emitted declarations.
+ */
+function loadedFiles(mode: (typeof RESOLUTION_MODES)[number]): {
+	ours: Array<string>;
+	packages: Set<string>;
+} {
 	const probePath = path.join(distributionDirectory, PROBE_FILE);
 	const probe = probeSource();
 	const options: ts.CompilerOptions = {
@@ -334,7 +317,18 @@ function findUndeclaredByUs(ours: Array<string>): Map<string, Array<string>> {
 	return undeclared;
 }
 
-function findDisagreements(injecting: typeof packageExtensions, loaded: Set<string>): FlagAudit {
+/**
+ * Diffs the flags against the derived set.
+ *
+ * @param injecting - The entries that inject something, so have a flag that can
+ *   be wrong.
+ * @param loaded - The packages a consumer's program loads.
+ * @returns The names flagged too little and too much.
+ */
+function findDisagreements(
+	injecting: typeof packageExtensions,
+	loaded: Set<string>,
+): { missing: Array<string>; stale: Array<string> } {
 	const missing: Array<string> = [];
 	const stale: Array<string> = [];
 
@@ -401,7 +395,7 @@ function report(loaded: Set<string>): number {
  * @returns Every package a consumer's program can load, and every declaration
  *   we emitted ourselves.
  */
-function reachable(): LoadedFiles {
+function reachable(): { ours: Array<string>; packages: Set<string> } {
 	const packages = new Set<string>();
 	const ours = new Set<string>();
 

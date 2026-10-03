@@ -64,7 +64,10 @@ export const TYPED_PASS: PassDescriptor = {
 	typeAwareOnly: true,
 };
 
-/** The full-config pass (env unset, `.eslintcache`): CI, `--fix`, `=full`. */
+/**
+ * The full-config pass (env unset, `.eslintcache`): CI, `=full`, and the child
+ * a `--fix` run spawns over the files its checks reported (see `planFixChild`).
+ */
 export const FULL_PASS: PassDescriptor = {
 	cacheFileBase: CACHE_FILE_DEFAULT,
 	filesPerWorker: (limits) => limits.filesPerWorker,
@@ -76,19 +79,23 @@ export const FULL_PASS: PassDescriptor = {
 
 /**
  * Select the ESLint passes for the resolved mode. An explicit `--type-aware`
- * always wins: `=full` (and `--fix`) collapse to the single full pass, while
- * `=off`/`=only` run their one pass even in CI. Only when no mode is given does
- * CI change the default — collapsing the concurrent two-pass split to one full
- * pass; a local default run keeps the split (the typed pass may later be
- * skipped). CI's `--cache-strategy content` is applied by the command composer
- * to whichever pass runs, independently of this selection.
+ * always wins: `=full` collapses to the single full pass, while `=off`/`=only`
+ * run their one pass even in CI. Only when no mode is given does CI change the
+ * default — collapsing the concurrent two-pass split to one full pass; a local
+ * default run keeps the split (the typed pass may later be skipped). CI's
+ * `--cache-strategy content` is applied by the command composer to whichever
+ * pass runs, independently of this selection.
+ *
+ * `--fix` selects nothing of its own. Its ESLint children are the same checks
+ * any other run has, and the fix itself is one further child composed from what
+ * they reported (see `planFixChild`), which is why the checks stay concurrent.
  *
  * @param options - The parsed CLI options.
  * @param ci - Whether the run is in CI.
  * @returns The pass descriptors to plan, in run order.
  */
 export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDescriptor> {
-	if (options.fix || options.typeAware === "full") {
+	if (options.typeAware === "full") {
 		return [FULL_PASS];
 	}
 

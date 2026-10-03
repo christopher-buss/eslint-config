@@ -39,7 +39,7 @@ interface IncrementalBuildInfo {
 }
 
 /** The parts of a usable incremental buildinfo this check reads. */
-interface UsableBuildInfo {
+interface BuildInfoShape {
 	/** The `fileInfos` entries, positionally paired with the names. */
 	fileInfos: Array<unknown>;
 	/** Every file in the program, relative to the buildinfo's directory. */
@@ -126,15 +126,15 @@ export function isBuildInfoUnchanged({
 		}
 
 		const info: IncrementalBuildInfo = parsed;
-		const usable = readUsableBuildInfo(info, ts);
-		if (usable === undefined) {
+		const shape = readShape(info, ts);
+		if (shape === undefined) {
 			return false;
 		}
 
 		const directory = path.dirname(buildInfoPath);
 		return (
-			rootsMatch(usable, directory, fileNames, ts) &&
-			versionsMatch(usable, directory, ts, hashFromText)
+			rootsMatch(shape, directory, fileNames, ts) &&
+			versionsMatch(shape, directory, ts, hashFromText)
 		);
 	} catch {
 		return false;
@@ -182,10 +182,7 @@ function isNonEmpty(value: unknown): boolean {
  * @param ts - The resolved TypeScript module.
  * @returns The file names and file infos, or `undefined` when unusable.
  */
-function readUsableBuildInfo(
-	info: IncrementalBuildInfo,
-	ts: typeof TypeScript,
-): undefined | UsableBuildInfo {
+function readShape(info: IncrementalBuildInfo, ts: typeof TypeScript): BuildInfoShape | undefined {
 	if (info.version !== ts.version) {
 		return undefined;
 	}
@@ -288,14 +285,14 @@ function canonical(filePath: string, ts: typeof TypeScript): string {
  * run. `root` stores 1-based ids into `fileNames`, run-length encoded as either
  * a bare id or a `[start, end]` pair.
  *
- * @param usable - The buildinfo's root ids and file names.
+ * @param shape - The buildinfo's root ids and file names.
  * @param directory - The directory relative names resolve against.
  * @param fileNames - The absolute root file names the config resolves.
  * @param ts - The resolved TypeScript module.
  * @returns True when both sides hold the same roots.
  */
 function rootsMatch(
-	{ names, root }: UsableBuildInfo,
+	{ names, root }: BuildInfoShape,
 	directory: string,
 	fileNames: Array<string>,
 	ts: typeof TypeScript,
@@ -350,14 +347,14 @@ function storedVersion(info: unknown): string | undefined {
  * for it. A file that has gone missing counts as a mismatch, not an error: the
  * builder would have reported its dependents affected.
  *
- * @param usable - The buildinfo's file names and file infos.
+ * @param shape - The buildinfo's file names and file infos.
  * @param directory - The directory relative names resolve against.
  * @param ts - The resolved TypeScript module.
  * @param hashFromText - The compiler's own version hash.
  * @returns True when every stored version still matches the file on disk.
  */
 function versionsMatch(
-	{ fileInfos, names }: UsableBuildInfo,
+	{ fileInfos, names }: BuildInfoShape,
 	directory: string,
 	ts: typeof TypeScript,
 	hashFromText: HashFromText,

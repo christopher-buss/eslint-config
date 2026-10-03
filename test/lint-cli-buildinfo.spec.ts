@@ -10,7 +10,6 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it, onTestFinished } from "vitest";
 
 import { isRecord, isStringArray } from "../src/guards.ts";
-import type { JsonObject } from "../src/guards.ts";
 
 /** The A/B child (see `test/buildinfo-child.ts`). */
 const CHILD = fileURLToPath(new URL("./buildinfo-child.ts", import.meta.url));
@@ -49,21 +48,21 @@ const WIDE_TSCONFIG = JSON.stringify({
 const ORIGINAL_A = "export function a() { return 1; }\n";
 
 /** An edit to `src/a.ts` that changes its inferred return type. */
-const RETYPED_A = "export function a() { return 'text'; }\n";
+const RESHAPED_A = "export function a() { return 'text'; }\n";
 
 /**
  * The chain fixture: `c` imports `b` imports `a`, with inferred return types.
  */
-const CHAIN = {
+const CHAIN: Tree = {
 	"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
 	"src/a.ts": ORIGINAL_A,
 	"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
 	"src/c.ts": "import { b } from './b';\nexport function c() { return b(); }\n",
 	"tsconfig.json": TSCONFIG,
-} satisfies Tree;
+};
 
 /** A workspace whose sibling package is linked from the root. */
-const WORKSPACE = {
+const WORKSPACE: Tree = {
 	"package.json": JSON.stringify({
 		name: "fixture",
 		dependencies: { sibling: "workspace:*" },
@@ -79,20 +78,20 @@ const WORKSPACE = {
 	"pnpm-workspace.yaml": "packages:\n  - packages/*\n",
 	"src/a.ts": ORIGINAL_A,
 	"tsconfig.json": TSCONFIG,
-} satisfies Tree;
+};
 
 /** A byte-order mark, which `ts.sys.readFile` strips and `fs` does not. */
 const BOM = "﻿";
 
 /** A fixture whose sources are stored in encodings `fs` would mangle. */
-const ENCODED = {
+const ENCODED: Tree = {
 	"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
 	"src/bom.ts": `${BOM}export function bom() { return 1; }\n`,
 	"tsconfig.json": TSCONFIG,
-} satisfies Tree;
+};
 
 /** A solution-style entry config whose files all live behind references. */
-const SOLUTION = {
+const SOLUTION: Tree = {
 	"app/b.ts": "import { a } from '../src/a';\nexport function b() { return a(); }\n",
 	"app/tsconfig.json": JSON.stringify({
 		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
@@ -109,7 +108,7 @@ const SOLUTION = {
 		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
 		include: ["src"],
 	}),
-} satisfies Tree;
+};
 
 /** One A/B scenario: what the tree starts as, and what happens to it. */
 interface Scenario {
@@ -180,7 +179,7 @@ function createFixture(tree: Tree): string {
  * @param file - The absolute file path.
  * @returns The parsed object.
  */
-function readJson(file: string): JsonObject {
+function readJson(file: string): Record<string, unknown> {
 	const parsed: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
 	return isRecord(parsed) ? parsed : {};
 }
@@ -339,7 +338,7 @@ describe("buildinfo fast path", () => {
 
 		const { builder, fast, fastPath } = compare({
 			mutate: (directory) => {
-				writeFile(path.join(directory, "src/a.ts"), RETYPED_A);
+				writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
 			},
 			tree: CHAIN,
 		});
@@ -354,7 +353,7 @@ describe("buildinfo fast path", () => {
 
 		const { builder, fast, fastPath } = compare({
 			mutate: (directory) => {
-				writeFile(path.join(directory, "src/a.ts"), RETYPED_A);
+				writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
 				runPass(directory);
 			},
 			tree: CHAIN,
@@ -374,7 +373,7 @@ describe("buildinfo fast path", () => {
 		const { builder, fast, fastPath } = compare({
 			mutate: (directory) => {
 				const fileA = path.join(directory, "src/a.ts");
-				writeFile(fileA, RETYPED_A);
+				writeFile(fileA, RESHAPED_A);
 				runPass(directory);
 				writeFile(fileA, ORIGINAL_A);
 			},
@@ -769,7 +768,7 @@ describe("persisted buildinfo", () => {
 		// forever from the first edit onwards and no other test would notice.
 		const directory = createFixture(CHAIN);
 		runPass(directory);
-		writeFile(path.join(directory, "src/a.ts"), RETYPED_A);
+		writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
 		runPass(directory);
 
 		const [file = ""] = stateFiles(directory, "tsbuildinfo");

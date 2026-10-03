@@ -32,11 +32,23 @@ export default isentinel(
 		},
 	},
 	{
-		name: "local/conditional-spread",
+		name: "local/flawless-pending",
 		rules: {
-			// Conditional empty-object spreads are how every config module here
-			// builds optional keys; the preset ships the rule for consumers.
+			// New preset rules this repo does not satisfy yet; the preset ships
+			// them on for consumers.
 			"flawless/no-conditional-empty-object-spread": "off",
+			"flawless/no-known-value-widening": "off",
+			"flawless/no-materialized-filter-map": "off",
+			"flawless/no-object-parameters": "off",
+			"flawless/no-redundant-type-annotation": "off",
+			"flawless/no-reflect-get": "off",
+			"flawless/no-reflect-set": "off",
+			"flawless/no-shape-in-symbol-names": "off",
+			"flawless/no-shared-mocks": "off",
+			"flawless/no-unknown-returns": "off",
+			"flawless/no-unsafe-dictionary-type": "off",
+			"flawless/prefer-mock-throw": "off",
+			"flawless/prefer-vitest-local-context": "off",
 		},
 	},
 	{

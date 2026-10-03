@@ -1,5 +1,3 @@
-import type { Options as PrettierOptions } from "prettier";
-
 import { GLOB_SRC } from "../../globs.ts";
 import { flawlessRules } from "../../rules/flawless.ts";
 import type { OptionsHasRoblox, OptionsStylistic } from "../../types.ts";
@@ -12,7 +10,7 @@ export function oxlintFlawless(
 		roblox = true,
 		stylistic = true,
 	}: OptionsHasRoblox & OptionsStylistic & { excludeFiles?: Array<string> } = {},
-	prettierOptions: PrettierOptions = {},
+	prettierOptions: Record<string, unknown> = {},
 ): Array<TypedOxlintConfigItem> {
 	const stylisticOptions = typeof stylistic === "object" ? stylistic : {};
 
@@ -23,13 +21,15 @@ export function oxlintFlawless(
 		rules: flawlessRules({
 			maxLen: stylisticOptions.maxLen,
 			printWidth:
-				typeof prettierOptions.printWidth === "number"
-					? prettierOptions.printWidth
+				typeof prettierOptions["printWidth"] === "number"
+					? prettierOptions["printWidth"]
 					: undefined,
 			roblox,
 			stylistic,
 			tabWidth:
-				typeof prettierOptions.tabWidth === "number" ? prettierOptions.tabWidth : undefined,
+				typeof prettierOptions["tabWidth"] === "number"
+					? prettierOptions["tabWidth"]
+					: undefined,
 		}),
 	});
 }

@@ -13,17 +13,6 @@ type RestrictedImportRule = NonNullable<TypedFlatConfigItem["rules"]>["no-restri
 const DOM_IMPORT_MESSAGE =
 	"Import from react-testing-library-lua instead; it re-exports the DOM utilities, and eslint-plugin-testing-library only detects one module per file.";
 
-/** One `no-restricted-imports` path entry. */
-interface DomImportRestriction {
-	name: string;
-	message: string;
-}
-
-/** The object form of a `no-restricted-imports` option. */
-interface ObjectStyleRestriction {
-	paths?: unknown;
-}
-
 /**
  * Build the direct DOM Testing Library import restriction shared by both
  * engines.
@@ -81,7 +70,7 @@ export function mergeRestrictedDomImportRule(
 
 	const [firstOption] = options;
 	if (options.length === 1 && isObjectStyleRestriction(firstOption)) {
-		const paths = Array.isArray(firstOption.paths) ? firstOption.paths : [];
+		const paths = Array.isArray(firstOption["paths"]) ? firstOption["paths"] : [];
 		if (paths.some((path) => isDomImportRestriction(path, domPackage))) {
 			return rule;
 		}
@@ -304,7 +293,7 @@ export function reactRules({
 	};
 }
 
-function domImportRestriction(domPackage: string): DomImportRestriction {
+function domImportRestriction(domPackage: string): { message: string; name: string } {
 	return {
 		name: domPackage,
 		message: DOM_IMPORT_MESSAGE,
@@ -317,6 +306,6 @@ function isDomImportRestriction(value: unknown, domPackage: string): boolean {
 	);
 }
 
-function isObjectStyleRestriction(value: unknown): value is ObjectStyleRestriction {
+function isObjectStyleRestriction(value: unknown): value is Record<string, unknown> {
 	return isRecord(value) && !("name" in value);
 }

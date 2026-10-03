@@ -11,12 +11,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
-/**
- * A synthetic basename for `createRequire`, which resolves relative to a file
- * rather than a directory. Spelled so it can never collide with a real consumer
- * module.
- */
-const RESOLVE_ANCHOR = "__isentinel-lint__.js";
+import { RESOLVE_ANCHOR } from "./resolve.ts";
 
 /** A resolved ESLint installation. */
 export interface EslintInstall {

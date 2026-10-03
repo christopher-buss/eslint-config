@@ -3,7 +3,6 @@ import crypto from "node:crypto";
 import path from "node:path";
 
 import { isRecord } from "../../../guards.ts";
-import type { JsonObject } from "../../../guards.ts";
 import { findWorkspaceRoot } from "../files/workspace.ts";
 import { stableStringify } from "../stable-json.ts";
 import { readFileIfPresent } from "../state.ts";
@@ -49,7 +48,7 @@ export const MANIFEST_FIELDS = [...RESOLUTION_FIELDS, "type"] as const;
 export function manifestSubset(
 	directory: string,
 	fields: ReadonlyArray<string>,
-): JsonObject | undefined {
+): Record<string, unknown> | undefined {
 	const raw = readFileIfPresent(path.join(directory, "package.json"));
 	if (raw === undefined) {
 		return undefined;
@@ -66,12 +65,10 @@ export function manifestSubset(
 		return undefined;
 	}
 
-	const subset: JsonObject = {};
+	const subset: Record<string, unknown> = {};
 	for (const field of fields) {
-		// Parsed JSON never holds `undefined`, so this is the presence check.
-		const value = parsed[field];
-		if (value !== undefined) {
-			subset[field] = value;
+		if (Object.hasOwn(parsed, field)) {
+			subset[field] = parsed[field];
 		}
 	}
 
@@ -96,7 +93,7 @@ export function computePackageJsonHash(cwd: string): string | undefined {
 		return undefined;
 	}
 
-	const combined: JsonObject = { local };
+	const combined: Record<string, unknown> = { local };
 	const root = findWorkspaceRoot(cwd);
 	if (root !== cwd) {
 		const rootSubset = manifestSubset(root, RESOLUTION_FIELDS);

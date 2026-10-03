@@ -40,14 +40,13 @@ import path from "node:path";
 import process from "node:process";
 
 import { requiresTypeChecking } from "../src/eslint/type-aware-split.ts";
-import type { JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel as eslintIsentinel } from "../src/index.ts";
 import {
 	isPruningViewConfig,
 	oxlintFamilyPolicies,
 	oxlintJsPluginPrefixRenames,
-	oxlintJsPluginSpecifiers,
+	oxlintJsPlugins,
 	splitRuleName,
 } from "../src/oxlint/adapters.ts";
 import { combine } from "../src/utils.ts";
@@ -204,13 +203,7 @@ const eslintRulePrefixes = new Set(
 	Array.from(eslintRuleKeys, (key) => key.slice(0, Math.max(0, key.lastIndexOf("/")))),
 );
 
-/**
- * A plugin's `rules` record, keyed by its local rule name. Read as data:
- * `ruleMetaOf` re-validates every field it takes off an entry.
- */
-type PluginRules = Record<string, JsonValue>;
-
-async function loadPluginRules(specifier: string): Promise<PluginRules> {
+async function loadPluginRules(specifier: string): Promise<Record<string, unknown>> {
 	const imported: unknown = await import(specifier);
 	if (!isRecord(imported)) {
 		throw new Error(`Cannot resolve module for jsPlugin package: ${specifier}`);
@@ -267,11 +260,11 @@ function recordJsPluginRule(eslintKey: string, rule: unknown): void {
 	}
 }
 
-const renamedPrefixPairs = [...oxlintJsPluginPrefixRenames];
+const renamedPrefixPairs = Object.entries(oxlintJsPluginPrefixRenames);
 renamedPrefixPairs.sort(([, a], [, b]) => collator.compare(a, b));
 
 for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
-	const specifier = oxlintJsPluginSpecifiers.get(oxlintPrefix);
+	const specifier = oxlintJsPlugins[oxlintPrefix];
 	if (specifier === undefined) {
 		throw new Error(`No jsPlugin specifier for renamed prefix: ${oxlintPrefix}`);
 	}
@@ -296,8 +289,8 @@ for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
 // JsPlugin prefixes that keep their ESLint-side names. Prefixes present in the
 // ESLint-side RuleOptions are picked up by a mapped type (which preserves the
 // plugin doc hovers); the rest get their types generated from the plugin.
-const renamedOxlintPrefixes = new Set(oxlintJsPluginPrefixRenames.values());
-const keptPrefixes = [...oxlintJsPluginSpecifiers.keys()]
+const renamedOxlintPrefixes = new Set(Object.values(oxlintJsPluginPrefixRenames));
+const keptPrefixes = Object.keys(oxlintJsPlugins)
 	.filter((prefix) => !renamedOxlintPrefixes.has(prefix))
 	.sort();
 const keptMappedPrefixes = keptPrefixes.filter((prefix) => eslintRulePrefixes.has(prefix));
@@ -309,7 +302,7 @@ const keptGeneratedPrefixes = keptPrefixes.filter((prefix) => !eslintRulePrefixe
 // plugin twice.
 const extraPlugins: Record<string, { rules?: unknown }> = {};
 for (const prefix of keptPrefixes) {
-	const specifier = oxlintJsPluginSpecifiers.get(prefix);
+	const specifier = oxlintJsPlugins[prefix];
 	if (specifier === undefined) {
 		// `keptPrefixes` is derived from `oxlintJsPlugins`, so this is
 		// unreachable; failing loudly beats silently dropping a whole plugin.
@@ -346,7 +339,6 @@ import type { Linter } from 'eslint'
 import type { DummyRule, DummyRuleMap } from 'oxlint'
 
 import type { RuleOptions } from '../typegen'
-import type { JsonValue } from "../src/guards.ts";
 
 /**
  * Rules implemented natively by oxlint (in Rust), including the tsgolint
@@ -531,7 +523,7 @@ for (const [rule, enabled] of rawRuleStates) {
 const unknownFamilies = new Set<string>();
 for (const rule of presetRuleNames) {
 	const { prefix } = splitRuleName(rule);
-	if (!oxlintFamilyPolicies.has(prefix)) {
+	if (oxlintFamilyPolicies[prefix] === undefined) {
 		unknownFamilies.add(prefix);
 	}
 }

@@ -6,14 +6,13 @@ import { describe, it } from "vitest";
 
 import { GLOB_SRC } from "../src/globs.ts";
 import { isentinel } from "../src/index.ts";
-import type { FactoryOptions } from "./snapshot-fixtures.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const MARKDOWN_FIXTURE = path.resolve(PROJECT_ROOT, "fixtures", "input", "markdown.md");
 
 interface MarkdownVariant {
 	name: string;
-	options: FactoryOptions;
+	options: Record<string, unknown>;
 }
 
 const variants: Array<MarkdownVariant> = [

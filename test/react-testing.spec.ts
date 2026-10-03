@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { react } from "../src/eslint/configs/react.ts";
-import type { JsonValue } from "../src/guards.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import { oxlintReact } from "../src/oxlint/configs/react.ts";
@@ -50,12 +49,6 @@ const COMPOSED_RESTRICTED_IMPORTS = [
 	},
 ];
 
-type EslintRestrictedImports = NonNullable<TypedFlatConfigItem["rules"]>["no-restricted-imports"];
-
-type OxlintRestrictedImports = NonNullable<
-	ReturnType<typeof oxlintIsentinel>["rules"]
->["no-restricted-imports"];
-
 async function getReactTestingConfig(testing: boolean) {
 	const configs = await react({ stylistic: false, testing, typeAware: false });
 	const reactRuleConfig = configs.find((config) => config.name === "isentinel/react/rules");
@@ -94,7 +87,7 @@ async function getRestrictedDomImportRules() {
 	return reactRuleConfig.rules["no-restricted-imports"];
 }
 
-function settingValue(settings: unknown, name: string): JsonValue | undefined {
+function settingValue(settings: unknown, name: string): unknown {
 	return isRecord(settings) ? settings[name] : undefined;
 }
 
@@ -130,19 +123,14 @@ function getOxlintTestingConfig() {
 	};
 }
 
-function getLastOxlintRestrictedImports(
-	config: ReturnType<typeof oxlintIsentinel>,
-): OxlintRestrictedImports {
+function getLastOxlintRestrictedImports(config: ReturnType<typeof oxlintIsentinel>): unknown {
 	return [
 		config.rules?.["no-restricted-imports"],
 		...(config.overrides ?? []).map((override) => override.rules?.["no-restricted-imports"]),
 	].findLast((rule) => rule !== undefined);
 }
 
-function findRestrictedImports(
-	configs: Array<TypedFlatConfigItem>,
-	name: string,
-): EslintRestrictedImports {
+function findRestrictedImports(configs: Array<TypedFlatConfigItem>, name: string): unknown {
 	return configs.find((config) => config.name === name)?.rules?.["no-restricted-imports"];
 }
 

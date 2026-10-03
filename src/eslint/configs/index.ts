@@ -16,6 +16,7 @@ export * from "./oxfmt.ts";
 export * from "./package-json.ts";
 export * from "./perfectionist.ts";
 export * from "./pnpm.ts";
+export * from "./project-structure.ts";
 export * from "./promise.ts";
 export * from "./react.ts";
 export * from "./roblox.ts";

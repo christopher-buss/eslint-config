@@ -63,6 +63,7 @@ export async function pnpm(
 						settings: {
 							catalogMode: "prefer",
 							cleanupUnusedCatalogs: true,
+							minimumReleaseAgeExcludePrune: true,
 							shellEmulator: true,
 							trustPolicy: "no-downgrade",
 							trustPolicyIgnoreAfter: 10080,
