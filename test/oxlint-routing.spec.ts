@@ -74,6 +74,15 @@ describe("generated Oxlint routing", () => {
 		expect(translateRuleToOxlint("jest/unbound-method")).toBe("jest-js/unbound-method");
 	});
 
+	it.for(["jsdoc/require-param", "ts/no-shadow", "vitest/prefer-each"])(
+		"keeps %s in ESLint while its native port misreports",
+		(rule, { expect }) => {
+			expect.assertions(1);
+
+			expect(resolveOxlintRule(rule)).toMatchObject({ kind: "eslint-only" });
+		},
+	);
+
 	// Categories can only ever switch native rules back on, so a rule the preset
 	// deliberately disables has to reach the config as an explicit "off" or a
 	// consumer setting `categories` would silently get it back. Native rules

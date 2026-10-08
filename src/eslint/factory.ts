@@ -216,6 +216,8 @@ export function isentinel<
  *   check.
  * @template C - The literal user-config tuple, used by the redundant-override
  *   check.
+ * @param options - The options for generating the user configuration items.
+ * @param userConfigs - Additional user configuration items.
  */
 export function isentinel<
 	const O extends Omit<OptionsConfig, "namedConfigs"> &

@@ -53,6 +53,8 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"format-lua/*": "Oxlint cannot lint Lua files",
 	"jest/* (type-aware)":
 		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
+	"jsdoc/require-param":
+		"Oxlint's native port reports nested functions inside an unexported documented function (https://github.com/oxc-project/oxc/issues/27470)",
 	"jsonc/yaml/toml/markdown/package-json/pnpm/sort-*":
 		"Oxlint only lints JS/TS files; JSON, YAML, TOML and Markdown stay in ESLint",
 	"react/* (type-aware)":
@@ -61,12 +63,16 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"Type-aware custom rules (lua-truthiness etc.); oxlint jsPlugins have no type information",
 	"sentinel/explicit-size-check":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
+	"ts/no-shadow":
+		"Oxlint's native port does not check members of declare namespace / declare module blocks in .d.ts files (https://github.com/oxc-project/oxc/issues/27469)",
 	"type-aware jsPlugin rules":
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise, ts/prefer-destructuring (also has no native oxlint port)",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"unicorn/no-useless-coercion":
 		"Optionally type-aware: values whose type is only known through TypeScript (a `string`-typed parameter, say) are missed without parser services, so it stays in ESLint (see optionallyTypeAwareRules)",
+	"vitest/prefer-each":
+		"Oxlint's native port ignores where test functions are imported from, so it reports loops over non-vitest helpers and misses aliased imports (https://github.com/oxc-project/oxc/issues/27471)",
 };
 
 /** Rules covered by a differently named native Oxc implementation. */
@@ -109,11 +115,17 @@ function isNonJsFlawlessName(name: string): boolean {
 }
 
 const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
+	"jsdoc/require-param":
+		"Oxlint applies an unexported outer function's JSDoc to a nested function (https://github.com/oxc-project/oxc/issues/27470).",
 	"style/jsx-function-call-newline": "Formatting-rule ownership remains with ESLint and oxfmt.",
+	"ts/no-shadow":
+		"Oxlint skips every member of a declare namespace or declare module in .d.ts files (https://github.com/oxc-project/oxc/issues/27469).",
 	"unicorn/no-missing-local-resource":
 		"The preset only enables this rule for Markdown virtual files, which Oxlint cannot lint.",
 	"unicorn/no-unsafe-string-replacement":
 		"Oxlint jsPlugin scope analysis cannot resolve template-literal replacements safely.",
+	"vitest/prefer-each":
+		"Oxlint ignores where test functions are imported from (https://github.com/oxc-project/oxc/issues/27471).",
 };
 
 /**

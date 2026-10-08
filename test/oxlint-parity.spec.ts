@@ -642,15 +642,18 @@ function enabledJsdocRules(effective: Map<string, Severity>, translate: boolean)
  * Effective enabled jsdoc rule sets for both engines under the given options.
  *
  * @param options - Factory options to apply to both engines.
- * @returns The eslint and oxlint enabled jsdoc rule sets for `src/index.ts`.
+ * @returns The eslint-only, hybrid ESLint and oxlint enabled jsdoc rule sets
+ *   for `src/index.ts`.
  */
 async function jsdocRuleSets(
 	options: Record<string, unknown>,
-): Promise<{ eslint: Set<string>; oxlint: Set<string> }> {
+): Promise<{ eslint: Set<string>; hybrid: Set<string>; oxlint: Set<string> }> {
 	const eslintOnly = [...(await isentinel({ name: "test/jsdoc-eslint", ...options }))];
+	const hybrid = [...(await isentinel({ name: "test/jsdoc-hybrid", ...options, oxlint: true }))];
 	const oxlintConfig = oxlintIsentinel({ name: "test/jsdoc-oxlint", ...options });
 	return {
 		eslint: enabledJsdocRules(effectiveEslintRules(eslintOnly, "src/index.ts"), true),
+		hybrid: enabledJsdocRules(effectiveEslintRules(hybrid, "src/index.ts"), false),
 		oxlint: enabledJsdocRules(effectiveOxlintRules(oxlintConfig, "src/index.ts"), false),
 	};
 }
@@ -659,12 +662,18 @@ describe("oxlint jsdoc parity", () => {
 	// Variant coverage matters: the in-repo consumer uses neither jsdoc:full
 	// nor package mode, so this asymmetry only surfaced on a real project.
 	it("should enable the full jsdoc tier on both engines under jsdoc:full", async ({ expect }) => {
-		expect.assertions(4);
+		expect.assertions(5);
 
-		const { eslint, oxlint } = await jsdocRuleSets({ ...baseOptions, jsdoc: { full: true } });
+		const { eslint, hybrid, oxlint } = await jsdocRuleSets({
+			...baseOptions,
+			jsdoc: { full: true },
+		});
 
-		expect(oxlint).toStrictEqual(eslint);
-		expect(oxlint.has("jsdoc/require-param")).toBe(true);
+		expect(new Set([...oxlint, ...Array.from(hybrid, translateRuleToOxlint)])).toStrictEqual(
+			eslint,
+		);
+		expect(oxlint.has("jsdoc/require-param")).toBe(false);
+		expect(hybrid).toStrictEqual(new Set(["jsdoc/require-param"]));
 		expect(oxlint.has("jsdoc/require-returns")).toBe(true);
 		expect(oxlint.has("jsdoc-js/require-template")).toBe(true);
 	});
