@@ -54,7 +54,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const mainConfig = configLines.map((index) => `  ${index}`).join("\n");
 	const additionalConfig: Array<string> = [];
 
-	const eslintConfigContent: string = getEslintConfigContent(mainConfig, additionalConfig);
+	const eslintConfigContent = getEslintConfigContent(mainConfig, additionalConfig);
 
 	await fsp.writeFile(pathFlatConfig, eslintConfigContent);
 	log.success(ansis.green(`Created ${configFileName}`));

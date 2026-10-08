@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, it, onTestFinished } from "vitest";
+import { describe, it } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
 import { oxlintBinary } from "./oxlint-run.ts";
@@ -90,6 +90,7 @@ async function runEslint(directory: string): Promise<Array<string>> {
 describe("no-duplicate-imports allowSeparateTypeImports parity", () => {
 	it("allows split type/value imports and flags true duplicates on both engines", async ({
 		expect,
+		onTestFinished,
 	}) => {
 		expect.assertions(3);
 

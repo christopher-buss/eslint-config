@@ -1,6 +1,6 @@
 import { ESLint } from "eslint";
 import path from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { describe, it, vi } from "vitest";
 
 import type { OptionsConfig, TypedFlatConfigItem } from "../src/eslint/types.ts";
 import { isentinel } from "../src/index.ts";
@@ -66,7 +66,7 @@ function formattingConfigNames(configs: Array<TypedFlatConfigItem>): Array<strin
 }
 
 describe("oxlint hybrid formatter coverage", () => {
-	it("should keep oxfmt in ESLint for languages oxlint cannot parse", async () => {
+	it("should keep oxfmt in ESLint for languages oxlint cannot parse", async ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
@@ -77,7 +77,7 @@ describe("oxlint hybrid formatter coverage", () => {
 		);
 	});
 
-	it("should not create unreachable Markdown siblings for those configs", async () => {
+	it("should not create unreachable Markdown siblings for those configs", async ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
@@ -90,7 +90,7 @@ describe("oxlint hybrid formatter coverage", () => {
 		).toStrictEqual([]);
 	});
 
-	it("should still hand JS/TS formatting to oxlint", async () => {
+	it("should still hand JS/TS formatting to oxlint", async ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
@@ -101,7 +101,7 @@ describe("oxlint hybrid formatter coverage", () => {
 		]);
 	});
 
-	it("should report formatting on a YAML file in hybrid mode", async () => {
+	it("should report formatting on a YAML file in hybrid mode", async ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = await resolveConfigs({ ...baseOptions, ignores: [], oxlint: true });
@@ -120,7 +120,7 @@ describe("oxlint hybrid formatter coverage", () => {
 		).toContain("oxfmt/oxfmt");
 	});
 
-	it("should not warn that oxfmt is dead in a non-JS user config", async () => {
+	it("should not warn that oxfmt is dead in a non-JS user config", async ({ expect }) => {
 		expect.assertions(1);
 
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});

@@ -1,7 +1,7 @@
 import { DEFAULT_ESLINT_REACT_SETTINGS, isESLintReactSettings } from "@eslint-react/shared";
 import type { ESLintReactSettings } from "@eslint-react/shared";
 
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import type { ReactSettings } from "../src/eslint/types.ts";
 
@@ -34,7 +34,7 @@ type CheckedReactSettings =
 	Identical<ReactSettings, ESLintReactSettings> extends true ? ReactSettings : never;
 
 describe("react settings", () => {
-	it("documents the defaults upstream actually ships", () => {
+	it("documents the defaults upstream actually ships", ({ expect }) => {
 		expect.assertions(1);
 
 		// Guards the `@default` tags on `ReactSettings`, which are the only
@@ -46,7 +46,7 @@ describe("react settings", () => {
 		});
 	});
 
-	it("produces settings upstream accepts", () => {
+	it("produces settings upstream accepts", ({ expect }) => {
 		expect.assertions(1);
 
 		// The annotation is the drift check: it collapses to `never` unless our

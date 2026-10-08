@@ -3,7 +3,7 @@ import type PluginMarkdown from "@eslint/markdown";
 import { ESLint } from "eslint";
 import type PluginDeMorgan from "eslint-plugin-de-morgan";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { MARKDOWN_PROCESSOR_NAME } from "../src/eslint/configs/markdown.ts";
 import {
@@ -106,7 +106,9 @@ async function setup(): Promise<LazySetup> {
 }
 
 describe("lazy plugins", () => {
-	it("should load only the composition-time reads while composing the config", async () => {
+	it("should load only the composition-time reads while composing the config", async ({
+		expect,
+	}) => {
 		expect.assertions(1);
 
 		const { composed } = await setup();
@@ -114,7 +116,7 @@ describe("lazy plugins", () => {
 		expect(composed).toStrictEqual(COMPOSITION_TIME_READS);
 	});
 
-	it("should register every deferred plugin lazily", async () => {
+	it("should register every deferred plugin lazily", async ({ expect }) => {
 		expect.assertions(1);
 
 		// Catches the reverse regression: a module reverting to
@@ -130,7 +132,9 @@ describe("lazy plugins", () => {
 
 	// Ordered: hydration is one-way and process-wide, so this has to run before
 	// anything lints Markdown.
-	it("should load only the off-entry plugins while linting a TypeScript file", async () => {
+	it("should load only the off-entry plugins while linting a TypeScript file", async ({
+		expect,
+	}) => {
 		expect.assertions(2);
 
 		// A real project file, so the type-aware pass has a program for it.
@@ -147,7 +151,7 @@ describe("lazy plugins", () => {
 		expect(reached).toStrictEqual(OFF_ENTRY_SPECIFIERS);
 	});
 
-	it("should load the fence plugins when a Markdown file is linted", async () => {
+	it("should load the fence plugins when a Markdown file is linted", async ({ expect }) => {
 		expect.assertions(2);
 
 		const { eslint } = await setup();
@@ -170,13 +174,13 @@ describe("lazy plugins", () => {
 });
 
 describe("lazyPlugin", () => {
-	it("should return the same object for a specifier", () => {
+	it("should return the same object for a specifier", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(lazyPlugin("eslint-plugin-de-morgan")).toBe(lazyPlugin("eslint-plugin-de-morgan"));
 	});
 
-	it("should write through to the real plugin, for disableRulesFix", () => {
+	it("should write through to the real plugin, for disableRulesFix", ({ expect }) => {
 		expect.assertions(1);
 
 		// `hijackPluginRule` does `plugin.rules[name] = patched`, so the `get`
@@ -191,7 +195,7 @@ describe("lazyPlugin", () => {
 		expect(afterPatch).toBe(patched);
 	});
 
-	it("should name the markdown stand-in processor after the real one", () => {
+	it("should name the markdown stand-in processor after the real one", ({ expect }) => {
 		expect.assertions(1);
 
 		// The stand-in restates this name so `mergeProcessors` can build its id

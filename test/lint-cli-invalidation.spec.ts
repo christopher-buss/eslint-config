@@ -5,7 +5,8 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it, onTestFinished } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it } from "vitest";
 
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { applyHashBust, CONFIG_DRIFT } from "../src/lint-cli/lib/cache/bust.ts";
@@ -67,7 +68,10 @@ const DOM_TSCONFIG = JSON.stringify({
 	include: ["src"],
 });
 
-function createFixture(files: Record<string, string>): string {
+function createFixture(
+	files: Record<string, string>,
+	onTestFinished: TestContext["onTestFinished"],
+): string {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-fx-"));
 
 	onTestFinished(() => {
@@ -234,15 +238,21 @@ function invalidate(
 }
 
 describe("computeAffectedFiles", () => {
-	it("reports every file on the first run, then nothing when unchanged", () => {
+	it("reports every file on the first run, then nothing when unchanged", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(4);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"src/b.ts":
-				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/b.ts":
+					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const first = computeAffectedFiles(runFor(directory), undefined);
 
@@ -255,18 +265,21 @@ describe("computeAffectedFiles", () => {
 		expect(second!.affected.size).toBe(0);
 	});
 
-	it("skips gracefully when no tsconfig is present", () => {
+	it("skips gracefully when no tsconfig is present", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" });
+		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" }, onTestFinished);
 
 		expect(computeAffectedFiles(runFor(directory), undefined)).toBeUndefined();
 	});
 
-	it("resolves files through a nested solution-style reference graph", () => {
+	it("resolves files through a nested solution-style reference graph", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const directory = createFixture(SOLUTION_FIXTURE);
+		const directory = createFixture(SOLUTION_FIXTURE, onTestFinished);
 		const first = computeAffectedFiles(runFor(directory), undefined);
 
 		expect(first!.firstRun).toBe(true);
@@ -277,10 +290,10 @@ describe("computeAffectedFiles", () => {
 		expect(first!.affected).toContain(path.normalize(path.join(directory, "app/b.ts")));
 	});
 
-	it("keeps builder state per referenced project", () => {
+	it("keeps builder state per referenced project", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = createFixture(SOLUTION_FIXTURE);
+		const directory = createFixture(SOLUTION_FIXTURE, onTestFinished);
 		computeAffectedFiles(runFor(directory), "only");
 
 		// One per file-owning project (lib + app); the file-less entry
@@ -288,10 +301,13 @@ describe("computeAffectedFiles", () => {
 		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(2);
 	});
 
-	it("does not report first-run when only some projects are new", () => {
+	it("does not report first-run when only some projects are new", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture(SOLUTION_FIXTURE);
+		const directory = createFixture(SOLUTION_FIXTURE, onTestFinished);
 		// Warm every project, then drop one project's state so it looks newly
 		// added while its siblings stay warm — the shape of a solution that
 		// gains a reference.
@@ -314,17 +330,23 @@ describe("computeAffectedFiles", () => {
 });
 
 describe("applyTypeAwareInvalidation", () => {
-	it("does not invalidate importers on an implementation-only edit", () => {
+	it("does not invalidate importers on an implementation-only edit", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(5);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"src/b.ts":
-				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-			"src/c.ts":
-				"import { b } from './b';\nexport function c(): number { return b() + 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/b.ts":
+					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+				"src/c.ts":
+					"import { b } from './b';\nexport function c(): number { return b() + 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -345,16 +367,22 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(cacheHasEntry(cacheFile, fileC)).toBe(true);
 	});
 
-	it("invalidates transitive importers on an exported-type change", () => {
+	it("invalidates transitive importers on an exported-type change", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(5);
 
-		const directory = createFixture({
-			// Inferred return types so a's shape change propagates into c.
-			"src/a.ts": "export function a() { return 1; }\n",
-			"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
-			"src/c.ts": "import { b } from './b';\nexport function c() { return b(); }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				// Inferred return types so a's shape change propagates into c.
+				"src/a.ts": "export function a() { return 1; }\n",
+				"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
+				"src/c.ts": "import { b } from './b';\nexport function c() { return b(); }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -375,10 +403,10 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(cacheHasEntry(cacheFile, fileC)).toBe(false);
 	});
 
-	it("invalidates an importer in another referenced project", () => {
+	it("invalidates an importer in another referenced project", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const directory = createFixture(SOLUTION_FIXTURE);
+		const directory = createFixture(SOLUTION_FIXTURE, onTestFinished);
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
 		const fileB = path.join(directory, "app/b.ts");
@@ -395,16 +423,20 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 	});
 
-	it("invalidates everything on a global-augmentation edit", () => {
+	it("invalidates everything on a global-augmentation edit", ({ expect, onTestFinished }) => {
 		expect.assertions(5);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"src/b.ts":
-				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-			"src/globals.ts": "declare global { interface Window { foo: number; } }\nexport {};\n",
-			"tsconfig.json": DOM_TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/b.ts":
+					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+				"src/globals.ts":
+					"declare global { interface Window { foo: number; } }\nexport {};\n",
+				"tsconfig.json": DOM_TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -431,14 +463,20 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(cacheHasEntry(cacheFile, fileB)).toBe(false);
 	});
 
-	it("deletes the whole cache file when the affected set exceeds the threshold", () => {
+	it("deletes the whole cache file when the affected set exceeds the threshold", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a() { return 1; }\n",
-			"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a() { return 1; }\n",
+				"src/b.ts": "import { a } from './a';\nexport function b() { return a(); }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -459,15 +497,18 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(fs.existsSync(cacheFile)).toBe(false);
 	});
 
-	it("persists state but invalidates nothing on the first run", () => {
+	it("persists state but invalidates nothing on the first run", ({ expect, onTestFinished }) => {
 		expect.assertions(6);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"src/b.ts":
-				"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/b.ts":
+					"import { a } from './a';\nexport function b(): number { return a() + 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -484,10 +525,10 @@ describe("applyTypeAwareInvalidation", () => {
 		expect(cacheHasEntry(cacheFile, fileB)).toBe(true);
 	});
 
-	it("skips when there is no tsconfig", () => {
+	it("skips when there is no tsconfig", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" });
+		const directory = createFixture({ "src/a.ts": "export const a = 1;\n" }, onTestFinished);
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
 		seedCache(cacheFile, [fileA]);
@@ -501,14 +542,17 @@ describe("applyTypeAwareInvalidation", () => {
 });
 
 describe("dirtyCache.removeEntries", () => {
-	it("removes only the named entries and keeps the rest", () => {
+	it("removes only the named entries and keeps the rest", ({ expect, onTestFinished }) => {
 		expect.assertions(4);
 
-		const directory = createFixture({
-			"src/a.ts": "export const a = 1;\n",
-			"src/b.ts": "export const b = 2;\n",
-			"src/c.ts": "export const c = 3;\n",
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export const a = 1;\n",
+				"src/b.ts": "export const b = 2;\n",
+				"src/c.ts": "export const c = 3;\n",
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileA = path.join(directory, "src/a.ts");
@@ -540,13 +584,19 @@ const JSON_TSCONFIG = JSON.stringify({
 });
 
 describe("typed-pass skip", () => {
-	it("skips the typed pass in default mode when nothing type-relevant changed", () => {
+	it("skips the typed pass in default mode when nothing type-relevant changed", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
@@ -564,19 +614,25 @@ describe("typed-pass skip", () => {
 		expect(notice).toMatch(/skipping the type-aware/);
 	});
 
-	it("skips the typed pass when the only uncached files are ESLint-ignored", () => {
+	it("skips the typed pass when the only uncached files are ESLint-ignored", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			// A `.mjs` config so ESLint loads it without a TypeScript loader
-			// in the fixture's bare node_modules.
-			"eslint.config.mjs":
-				'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
-				'{ ignores: ["src/ignored.ts"] }];\n',
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"src/ignored.ts": "export function ignored(): number { return 2; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				// A `.mjs` config so ESLint loads it without a TypeScript loader
+				// in the fixture's bare node_modules.
+				"eslint.config.mjs":
+					'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, ' +
+					'{ ignores: ["src/ignored.ts"] }];\n',
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"src/ignored.ts": "export function ignored(): number { return 2; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		// Seed every file ESLint actually lints. `src/ignored.ts` is a
@@ -595,13 +651,19 @@ describe("typed-pass skip", () => {
 		expect(notice).toMatch(/skipping the type-aware/);
 	});
 
-	it("never skips the typed pass when a target resolves outside cwd", () => {
+	it("never skips the typed pass when a target resolves outside cwd", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
@@ -617,13 +679,19 @@ describe("typed-pass skip", () => {
 		expect(notice).toMatch(/resolves outside the working directory/);
 	});
 
-	it("never skips the typed pass when --type-aware=only is explicit", () => {
+	it("never skips the typed pass when --type-aware=only is explicit", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
@@ -638,13 +706,16 @@ describe("typed-pass skip", () => {
 });
 
 describe("plan mutation", () => {
-	it("performs no I/O mutation in read-only (print) mode", () => {
+	it("performs no I/O mutation in read-only (print) mode", ({ expect, onTestFinished }) => {
 		expect.assertions(4);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
@@ -671,13 +742,19 @@ describe("plan mutation", () => {
 		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 	});
 
-	it("marks the typed pass skipped in the plan when nothing type-relevant changed", () => {
+	it("marks the typed pass skipped in the plan when nothing type-relevant changed", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"src/a.ts": "export function a(): number { return 1; }\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/a.ts": "export function a(): number { return 1; }\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
@@ -711,10 +788,13 @@ describe("per-variant cache isolation", () => {
 		return cacheFile;
 	}
 
-	it("keeps both caches warm when agent and non-agent runs alternate", () => {
+	it("keeps both caches warm when agent and non-agent runs alternate", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture(VARIANT_FIXTURE);
+		const directory = createFixture(VARIANT_FIXTURE, onTestFinished);
 		const humanCache = seedVariant(directory, {});
 		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
@@ -736,10 +816,10 @@ describe("per-variant cache isolation", () => {
 		expect(fs.existsSync(agentCache)).toBe(true);
 	});
 
-	it("busts only the stale variant when the config changes", () => {
+	it("busts only the stale variant when the config changes", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(VARIANT_FIXTURE);
+		const directory = createFixture(VARIANT_FIXTURE, onTestFinished);
 		const humanCache = seedVariant(directory, {});
 		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
@@ -756,10 +836,10 @@ describe("per-variant cache isolation", () => {
 		expect(fs.existsSync(humanCache)).toBe(true);
 	});
 
-	it("never deletes a stale cache in read-only (print) mode", () => {
+	it("never deletes a stale cache in read-only (print) mode", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = createFixture(VARIANT_FIXTURE);
+		const directory = createFixture(VARIANT_FIXTURE, onTestFinished);
 		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 		const configSeconds = Date.now() / 1000 + 60;
 		fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
@@ -769,10 +849,10 @@ describe("per-variant cache isolation", () => {
 		expect(fs.existsSync(agentCache)).toBe(true);
 	});
 
-	it("keys the builder state per variant", () => {
+	it("keys the builder state per variant", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(VARIANT_FIXTURE);
+		const directory = createFixture(VARIANT_FIXTURE, onTestFinished);
 		computeAffectedFiles(runFor(directory), "only");
 		computeAffectedFiles(runFor(directory, AGENT_ENVIRONMENT), "only");
 
@@ -782,15 +862,21 @@ describe("per-variant cache isolation", () => {
 });
 
 describe("resolveJsonModule invalidation", () => {
-	it("invalidates a .ts importer when an imported .json changes shape", () => {
+	it("invalidates a .ts importer when an imported .json changes shape", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"src/b.ts":
-				"import data from './data.json';\nexport function b() { return data.value; }\n",
-			"src/data.json": '{ "value": 1 }\n',
-			"tsconfig.json": JSON_TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"src/b.ts":
+					"import data from './data.json';\nexport function b() { return data.value; }\n",
+				"src/data.json": '{ "value": 1 }\n',
+				"tsconfig.json": JSON_TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const cacheFile = path.join(directory, ".eslintcache");
 		const fileB = path.join(directory, "src/b.ts");
@@ -888,10 +974,10 @@ function editRules(directory: string): void {
 }
 
 describe("applyConfigDriftBust", () => {
-	it("stores the hash without busting on the first run", () => {
+	it("stores the hash without busting on the first run", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		seedAllCaches(directory, TEST_KEY);
 
 		const outcome = bustConfig(runFor(directory));
@@ -900,10 +986,10 @@ describe("applyConfigDriftBust", () => {
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
-	it("busts every cache when an imported config module changes", () => {
+	it("busts every cache when an imported config module changes", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		bustConfig(runFor(directory));
 		seedAllCaches(directory, TEST_KEY);
 		editRules(directory);
@@ -919,10 +1005,10 @@ describe("applyConfigDriftBust", () => {
 		expect(anyCacheExists(directory, TEST_KEY)).toBe(false);
 	});
 
-	it("does not bust when an imported module is only touched", () => {
+	it("does not bust when an imported module is only touched", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		bustConfig(runFor(directory));
 		seedAllCaches(directory, TEST_KEY);
 		touch(path.join(directory, "eslint-rules.ts"));
@@ -935,10 +1021,10 @@ describe("applyConfigDriftBust", () => {
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
-	it("lets each variant observe the same drift independently", () => {
+	it("lets each variant observe the same drift independently", ({ expect, onTestFinished }) => {
 		expect.assertions(4);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		bustConfig(runFor(directory));
 		bustConfig(runFor(directory, AGENT_ENVIRONMENT));
 		seedAllCaches(directory, TEST_KEY);
@@ -959,10 +1045,10 @@ describe("applyConfigDriftBust", () => {
 		expect(anyCacheExists(directory, AGENT_KEY)).toBe(false);
 	});
 
-	it("no-ops when there is no config entry point", () => {
+	it("no-ops when there is no config entry point", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		seedAllCaches(directory, TEST_KEY);
 
 		const outcome = applyHashBust(
@@ -975,7 +1061,7 @@ describe("applyConfigDriftBust", () => {
 		expect(everyCacheExists(directory, TEST_KEY)).toBe(true);
 	});
 
-	it("no-ops when typescript cannot be resolved", () => {
+	it("no-ops when typescript cannot be resolved", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-cfg-"));
@@ -996,15 +1082,18 @@ describe("applyConfigDriftBust", () => {
 });
 
 describe("computeConfigHash discovery", () => {
-	it("follows transitive imports and re-exports", () => {
+	it("follows transitive imports and re-exports", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"a.ts": "export * from './b';\n",
-			"b.ts": "export const b = 1;\n",
-			"eslint.config.ts": "import './a';\nexport default [];\n",
-			"tsconfig.json": TSCONFIG,
-		});
+		const directory = createFixture(
+			{
+				"a.ts": "export * from './b';\n",
+				"b.ts": "export const b = 1;\n",
+				"eslint.config.ts": "import './a';\nexport default [];\n",
+				"tsconfig.json": TSCONFIG,
+			},
+			onTestFinished,
+		);
 
 		const before = computeConfigHash(directory, configBustFiles(directory));
 		fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
@@ -1014,23 +1103,26 @@ describe("computeConfigHash discovery", () => {
 		expect(after).not.toBe(before);
 	});
 
-	it("resolves tsconfig path aliases", () => {
+	it("resolves tsconfig path aliases", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"config/rules.ts": "export const rules = {};\n",
-			"eslint.config.ts": "import '@rules';\nexport default [];\n",
-			"tsconfig.json": JSON.stringify({
-				compilerOptions: {
-					baseUrl: ".",
-					module: "commonjs",
-					paths: { "@rules": ["./config/rules"] },
-					strict: true,
-					target: "es2020",
-				},
-				include: ["src"],
-			}),
-		});
+		const directory = createFixture(
+			{
+				"config/rules.ts": "export const rules = {};\n",
+				"eslint.config.ts": "import '@rules';\nexport default [];\n",
+				"tsconfig.json": JSON.stringify({
+					compilerOptions: {
+						baseUrl: ".",
+						module: "commonjs",
+						paths: { "@rules": ["./config/rules"] },
+						strict: true,
+						target: "es2020",
+					},
+					include: ["src"],
+				}),
+			},
+			onTestFinished,
+		);
 
 		const before = computeConfigHash(directory, configBustFiles(directory));
 		fs.writeFileSync(
@@ -1043,15 +1135,18 @@ describe("computeConfigHash discovery", () => {
 		expect(after).not.toBe(before);
 	});
 
-	it("ignores files the config does not import", () => {
+	it("ignores files the config does not import", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const directory = createFixture({
-			"eslint.config.ts": "import './rules';\nexport default [];\n",
-			"rules.ts": "export const rules = {};\n",
-			"tsconfig.json": TSCONFIG,
-			"unrelated.ts": "export const x = 1;\n",
-		});
+		const directory = createFixture(
+			{
+				"eslint.config.ts": "import './rules';\nexport default [];\n",
+				"rules.ts": "export const rules = {};\n",
+				"tsconfig.json": TSCONFIG,
+				"unrelated.ts": "export const x = 1;\n",
+			},
+			onTestFinished,
+		);
 
 		const before = computeConfigHash(directory, configBustFiles(directory));
 		fs.writeFileSync(path.join(directory, "unrelated.ts"), "export const x = 2;\n");
@@ -1063,14 +1158,14 @@ describe("computeConfigHash discovery", () => {
 });
 
 describe("hasBuilderState", () => {
-	it("ignores a temp file left behind by an interrupted write", () => {
+	it("ignores a temp file left behind by an interrupted write", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
 		// Both the buildinfo emit and `writeState` stage through a sibling
 		// `<name>.<pid>.tmp`, so a killed run leaves one under the same prefix
 		// the scan matches. Counting it as state would re-enable the builder skip
 		// with nothing on disk for the next run to invalidate against.
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		const stray = path.join(stateDirectory(directory), `${TYPE_AWARE_BUILD_INFO}-abc.4242.tmp`);
 		fs.mkdirSync(path.dirname(stray), { recursive: true });
 		fs.writeFileSync(stray, "");
@@ -1088,10 +1183,13 @@ describe("config drift sizing", () => {
 		return allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 	}
 
-	it("runs no TypeScript builder when the drift bust cleared the caches", () => {
+	it("runs no TypeScript builder when the drift bust cleared the caches", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
 		const args = parseArguments(["src"], {});
@@ -1119,13 +1217,16 @@ describe("config drift sizing", () => {
 		expect(builderStateContents(directory, TYPE_AWARE_BUILD_INFO)).toStrictEqual(before);
 	});
 
-	it("still seeds absent builder state when the bust cleared the caches", () => {
+	it("still seeds absent builder state when the bust cleared the caches", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
 		// Store the config hash without ever running the builder, then give the
 		// run caches to delete: the shape of a lint right after an install, which
 		// discards `node_modules` (the builder state with it) but not the caches.
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		const args = parseArguments(["src"], {});
 		bustConfig(runFor(directory));
 		seedAllCaches(directory, TEST_KEY);
@@ -1142,14 +1243,17 @@ describe("config drift sizing", () => {
 		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 	});
 
-	it("un-skips the typed pass when a module the config imports changed", () => {
+	it("un-skips the typed pass when a module the config imports changed", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
 		// Lint only `src`; the imported `eslint-rules.ts` sits at the root, so it
 		// is neither a lint target nor a cache-bust file. Editing it therefore
 		// changes nothing the mtime dirty count can see — only the config-drift
 		// bust can trigger the re-lint, isolating the fix.
-		const directory = createFixture(CONFIG_IMPORT_FIXTURE);
+		const directory = createFixture(CONFIG_IMPORT_FIXTURE, onTestFinished);
 		const cacheFile = path.join(directory, TYPE_AWARE_CACHE);
 		const fileA = path.join(directory, "src/a.ts");
 		const args = parseArguments(["src"], {});

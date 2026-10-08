@@ -7,7 +7,8 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it, onTestFinished } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it } from "vitest";
 
 import { isRecord, isStringArray } from "../src/guards.ts";
 
@@ -147,9 +148,10 @@ function writeFile(absolute: string, content: string): void {
  * Write out a fixture project with its own resolvable `typescript`.
  *
  * @param tree - The files to write, keyed by project-relative path.
+ * @param onTestFinished - Registers the fixture's cleanup.
  * @returns The absolute project root.
  */
-function createFixture(tree: Tree): string {
+function createFixture(tree: Tree, onTestFinished: TestContext["onTestFinished"]): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "buildinfo-fx-"));
 
 	onTestFinished(() => {
@@ -265,11 +267,15 @@ function tookFastPath(directory: string): boolean {
  * the two sides are being compared over.
  *
  * @param scenario - The tree, its setup and its mutation.
+ * @param onTestFinished - Registers the fixtures' cleanup.
  * @returns The two answers plus whether the fast side short-circuited.
  */
-function compare({ mutate, prepare, tree, warm = true }: Scenario): Comparison {
-	const builderDirectory = createFixture(tree);
-	const fastDirectory = createFixture(tree);
+function compare(
+	{ mutate, prepare, tree, warm = true }: Scenario,
+	onTestFinished: TestContext["onTestFinished"],
+): Comparison {
+	const builderDirectory = createFixture(tree, onTestFinished);
+	const fastDirectory = createFixture(tree, onTestFinished);
 
 	for (const directory of [builderDirectory, fastDirectory]) {
 		prepare?.(directory);
@@ -307,25 +313,34 @@ function touch(file: string): void {
 }
 
 describe("buildinfo fast path", () => {
-	it("agrees with the builder on a warm, untouched tree", () => {
+	it("agrees with the builder on a warm, untouched tree", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({ mutate: unchanged, tree: CHAIN });
+		const { builder, fast, fastPath } = compare(
+			{ mutate: unchanged, tree: CHAIN },
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual([]);
 		expect(fastPath).toBe(true);
 	});
 
-	it("agrees with the builder when an mtime moved but the content did not", () => {
+	it("agrees with the builder when an mtime moved but the content did not", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				touch(path.join(directory, "src/a.ts"));
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					touch(path.join(directory, "src/a.ts"));
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual([]);
@@ -333,73 +348,91 @@ describe("buildinfo fast path", () => {
 		expect(fastPath).toBe(true);
 	});
 
-	it("agrees with the builder on a real content change", () => {
+	it("agrees with the builder on a real content change", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder once that change has been persisted", () => {
+	it("agrees with the builder once that change has been persisted", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
-				runPass(directory);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
+					runPass(directory);
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual([]);
 		expect(fastPath).toBe(true);
 	});
 
-	it("agrees with the builder when the tree is restored under a moved buildinfo", () => {
+	it("agrees with the builder when the tree is restored under a moved buildinfo", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
 		// The buildinfo ends up describing the *edited* text while the tree holds
 		// the original: a file that reads as unchanged by mtime and as changed by
 		// content, in the direction only the fast path could miss.
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				const fileA = path.join(directory, "src/a.ts");
-				writeFile(fileA, RESHAPED_A);
-				runPass(directory);
-				writeFile(fileA, ORIGINAL_A);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					const fileA = path.join(directory, "src/a.ts");
+					writeFile(fileA, RESHAPED_A);
+					runPass(directory);
+					writeFile(fileA, ORIGINAL_A);
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder on a first run", () => {
+	it("agrees with the builder on a first run", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: unchanged,
-			tree: CHAIN,
-			warm: false,
-		});
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: unchanged,
+				tree: CHAIN,
+				warm: false,
+			},
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.firstRun).toBe(true);
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder on a corrupt buildinfo", () => {
+	it("agrees with the builder on a corrupt buildinfo", ({ expect, onTestFinished }) => {
 		expect.assertions(4);
 
 		// Corrupt to a fixed unparseable prefix rather than by slicing the real
@@ -410,15 +443,18 @@ describe("buildinfo fast path", () => {
 		// OS and harmlessly on another.
 		let corrupted = 0;
 
-		const { builder, fast } = compare({
-			mutate: (directory) => {
-				for (const file of stateFiles(directory, "tsbuildinfo")) {
-					fs.writeFileSync(file, '{"version":');
-					corrupted += 1;
-				}
+		const { builder, fast } = compare(
+			{
+				mutate: (directory) => {
+					for (const file of stateFiles(directory, "tsbuildinfo")) {
+						fs.writeFileSync(file, '{"version":');
+						corrupted += 1;
+					}
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		// Both sides must actually have been corrupted; a mutation that silently
 		// matched no state file would make the assertions below pass for the
@@ -435,17 +471,23 @@ describe("buildinfo fast path", () => {
 		expect(fast.affected).toStrictEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
 	});
 
-	it("agrees with the builder after a TypeScript version bump", () => {
+	it("agrees with the builder after a TypeScript version bump", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				for (const file of stateFiles(directory, "tsbuildinfo")) {
-					fs.writeFileSync(file, JSON.stringify({ ...readJson(file), version: "0.0.0" }));
-				}
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					for (const file of stateFiles(directory, "tsbuildinfo")) {
+						fs.writeFileSync(
+							file,
+							JSON.stringify({ ...readJson(file), version: "0.0.0" }),
+						);
+					}
+				},
+				tree: CHAIN,
 			},
-			tree: CHAIN,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fastPath).toBe(false);
@@ -453,34 +495,46 @@ describe("buildinfo fast path", () => {
 });
 
 describe("buildinfo fast path root drift", () => {
-	it("agrees with the builder when a tsconfig include gains a root", () => {
+	it("agrees with the builder when a tsconfig include gains a root", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(path.join(directory, "tsconfig.json"), WIDE_TSCONFIG);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(path.join(directory, "tsconfig.json"), WIDE_TSCONFIG);
+				},
+				tree: { ...CHAIN, "extra/d.ts": "export function d() { return 4; }\n" },
 			},
-			tree: { ...CHAIN, "extra/d.ts": "export function d() { return 4; }\n" },
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual(["extra/d.ts"]);
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder when a tsconfig include loses a root", () => {
+	it("agrees with the builder when a tsconfig include loses a root", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(path.join(directory, "tsconfig.json"), TSCONFIG);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(path.join(directory, "tsconfig.json"), TSCONFIG);
+				},
+				tree: {
+					...CHAIN,
+					"extra/d.ts": "export function d() { return 4; }\n",
+					"tsconfig.json": WIDE_TSCONFIG,
+				},
 			},
-			tree: {
-				...CHAIN,
-				"extra/d.ts": "export function d() { return 4; }\n",
-				"tsconfig.json": WIDE_TSCONFIG,
-			},
-		});
+			onTestFinished,
+		);
 
 		// A root only ever leaving the set is the direction a one-way membership
 		// check would pass, which is why the comparison runs both ways.
@@ -488,44 +542,54 @@ describe("buildinfo fast path root drift", () => {
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder when a root file is deleted", () => {
+	it("agrees with the builder when a root file is deleted", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				fs.rmSync(path.join(directory, "src/lonely.ts"));
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					fs.rmSync(path.join(directory, "src/lonely.ts"));
+				},
+				tree: {
+					"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
+					"src/a.ts": ORIGINAL_A,
+					"src/lonely.ts": "export function lonely() { return 2; }\n",
+					"tsconfig.json": TSCONFIG,
+				},
 			},
-			tree: {
-				"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
-				"src/a.ts": ORIGINAL_A,
-				"src/lonely.ts": "export function lonely() { return 2; }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fastPath).toBe(false);
 	});
 
-	it("agrees with the builder when a node_modules declaration is deleted", () => {
+	it("agrees with the builder when a node_modules declaration is deleted", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				fs.rmSync(path.join(directory, "node_modules/dep/index.d.ts"));
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					fs.rmSync(path.join(directory, "node_modules/dep/index.d.ts"));
+				},
+				tree: {
+					"node_modules/dep/index.d.ts": "export declare function dep(): number;\n",
+					"node_modules/dep/package.json": JSON.stringify({
+						name: "dep",
+						types: "index.d.ts",
+						version: "1.0.0",
+					}),
+					"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
+					"src/a.ts":
+						"import { dep } from 'dep';\nexport function a() { return dep(); }\n",
+					"tsconfig.json": TSCONFIG,
+				},
 			},
-			tree: {
-				"node_modules/dep/index.d.ts": "export declare function dep(): number;\n",
-				"node_modules/dep/package.json": JSON.stringify({
-					name: "dep",
-					types: "index.d.ts",
-					version: "1.0.0",
-				}),
-				"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
-				"src/a.ts": "import { dep } from 'dep';\nexport function a() { return dep(); }\n",
-				"tsconfig.json": TSCONFIG,
-			},
-		});
+			onTestFinished,
+		);
 
 		// A deleted dependency declaration is a mismatch to find, never a throw.
 		expect(fast).toStrictEqual(builder);
@@ -534,18 +598,21 @@ describe("buildinfo fast path root drift", () => {
 });
 
 describe("buildinfo fast path resolution gate", () => {
-	it("falls through when only the lockfile moved", () => {
+	it("falls through when only the lockfile moved", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(
-					path.join(directory, "pnpm-lock.yaml"),
-					"lockfileVersion: '9.0'\nimporters:\n  .: {}\n",
-				);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(
+						path.join(directory, "pnpm-lock.yaml"),
+						"lockfileVersion: '9.0'\nimporters:\n  .: {}\n",
+					);
+				},
+				tree: WORKSPACE,
 			},
-			tree: WORKSPACE,
-		});
+			onTestFinished,
+		);
 
 		// Nothing in the tree changed, so both answers are empty — but the fast
 		// path must not be the one that says so: a dependency swap leaves every
@@ -554,23 +621,26 @@ describe("buildinfo fast path resolution gate", () => {
 		expect(fastPath).toBe(false);
 	});
 
-	it("falls through when the package type flips", () => {
+	it("falls through when the package type flips", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(
-					path.join(directory, "package.json"),
-					JSON.stringify({
-						name: "fixture",
-						dependencies: { sibling: "workspace:*" },
-						type: "module",
-						version: "0.0.0",
-					}),
-				);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(
+						path.join(directory, "package.json"),
+						JSON.stringify({
+							name: "fixture",
+							dependencies: { sibling: "workspace:*" },
+							type: "module",
+							version: "0.0.0",
+						}),
+					);
+				},
+				tree: WORKSPACE,
 			},
-			tree: WORKSPACE,
-		});
+			onTestFinished,
+		);
 
 		// `type` decides every file's `impliedFormat`, which the builder compares
 		// and the fast path cannot see.
@@ -578,23 +648,29 @@ describe("buildinfo fast path resolution gate", () => {
 		expect(fastPath).toBe(false);
 	});
 
-	it("falls through when a workspace sibling remaps its exports", () => {
+	it("falls through when a workspace sibling remaps its exports", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(
-					path.join(directory, "packages/sibling/package.json"),
-					JSON.stringify({
-						name: "sibling",
-						exports: { ".": { types: "./other.d.ts" } },
-						types: "index.d.ts",
-						version: "1.0.0",
-					}),
-				);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(
+						path.join(directory, "packages/sibling/package.json"),
+						JSON.stringify({
+							name: "sibling",
+							exports: { ".": { types: "./other.d.ts" } },
+							types: "index.d.ts",
+							version: "1.0.0",
+						}),
+					);
+				},
+				tree: WORKSPACE,
 			},
-			tree: WORKSPACE,
-		});
+			onTestFinished,
+		);
 
 		// Neither the lockfile nor any source moves for this, and a sibling's
 		// manifest is in no cache-bust pattern — the gate is the only thing
@@ -603,23 +679,29 @@ describe("buildinfo fast path resolution gate", () => {
 		expect(fastPath).toBe(false);
 	});
 
-	it("still takes the fast path when an unrelated manifest field changes", () => {
+	it("still takes the fast path when an unrelated manifest field changes", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeFile(
-					path.join(directory, "packages/sibling/package.json"),
-					JSON.stringify({
-						name: "sibling",
-						description: "now documented",
-						types: "index.d.ts",
-						version: "1.0.0",
-					}),
-				);
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeFile(
+						path.join(directory, "packages/sibling/package.json"),
+						JSON.stringify({
+							name: "sibling",
+							description: "now documented",
+							types: "index.d.ts",
+							version: "1.0.0",
+						}),
+					);
+				},
+				tree: WORKSPACE,
 			},
-			tree: WORKSPACE,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fastPath).toBe(true);
@@ -627,25 +709,28 @@ describe("buildinfo fast path resolution gate", () => {
 });
 
 describe("buildinfo fast path unsupported shapes", () => {
-	it("declines an outFile project", () => {
+	it("declines an outFile project", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: unchanged,
-			tree: {
-				"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
-				"src/a.ts": ORIGINAL_A,
-				"tsconfig.json": JSON.stringify({
-					compilerOptions: {
-						module: "system",
-						outFile: "./out.js",
-						strict: true,
-						target: "es2020",
-					},
-					include: ["src"],
-				}),
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: unchanged,
+				tree: {
+					"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
+					"src/a.ts": ORIGINAL_A,
+					"tsconfig.json": JSON.stringify({
+						compilerOptions: {
+							module: "system",
+							outFile: "./out.js",
+							strict: true,
+							target: "es2020",
+						},
+						include: ["src"],
+					}),
+				},
 			},
-		});
+			onTestFinished,
+		);
 
 		// That buildinfo has no referencedMap and a different fileInfos shape, so
 		// verifying it against this check's model would be meaningless.
@@ -670,16 +755,19 @@ describe("buildinfo fast path encodings", () => {
 		);
 	}
 
-	it("takes the fast path across BOM and UTF-16 sources", () => {
+	it("takes the fast path across BOM and UTF-16 sources", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: unchanged,
-			prepare: (directory) => {
-				writeUtf16(directory, "1");
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: unchanged,
+				prepare: (directory) => {
+					writeUtf16(directory, "1");
+				},
+				tree: ENCODED,
 			},
-			tree: ENCODED,
-		});
+			onTestFinished,
+		);
 
 		// Reading these with `fs.readFileSync(file, "utf8")` leaves the BOM in
 		// place and turns the UTF-16 file into mojibake, so both hash differently
@@ -689,18 +777,21 @@ describe("buildinfo fast path encodings", () => {
 		expect(fastPath).toBe(true);
 	});
 
-	it("agrees with the builder on an edit to a UTF-16 source", () => {
+	it("agrees with the builder on an edit to a UTF-16 source", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({
-			mutate: (directory) => {
-				writeUtf16(directory, "2");
+		const { builder, fast, fastPath } = compare(
+			{
+				mutate: (directory) => {
+					writeUtf16(directory, "2");
+				},
+				prepare: (directory) => {
+					writeUtf16(directory, "1");
+				},
+				tree: ENCODED,
 			},
-			prepare: (directory) => {
-				writeUtf16(directory, "1");
-			},
-			tree: ENCODED,
-		});
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual(["src/wide.ts"]);
@@ -735,10 +826,16 @@ describe("buildinfo fast path across a solution", () => {
 		}
 	}
 
-	it("agrees with the builder when one project is cold and one is warm", () => {
+	it("agrees with the builder when one project is cold and one is warm", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(3);
 
-		const { builder, fast } = compare({ mutate: coolAppProject, tree: SOLUTION });
+		const { builder, fast } = compare(
+			{ mutate: coolAppProject, tree: SOLUTION },
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		// One project had prior state, so the run as a whole is not a first run —
@@ -747,10 +844,13 @@ describe("buildinfo fast path across a solution", () => {
 		expect(fast.affected).toContain("app/b.ts");
 	});
 
-	it("takes the fast path for every project once all are warm", () => {
+	it("takes the fast path for every project once all are warm", ({ expect, onTestFinished }) => {
 		expect.assertions(3);
 
-		const { builder, fast, fastPath } = compare({ mutate: unchanged, tree: SOLUTION });
+		const { builder, fast, fastPath } = compare(
+			{ mutate: unchanged, tree: SOLUTION },
+			onTestFinished,
+		);
 
 		expect(fast).toStrictEqual(builder);
 		expect(fast.affected).toStrictEqual([]);
@@ -759,14 +859,14 @@ describe("buildinfo fast path across a solution", () => {
 });
 
 describe("persisted buildinfo", () => {
-	it("leaves no pending emit or change set behind", () => {
+	it("leaves no pending emit or change set behind", ({ expect, onTestFinished }) => {
 		expect.assertions(4);
 
 		// Without this the feature evaporates silently: `persistBuilderState`
 		// swallows every output but the buildinfo, and if that ever left emit
 		// work recorded as pending, the fast path's first guard would decline
 		// forever from the first edit onwards and no other test would notice.
-		const directory = createFixture(CHAIN);
+		const directory = createFixture(CHAIN, onTestFinished);
 		runPass(directory);
 		writeFile(path.join(directory, "src/a.ts"), RESHAPED_A);
 		runPass(directory);
@@ -780,10 +880,13 @@ describe("persisted buildinfo", () => {
 		expect(info["checkPending"]).toBeUndefined();
 	});
 
-	it("writes no JavaScript or declaration output into the project", () => {
+	it("writes no JavaScript or declaration output into the project", ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(1);
 
-		const directory = createFixture(CHAIN);
+		const directory = createFixture(CHAIN, onTestFinished);
 		runPass(directory);
 
 		expect(fs.readdirSync(path.join(directory, "src")).sort()).toStrictEqual([

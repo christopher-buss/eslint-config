@@ -74,6 +74,7 @@ export function jestRules({
 	stylistic = true,
 }: JestRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/no-shared-mocks": "error",
 		"flawless/prefer-expect-assertions-count": "error",
 		"jest/consistent-test-it": "error",
 		"jest/expect-expect": "warn",
@@ -171,11 +172,14 @@ export function vitestRules({
 }: VitestRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
 		"flawless/no-conditional-in-test": ["error", { allowOptionalChaining: false }],
+		"flawless/no-shared-mocks": "error",
 		"flawless/prefer-ending-with-an-expect": [
 			"warn",
 			{ assertFunctionNames: ["expect", "expectTypeOf", "assertType"] },
 		],
 		"flawless/prefer-expect-assertions-count": "warn",
+		"flawless/prefer-mock-throw": "error",
+		"flawless/prefer-vitest-local-context": ["error", { maxParams: 2 }],
 		"vitest/consistent-each-for": [
 			"error",
 			{

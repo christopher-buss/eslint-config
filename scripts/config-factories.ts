@@ -61,7 +61,8 @@ export const PRESET_CONFIGS: Array<Awaitable<Array<TypedFlatConfigItem>>> = [
 	comments(),
 	e18e({ nodeMajor: GENERATOR_NODE_MAJOR }),
 	eslintPlugin(),
-	flawless(),
+	// `roblox: false` keeps the Node-only anti-slop rules in view.
+	flawless({ antiSlop: true, roblox: false }),
 	gitignore(),
 	ignores(),
 	imports(),

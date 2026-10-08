@@ -2,7 +2,8 @@ import { ESLint } from "eslint";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it, onTestFinished } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
@@ -74,9 +75,10 @@ async function resolveParserOptions(
 /**
  * A temporary project with a tsconfig and one roblox-scoped source file.
  *
+ * @param onTestFinished - Registers the directory's cleanup.
  * @returns The project directory.
  */
-async function prepareProject(): Promise<string> {
+async function prepareProject(onTestFinished: TestContext["onTestFinished"]): Promise<string> {
 	const projectDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "isentinel-roblox-parser-"));
 	onTestFinished(async () => {
 		await fs.rm(projectDirectory, { force: true, recursive: true });
@@ -93,7 +95,7 @@ async function prepareProject(): Promise<string> {
 }
 
 describe("roblox parser options", () => {
-	it("should forward outOfProjectFiles to the roblox type-aware parser", async () => {
+	it("should forward outOfProjectFiles to the roblox type-aware parser", async ({ expect }) => {
 		expect.assertions(2);
 
 		const configs = await buildConfigs({
@@ -111,7 +113,9 @@ describe("roblox parser options", () => {
 		expect(robloxOptions["projectService"]).toMatchObject({ allowDefaultProject: [] });
 	});
 
-	it("should forward parserOptionsTypeAware to the roblox type-aware parser", async () => {
+	it("should forward parserOptionsTypeAware to the roblox type-aware parser", async ({
+		expect,
+	}) => {
 		expect.assertions(2);
 
 		const configs = await buildConfigs({
@@ -128,7 +132,7 @@ describe("roblox parser options", () => {
 		).toBe(true);
 	});
 
-	it("should forward parserOptionsNonTypeAware to the roblox parser", async () => {
+	it("should forward parserOptionsNonTypeAware to the roblox parser", async ({ expect }) => {
 		expect.assertions(2);
 
 		const configs = await buildConfigs({
@@ -142,7 +146,7 @@ describe("roblox parser options", () => {
 		);
 	});
 
-	it("should keep shared parserOptions at the highest precedence", async () => {
+	it("should keep shared parserOptions at the highest precedence", async ({ expect }) => {
 		expect.assertions(2);
 
 		const configs = await buildConfigs({
@@ -157,10 +161,13 @@ describe("roblox parser options", () => {
 		);
 	});
 
-	it("should resolve projectService for a roblox-scoped file without allowDefaultProject", async () => {
+	it("should resolve projectService for a roblox-scoped file without allowDefaultProject", async ({
+		expect,
+		onTestFinished,
+	}) => {
 		expect.assertions(1);
 
-		const projectDirectory = await prepareProject();
+		const projectDirectory = await prepareProject(onTestFinished);
 		const configs = await buildConfigs({
 			outOfProjectFiles: [],
 			parserOptionsTypeAware: { projectService: true },

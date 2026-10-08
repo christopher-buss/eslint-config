@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, it, onTestFinished } from "vitest";
+import { describe, it } from "vitest";
 
 import { FIXTURES_TEMP, runFixtureLint } from "./helpers.ts";
 import type { FixtureOptions } from "./helpers.ts";
@@ -32,7 +32,7 @@ const configs: Array<FixtureConfig> = [
 describe.for(configs)("$name", (config: FixtureConfig) => {
 	it(
 		"should produce expected lint output",
-		async ({ expect }) => {
+		async ({ expect, onTestFinished }) => {
 			// The input fixtures are a fixed set of 11 files, so this is 11
 			// soft assertions from the loop plus the trailing size check.
 			expect.assertions(12);

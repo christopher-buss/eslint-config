@@ -1,5 +1,5 @@
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 
 import { hasAncestorDirectoryAnchor, rebaseAncestorAnchor } from "../src/anchors.ts";
 import { disables } from "../src/eslint/configs/disables.ts";
@@ -55,7 +55,7 @@ function oxlintBlocks(configDirectory?: string): Map<string, Array<string>> {
 }
 
 describe("ancestor-directory anchors", () => {
-	it("flags directory anchors and ignores basename anchors", () => {
+	it("flags directory anchors and ignores basename anchors", ({ expect }) => {
 		expect.assertions(8);
 
 		expect(hasAncestorDirectoryAnchor(`**/scripts/${GLOB_SRC}`)).toBe(true);
@@ -72,7 +72,7 @@ describe("ancestor-directory anchors", () => {
 		expect(hasAncestorDirectoryAnchor("packages/*/*")).toBe(false);
 	});
 
-	it("keeps the original pattern and adds a stripped variant when satisfied", () => {
+	it("keeps the original pattern and adds a stripped variant when satisfied", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(rebaseAncestorAnchor(`**/scripts/${GLOB_SRC}`, "scripts")).toStrictEqual([
@@ -85,7 +85,7 @@ describe("ancestor-directory anchors", () => {
 		]);
 	});
 
-	it("leaves a pattern alone when the config path does not satisfy the anchor", () => {
+	it("leaves a pattern alone when the config path does not satisfy the anchor", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(rebaseAncestorAnchor(`**/scripts/${GLOB_SRC}`, "tools/bundler")).toStrictEqual([
@@ -93,7 +93,7 @@ describe("ancestor-directory anchors", () => {
 		]);
 	});
 
-	it("honours a partial anchor only at the tail of the config path", () => {
+	it("honours a partial anchor only at the tail of the config path", ({ expect }) => {
 		expect.assertions(2);
 
 		expect(rebaseAncestorAnchor("**/.github/scripts/**/*", ".github")).toStrictEqual([
@@ -109,7 +109,7 @@ describe("ancestor-directory anchors", () => {
 });
 
 describe("anchored disables stay mitigated", () => {
-	it("pins every ancestor-anchored ESLint block to the workspace root", () => {
+	it("pins every ancestor-anchored ESLint block to the workspace root", ({ expect }) => {
 		expect.assertions(1);
 
 		const unpinned = anchoredEslintBlocks()
@@ -122,7 +122,7 @@ describe("anchored disables stay mitigated", () => {
 		expect(unpinned).toStrictEqual([]);
 	});
 
-	it("covers the blocks that are known to be anchored", () => {
+	it("covers the blocks that are known to be anchored", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(anchoredEslintBlocks().map((block) => block.name)).toStrictEqual([
@@ -134,7 +134,7 @@ describe("anchored disables stay mitigated", () => {
 		]);
 	});
 
-	it("leaves disables/root unpinned", () => {
+	it("leaves disables/root unpinned", ({ expect }) => {
 		expect.assertions(1);
 
 		const root = disables({ root: ROOT_GLOBS, workspaceRoot: WORKSPACE_ROOT }).find(
@@ -146,7 +146,7 @@ describe("anchored disables stay mitigated", () => {
 		expect(root!.basePath).toBeUndefined();
 	});
 
-	it("mirrors every anchored block on the oxlint side", () => {
+	it("mirrors every anchored block on the oxlint side", ({ expect }) => {
 		expect.assertions(1);
 
 		const oxlintNames = new Set(oxlintBlocks().keys());
@@ -159,7 +159,7 @@ describe("anchored disables stay mitigated", () => {
 });
 
 describe("oxlint anchor rebasing", () => {
-	it("widens anchored globs for a config inside the anchored directory", () => {
+	it("widens anchored globs for a config inside the anchored directory", ({ expect }) => {
 		expect.assertions(2);
 
 		const files = oxlintBlocks(path.join(WORKSPACE_ROOT, "scripts")).get(
@@ -170,7 +170,7 @@ describe("oxlint anchor rebasing", () => {
 		expect(files).toContain(GLOB_SRC);
 	});
 
-	it("does not widen unrelated directories", () => {
+	it("does not widen unrelated directories", ({ expect }) => {
 		expect.assertions(1);
 
 		const files = oxlintBlocks(path.join(WORKSPACE_ROOT, "tools", "bundler")).get(
@@ -180,7 +180,7 @@ describe("oxlint anchor rebasing", () => {
 		expect(files).toStrictEqual(GLOB_BUILD_CONFIGS);
 	});
 
-	it("leaves globs untouched without a configDirectory", () => {
+	it("leaves globs untouched without a configDirectory", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(oxlintBlocks().get("isentinel/disables/scripts")).toStrictEqual([
@@ -188,7 +188,7 @@ describe("oxlint anchor rebasing", () => {
 		]);
 	});
 
-	it("leaves globs untouched for a config at the workspace root", () => {
+	it("leaves globs untouched for a config at the workspace root", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(oxlintBlocks(WORKSPACE_ROOT).get("isentinel/disables/scripts")).toStrictEqual([
@@ -196,7 +196,7 @@ describe("oxlint anchor rebasing", () => {
 		]);
 	});
 
-	it("does not widen an unrelated block", () => {
+	it("does not widen an unrelated block", ({ expect }) => {
 		expect.assertions(1);
 
 		expect(

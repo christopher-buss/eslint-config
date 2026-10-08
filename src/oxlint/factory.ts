@@ -126,6 +126,7 @@ export function isentinel(
 ): OxlintConfig {
 	const options = factoryOptions ?? { name: "isentinel" };
 	const {
+		antiSlop = false,
 		categories,
 		componentExts: componentExtensions = [],
 		e18e: enableE18e = true,
@@ -388,7 +389,25 @@ export function isentinel(
 			isInEditor,
 			stylistic: stylisticOptions,
 		}),
-		oxlintFlawless({ stylistic: stylisticOptions }, prettierSettings),
+		oxlintFlawless(
+			{ antiSlop, roblox: enableRoblox, stylistic: stylisticOptions },
+			prettierSettings,
+		),
+		// The complement re-applies the non-roblox rules last, so it wins for
+		// files outside the roblox scope.
+		...(needsComplementOverlay
+			? [
+					oxlintFlawless(
+						{
+							antiSlop,
+							excludeFiles: robloxScopedFiles,
+							roblox: false,
+							stylistic: stylisticOptions,
+						},
+						prettierSettings,
+					),
+				]
+			: []),
 		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
 		oxlintDisables({
 			configDirectory: options.configDirectory,
