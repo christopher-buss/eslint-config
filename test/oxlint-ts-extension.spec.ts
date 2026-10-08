@@ -6,7 +6,6 @@ import type { Rules } from "../src/types.ts";
 const TS_EXTENSION_PAIRS = [
 	"default-param-last",
 	"no-empty-function",
-	"no-shadow",
 	"no-unused-expressions",
 	"no-unused-private-class-members",
 	"no-useless-constructor",
