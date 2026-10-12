@@ -1,11 +1,12 @@
 import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
+import { readFileList } from "./cli/file-list.ts";
 import { parseArguments } from "./cli/options.ts";
 import type { ChildCommand, LintCliOptions } from "./cli/types.ts";
 import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
-import { execute, executeStaged } from "./exec/execute.ts";
+import { execute, executeStaged, resetCancellation } from "./exec/execute.ts";
 import { formatCommandLine } from "./exec/shell.ts";
 import { compose, composePasses } from "./plan/compose.ts";
 import { plan } from "./plan/plan.ts";
@@ -30,6 +31,8 @@ interface CheckOutcome {
  * @param argv - The argument slice (without the node/bin prefix).
  * @param cwd - The working directory (defaults to `process.cwd()`; injected in tests).
  * @param environment - The process environment (defaults to `process.env`).
+ * @param stdin - Where `--files0-from -` reads its list (defaults to
+ *   `process.stdin`).
  * @returns The process exit code.
  * @rejects {CliError} When the arguments are invalid or a tool is missing.
  */
@@ -37,8 +40,19 @@ export async function runLint(
 	argv: Array<string>,
 	cwd: string = process.cwd(),
 	environment: NodeJS.ProcessEnv = process.env,
+	stdin: AsyncIterable<unknown> = process.stdin,
 ): Promise<number> {
-	const options = parseArguments(argv, environment);
+	resetCancellation();
+
+	// Resolved once, before anything is planned: from here on the list is
+	// just the run's paths.
+	const options = await readFileList(parseArguments(argv, environment), cwd, stdin);
+
+	// An explicitly empty list selects nothing. It is not the absence of
+	// paths, so it must not fall back to linting the whole tree.
+	if (options.paths.length === 0) {
+		return 0;
+	}
 
 	const run = resolveRunContext(cwd, environment, !options.print);
 	const staged = plan(options, run);

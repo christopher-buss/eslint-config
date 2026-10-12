@@ -37,6 +37,12 @@ export interface LintCliOptions {
 	/** Extra arguments forwarded verbatim to ESLint. */
 	eslintArgs: Array<string>;
 	/**
+	 * The `--files0-from` source: a file path, or `-` for stdin. While set and
+	 * unread, {@link LintCliOptions.paths} is empty rather than `["."]`; the
+	 * runner fills it from the list (see `readFileList`).
+	 */
+	filesFrom: string | undefined;
+	/**
 	 * Apply fixes. The ESLint passes still run as checks; one further ESLint
 	 * child then fixes the files they reported messages on.
 	 */
@@ -47,7 +53,10 @@ export interface LintCliOptions {
 	oxlintArgs: Array<string>;
 	/** When false, omit `--type-aware` from the oxlint invocation. */
 	oxlintTypeAware: boolean;
-	/** Target paths to lint. Defaults to `["."]`. */
+	/**
+	 * Target paths to lint. Defaults to `["."]` unless `--files0-from` supplies
+	 * them, where an empty list stays empty.
+	 */
 	paths: Array<string>;
 	/** Print the composed command lines instead of running them. */
 	print: boolean;

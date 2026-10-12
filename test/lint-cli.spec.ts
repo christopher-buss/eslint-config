@@ -42,7 +42,7 @@ import { CliError } from "../src/lint-cli/lib/cli/types.ts";
 import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import { execute, executeStaged } from "../src/lint-cli/lib/exec/execute.ts";
-import { buildShellCommand, formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
+import { formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
 import { collectRepoFiles, oxlintTargets } from "../src/lint-cli/lib/files/collect.ts";
 import type { RepoFiles } from "../src/lint-cli/lib/files/collect.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/lib/files/workspace.ts";
@@ -95,6 +95,7 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 		concurrency: undefined,
 		eslint: false,
 		eslintArgs: [],
+		filesFrom: undefined,
 		fix: false,
 		oxlint: false,
 		oxlintArgs: [],
@@ -986,43 +987,6 @@ describe("formatCommandLine", () => {
 
 		expect(formatCommandLine(command)).toBe(
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-		);
-	});
-});
-
-describe("buildShellCommand", () => {
-	it("quotes tokens with spaces per platform", ({ expect }) => {
-		expect.assertions(3);
-
-		expect(buildShellCommand("node", "/path/eslint.js", ["."], "linux")).toBe(
-			"node /path/eslint.js .",
-		);
-		expect(buildShellCommand("node", "/a b/eslint.js", ["."], "linux")).toBe(
-			"node '/a b/eslint.js' .",
-		);
-		expect(buildShellCommand("node", "C:/a b/eslint.js", ["."], "win32")).toBe(
-			'node "C:/a b/eslint.js" .',
-		);
-	});
-
-	it("doubles trailing backslashes so they do not escape the closing quote", ({ expect }) => {
-		expect.assertions(2);
-
-		// `.\src\` naively quotes to `".\src\"`, whose trailing `\"` cmd.exe
-		// reads as an escaped quote — ESLint then receives the literal `.\src"`.
-		expect(buildShellCommand("node", "C:/eslint.js", [".\\src\\"], "win32")).toBe(
-			'node C:/eslint.js ".\\src\\\\"',
-		);
-		expect(buildShellCommand("node", "C:/eslint.js", ["C:\\a b\\"], "win32")).toBe(
-			'node C:/eslint.js "C:\\a b\\\\"',
-		);
-	});
-
-	it("doubles backslashes that precede an embedded quote", ({ expect }) => {
-		expect.assertions(1);
-
-		expect(buildShellCommand("node", "C:/eslint.js", [String.raw`a\"b`], "win32")).toBe(
-			String.raw`node C:/eslint.js "a\\\"b"`,
 		);
 	});
 });
@@ -2645,18 +2609,5 @@ describe("parseHybridPrintConfig", () => {
 
 		expect(parseHybridPrintConfig("not json at all")).toBeUndefined();
 		expect(parseHybridPrintConfig("")).toBeUndefined();
-	});
-});
-
-describe("buildShellCommand percent guard", () => {
-	it("refuses a % token on the Windows shell path but quotes it on POSIX", ({ expect }) => {
-		expect.assertions(2);
-
-		expect(() => buildShellCommand("node", "/path/eslint.js", ["%PATH%"], "win32")).toThrow(
-			CliError,
-		);
-		expect(buildShellCommand("node", "/path/eslint.js", ["50%"], "linux")).toBe(
-			"node /path/eslint.js '50%'",
-		);
 	});
 });

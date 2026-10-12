@@ -8,9 +8,19 @@ import type { LintCliOptions } from "./types.ts";
 import { CliError } from "./types.ts";
 
 interface ExtractResult {
+	/** How many times the option appeared. */
+	occurrences: number;
 	rest: Array<string>;
 	value: string | undefined;
 }
+
+/**
+ * The ESLint flags that make it lint source text read from its own stdin. The
+ * engine's stdin carries its argument list (see `bootstrap.ts`), so these can
+ * never work through the runner and are refused rather than silently linting
+ * empty input.
+ */
+const STDIN_SOURCE_FLAGS = ["--stdin", "--stdin-filename"];
 
 /**
  * Parse and validate an `isentinel-lint` argv slice (without the node/bin
@@ -36,8 +46,17 @@ export function parseArguments(
 
 	const eslintExtract = extractValueOption(head, "eslint-args");
 	const oxlintExtract = extractValueOption(eslintExtract.rest, "oxlint-args");
+	const filesExtract = extractValueOption(oxlintExtract.rest, "files0-from");
+	if (filesExtract.occurrences > 1) {
+		throw new CliError("Option --files0-from may only be given once.");
+	}
 
-	const parsed = yargs([...oxlintExtract.rest, ...tail])
+	const filesFrom = filesExtract.value;
+	if (filesFrom?.length === 0) {
+		throw new CliError("Option --files0-from requires a path, or - for stdin.");
+	}
+
+	const parsed = yargs([...filesExtract.rest, ...tail])
 		.scriptName("isentinel-lint")
 		.parserConfiguration({ "boolean-negation": true, "populate--": true })
 		.option("eslint", { description: "Run only ESLint.", type: "boolean" })
@@ -108,7 +127,20 @@ export function parseArguments(
 		}
 	}
 
+	const stdinFlag = eslintArgs.find(isStdinSourceFlag);
+	if (stdinFlag !== undefined) {
+		throw new CliError(
+			`Cannot forward ${stdinFlag} to ESLint: isentinel-lint lints files, not source ` +
+				"text on stdin. Run ESLint directly to lint stdin.",
+		);
+	}
+
 	const paths = parsed._.map(String).filter((value) => value.length > 0);
+	if (filesFrom !== undefined && paths.length > 0) {
+		throw new CliError(
+			"Cannot combine --files0-from with positional paths; put every path in the list.",
+		);
+	}
 
 	return {
 		agents: parsed.agents ?? isInAgentSession(environment),
@@ -116,11 +148,14 @@ export function parseArguments(
 		concurrency: parseConcurrency(parsed.concurrency),
 		eslint: eslintOnly,
 		eslintArgs,
+		filesFrom,
 		fix,
 		oxlint: oxlintOnly,
 		oxlintArgs,
 		oxlintTypeAware: parsed.oxlintTypeAware,
-		paths: paths.length > 0 ? paths : ["."],
+		// A file list supplies the paths once it is read (see `readFileList`);
+		// it must never fall back to the whole-tree default.
+		paths: filesFrom !== undefined || paths.length > 0 ? paths : ["."],
 		print: parsed.print === true,
 		typeAware,
 	};
@@ -140,6 +175,7 @@ function extractValueOption(argv: Array<string>, name: string): ExtractResult {
 	const inline = `${flag}=`;
 	const rest: Array<string> = [];
 	let value: string | undefined;
+	let occurrences = 0;
 
 	for (let index = 0; index < argv.length; index += 1) {
 		const token = argv[index];
@@ -154,19 +190,25 @@ function extractValueOption(argv: Array<string>, name: string): ExtractResult {
 			}
 
 			value = next;
+			occurrences += 1;
 			index += 1;
 			continue;
 		}
 
 		if (token.startsWith(inline)) {
 			value = token.slice(inline.length);
+			occurrences += 1;
 			continue;
 		}
 
 		rest.push(token);
 	}
 
-	return { rest, value };
+	return { occurrences, rest, value };
+}
+
+function isStdinSourceFlag(token: string): boolean {
+	return STDIN_SOURCE_FLAGS.some((flag) => token === flag || token.startsWith(`${flag}=`));
 }
 
 function parseConcurrency(value: string | undefined): "off" | number | undefined {

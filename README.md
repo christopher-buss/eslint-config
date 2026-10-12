@@ -230,8 +230,8 @@ It resolves the `eslint` and `oxlint` binaries from your project's
 
 By default (a local run, no `--type-aware`, no `--fix`) it runs **three**
 children concurrently via
-[`concurrently`](https://www.npmjs.com/package/concurrently), grouping their
-output:
+[`concurrently`](https://www.npmjs.com/package/concurrently)'s core (no shell),
+grouping their output:
 
 - **oxlint** — the full oxlint pass (including its type-aware rules).
 - **fast pass** — ESLint with only the syntactic (non-type-aware) rules, over
@@ -341,6 +341,32 @@ determined it fails open and runs both engines as before. Explicit `--eslint` /
 
 Any trailing positional arguments are treated as paths to lint (default `.`).
 
+### Large file selections
+
+A git hook that hands the runner thousands of files should not put them on a
+command line: `cmd.exe` stops at 8,191 characters and `CreateProcessW` at
+32,767, so tools end up splitting the list into batches that each start another
+lint stack. Pass the list as data instead:
+
+```bash
+git diff --cached --name-only -z --relative --diff-filter=ACMR | isentinel-lint --files0-from -
+```
+
+`--files0-from <file|->` reads NUL-terminated UTF-8 paths from a file, or from
+stdin for `-` (the `git -z` / `find -print0` shape). Relative entries resolve
+against the working directory, exactly like positional paths (hence `--relative`
+above when running from a sub-package). The paths go through the same planning,
+caching and type-aware skip as positional ones, in one run. An empty list lints
+nothing and exits 0 — it never falls back to `.`. A list that is not valid UTF-8
+or holds an empty entry is refused, as is combining the flag with positional
+paths.
+
+The runner never puts paths on a command line itself either: every oxlint and
+ESLint child is launched as `node <bootstrap> <engine bin>` with no shell, and
+its full argument list is streamed to it over stdin. As a consequence ESLint's
+own `--stdin` / `--stdin-filename` cannot be forwarded through `--eslint-args`
+or `--`.
+
 ### Flags
 
 | Flag                           | Description                                                                                                                        |
@@ -355,6 +381,7 @@ Any trailing positional arguments are treated as paths to lint (default `.`).
 | `--concurrency <n\|off>`       | Override the concurrency heuristic with a fixed worker count.                                                                      |
 | `--eslint-args "<args>"`       | Extra arguments forwarded verbatim to ESLint.                                                                                      |
 | `--oxlint-args "<args>"`       | Extra arguments forwarded verbatim to oxlint.                                                                                      |
+| `--files0-from <file\|->`      | Read the paths to lint from a NUL-delimited UTF-8 list (`-` for stdin); an empty list exits 0.                                     |
 | `--print`                      | Print the composed commands without running them.                                                                                  |
 | `-- <args>`                    | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).                                                            |
 | `-h`, `--help`                 | Show help.                                                                                                                         |
