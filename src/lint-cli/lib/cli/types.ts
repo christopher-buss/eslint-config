@@ -106,6 +106,11 @@ export interface ComposeContext {
 	 * never write, which is what lets them stay concurrent.
 	 */
 	fix: boolean;
+	/**
+	 * Value for the child's `NODE_OPTIONS`, carrying its heap flag. `undefined`
+	 * leaves the inherited value alone.
+	 */
+	nodeOptions: string | undefined;
 	/** Target paths to lint. */
 	paths: Array<string>;
 	/**

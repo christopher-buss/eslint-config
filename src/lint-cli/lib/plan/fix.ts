@@ -9,6 +9,8 @@ import type { RepoFiles } from "../files/collect.ts";
 import { composeEslintCommand } from "./command.ts";
 import { computeWorkerCount } from "./concurrency.ts";
 import type { WorkerLimits } from "./concurrency.ts";
+import type { HeapBudget } from "./heap.ts";
+import { capWorkersForHeap, heapNodeOptions, heapPerWorkerMb } from "./heap.ts";
 import { FULL_PASS } from "./passes.ts";
 import type { PassPlan } from "./sizing.ts";
 
@@ -20,6 +22,8 @@ export interface FixInputs {
 	agentsFormatterPath: string;
 	/** The lint-target lists the passes were sized against. */
 	files: RepoFiles;
+	/** The heap budget; the fix child builds a TypeScript program too. */
+	heap: HeapBudget;
 	/** The resolved worker limits, for sizing the child. */
 	limits: WorkerLimits;
 	/** The parsed CLI options. */
@@ -100,7 +104,7 @@ export function planFixChild(
 	run: RunContext,
 	inputs: FixInputs,
 ): ChildCommand | undefined {
-	const { files, limits, options } = inputs;
+	const { files, heap, limits, options } = inputs;
 	const covered = options.cache ? collectFixTargets(passes, run, files) : [];
 	const uncovered = options.cache ? files.outsideCwdTargets : options.paths;
 	const targets = [...covered, ...uncovered];
@@ -113,21 +117,24 @@ export function planFixChild(
 		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(covered);
 	}
 
+	const concurrency =
+		options.concurrency ??
+		computeWorkerCount({
+			dirtyCount: targets.length,
+			filesPerWorker: limits.filesPerWorker,
+			maxWorkers: capWorkersForHeap(limits.typedMaxWorkers, limits, heap),
+		});
+
 	return composeEslintCommand(
 		{ ...options, cache: options.cache && uncovered.length === 0 },
 		{
 			agentsFormatterPath: inputs.agentsFormatterPath,
 			cacheLocation: cacheFile,
 			ci: run.ci,
-			concurrency:
-				options.concurrency ??
-				computeWorkerCount({
-					dirtyCount: targets.length,
-					filesPerWorker: limits.filesPerWorker,
-					maxWorkers: limits.typedMaxWorkers,
-				}),
+			concurrency,
 			eslintLabel: FULL_PASS.label,
 			fix: true,
+			nodeOptions: heapNodeOptions(heap, heapPerWorkerMb(heap, concurrency)),
 			paths: targets,
 			typeAwareEnv: FULL_PASS.typeAwareEnv,
 		},

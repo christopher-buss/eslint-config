@@ -15,6 +15,7 @@ import process from "node:process";
 import { Writable } from "node:stream";
 
 import type { ChildCommand, ToolLabel } from "../cli/types.ts";
+import { HEAP_ENV } from "../plan/heap.ts";
 import { resolveBootstrap, resolveLocalBin } from "./resolve.ts";
 
 /** An engine child ready to spawn: its command and resolved launch target. */
@@ -24,6 +25,15 @@ interface EngineLaunch {
 	/** The composed child command. */
 	command: ChildCommand;
 }
+
+/**
+ * What V8 writes when a heap fills: `ERR_WORKER_OUT_OF_MEMORY` from a worker,
+ * `JavaScript heap out of memory` from the main thread.
+ */
+const OUT_OF_MEMORY = /ERR_WORKER_OUT_OF_MEMORY|heap out of memory/;
+
+/** Characters kept between stderr chunks, so a split marker still matches. */
+const OUT_OF_MEMORY_TAIL = 64;
 
 /** The signals that cancel a run, matching `concurrently`'s `KillOnSignal`. */
 const CANCEL_SIGNALS = ["SIGHUP", "SIGINT", "SIGTERM"] as const;
@@ -59,6 +69,20 @@ interface HeldOutput {
 	release: () => void;
 	/** The stream to hand `concurrently`. */
 	stream: Writable;
+}
+
+/**
+ * The hint printed after a program-building child ran out of heap, below the
+ * engine's own stack trace.
+ *
+ * @param label - The child's label.
+ * @returns One stderr line.
+ */
+export function outOfMemoryHint(label: ToolLabel): string {
+	return (
+		`isentinel-lint: the ${label} ESLint pass ran out of memory. Set ${HEAP_ENV}=<mb> ` +
+		"to give each worker more heap, or LINT_MAX_WORKERS to run fewer workers.\n"
+	);
 }
 
 /**
@@ -273,6 +297,43 @@ function trackCancellation(onSignal?: (signal: NodeJS.Signals) => void): () => v
 }
 
 /**
+ * Whether a child builds a TypeScript program, which is what fills a heap and
+ * what {@link HEAP_ENV} sizes. The fast pass and oxlint do neither.
+ *
+ * @param command - The child.
+ * @returns Whether its heap is watched.
+ */
+function buildsProgram(command: ChildCommand): boolean {
+	return command.bin === "eslint" && command.label !== "fast";
+}
+
+/**
+ * Watch a child's stderr for V8's out-of-memory report. Reads alongside
+ * whatever else consumes the stream, and never alters it.
+ *
+ * @param child - The spawned child.
+ * @param onExhausted - Called once, when the report is seen.
+ */
+function watchOutOfMemory(child: ChildProcess, onExhausted: () => void): void {
+	let tail = "";
+	let seen = false;
+	child.stderr?.on("data", (chunk: unknown) => {
+		if (seen) {
+			return;
+		}
+
+		const text = tail + String(chunk);
+		if (OUT_OF_MEMORY.test(text)) {
+			seen = true;
+			onExhausted();
+			return;
+		}
+
+		tail = text.slice(-OUT_OF_MEMORY_TAIL);
+	});
+}
+
+/**
  * Start every command as one `concurrently` group and announce the children.
  * Unlike the previous `killOthersOn: ["failure"]` behaviour, an ordinary lint
  * failure in one child no longer kills its siblings — each runs to the end so
@@ -312,6 +373,7 @@ async function startGroup(
 	);
 
 	const logger = new Logger({});
+	const exhausted = new Set<ToolLabel>();
 	const abortController = new AbortController();
 	const stopTracking = trackCancellation();
 	const { result } = createConcurrently(
@@ -342,7 +404,14 @@ async function startGroup(
 					throw new Error(`isentinel-lint: no engine registered as "${name}".`);
 				}
 
-				return launchEngine(launch, options);
+				const child = launchEngine(launch, options);
+				if (buildsProgram(launch.command)) {
+					watchOutOfMemory(child, () => {
+						exhausted.add(launch.command.label);
+					});
+				}
+
+				return child;
 			},
 		},
 	);
@@ -364,6 +433,9 @@ async function startGroup(
 		return 1;
 	} finally {
 		stopTracking();
+		for (const label of exhausted) {
+			process.stderr.write(outOfMemoryHint(label));
+		}
 	}
 }
 
@@ -383,11 +455,27 @@ function cancelledCode(): number | undefined {
 
 async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 	const bin = resolveLocalBin(command.bin, cwd);
+	// A watched child's stderr is piped so it can be read, and forwarded as is.
+	const watched = buildsProgram(command);
+	let exhausted = false;
 	return new Promise((resolve) => {
 		const child = launchEngine(
 			{ bin, command },
-			{ cwd, env: { ...process.env, ...command.env }, stdio: "inherit" },
+			{
+				cwd,
+				env: { ...process.env, ...command.env },
+				stdio: ["inherit", "inherit", watched ? "pipe" : "inherit"],
+			},
 		);
+		if (watched) {
+			child.stderr?.on("data", (chunk: Uint8Array) => {
+				process.stderr.write(chunk);
+			});
+			watchOutOfMemory(child, () => {
+				exhausted = true;
+			});
+		}
+
 		announce(command);
 		const stopTracking = trackCancellation((signal) => {
 			child.kill(signal);
@@ -398,6 +486,10 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 		});
 		child.on("close", (code, signal) => {
 			stopTracking();
+			if (exhausted) {
+				process.stderr.write(outOfMemoryHint(command.label));
+			}
+
 			resolve(code ?? (signal === null ? 1 : signalExitCode(signal)));
 		});
 	});

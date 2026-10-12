@@ -33,6 +33,11 @@ export interface WorkerHeuristicInput {
 
 /** Resolved limits derived from the environment and available CPUs. */
 export interface WorkerLimits {
+	/**
+	 * Whether `LINT_MAX_WORKERS` set the caps. An explicit cap is a deliberate
+	 * request, so the heap budget never tightens it (see `heapWorkerCap`).
+	 */
+	explicitMaxWorkers: boolean;
 	filesPerWorker: number;
 	/** The cap for a pass that builds no TypeScript program (the fast pass). */
 	maxWorkers: number;
@@ -80,6 +85,7 @@ export function resolveWorkerLimits(
 		explicit ?? (ci ? availableParallelism : Math.floor(availableParallelism / 4));
 
 	return {
+		explicitMaxWorkers: explicit !== undefined,
 		filesPerWorker,
 		maxWorkers,
 		typedMaxWorkers: explicit ?? Math.min(maxWorkers, TYPED_MAX_WORKERS),

@@ -3,6 +3,7 @@ import { resolveRunContext } from "../src/lint-cli/lib/context.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import { compose, composePasses } from "../src/lint-cli/lib/plan/compose.ts";
 import type { CommandPlan } from "../src/lint-cli/lib/plan/compose.ts";
+import type { MemoryFacts } from "../src/lint-cli/lib/plan/heap.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { StagedPlan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
@@ -12,12 +13,21 @@ import { withoutGitEnvironment } from "./without-git.ts";
 export interface ComposeInDirectoryOptions {
 	/** The process environment the run sees. Defaults to empty. */
 	environment?: NodeJS.ProcessEnv;
+	/** The machine's memory facts. Defaults to {@link TEST_MEMORY}. */
+	memory?: MemoryFacts;
 	/**
 	 * Whether the run may mutate — spawn the builder, delete caches, write
 	 * state. Defaults to false, which is what `--print` does.
 	 */
 	mutate?: boolean;
 }
+
+/**
+ * A fixed machine for the fixtures, so no plan depends on the host's memory: a
+ * 4 GB default heap and a budget of 32 GB, which holds eight default workers —
+ * more than the type-aware cap, so it never narrows a fixture's workers.
+ */
+export const TEST_MEMORY: MemoryFacts = { availableMb: 65_536, defaultHeapMb: 4096 };
 
 /**
  * Every pass a staged plan runs, in run order, resolving the deferred stage
@@ -62,11 +72,11 @@ export function runContext(
 export function composeInDirectory(
 	argv: Array<string>,
 	directory: string,
-	{ environment = {}, mutate = false }: ComposeInDirectoryOptions = {},
+	{ environment = {}, memory = TEST_MEMORY, mutate = false }: ComposeInDirectoryOptions = {},
 ): CommandPlan {
 	return withoutGitEnvironment(() => {
 		const options = parseArguments(argv, environment);
-		const staged = plan(options, runContext(directory, { environment, mutate }));
+		const staged = plan(options, runContext(directory, { environment, mutate }), memory);
 		const eager = compose(staged.eager, options);
 		if (staged.resolveDeferred === undefined) {
 			return eager;

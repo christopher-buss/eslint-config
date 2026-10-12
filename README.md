@@ -253,6 +253,20 @@ Other behaviours:
   re-lint (its own dirty count), rather than eagerly spinning up a worker per
   CPU. The fast pass is cheap per file, so it packs far more files per worker
   (see `FAST_FILES_PER_WORKER`) than the type-aware pass.
+- Sizes the heap of every ESLint child that builds a TypeScript program (the
+  type-aware pass, the full pass and the fix child). Each worker holds its own
+  program, so the limit that matters is workers × heap. By default the runner
+  splits half the machine's memory (or its cgroup limit, when lower) across
+  those workers, and raises Node's heap limit when the share is larger. When the
+  budget cannot give each worker Node's default heap, it runs fewer workers. The
+  flag goes in the child's `NODE_OPTIONS`, which every ESLint worker inherits;
+  oxlint and the fast pass never get it. `--print` shows the chosen workers,
+  files per worker and heap on stderr. If a child still runs out of memory, the
+  runner prints a hint that names `LINT_TYPED_HEAP_MB`. A size set in
+  `LINT_TYPED_HEAP_MB` also caps the workers at budget ÷ size. An explicit
+  `LINT_MAX_WORKERS` or `--concurrency` is never reduced. A
+  `--max-old-space-size` already in `NODE_OPTIONS` wins over all of this: the
+  runner adds nothing and keeps the worker count.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
   `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
   (type-aware pass), and `.eslintcache-<key>` (the full config, used by CI,
@@ -394,6 +408,7 @@ or `--`.
 | `FILES_PER_WORKER`      | Target files a single type-aware ESLint worker handles before adding another (default `350`).                        |
 | `FAST_FILES_PER_WORKER` | Same, for the fast (syntactic) pass, which packs far more files per worker (default `800`).                          |
 | `LINT_MAX_WORKERS`      | Upper bound on ESLint workers (default a quarter of available CPUs).                                                 |
+| `LINT_TYPED_HEAP_MB`    | Heap per worker for the program-building ESLint children: `auto` (default), a size in MB, or `off` (Node's default). |
 | `ESLINT_TYPE_AWARE`     | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
 | `CI`                    | When set, the runner uses the single full pass with `--cache-strategy content` (see below).                          |
 

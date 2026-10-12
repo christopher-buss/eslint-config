@@ -84,6 +84,12 @@ export function composeEslintCommand(
 		ESLINT_TYPE_AWARE: context.typeAwareEnv,
 	};
 
+	// Set only to raise the heap of a pass that builds a TypeScript program;
+	// otherwise the child inherits `NODE_OPTIONS` untouched.
+	if (context.nodeOptions !== undefined) {
+		environment["NODE_OPTIONS"] = context.nodeOptions;
+	}
+
 	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
 }
 

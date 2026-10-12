@@ -10,6 +10,8 @@ import type { RepoFiles } from "../files/collect.ts";
 import { hasBuilderState } from "../typescript/affected.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
+import type { HeapBudget } from "./heap.ts";
+import { capWorkersForHeap, describeHeapPlan, heapNodeOptions, heapPerWorkerMb } from "./heap.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { maxWorkersFor, TYPED_PASS } from "./passes.ts";
 
@@ -29,6 +31,17 @@ export interface PassPlan {
 	concurrency: "off" | number;
 	/** The pass descriptor (cache base name, label, type-aware env, sizing). */
 	descriptor: PassDescriptor;
+	/**
+	 * A stderr line describing the pass's workers and heap, for `--print`.
+	 * `undefined` for a pass that builds no TypeScript program.
+	 */
+	memoryNote: string | undefined;
+	/**
+	 * The `NODE_OPTIONS` the child runs under, carrying its heap flag.
+	 * `undefined` leaves the inherited value alone; always so for a pass that
+	 * builds no TypeScript program.
+	 */
+	nodeOptions: string | undefined;
 	/** Whether the pass runs; false when auto-skipped. */
 	shouldRun: boolean;
 	/** The stderr notice to emit when skipped, else undefined. */
@@ -48,6 +61,8 @@ export interface SizingInputs {
 	clearedCaches: ReadonlySet<string>;
 	/** The lint-target lists, already filtered of ESLint-ignored files. */
 	files: RepoFiles;
+	/** The heap budget the program-building passes are sized against. */
+	heap: HeapBudget;
 	/** The resolved worker limits. */
 	limits: WorkerLimits;
 	/**
@@ -219,7 +234,13 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	const dirtyCount = passDirtyCount(descriptor, cacheFile, context);
 	const conservative = context.files.outsideCwdTargets.length > 0;
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.run.environment);
-	const maxWorkers = maxWorkersFor(descriptor, context.limits);
+	// A pass that builds a TypeScript program holds it in every worker, so the
+	// memory budget bounds how many of them may run at once.
+	const buildsProgram = descriptor.invalidation !== "none";
+	const passMaxWorkers = maxWorkersFor(descriptor, context.limits);
+	const maxWorkers = buildsProgram
+		? capWorkersForHeap(passMaxWorkers, context.limits, context.heap)
+		: passMaxWorkers;
 
 	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
 	// count under-counts them — size for the worker cap instead (maxWorkers *
@@ -229,6 +250,18 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	const concurrency =
 		context.options.concurrency ??
 		computeWorkerCount({ dirtyCount: sizingDirtyCount, filesPerWorker, maxWorkers });
+
+	const heapMb = buildsProgram ? heapPerWorkerMb(context.heap, concurrency) : undefined;
+	const memory = {
+		memoryNote: buildsProgram
+			? describeHeapPlan(descriptor.label, context.heap, {
+					concurrency,
+					dirtyCount: sizingDirtyCount,
+					heapMb,
+				})
+			: undefined,
+		nodeOptions: heapNodeOptions(context.heap, heapMb),
+	};
 
 	// The typed pass may only auto-skip when the dirty count is trustworthy; an
 	// outside-cwd target makes it unknowable, so never skip in that case.
@@ -246,10 +279,18 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 			cacheFile,
 			concurrency,
 			descriptor,
+			...memory,
 			shouldRun: false,
 			skipReason: TYPED_SKIP_NOTICE,
 		};
 	}
 
-	return { cacheFile, concurrency, descriptor, shouldRun: true, skipReason: undefined };
+	return {
+		cacheFile,
+		concurrency,
+		descriptor,
+		...memory,
+		shouldRun: true,
+		skipReason: undefined,
+	};
 }
