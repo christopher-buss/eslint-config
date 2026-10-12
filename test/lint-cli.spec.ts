@@ -83,7 +83,7 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		concurrency: "off",
 		eslintLabel: "eslint",
 		fix: false,
-		nodeOptions: undefined,
+		heap: undefined,
 		paths: ["."],
 		typeAwareEnv: undefined,
 		...overrides,
@@ -999,9 +999,9 @@ describe("formatCommandLine", () => {
 
 /**
  * The heap flag a program-building child gets on {@link TEST_MEMORY}: its whole
- * 32 GB budget, as the fixtures lint with a single worker.
+ * 64 GB budget, as the fixtures lint with a single worker.
  */
-const TEST_HEAP = "NODE_OPTIONS=--max-old-space-size=32768";
+const TEST_HEAP = "NODE_OPTIONS=--max-old-space-size=65536";
 
 function printLines(
 	argv: Array<string>,
@@ -1559,8 +1559,8 @@ describe("execute", () => {
 
 		const code = await execute(
 			[
-				{ args: [], bin: "oxlint", env: {}, label: "oxc" },
-				{ args: [], bin: "eslint", env: {}, label: "eslint" },
+				{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false },
+				{ args: [], bin: "eslint", env: {}, label: "eslint", watchHeap: false },
 			],
 			directory,
 			false,
@@ -1605,11 +1605,11 @@ describe("executeStaged", () => {
 
 		let oxcDoneAtResolve = true;
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				oxcDoneAtResolve = fs.existsSync(oxcMarker);
-				return [{ args: [], bin: "eslint", env: {}, label: "typed" }];
+				return [{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: false }];
 			},
 		);
 
@@ -1635,7 +1635,7 @@ describe("executeStaged", () => {
 
 		let resolverCalls = 0;
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				resolverCalls += 1;
@@ -1692,8 +1692,7 @@ describe("collectFixTargets", () => {
 			cacheFile,
 			concurrency: "off",
 			descriptor,
-			memoryNote: undefined,
-			nodeOptions: undefined,
+			heap: undefined,
 			shouldRun: true,
 			skipReason: undefined,
 		};

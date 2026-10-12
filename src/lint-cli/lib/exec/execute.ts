@@ -81,7 +81,7 @@ interface HeldOutput {
 export function outOfMemoryHint(label: ToolLabel): string {
 	return (
 		`isentinel-lint: the ${label} ESLint pass ran out of memory. Set ${HEAP_ENV}=<mb> ` +
-		"to give each worker more heap, or LINT_MAX_WORKERS to run fewer workers.\n"
+		"to give each worker more heap; the runner starts fewer workers to keep them in budget.\n"
 	);
 }
 
@@ -297,17 +297,6 @@ function trackCancellation(onSignal?: (signal: NodeJS.Signals) => void): () => v
 }
 
 /**
- * Whether a child builds a TypeScript program, which is what fills a heap and
- * what {@link HEAP_ENV} sizes. The fast pass and oxlint do neither.
- *
- * @param command - The child.
- * @returns Whether its heap is watched.
- */
-function buildsProgram(command: ChildCommand): boolean {
-	return command.bin === "eslint" && command.label !== "fast";
-}
-
-/**
  * Watch a child's stderr for V8's out-of-memory report. Reads alongside
  * whatever else consumes the stream, and never alters it.
  *
@@ -405,7 +394,7 @@ async function startGroup(
 				}
 
 				const child = launchEngine(launch, options);
-				if (buildsProgram(launch.command)) {
+				if (launch.command.watchHeap) {
 					watchOutOfMemory(child, () => {
 						exhausted.add(launch.command.label);
 					});
@@ -456,7 +445,7 @@ function cancelledCode(): number | undefined {
 async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 	const bin = resolveLocalBin(command.bin, cwd);
 	// A watched child's stderr is piped so it can be read, and forwarded as is.
-	const watched = buildsProgram(command);
+	const watched = command.watchHeap;
 	let exhausted = false;
 	return new Promise((resolve) => {
 		const child = launchEngine(

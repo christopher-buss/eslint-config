@@ -1,3 +1,5 @@
+import type { PassHeap } from "../plan/heap.ts";
+
 /**
  * Which type-aware ESLint cache/builder a pass targets. `"off"` is the
  * syntactic-only fast pass, `"only"` the type-aware pass; the full config
@@ -82,6 +84,11 @@ export interface ChildCommand {
 	env: Record<string, string | undefined>;
 	/** Prefix/name used for concurrently output and logging. */
 	label: ToolLabel;
+	/**
+	 * Whether the runner reads the child's stderr for an out-of-memory report
+	 * and adds a hint that names the heap setting (see `PassHeap.watch`).
+	 */
+	watchHeap: boolean;
 }
 
 /**
@@ -107,10 +114,11 @@ export interface ComposeContext {
 	 */
 	fix: boolean;
 	/**
-	 * Value for the child's `NODE_OPTIONS`, carrying its heap flag. `undefined`
-	 * leaves the inherited value alone.
+	 * The heap the child runs with: its `NODE_OPTIONS` and whether the runner
+	 * watches it for an out-of-memory report. `undefined` for a child that
+	 * builds no TypeScript program.
 	 */
-	nodeOptions: string | undefined;
+	heap: PassHeap | undefined;
 	/** Target paths to lint. */
 	paths: Array<string>;
 	/**

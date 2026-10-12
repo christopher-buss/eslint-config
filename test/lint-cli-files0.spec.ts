@@ -618,13 +618,13 @@ describe.skipIf(process.platform === "win32")("staged cancellation", () => {
 		});
 
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				// Stands in for a Ctrl+C pressed while the TypeScript builder
 				// blocks the event loop: the listeners run, the planner returns.
 				process.emit("SIGINT", "SIGINT");
-				return [{ args: [], bin: "eslint", env: {}, label: "typed" }];
+				return [{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: false }];
 			},
 		);
 

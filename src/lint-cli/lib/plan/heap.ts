@@ -3,7 +3,7 @@ import process from "node:process";
 import v8 from "node:v8";
 
 import { parseBoundedInteger } from "../cli/parse.ts";
-import type { WorkerLimits } from "./concurrency.ts";
+import type { ToolLabel } from "../cli/types.ts";
 
 /**
  * Environment variable that sets the heap of a program-building ESLint child.
@@ -16,6 +16,18 @@ export const HEAP_ENV = "LINT_TYPED_HEAP_MB";
  * the OS, all of which run alongside the type-aware pass locally.
  */
 export const HEAP_BUDGET_SHARE = 0.5;
+
+/**
+ * The least heap `auto` gives each program-building worker, as a multiple of
+ * Node's default. Every worker loads the program of every project its files
+ * touch, and files are handed out interleaved, so each one ends up holding
+ * nearly all of them. Measured on a 5,400-file roblox-ts workspace: about
+ * 3.3 GB of programs per worker plus about 1.3 MB per file, so 940 files per
+ * worker peaked near 4.8 GB, just over the default. Fewer, larger workers fit
+ * a budget far better than more, smaller ones: half the workers cut the total
+ * by a third.
+ */
+export const AUTO_HEAP_FLOOR = 2;
 
 const BYTES_PER_MB = 1024 * 1024;
 
@@ -48,6 +60,31 @@ export type HeapSetting =
 	| { kind: "fixed"; mb: number }
 	| { kind: "inherited" }
 	| { kind: "off" };
+
+/** What a program-building pass was sized to, as its heap plan needs it. */
+export interface HeapSizing {
+	/** The pass's resolved concurrency (`off` lints on the main thread). */
+	concurrency: "off" | number;
+	/** The number of files the pass will lint. */
+	dirtyCount: number;
+}
+
+/** The heap a program-building child runs with. */
+export interface PassHeap {
+	/**
+	 * The `NODE_OPTIONS` the child runs under, carrying its heap flag.
+	 * `undefined` leaves the inherited value alone.
+	 */
+	nodeOptions: string | undefined;
+	/** A stderr line naming the workers, files per worker and heap. */
+	note: string;
+	/**
+	 * Whether the runner reads the child's stderr for an out-of-memory report
+	 * and adds a hint. False under `off`, which keeps the child exactly as an
+	 * unmanaged one: its stderr stays inherited when it runs alone.
+	 */
+	watch: boolean;
+}
 
 /** Everything sizing needs to give a program-building pass its heap. */
 export interface HeapBudget {
@@ -110,7 +147,8 @@ export function heapBudgetMb(memory: MemoryFacts): number {
 /**
  * The most program-building workers the budget can hold, or `undefined` when
  * the setting places no limit. Each worker is counted at the heap it may grow
- * to: the requested size, or Node's default under `auto`. Never below one.
+ * to: the requested size, or {@link AUTO_HEAP_FLOOR} times Node's default
+ * under `auto`. Never below one.
  *
  * @param budget - The setting and the machine it applies to.
  * @returns How many workers fit, if the setting limits them.
@@ -120,7 +158,8 @@ export function heapWorkerCap({ memory, setting }: HeapBudget): number | undefin
 		return undefined;
 	}
 
-	const perWorker = setting.kind === "fixed" ? setting.mb : memory.defaultHeapMb;
+	const perWorker =
+		setting.kind === "fixed" ? setting.mb : memory.defaultHeapMb * AUTO_HEAP_FLOOR;
 	return Math.max(1, Math.floor(heapBudgetMb(memory) / perWorker));
 }
 
@@ -146,32 +185,8 @@ export function heapPerWorkerMb(
 		return undefined;
 	}
 
-	const workers = concurrency === "off" ? 1 : concurrency;
-	const share = Math.floor(heapBudgetMb(memory) / workers);
+	const share = Math.floor(heapBudgetMb(memory) / workerCount(concurrency));
 	return share > memory.defaultHeapMb ? share : undefined;
-}
-
-/**
- * The `NODE_OPTIONS` a program-building child runs under: the inherited value
- * with the heap flag appended. Node's `worker_threads` take their heap limit
- * from `--max-old-space-size` when it is set, so this one flag reaches every
- * ESLint worker.
- *
- * @param budget - Carries the inherited `NODE_OPTIONS`.
- * @param heapMb - The size in MB for each worker, if it should change.
- * @returns The value to set, or `undefined` to leave `NODE_OPTIONS` alone.
- */
-export function heapNodeOptions(
-	{ nodeOptions }: HeapBudget,
-	heapMb: number | undefined,
-): string | undefined {
-	if (heapMb === undefined) {
-		return undefined;
-	}
-
-	const flag = `--max-old-space-size=${String(heapMb)}`;
-	const inherited = nodeOptions?.trim() ?? "";
-	return inherited.length > 0 ? `${inherited} ${flag}` : flag;
 }
 
 /**
@@ -194,17 +209,80 @@ export function resolveHeapBudget(environment: NodeJS.ProcessEnv, memory: Memory
  * An explicit `LINT_MAX_WORKERS` is never tightened.
  *
  * @param maxWorkers - The pass's cap before the budget.
- * @param limits - Says whether `LINT_MAX_WORKERS` set that cap.
+ * @param explicit - Whether `LINT_MAX_WORKERS` set that cap.
  * @param budget - The setting and the machine it applies to.
  * @returns The cap to size the pass against.
  */
 export function capWorkersForHeap(
 	maxWorkers: number,
-	limits: WorkerLimits,
+	explicit: boolean,
 	budget: HeapBudget,
 ): number {
-	const cap = limits.explicitMaxWorkers ? undefined : heapWorkerCap(budget);
+	const cap = explicit ? undefined : heapWorkerCap(budget);
 	return cap === undefined ? maxWorkers : Math.min(maxWorkers, cap);
+}
+
+/**
+ * Plan the heap of one program-building child from its sizing.
+ *
+ * @param label - The child's label, for the `--print` line.
+ * @param budget - The setting and the machine it applies to.
+ * @param sizing - The child's concurrency and file count.
+ * @returns Its `NODE_OPTIONS`, its `--print` line and whether it is watched.
+ */
+export function planPassHeap(label: ToolLabel, budget: HeapBudget, sizing: HeapSizing): PassHeap {
+	const heapMb = heapPerWorkerMb(budget, sizing.concurrency);
+	return {
+		nodeOptions: heapNodeOptions(budget, heapMb),
+		note: describeHeapPlan(label, budget, sizing, heapMb),
+		watch: budget.setting.kind !== "off",
+	};
+}
+
+/**
+ * The number of heaps a concurrency value runs: `off` lints on the main
+ * thread, which is one.
+ *
+ * @param concurrency - A resolved ESLint concurrency.
+ * @returns How many threads lint.
+ */
+function workerCount(concurrency: "off" | number): number {
+	return concurrency === "off" ? 1 : concurrency;
+}
+
+/**
+ * The `NODE_OPTIONS` a program-building child runs under: the inherited value
+ * with the heap flag appended. Node's `worker_threads` take their heap limit
+ * from `--max-old-space-size` when it is set, so this one flag reaches every
+ * ESLint worker.
+ *
+ * @param budget - Carries the inherited `NODE_OPTIONS`.
+ * @param heapMb - The size in MB for each worker, if it should change.
+ * @returns The value to set, or `undefined` to leave `NODE_OPTIONS` alone.
+ */
+function heapNodeOptions(
+	{ nodeOptions }: HeapBudget,
+	heapMb: number | undefined,
+): string | undefined {
+	if (heapMb === undefined) {
+		return undefined;
+	}
+
+	const flag = `--max-old-space-size=${String(heapMb)}`;
+	const inherited = nodeOptions?.trim() ?? "";
+	return inherited.length > 0 ? `${inherited} ${flag}` : flag;
+}
+
+/**
+ * How the `--print` line names a heap the runner left alone.
+ *
+ * @param budget - Says whether the user's `NODE_OPTIONS` set it.
+ * @returns The user's heap, or Node's default with its size.
+ */
+function unchangedHeap({ memory, setting }: HeapBudget): string {
+	return setting.kind === "inherited"
+		? "the NODE_OPTIONS heap"
+		: `Node's default heap (${String(memory.defaultHeapMb)} MB)`;
 }
 
 /**
@@ -212,19 +290,17 @@ export function capWorkersForHeap(
  *
  * @param label - The pass's child label.
  * @param budget - The setting and the machine it applies to.
- * @param sizing - The pass's dirty count, concurrency and heap.
+ * @param sizing - The pass's concurrency and file count.
+ * @param heapMb - The size given to each worker, if it changed.
  * @returns One stderr line naming the workers, files per worker and heap.
  */
-export function describeHeapPlan(
-	label: string,
+function describeHeapPlan(
+	label: ToolLabel,
 	budget: HeapBudget,
-	{
-		concurrency,
-		dirtyCount,
-		heapMb,
-	}: { concurrency: "off" | number; dirtyCount: number; heapMb: number | undefined },
+	{ concurrency, dirtyCount }: HeapSizing,
+	heapMb: number | undefined,
 ): string {
-	const workers = concurrency === "off" ? 1 : concurrency;
+	const workers = workerCount(concurrency);
 	const heap = heapMb === undefined ? unchangedHeap(budget) : `${String(heapMb)} MB heap`;
 	const source = {
 		auto: `auto, budget ${String(heapBudgetMb(budget.memory))} MB`,
@@ -238,10 +314,4 @@ export function describeHeapPlan(
 		`~${String(Math.ceil(dirtyCount / workers))} files per worker, ${heap} per worker ` +
 		`(${source}).\n`
 	);
-}
-
-function unchangedHeap({ memory, setting }: HeapBudget): string {
-	return setting.kind === "inherited"
-		? "the NODE_OPTIONS heap"
-		: `Node's default heap (${String(memory.defaultHeapMb)} MB)`;
 }

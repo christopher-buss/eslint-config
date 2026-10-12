@@ -22,8 +22,11 @@ import {
 } from "../src/lint-cli/lib/plan/heap.ts";
 import { composeInDirectory } from "./lint-cli-helpers.ts";
 
-/** A 16 GB machine with a 4 GB default heap: an 8 GB budget, two workers. */
-const SMALL_MACHINE: MemoryFacts = { availableMb: 16_384, defaultHeapMb: 4096 };
+/**
+ * A 32 GB machine with a 4 GB default heap: a 16 GB budget, which holds two
+ * `auto` workers at twice the default each.
+ */
+const SMALL_MACHINE: MemoryFacts = { availableMb: 32_768, defaultHeapMb: 4096 };
 
 /** A 96 GB machine with a 4 GB default heap: a 48 GB budget. */
 const LARGE_MACHINE: MemoryFacts = { availableMb: 98_304, defaultHeapMb: 4096 };
@@ -113,12 +116,15 @@ describe("heap budget", () => {
 		expect(heapPerWorkerMb(auto, 12)).toBeUndefined();
 	});
 
-	it("caps the workers so each keeps at least Node's default heap", ({ expect }) => {
-		expect.assertions(3);
+	it("caps the workers so each keeps twice Node's default heap", ({ expect }) => {
+		expect.assertions(5);
 
 		expect(heapWorkerCap(budget({}, SMALL_MACHINE))).toBe(2);
+		expect(heapPerWorkerMb(budget({}, SMALL_MACHINE), 2)).toBe(8192);
+		// Half of 16 GB holds one such worker, which gets all of it.
+		expect(heapWorkerCap(budget({}, { availableMb: 16_384, defaultHeapMb: 4096 }))).toBe(1);
 		// A requested size is what each worker may grow to.
-		expect(heapWorkerCap(budget({ LINT_TYPED_HEAP_MB: "8192" }, SMALL_MACHINE))).toBe(1);
+		expect(heapWorkerCap(budget({ LINT_TYPED_HEAP_MB: "16384" }, SMALL_MACHINE))).toBe(1);
 		// Never below one worker, however small the machine.
 		expect(heapWorkerCap(budget({}, { availableMb: 2048, defaultHeapMb: 2048 }))).toBe(1);
 	});
@@ -141,18 +147,22 @@ describe("heap budget", () => {
 		const explicit = resolveWorkerLimits({ LINT_MAX_WORKERS: "6" }, 32, false);
 		const derived = resolveWorkerLimits({}, 32, false);
 
-		expect(capWorkersForHeap(6, explicit, budget({}, SMALL_MACHINE))).toBe(6);
-		expect(capWorkersForHeap(6, derived, budget({}, SMALL_MACHINE))).toBe(2);
+		expect(capWorkersForHeap(6, explicit.explicitMaxWorkers, budget({}, SMALL_MACHINE))).toBe(
+			6,
+		);
+		expect(capWorkersForHeap(6, derived.explicitMaxWorkers, budget({}, SMALL_MACHINE))).toBe(2);
 	});
 });
 
 describe("heap flag on composed children", () => {
 	it("gives only the program-building child the flag", ({ expect, onTestFinished }) => {
-		expect.assertions(3);
+		expect.assertions(5);
 
 		const directory = temporaryDirectory(onTestFinished);
 		const { commands } = composeInDirectory([], directory, { memory: LARGE_MACHINE });
 
+		expect(byLabel(commands, "fast").watchHeap).toBe(false);
+		expect(byLabel(commands, "typed").watchHeap).toBe(true);
 		expect(byLabel(commands, "oxc").env).toStrictEqual({});
 		expect(byLabel(commands, "fast").env).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
 		expect(byLabel(commands, "typed").env).toStrictEqual({
@@ -232,7 +242,7 @@ describe("heap flag on composed children", () => {
 	});
 
 	it("sizes workers exactly as before when off", ({ expect, onTestFinished }) => {
-		expect.assertions(2);
+		expect.assertions(3);
 
 		const directory = temporaryDirectory(onTestFinished);
 		writeSources(directory, 8);
@@ -255,6 +265,7 @@ describe("heap flag on composed children", () => {
 
 		expect(concurrencyOf(typed)).toBe(String(expected));
 		expect(Object.hasOwn(typed.env, "NODE_OPTIONS")).toBe(false);
+		expect(typed.watchHeap).toBe(false);
 	});
 
 	it("leaves the cache key alone", ({ expect }) => {
@@ -284,6 +295,10 @@ describe("out-of-memory hint", () => {
 		"process.stderr.write('Error [ERR_WORKER_OUT_OF_MEMORY]: Worker terminated due to " +
 		"reaching memory limit: JS heap out of memory\\n');process.exitCode=2;";
 
+	const mainThreadOutOfMemoryBin =
+		"process.stderr.write('FATAL ERROR: Reached heap limit Allocation failed - " +
+		"JavaScript heap out of memory\\n');process.exitCode=134;";
+
 	function captureStderr(onTestFinished: TestContext["onTestFinished"]): () => string {
 		const written: Array<string> = [];
 		const spy = vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
@@ -309,8 +324,8 @@ describe("out-of-memory hint", () => {
 
 		const code = await execute(
 			[
-				{ args: [], bin: "eslint", env: {}, label: "fast" },
-				{ args: [], bin: "eslint", env: {}, label: "typed" },
+				{ args: [], bin: "eslint", env: {}, label: "fast", watchHeap: false },
+				{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: true },
 			],
 			directory,
 			false,
@@ -333,7 +348,7 @@ describe("out-of-memory hint", () => {
 		const stderr = captureStderr(onTestFinished);
 
 		const code = await execute(
-			[{ args: [], bin: "eslint", env: {}, label: "eslint" }],
+			[{ args: [], bin: "eslint", env: {}, label: "eslint", watchHeap: true }],
 			directory,
 			true,
 		);
@@ -353,7 +368,46 @@ describe("out-of-memory hint", () => {
 		writeFakeEslint(directory, "process.stderr.write('boom\\n');process.exitCode=2;");
 		const stderr = captureStderr(onTestFinished);
 
-		await execute([{ args: [], bin: "eslint", env: {}, label: "typed" }], directory, true);
+		await execute(
+			[{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: true }],
+			directory,
+			true,
+		);
+
+		expect(stderr()).not.toContain("ran out of memory");
+	}, 15_000);
+
+	it("names the override after the main thread runs out of heap", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		writeFakeEslint(directory, mainThreadOutOfMemoryBin);
+		const stderr = captureStderr(onTestFinished);
+
+		await execute(
+			[{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: true }],
+			directory,
+			true,
+		);
+
+		expect(stderr()).toContain(outOfMemoryHint("typed"));
+	}, 15_000);
+
+	it("leaves an unwatched child alone", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		writeFakeEslint(directory, outOfMemoryBin);
+		const stderr = captureStderr(onTestFinished);
+
+		await execute(
+			[{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: false }],
+			directory,
+			true,
+		);
 
 		expect(stderr()).not.toContain("ran out of memory");
 	}, 15_000);

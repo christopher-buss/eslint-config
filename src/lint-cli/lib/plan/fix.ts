@@ -10,7 +10,7 @@ import { composeEslintCommand } from "./command.ts";
 import { computeWorkerCount } from "./concurrency.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import type { HeapBudget } from "./heap.ts";
-import { capWorkersForHeap, heapNodeOptions, heapPerWorkerMb } from "./heap.ts";
+import { capWorkersForHeap, planPassHeap } from "./heap.ts";
 import { FULL_PASS } from "./passes.ts";
 import type { PassPlan } from "./sizing.ts";
 
@@ -122,7 +122,7 @@ export function planFixChild(
 		computeWorkerCount({
 			dirtyCount: targets.length,
 			filesPerWorker: limits.filesPerWorker,
-			maxWorkers: capWorkersForHeap(limits.typedMaxWorkers, limits, heap),
+			maxWorkers: capWorkersForHeap(limits.typedMaxWorkers, limits.explicitMaxWorkers, heap),
 		});
 
 	return composeEslintCommand(
@@ -134,7 +134,7 @@ export function planFixChild(
 			concurrency,
 			eslintLabel: FULL_PASS.label,
 			fix: true,
-			nodeOptions: heapNodeOptions(heap, heapPerWorkerMb(heap, concurrency)),
+			heap: planPassHeap(FULL_PASS.label, heap, { concurrency, dirtyCount: targets.length }),
 			paths: targets,
 			typeAwareEnv: FULL_PASS.typeAwareEnv,
 		},

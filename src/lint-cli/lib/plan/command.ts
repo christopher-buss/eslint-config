@@ -40,7 +40,7 @@ export function composeOxlintCommand(
 		...options.oxlintArgs,
 		...pathArguments(context.paths),
 	);
-	return { args, bin: "oxlint", env: {}, label: "oxc" };
+	return { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
 }
 
 /**
@@ -86,11 +86,17 @@ export function composeEslintCommand(
 
 	// Set only to raise the heap of a pass that builds a TypeScript program;
 	// otherwise the child inherits `NODE_OPTIONS` untouched.
-	if (context.nodeOptions !== undefined) {
-		environment["NODE_OPTIONS"] = context.nodeOptions;
+	if (context.heap?.nodeOptions !== undefined) {
+		environment["NODE_OPTIONS"] = context.heap.nodeOptions;
 	}
 
-	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
+	return {
+		args,
+		bin: "eslint",
+		env: environment,
+		label: context.eslintLabel,
+		watchHeap: context.heap?.watch ?? false,
+	};
 }
 
 /**

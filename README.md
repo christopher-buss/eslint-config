@@ -258,11 +258,13 @@ Other behaviours:
   program, so the limit that matters is workers × heap. By default the runner
   splits half the machine's memory (or its cgroup limit, when lower) across
   those workers, and raises Node's heap limit when the share is larger. When the
-  budget cannot give each worker Node's default heap, it runs fewer workers. The
-  flag goes in the child's `NODE_OPTIONS`, which every ESLint worker inherits;
-  oxlint and the fast pass never get it. `--print` shows the chosen workers,
-  files per worker and heap on stderr. If a child still runs out of memory, the
-  runner prints a hint that names `LINT_TYPED_HEAP_MB`. A size set in
+  budget cannot give each worker twice Node's default heap, it runs fewer
+  workers: every worker loads the program of nearly every project, so fewer,
+  larger workers need far less memory in total than more, smaller ones. The flag
+  goes in the child's `NODE_OPTIONS`, which every ESLint worker inherits; oxlint
+  and the fast pass never get it. `--print` shows the chosen workers, files per
+  worker and heap on stderr. If a child still runs out of memory, the runner
+  prints a hint that names `LINT_TYPED_HEAP_MB`. A size set in
   `LINT_TYPED_HEAP_MB` also caps the workers at budget ÷ size. An explicit
   `LINT_MAX_WORKERS` or `--concurrency` is never reduced. A
   `--max-old-space-size` already in `NODE_OPTIONS` wins over all of this: the

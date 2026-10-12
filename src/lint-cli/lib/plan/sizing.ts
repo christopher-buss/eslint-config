@@ -10,10 +10,10 @@ import type { RepoFiles } from "../files/collect.ts";
 import { hasBuilderState } from "../typescript/affected.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
-import type { HeapBudget } from "./heap.ts";
-import { capWorkersForHeap, describeHeapPlan, heapNodeOptions, heapPerWorkerMb } from "./heap.ts";
+import type { HeapBudget, PassHeap } from "./heap.ts";
+import { capWorkersForHeap, planPassHeap } from "./heap.ts";
 import type { PassDescriptor } from "./passes.ts";
-import { maxWorkersFor, TYPED_PASS } from "./passes.ts";
+import { buildsProgram, maxWorkersFor, TYPED_PASS } from "./passes.ts";
 
 /** The stderr notice emitted when the type-aware pass is skipped. */
 export const TYPED_SKIP_NOTICE =
@@ -32,16 +32,10 @@ export interface PassPlan {
 	/** The pass descriptor (cache base name, label, type-aware env, sizing). */
 	descriptor: PassDescriptor;
 	/**
-	 * A stderr line describing the pass's workers and heap, for `--print`.
-	 * `undefined` for a pass that builds no TypeScript program.
+	 * The heap the pass's child runs with. `undefined` for a pass that builds
+	 * no TypeScript program, which never gets one.
 	 */
-	memoryNote: string | undefined;
-	/**
-	 * The `NODE_OPTIONS` the child runs under, carrying its heap flag.
-	 * `undefined` leaves the inherited value alone; always so for a pass that
-	 * builds no TypeScript program.
-	 */
-	nodeOptions: string | undefined;
+	heap: PassHeap | undefined;
 	/** Whether the pass runs; false when auto-skipped. */
 	shouldRun: boolean;
 	/** The stderr notice to emit when skipped, else undefined. */
@@ -133,7 +127,7 @@ function mutatingDirtyCount(
 	// Both facts this pass needs about its builder, read off the one field that
 	// records them: whether it builds a TypeScript program at all, and the mode
 	// that program runs under.
-	const buildsProgram = descriptor.invalidation !== "none";
+	const program = buildsProgram(descriptor);
 	const mode = descriptor.invalidation === "only" ? "only" : undefined;
 
 	// A bust or the up-front sweep already deleted this pass's cache (see
@@ -142,7 +136,7 @@ function mutatingDirtyCount(
 	// builder state exists: with none, the next run reports `firstRun` and throws
 	// its affected set away, so an importer of a file edited in between would
 	// keep a stale entry (see `hasBuilderState`).
-	if (clearedCaches.has(cacheLocation) && (!buildsProgram || hasBuilderState(run, mode))) {
+	if (clearedCaches.has(cacheLocation) && (!program || hasBuilderState(run, mode))) {
 		return targetFiles.length;
 	}
 
@@ -151,7 +145,7 @@ function mutatingDirtyCount(
 		(cache?.getUpdatedFiles(targetFiles) ?? targetFiles).map((file) => normalizePath(file)),
 	);
 
-	if (buildsProgram) {
+	if (program) {
 		const outcome = applyTypeAwareInvalidation(run, {
 			alreadyDirty: dirty,
 			cache,
@@ -236,10 +230,10 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	const filesPerWorker = descriptor.filesPerWorker(context.limits, context.run.environment);
 	// A pass that builds a TypeScript program holds it in every worker, so the
 	// memory budget bounds how many of them may run at once.
-	const buildsProgram = descriptor.invalidation !== "none";
+	const program = buildsProgram(descriptor);
 	const passMaxWorkers = maxWorkersFor(descriptor, context.limits);
-	const maxWorkers = buildsProgram
-		? capWorkersForHeap(passMaxWorkers, context.limits, context.heap)
+	const maxWorkers = program
+		? capWorkersForHeap(passMaxWorkers, context.limits.explicitMaxWorkers, context.heap)
 		: passMaxWorkers;
 
 	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
@@ -251,17 +245,12 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 		context.options.concurrency ??
 		computeWorkerCount({ dirtyCount: sizingDirtyCount, filesPerWorker, maxWorkers });
 
-	const heapMb = buildsProgram ? heapPerWorkerMb(context.heap, concurrency) : undefined;
-	const memory = {
-		memoryNote: buildsProgram
-			? describeHeapPlan(descriptor.label, context.heap, {
-					concurrency,
-					dirtyCount: sizingDirtyCount,
-					heapMb,
-				})
-			: undefined,
-		nodeOptions: heapNodeOptions(context.heap, heapMb),
-	};
+	const heap = program
+		? planPassHeap(descriptor.label, context.heap, {
+				concurrency,
+				dirtyCount: sizingDirtyCount,
+			})
+		: undefined;
 
 	// The typed pass may only auto-skip when the dirty count is trustworthy; an
 	// outside-cwd target makes it unknowable, so never skip in that case.
@@ -279,7 +268,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 			cacheFile,
 			concurrency,
 			descriptor,
-			...memory,
+			heap,
 			shouldRun: false,
 			skipReason: TYPED_SKIP_NOTICE,
 		};
@@ -289,7 +278,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 		cacheFile,
 		concurrency,
 		descriptor,
-		...memory,
+		heap,
 		shouldRun: true,
 		skipReason: undefined,
 	};

@@ -24,10 +24,10 @@ export interface ComposeInDirectoryOptions {
 
 /**
  * A fixed machine for the fixtures, so no plan depends on the host's memory: a
- * 4 GB default heap and a budget of 32 GB, which holds eight default workers —
- * more than the type-aware cap, so it never narrows a fixture's workers.
+ * 4 GB default heap and a budget of 64 GB, which holds eight `auto` workers at
+ * 8 GB each — more than the type-aware cap, so it never narrows a fixture.
  */
-export const TEST_MEMORY: MemoryFacts = { availableMb: 65_536, defaultHeapMb: 4096 };
+export const TEST_MEMORY: MemoryFacts = { availableMb: 131_072, defaultHeapMb: 4096 };
 
 /**
  * Every pass a staged plan runs, in run order, resolving the deferred stage

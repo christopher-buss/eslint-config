@@ -116,6 +116,18 @@ export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDe
 }
 
 /**
+ * Whether a pass builds a TypeScript program in each of its workers. The pass
+ * that runs no builder is exactly the one that builds no program, so
+ * `invalidation` records both.
+ *
+ * @param descriptor - The pass.
+ * @returns Whether its workers hold a program, and so need heap sizing.
+ */
+export function buildsProgram(descriptor: PassDescriptor): boolean {
+	return descriptor.invalidation !== "none";
+}
+
+/**
  * The worker cap for a pass. `invalidation` already records whether a pass
  * builds a TypeScript program — the fast pass runs no builder precisely because
  * it builds none — so it doubles as the cap selector rather than restating the
@@ -126,5 +138,5 @@ export function selectPasses(options: LintCliOptions, ci: boolean): Array<PassDe
  * @returns The worker cap for this pass.
  */
 export function maxWorkersFor(descriptor: PassDescriptor, limits: WorkerLimits): number {
-	return descriptor.invalidation === "none" ? limits.maxWorkers : limits.typedMaxWorkers;
+	return buildsProgram(descriptor) ? limits.typedMaxWorkers : limits.maxWorkers;
 }
