@@ -63,6 +63,14 @@ export async function runLint(
 			process.stdout.write(`${formatCommandLine(command)}\n`);
 		}
 
+		// The workers and heap each program-building pass was given. On stderr,
+		// so a captured command list stays exactly the commands.
+		for (const pass of staged.eager.passes) {
+			if (pass.shouldRun && pass.heap !== undefined) {
+				process.stderr.write(pass.heap.note);
+			}
+		}
+
 		return 0;
 	}
 

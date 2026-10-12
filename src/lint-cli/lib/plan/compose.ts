@@ -59,6 +59,7 @@ export function composePasses(
 				// Every pass is a check. A `--fix` run applies its fixes in one
 				// further child, composed once these have reported.
 				fix: false,
+				heap: pass.heap,
 				paths: options.paths,
 				typeAwareEnv: pass.descriptor.typeAwareEnv,
 			}),

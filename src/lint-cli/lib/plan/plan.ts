@@ -13,6 +13,8 @@ import { resolveIgnoredFiles } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { resolveWorkerLimits } from "./concurrency.ts";
 import { planFixChild } from "./fix.ts";
+import type { MemoryFacts } from "./heap.ts";
+import { probeMemory, resolveHeapBudget } from "./heap.ts";
 import type { PassDescriptor } from "./passes.ts";
 import { selectPasses } from "./passes.ts";
 import type { PassPlan, SizingInputs } from "./sizing.ts";
@@ -121,9 +123,14 @@ interface StagedDescriptors {
  *
  * @param options - The parsed CLI options.
  * @param run - The run context (cwd, variant key, environment, mutate).
+ * @param memory - The machine's memory facts (injected in tests).
  * @returns The staged run plan.
  */
-export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
+export function plan(
+	options: LintCliOptions,
+	run: RunContext,
+	memory: MemoryFacts = probeMemory(),
+): StagedPlan {
 	const { ci, cwd, environment, mutate } = run;
 	const runEslint = !options.oxlint;
 	const oxlintTypeAware = resolveOxlintTypeAware(options);
@@ -159,6 +166,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	const files = collectRepoFiles(cwd, options.paths);
 	const newestBustMtime = maxMtimeMs(files.bustFiles);
 	const limits = resolveWorkerLimits(environment, availableParallelism(), ci);
+	const heap = resolveHeapBudget(environment, memory);
 
 	// Hybrid gate: when both engines would run, oxlint only runs if the resolved
 	// ESLint config is hybrid (`oxlint: true`); otherwise the two engines would
@@ -221,6 +229,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 	const inputs: SizingInputs = {
 		clearedCaches,
 		files: sizingFiles,
+		heap,
 		limits,
 		multiPass: descriptors.length > 1,
 		newestBustMtime,
@@ -255,6 +264,7 @@ export function plan(options: LintCliOptions, run: RunContext): StagedPlan {
 						return planFixChild(passes, run, {
 							agentsFormatterPath,
 							files: sizingFiles,
+							heap,
 							limits,
 							options,
 						});

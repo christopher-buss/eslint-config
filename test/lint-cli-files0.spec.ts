@@ -25,8 +25,8 @@ const BOOTSTRAP = path.join(REPO_ROOT, "src", "lint-cli", "bootstrap.ts");
 
 /**
  * Names that break any path list a shell or a newline-separated pipe touches.
- * A newline is not a legal Windows filename character, so it only joins the
- * set elsewhere.
+ * A newline and `*` are not legal Windows filename characters, so they only
+ * join the set elsewhere.
  */
 const ODD_NAMES = [
 	"plain.ts",
@@ -34,9 +34,9 @@ const ODD_NAMES = [
 	"ünïcödé-名前.ts",
 	"semi;amp&$(sub)`tick`'quote'.ts",
 	"-leading-hyphen.ts",
-	"[brackets]{braces}*.ts",
+	"[brackets]{braces}.ts",
 	"100%PATH%.ts",
-	...(process.platform === "win32" ? [] : ["new\nline.ts"]),
+	...(process.platform === "win32" ? [] : ["glob*star.ts", "new\nline.ts"]),
 ];
 
 /**
@@ -618,13 +618,13 @@ describe.skipIf(process.platform === "win32")("staged cancellation", () => {
 		});
 
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				// Stands in for a Ctrl+C pressed while the TypeScript builder
 				// blocks the event loop: the listeners run, the planner returns.
 				process.emit("SIGINT", "SIGINT");
-				return [{ args: [], bin: "eslint", env: {}, label: "typed" }];
+				return [{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: false }];
 			},
 		);
 

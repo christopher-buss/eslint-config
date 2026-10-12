@@ -61,6 +61,7 @@ import {
 } from "../src/lint-cli/lib/plan/concurrency.ts";
 import { collectFixTargets, planFixChild } from "../src/lint-cli/lib/plan/fix.ts";
 import type { FixInputs } from "../src/lint-cli/lib/plan/fix.ts";
+import { resolveHeapBudget } from "../src/lint-cli/lib/plan/heap.ts";
 import {
 	FAST_PASS,
 	FULL_PASS,
@@ -71,7 +72,7 @@ import type { PassDescriptor } from "../src/lint-cli/lib/plan/passes.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
-import { composeInDirectory, runContext } from "./lint-cli-helpers.ts";
+import { composeInDirectory, runContext, TEST_MEMORY } from "./lint-cli-helpers.ts";
 import { withoutGitEnvironment } from "./without-git.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
@@ -82,6 +83,7 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		concurrency: "off",
 		eslintLabel: "eslint",
 		fix: false,
+		heap: undefined,
 		paths: ["."],
 		typeAwareEnv: undefined,
 		...overrides,
@@ -340,6 +342,7 @@ describe("resolveWorkerLimits", () => {
 		expect.assertions(1);
 
 		expect(resolveWorkerLimits({}, 16, false)).toStrictEqual({
+			explicitMaxWorkers: false,
 			filesPerWorker: 300,
 			maxWorkers: 4,
 			typedMaxWorkers: 4,
@@ -356,6 +359,7 @@ describe("resolveWorkerLimits", () => {
 		);
 
 		expect(limits).toStrictEqual({
+			explicitMaxWorkers: true,
 			filesPerWorker: 200,
 			maxWorkers: 6,
 			typedMaxWorkers: 6,
@@ -372,6 +376,7 @@ describe("resolveWorkerLimits", () => {
 		);
 
 		expect(limits).toStrictEqual({
+			explicitMaxWorkers: false,
 			filesPerWorker: 300,
 			maxWorkers: 4,
 			typedMaxWorkers: 4,
@@ -382,6 +387,7 @@ describe("resolveWorkerLimits", () => {
 		expect.assertions(1);
 
 		expect(resolveWorkerLimits({}, 4, true)).toStrictEqual({
+			explicitMaxWorkers: false,
 			filesPerWorker: 300,
 			maxWorkers: 4,
 			typedMaxWorkers: 4,
@@ -991,6 +997,12 @@ describe("formatCommandLine", () => {
 	});
 });
 
+/**
+ * The heap flag a program-building child gets on {@link TEST_MEMORY}: its whole
+ * 64 GB budget, as the fixtures lint with a single worker.
+ */
+const TEST_HEAP = "NODE_OPTIONS=--max-old-space-size=65536";
+
 function printLines(
 	argv: Array<string>,
 	directory: string,
@@ -1013,7 +1025,7 @@ describe("compose --print", () => {
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1037,7 +1049,7 @@ describe("compose --print", () => {
 
 		expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1067,7 +1079,7 @@ describe("compose --print", () => {
 
 		expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
+			`${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
 		]);
 	});
 
@@ -1081,7 +1093,7 @@ describe("compose --print", () => {
 
 		expect(printLines([], directory, { CI: "true" })).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
+			`${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
 		]);
 	});
 
@@ -1093,7 +1105,7 @@ describe("compose --print", () => {
 		expect(printLines(["package.json"], directory)).toStrictEqual([
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off package.json",
-			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off package.json",
 		]);
 	});
@@ -1119,7 +1131,7 @@ describe("compose --print", () => {
 			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1547,8 +1559,8 @@ describe("execute", () => {
 
 		const code = await execute(
 			[
-				{ args: [], bin: "oxlint", env: {}, label: "oxc" },
-				{ args: [], bin: "eslint", env: {}, label: "eslint" },
+				{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false },
+				{ args: [], bin: "eslint", env: {}, label: "eslint", watchHeap: false },
 			],
 			directory,
 			false,
@@ -1593,11 +1605,11 @@ describe("executeStaged", () => {
 
 		let oxcDoneAtResolve = true;
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				oxcDoneAtResolve = fs.existsSync(oxcMarker);
-				return [{ args: [], bin: "eslint", env: {}, label: "typed" }];
+				return [{ args: [], bin: "eslint", env: {}, label: "typed", watchHeap: false }];
 			},
 		);
 
@@ -1623,7 +1635,7 @@ describe("executeStaged", () => {
 
 		let resolverCalls = 0;
 		const code = await executeStaged(
-			[{ args: [], bin: "oxlint", env: {}, label: "oxc" }],
+			[{ args: [], bin: "oxlint", env: {}, label: "oxc", watchHeap: false }],
 			directory,
 			() => {
 				resolverCalls += 1;
@@ -1680,6 +1692,7 @@ describe("collectFixTargets", () => {
 			cacheFile,
 			concurrency: "off",
 			descriptor,
+			heap: undefined,
 			shouldRun: true,
 			skipReason: undefined,
 		};
@@ -1737,7 +1750,13 @@ describe("collectFixTargets", () => {
 		return {
 			agentsFormatterPath: "",
 			files: repoFiles(),
-			limits: { filesPerWorker: 20, maxWorkers: 4, typedMaxWorkers: 2 },
+			heap: resolveHeapBudget({}, TEST_MEMORY),
+			limits: {
+				explicitMaxWorkers: false,
+				filesPerWorker: 20,
+				maxWorkers: 4,
+				typedMaxWorkers: 2,
+			},
 			options: options({ fix: true, paths: ["src"] }),
 			...overrides,
 		};
@@ -2531,7 +2550,7 @@ describe("explicit --type-aware selection in CI", () => {
 
 		expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=only eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
+			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
 	});
