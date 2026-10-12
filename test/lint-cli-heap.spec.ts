@@ -7,6 +7,7 @@ import process from "node:process";
 import type { TestContext } from "vitest";
 import { describe, it, vi } from "vitest";
 
+import { isRecord } from "../src/guards.ts";
 import type { ChildCommand } from "../src/lint-cli/lib/cli/types.ts";
 import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
 import { execute, outOfMemoryHint } from "../src/lint-cli/lib/exec/execute.ts";
@@ -30,6 +31,14 @@ const SMALL_MACHINE: MemoryFacts = { availableMb: 32_768, defaultHeapMb: 4096 };
 
 /** A 96 GB machine with a 4 GB default heap: a 48 GB budget. */
 const LARGE_MACHINE: MemoryFacts = { availableMb: 98_304, defaultHeapMb: 4096 };
+
+/** One file's heap report from the probing rule below. */
+interface HeapReport {
+	/** The thread's heap limit in MB. */
+	mb: number;
+	/** Whether the file was linted on a worker thread. */
+	worker: boolean;
+}
 
 function temporaryDirectory(onTestFinished: TestContext["onTestFinished"]): string {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-heap-"));
@@ -64,6 +73,27 @@ function byLabel(commands: Array<ChildCommand>, label: string): ChildCommand {
 
 function concurrencyOf(command: ChildCommand): string | undefined {
 	return command.args[command.args.indexOf("--concurrency") + 1];
+}
+
+/**
+ * Read the probing rule's reports back out of ESLint's JSON output. Each
+ * message reads `<mb> worker` or `<mb> main`.
+ *
+ * @param stdout - ESLint's `--format json` output.
+ * @returns One report per linted file.
+ */
+function readHeapReports(stdout: string): Array<HeapReport> {
+	const parsed: unknown = JSON.parse(stdout);
+	const files: Array<unknown> = Array.isArray(parsed) ? parsed : [];
+	return files.flatMap((file) => {
+		const messages: Array<unknown> =
+			isRecord(file) && Array.isArray(file["messages"]) ? file["messages"] : [];
+		return messages.flatMap((entry) => {
+			const text = isRecord(entry) ? entry["message"] : undefined;
+			const match = typeof text === "string" ? /^(\d+) (main|worker)$/.exec(text) : null;
+			return match === null ? [] : [{ mb: Number(match[1]), worker: match[2] === "worker" }];
+		});
+	});
 }
 
 function budget(environment: NodeJS.ProcessEnv, memory: MemoryFacts): HeapBudget {
@@ -413,7 +443,7 @@ describe("out-of-memory hint", () => {
 	}, 15_000);
 });
 
-describe("ESLint workers under the heap flag", () => {
+describe("eslint workers under the heap flag", () => {
 	/**
 	 * A config whose one rule reports, for every file, whether it ran on a
 	 * worker thread and that thread's heap limit in MB.
@@ -431,7 +461,7 @@ export default [{
 						return {
 							Program(node) {
 								const mb = Math.floor(v8.getHeapStatistics().heap_size_limit / 1048576);
-								context.report({ message: JSON.stringify({ mb, worker: !isMainThread }), node });
+								context.report({ message: String(mb) + (isMainThread ? " main" : " worker"), node });
 							},
 						};
 					},
@@ -469,11 +499,7 @@ export default [{
 			input: JSON.stringify(["--concurrency", "2", "--format", "json", "a.js", "b.js"]),
 		});
 
-		const reports = (
-			JSON.parse(result.stdout) as Array<{ messages: Array<{ message: string }> }>
-		)
-			.flatMap((file) => file.messages)
-			.map((message) => JSON.parse(message.message) as { mb: number; worker: boolean });
+		const reports = readHeapReports(result.stdout);
 
 		expect(reports).toHaveLength(2);
 		expect(reports.every((report) => report.worker)).toBe(true);
