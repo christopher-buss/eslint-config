@@ -4,7 +4,7 @@ import packageJson from "../../package.json" with { type: "json" };
 import { CliError } from "./lib/cli/types.ts";
 import { runLint } from "./lib/run.ts";
 
-const HELP = `isentinel-lint [flags] [paths...]
+const HELP = `isentinel-lint [flags] [paths... | --files0-from <file|->]
 
 Runs oxlint and ESLint together, sizing ESLint's --concurrency from how many
 files actually need re-linting and managing per-mode caches.
@@ -24,6 +24,9 @@ Flags:
   --concurrency <n|off>    Override the concurrency heuristic.
   --eslint-args "<args>"   Extra arguments for ESLint.
   --oxlint-args "<args>"   Extra arguments for oxlint.
+  --files0-from <file|->   Read the paths to lint from a NUL-delimited UTF-8
+                           list (- for stdin) instead of positional arguments.
+                           An empty list lints nothing and exits 0.
   --print                  Print the composed commands without running them.
   -- <args>                Forward args to the single selected tool.
   -h, --help               Show this help.

@@ -246,7 +246,11 @@ function collectAncestorBustFiles(cwd: string): Array<string> {
  * @returns The normalized cwd-relative posix target.
  */
 function normalizeTarget(target: string, cwd: string): string {
-	let value = path.isAbsolute(target) ? toPosix(path.relative(cwd, target)) : toPosix(target);
+	// `posix.normalize` also folds the `./a/./b` and `a/../b` spellings a
+	// generated file list can carry, which would otherwise match no listing.
+	let value = path.isAbsolute(target)
+		? toPosix(path.relative(cwd, target))
+		: path.posix.normalize(toPosix(target));
 	if (value.startsWith("./")) {
 		value = value.slice(2);
 	}
@@ -284,10 +288,24 @@ function matchTargets(normalized: Array<string>): (relative: string) => boolean 
 		return () => true;
 	}
 
+	// A path matches when it, or any directory above it, is a target. Walking
+	// the path's own ancestors keeps this a few set lookups per file however
+	// many targets a file list supplies.
+	const targets = new Set(normalized);
 	return (relative) => {
-		return normalized.some(
-			(target) => relative === target || relative.startsWith(`${target}/`),
-		);
+		let candidate = relative;
+		for (;;) {
+			if (targets.has(candidate)) {
+				return true;
+			}
+
+			const slash = candidate.lastIndexOf("/");
+			if (slash === -1) {
+				return false;
+			}
+
+			candidate = candidate.slice(0, slash);
+		}
 	};
 }
 
@@ -303,10 +321,13 @@ function gitListFiles(cwd: string, pathSpecs: Array<string>): Array<string> | un
 	try {
 		const output = execFileSync(
 			"git",
-			["ls-files", "--cached", "--others", "--exclude-standard", "--", ...pathSpecs],
+			["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ...pathSpecs],
 			{ cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
 		);
-		return output.split("\n").filter((line) => line.length > 0);
+		// NUL-separated: a newline-separated listing C-quotes any path holding a
+		// newline, a quote or (under the default `core.quotePath`) non-ASCII,
+		// and the quoted form matches no lint target.
+		return output.split("\0").filter((line) => line.length > 0);
 	} catch {
 		return undefined;
 	}
@@ -386,22 +407,19 @@ function retained(files: Array<string>, ignored: ReadonlySet<string>): Array<str
  */
 function gitIgnoredTargets(cwd: string, targets: Array<string>): ReadonlySet<string> {
 	try {
-		const output = execFileSync("git", ["check-ignore", "--no-index", "--stdin"], {
+		const output = execFileSync("git", ["check-ignore", "--no-index", "--stdin", "-z"], {
 			cwd,
 			encoding: "utf8",
-			input: targets.join("\n"),
+			// NUL-delimited both ways, so a target holding a newline stays one
+			// path.
+			input: `${targets.join("\0")}\0`,
 			maxBuffer: 64 * 1024 * 1024,
 			// Pipe stdin/stdout, silence stderr: outside a repo git prints
 			// "fatal: not a git repository", which the catch already handles as
 			// no filtering.
 			stdio: ["pipe", "pipe", "ignore"],
 		});
-		return new Set(
-			output
-				.split("\n")
-				.map((line) => line.trim())
-				.filter(Boolean),
-		);
+		return new Set(output.split("\0").filter(Boolean));
 	} catch {
 		return new Set();
 	}

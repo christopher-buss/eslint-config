@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/name-replacements -- "dist" is the build output directory, not an abbreviation. */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -27,3 +27,14 @@ if (leaked.length > 0) {
 }
 
 console.log("[check-dist] dist/index.d.mts is free of oxlint references.");
+
+// The lint runner launches every engine child through this file and has no
+// fallback without it, so a build that drops the entry ships a runner that
+// cannot lint at all.
+const bootstrapPath = path.join(rootDirectory, "dist", "lint-bootstrap.mjs");
+if (!existsSync(bootstrapPath)) {
+	console.error("[check-dist] dist/lint-bootstrap.mjs is missing; isentinel-lint needs it.");
+	process.exit(1);
+}
+
+console.log("[check-dist] dist/lint-bootstrap.mjs is present.");

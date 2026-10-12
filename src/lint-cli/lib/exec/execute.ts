@@ -1,12 +1,49 @@
 import ansis from "ansis";
-import concurrently from "concurrently";
+import type { FlowController } from "concurrently";
+import {
+	createConcurrently,
+	KillOnSignal,
+	LogError,
+	LogExit,
+	Logger,
+	LogOutput,
+} from "concurrently";
+import type { ChildProcess, SpawnOptions } from "node:child_process";
 import { spawn } from "node:child_process";
+import os from "node:os";
 import process from "node:process";
 import { Writable } from "node:stream";
 
 import type { ChildCommand, ToolLabel } from "../cli/types.ts";
-import { resolveLocalBin } from "./resolve.ts";
-import { buildShellCommand } from "./shell.ts";
+import { resolveBootstrap, resolveLocalBin } from "./resolve.ts";
+
+/** An engine child ready to spawn: its command and resolved launch target. */
+interface EngineLaunch {
+	/** Absolute path to the engine's JavaScript bin. */
+	bin: string;
+	/** The composed child command. */
+	command: ChildCommand;
+}
+
+/** The signals that cancel a run, matching `concurrently`'s `KillOnSignal`. */
+const CANCEL_SIGNALS = ["SIGHUP", "SIGINT", "SIGTERM"] as const;
+
+/**
+ * The first cancelling signal received while this run's children were running.
+ * Shared across `execute` calls on purpose: a run is a sequence of them (three
+ * for a `--fix` run), and once the user has cancelled one of them none of
+ * the rest may start. {@link resetCancellation} Scopes it to one run.
+ */
+let cancelledBy: NodeJS.Signals | undefined;
+
+/**
+ * Forget any cancellation recorded by an earlier run in this process. Called
+ * as a run starts, so a second `runLint` in the same process is not refused
+ * for a signal the first one received.
+ */
+export function resetCancellation(): void {
+	cancelledBy = undefined;
+}
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
 const PREFIX_COLOR: Record<ToolLabel, "blue" | "cyan" | "magenta"> = {
@@ -45,7 +82,8 @@ export async function execute(
 	cwd: string,
 	sequential: boolean,
 ): Promise<number> {
-	return sequential ? runSequential(commands, cwd) : startGroup(commands, cwd);
+	const code = await (sequential ? runSequential(commands, cwd) : startGroup(commands, cwd));
+	return cancelledCode() ?? code;
 }
 
 /**
@@ -77,8 +115,18 @@ export async function executeStaged(
 ): Promise<number> {
 	const eager = startGroup(commands, cwd);
 	const deferred = resolveDeferred();
-	if (deferred.length === 0) {
-		return eager;
+
+	// The builder behind `resolveDeferred` blocks the event loop, so a Ctrl+C
+	// pressed during it is only dispatched now. Let it land before deciding
+	// whether to start anything more.
+	await new Promise((resolve) => {
+		setImmediate(resolve);
+	});
+	if (cancelledBy !== undefined || deferred.length === 0) {
+		// Awaited before the check: `KillOnSignal` reports a SIGINT-killed group
+		// as a success, so only the recorded signal can make the run fail.
+		const eagerCode = await eager;
+		return cancelledCode() ?? eagerCode;
 	}
 
 	const held = createHeldOutput();
@@ -88,7 +136,7 @@ export async function executeStaged(
 	held.release();
 	const deferredCode = await later;
 
-	return eagerCode === 0 ? deferredCode : eagerCode;
+	return cancelledCode() ?? (eagerCode === 0 ? deferredCode : eagerCode);
 }
 
 /**
@@ -106,11 +154,139 @@ function announce(command: ChildCommand): void {
 }
 
 /**
+ * The names the children of one group are registered and logged under: the
+ * engine, never its arguments. `concurrently` prints the name on each child's
+ * exit line, so it must stay short however many files the child lints. The
+ * line already carries the pass as its prefix (`[fast] eslint exited with code
+ * 1`), so the pass only joins the name when two children share an engine.
+ *
+ * @param commands - The group's children.
+ * @returns Each child paired with a name unique within the group.
+ */
+function nameCommands(commands: Array<ChildCommand>): Array<[string, ChildCommand]> {
+	const taken = new Set<string>();
+	return commands.map((command) => {
+		const shared = commands.filter((other) => other.bin === command.bin).length > 1;
+		const base = shared ? `${command.bin} (${command.label})` : command.bin;
+		let name = base;
+		let suffix = 1;
+		while (taken.has(name)) {
+			suffix += 1;
+			name = `${base} #${String(suffix)}`;
+		}
+
+		taken.add(name);
+		return [name, command];
+	});
+}
+
+/**
+ * Spawn an engine child through the bootstrap and stream it its arguments.
+ *
+ * The OS command line is always `node <bootstrap> <bin>`, with no shell, so its
+ * length does not depend on the file list and no path is ever interpreted by a
+ * shell. The complete argument list follows as JSON on the child's stdin,
+ * which is why stdin is always a pipe here whatever the caller asked for.
+ *
+ * @param launch - The child and its resolved bin.
+ * @param options - Spawn options (cwd, env, stdout/stderr handling).
+ * @returns The spawned child.
+ */
+function launchEngine({ bin, command }: EngineLaunch, options: SpawnOptions): ChildProcess {
+	const stdio = Array.isArray(options.stdio) ? options.stdio : [];
+	const child = spawn(process.execPath, [resolveBootstrap(), bin], {
+		...options,
+		shell: false,
+		stdio: ["pipe", stdio[1] ?? "inherit", stdio[2] ?? "inherit"],
+	});
+
+	// A child that dies before reading its arguments (killed, or failing at
+	// startup) breaks this pipe. Its exit status already reports that, so the
+	// write error is not a second failure and must not crash the runner.
+	child.stdin?.on("error", () => {
+		// Deliberately ignored; see above.
+	});
+	child.stdin?.end(JSON.stringify(command.args));
+	return child;
+}
+
+/**
+ * Kill a group's children and stop it spawning more when its output stream
+ * fails — typically `EPIPE` once the reader of a piped report (`| head`) has
+ * gone. Mirrors `concurrently`'s own `OutputErrorHandler`, which its package
+ * exports do not expose.
+ *
+ * @param outputStream - The stream the group writes to.
+ * @param abortController - Aborts the group.
+ * @returns The flow controller.
+ */
+function killOnOutputError(
+	outputStream: Writable,
+	abortController: AbortController,
+): FlowController {
+	return {
+		handle: (commands) => {
+			function onError(): void {
+				for (const command of commands) {
+					command.kill();
+				}
+
+				abortController.abort();
+			}
+
+			outputStream.on("error", onError);
+			return {
+				commands,
+				onFinish: () => {
+					outputStream.off("error", onError);
+				},
+			};
+		},
+	};
+}
+
+/**
+ * Record a cancelling signal for as long as children are running, and hand it
+ * to `onSignal`. Listening at all replaces Node's default of exiting on the
+ * signal, which is what lets the children be stopped and reaped first rather
+ * than orphaned.
+ *
+ * @param onSignal - Forwards the signal to the running children; omitted when
+ *   something else (`concurrently`'s `KillOnSignal`) already does.
+ * @returns Removes the listeners.
+ */
+function trackCancellation(onSignal?: (signal: NodeJS.Signals) => void): () => void {
+	function listener(signal: NodeJS.Signals): void {
+		cancelledBy ??= signal;
+		onSignal?.(signal);
+	}
+
+	for (const signal of CANCEL_SIGNALS) {
+		process.on(signal, listener);
+	}
+
+	return () => {
+		for (const signal of CANCEL_SIGNALS) {
+			process.off(signal, listener);
+		}
+	};
+}
+
+/**
  * Start every command as one `concurrently` group and announce the children.
  * Unlike the previous `killOthersOn: ["failure"]` behaviour, an ordinary lint
  * failure in one child no longer kills its siblings — each runs to the end so
  * the user keeps every result. The resolved code is non-zero when any child
  * exited non-zero; the promise never rejects.
+ *
+ * Built on `concurrently`'s core rather than its default export, because the
+ * wrapper always launches a command *string* through a shell (`cmd.exe` on
+ * Windows), and that string would have to carry every lint target. Here the
+ * group's spawner launches each engine directly through the bootstrap (see
+ * {@link launchEngine}); the command string is only the label `concurrently`
+ * logs. The controllers are the ones the wrapper wires that do anything under
+ * the options this runner always used — output and error logging, exit lines,
+ * signal forwarding and the broken-output-pipe guard — and nothing else.
  *
  * @param commands - The child commands to run.
  * @param cwd - The working directory.
@@ -121,26 +297,53 @@ function announce(command: ChildCommand): void {
 async function startGroup(
 	commands: Array<ChildCommand>,
 	cwd: string,
-	outputStream?: Writable,
+	outputStream: Writable = process.stdout,
 ): Promise<number> {
-	const { result } = concurrently(
-		commands.map((command) => {
+	if (cancelledBy !== undefined || commands.length === 0) {
+		return 0;
+	}
+
+	// Resolve every bin before anything spawns, so a missing engine is a
+	// CliError up front rather than a failure inside the group.
+	const launches = new Map<string, EngineLaunch>(
+		nameCommands(commands).map(([name, command]) => {
+			return [name, { bin: resolveLocalBin(command.bin, cwd), command }];
+		}),
+	);
+
+	const logger = new Logger({});
+	const abortController = new AbortController();
+	const stopTracking = trackCancellation();
+	const { result } = createConcurrently(
+		Array.from(launches, ([name, { command }]) => {
 			return {
 				name: command.label,
-				command: buildShellCommand(
-					process.execPath,
-					resolveLocalBin(command.bin, cwd),
-					command.args,
-					process.platform,
-				),
+				command: name,
 				env: command.env,
 				prefixColor: PREFIX_COLOR[command.label],
 			};
 		}),
 		{
+			abortSignal: abortController.signal,
+			controllers: [
+				new LogError({ logger }),
+				new LogOutput({ logger }),
+				new LogExit({ logger }),
+				new KillOnSignal({ abortController, process }),
+				killOnOutputError(outputStream, abortController),
+			],
 			cwd,
 			group: true,
+			logger,
 			outputStream,
+			spawn: (name, options) => {
+				const launch = launches.get(name);
+				if (launch === undefined) {
+					throw new Error(`isentinel-lint: no engine registered as "${name}".`);
+				}
+
+				return launchEngine(launch, options);
+			},
 		},
 	);
 
@@ -159,23 +362,43 @@ async function startGroup(
 		// Every child ran to completion (no kill-on-failure); the promise rejects
 		// when any exited non-zero.
 		return 1;
+	} finally {
+		stopTracking();
 	}
 }
 
+function signalExitCode(signal: NodeJS.Signals): number {
+	return 128 + os.constants.signals[signal];
+}
+
+/**
+ * The exit code for a cancelled run (`128 + signal number`, as a shell reports
+ * it), or `undefined` when nothing cancelled it.
+ *
+ * @returns The exit code, when cancelled.
+ */
+function cancelledCode(): number | undefined {
+	return cancelledBy === undefined ? undefined : signalExitCode(cancelledBy);
+}
+
 async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
-	const binJsPath = resolveLocalBin(command.bin, cwd);
+	const bin = resolveLocalBin(command.bin, cwd);
 	return new Promise((resolve) => {
-		const child = spawn(process.execPath, [binJsPath, ...command.args], {
-			cwd,
-			env: { ...process.env, ...command.env },
-			stdio: "inherit",
-		});
+		const child = launchEngine(
+			{ bin, command },
+			{ cwd, env: { ...process.env, ...command.env }, stdio: "inherit" },
+		);
 		announce(command);
+		const stopTracking = trackCancellation((signal) => {
+			child.kill(signal);
+		});
 		child.on("error", () => {
+			stopTracking();
 			resolve(1);
 		});
-		child.on("close", (code) => {
-			resolve(code ?? 1);
+		child.on("close", (code, signal) => {
+			stopTracking();
+			resolve(code ?? (signal === null ? 1 : signalExitCode(signal)));
 		});
 	});
 }
@@ -183,6 +406,10 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 async function runSequential(commands: Array<ChildCommand>, cwd: string): Promise<number> {
 	let exitCode = 0;
 	for (const command of commands) {
+		if (cancelledBy !== undefined) {
+			break;
+		}
+
 		const code = await spawnChild(command, cwd);
 		if (code !== 0) {
 			exitCode = code;

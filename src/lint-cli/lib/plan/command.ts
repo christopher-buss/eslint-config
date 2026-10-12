@@ -35,7 +35,11 @@ export function composeOxlintCommand(
 	// git-side prediction can see those patterns. Bare, oxlint exits non-zero
 	// there and fails the hook over a file it was never going to lint. A path
 	// that matches nothing at all still surfaces: the ESLint pass reports it.
-	args.push("--no-error-on-unmatched-pattern", ...options.oxlintArgs, ...context.paths);
+	args.push(
+		"--no-error-on-unmatched-pattern",
+		...options.oxlintArgs,
+		...pathArguments(context.paths),
+	);
 	return { args, bin: "oxlint", env: {}, label: "oxc" };
 }
 
@@ -69,7 +73,7 @@ export function composeEslintCommand(
 		args.push("--fix");
 	}
 
-	args.push(...options.eslintArgs, ...context.paths);
+	args.push(...options.eslintArgs, ...pathArguments(context.paths));
 
 	// Always control ESLINT_TYPE_AWARE explicitly: set it for the fast/typed
 	// passes, and set it to `undefined` for the full pass so an inherited value
@@ -81,4 +85,18 @@ export function composeEslintCommand(
 	};
 
 	return { args, bin: "eslint", env: environment, label: context.eslintLabel };
+}
+
+/**
+ * The lint targets as the tail of an engine's argument list. A relative target
+ * that starts with `-` would be read as a flag, so it is passed as `./<path>`.
+ * A `--` separator is not enough: ESLint's bin scans the raw argv for
+ * `--init`, `--mcp`, `--stdin` and `--debug` regardless of it, so a listed file
+ * named `--init` would start the config wizard.
+ *
+ * @param paths - The lint targets.
+ * @returns The arguments that pass them as paths.
+ */
+function pathArguments(paths: Array<string>): Array<string> {
+	return paths.map((target) => (target.startsWith("-") ? `./${target}` : target));
 }

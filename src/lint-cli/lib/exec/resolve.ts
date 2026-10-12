@@ -97,6 +97,25 @@ export function resolveIgnoredHelper(): string {
 }
 
 /**
+ * Resolve the engine bootstrap shipped alongside this entry (built from
+ * `src/lint-cli/bootstrap.ts` to `lint-bootstrap.mjs`), which every engine
+ * child is launched through so its arguments travel over stdin.
+ *
+ * Falls back to the TypeScript source exactly as {@link resolveIgnoredHelper}
+ * does, for the same reason: the fixture tests run from `src`. Unlike that
+ * helper there is no degraded mode — without the bootstrap no engine runs — so
+ * the shipped path is checked by the integration tests against the build.
+ *
+ * @returns The absolute path to the bootstrap module.
+ */
+export function resolveBootstrap(): string {
+	const built = fileURLToPath(new URL("./lint-bootstrap.mjs", import.meta.url));
+	return fs.existsSync(built)
+		? built
+		: fileURLToPath(new URL("../../bootstrap.ts", import.meta.url));
+}
+
+/**
  * The path a package's manifest declares as the bin of the package's own name,
  * relative to the package root. Both the shorthand string form and the map form
  * count.

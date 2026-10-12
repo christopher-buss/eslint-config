@@ -19,6 +19,7 @@ const entries = {
 	"cli": "src/cli/index.ts",
 	"formatter-agents": "src/formatter-agents.ts",
 	"index": "src/index.ts",
+	"lint-bootstrap": "src/lint-cli/bootstrap.ts",
 	"lint-cli": "src/lint-cli/index.ts",
 	"lint-ignored": "src/lint-cli/ignored-child.ts",
 	"oxlint": "src/oxlint/index.ts",
@@ -82,6 +83,12 @@ export default defineConfig([
 		// The lint runner shells out to the consumer's local eslint/oxlint and
 		// resolves them at runtime, so its runtime deps stay external.
 		entry: { "lint-cli": entries["lint-cli"] },
+	},
+	{
+		...sharedOptions,
+		// Shipped at dist/lint-bootstrap.mjs; the lint runner spawns this exact
+		// path for every engine child and streams the engine's arguments to it.
+		entry: { "lint-bootstrap": entries["lint-bootstrap"] },
 	},
 	{
 		...sharedOptions,
