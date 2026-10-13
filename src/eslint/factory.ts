@@ -407,7 +407,11 @@ export async function isentinel(
 			stylistic: stylisticOptions,
 		}),
 		promise(),
-		sonarjs({ isInEditor, roblox: enableRoblox }),
+		sonarjs({
+			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
+			isInEditor,
+			roblox: enableRoblox,
+		}),
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
