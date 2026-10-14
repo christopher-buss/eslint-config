@@ -102,27 +102,21 @@ function effectiveOxlintOptions(
 	config: OxlintConfig,
 	filePath: string,
 ): Map<string, Array<unknown>> {
-	const effective = new Map<string, unknown>();
-
-	const apply = (rules: Record<string, unknown> | undefined): void => {
-		const entries = Object.entries(rules ?? {});
-		for (const [rule, value] of entries) {
-			if (value !== undefined) {
-				effective.set(rule, value);
-			}
-		}
-	};
-
-	apply(config.rules);
-	const overrides = config.overrides ?? [];
-	for (const override of overrides) {
+	const matching = (config.overrides ?? []).filter((override) => {
 		const matchesFiles = override.files.some((pattern) => matchesPattern(filePath, pattern));
 		const excluded = (override.excludeFiles ?? []).some((pattern) => {
 			return matchesPattern(filePath, pattern);
 		});
 
-		if (matchesFiles && !excluded) {
-			apply(override.rules);
+		return matchesFiles && !excluded;
+	});
+
+	const effective = new Map<string, unknown>();
+	const ruleMaps = [config.rules, ...matching.map((override) => override.rules)];
+	for (const rules of ruleMaps) {
+		const entries = Object.entries(rules ?? {}).filter(([, value]) => value !== undefined);
+		for (const [rule, value] of entries) {
+			effective.set(rule, value);
 		}
 	}
 
