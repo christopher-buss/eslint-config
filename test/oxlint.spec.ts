@@ -15,6 +15,7 @@ import type { OxlintConfig } from "../src/oxlint/index.ts";
 import { redactMachinePaths } from "./helpers.ts";
 import {
 	effectiveEslintRules,
+	effectiveOxlintRules,
 	enabledEslintRules,
 	enabledFromEffective,
 	enabledOxlintRules,
@@ -732,6 +733,42 @@ describe("scoped roblox complement", () => {
 
 		expect(nodeOverrides(config)).toHaveLength(0);
 	});
+
+	const outsideScope = ["a.ts", "a.tsx", "a.js"];
+
+	it.for(outsideScope)(
+		"gives %s the oxlint rules of roblox: false when outside the scope",
+		(filePath, { expect }) => {
+			expect.assertions(1);
+
+			const base = { gitignore: false, spellCheck: false, type: "package" } as const;
+			const unscoped = oxlintIsentinel({ ...base, name: "test/unscoped", roblox: false });
+			const scoped = oxlintIsentinel({
+				...base,
+				name: "test/scoped-roblox",
+				roblox: { files: ["game/**/*.ts"] },
+			});
+
+			expect(Object.fromEntries(effectiveOxlintRules(scoped, filePath))).toStrictEqual(
+				Object.fromEntries(effectiveOxlintRules(unscoped, filePath)),
+			);
+		},
+	);
+
+	it.for(outsideScope)(
+		"gives %s the eslint rules of roblox: false when outside the scope",
+		async (filePath, { expect }) => {
+			expect.assertions(1);
+
+			const base = { gitignore: false, spellCheck: false, type: "package" } as const;
+			const unscoped = await isentinel({ ...base, roblox: false });
+			const scoped = await isentinel({ ...base, roblox: { files: ["game/**/*.ts"] } });
+
+			expect(Object.fromEntries(effectiveEslintRules(scoped, filePath))).toStrictEqual(
+				Object.fromEntries(effectiveEslintRules(unscoped, filePath)),
+			);
+		},
+	);
 });
 
 /**

@@ -268,10 +268,24 @@ export function isentinel(
 		);
 	}
 
-	// Re-apply the non-roblox JS, TS and unicorn rules to the complement (files
-	// outside the roblox scope), overriding the roblox-flavored base there.
+	// Re-apply the non-roblox rules to the complement (files outside the roblox
+	// scope), overriding the roblox-flavored base there. Keep the base order:
+	// the TS fragment must follow the JS one so its "off" entries win.
 	if (needsComplementOverlay) {
 		configs.push(
+			oxlintJavascript({
+				...getOverrides(options, "javascript"),
+				excludeFiles: robloxScopedFiles,
+				isInEditor,
+				roblox: false,
+				stylistic: stylisticOptions,
+			}),
+			oxlintImports({
+				excludeFiles: robloxScopedFiles,
+				roblox: false,
+				stylistic: stylisticOptions,
+			}),
+			oxlintSonarjs({ excludeFiles: robloxScopedFiles, isInEditor, roblox: false }),
 			oxlintTypescript({
 				...resolveSubOptions(options, "typescript"),
 				...getOverrides(options, "typescript"),
@@ -281,20 +295,8 @@ export function isentinel(
 				stylistic: stylisticOptions,
 				typeAware,
 			}),
-			oxlintJavascript({
-				...getOverrides(options, "javascript"),
-				excludeFiles: robloxScopedFiles,
-				isInEditor,
-				roblox: false,
-				stylistic: stylisticOptions,
-			}),
 			oxlintUnicorn({
 				...resolveSubOptions(options, "unicorn"),
-				excludeFiles: robloxScopedFiles,
-				roblox: false,
-				stylistic: stylisticOptions,
-			}),
-			oxlintImports({
 				excludeFiles: robloxScopedFiles,
 				roblox: false,
 				stylistic: stylisticOptions,
