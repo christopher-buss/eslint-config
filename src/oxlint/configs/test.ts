@@ -64,7 +64,7 @@ export function oxlintTest({
 	const configs: Array<TypedOxlintConfigItem> = [];
 
 	if (enableJest) {
-		const jestFragments = (complement: boolean): Array<TypedOxlintConfigItem> => {
+		function jestFragments(complement: boolean): Array<TypedOxlintConfigItem> {
 			const roblox = complement ? false : isRoblox;
 
 			return createOxlintConfigs({
@@ -89,7 +89,7 @@ export function oxlintTest({
 					},
 				},
 			});
-		};
+		}
 
 		configs.push(
 			...jestFragments(false),
@@ -106,7 +106,7 @@ export function oxlintTest({
 	}
 
 	if (enableVitest) {
-		const vitestFragments = (complement: boolean): Array<TypedOxlintConfigItem> => {
+		function vitestFragments(complement: boolean): Array<TypedOxlintConfigItem> {
 			const roblox = complement ? false : isRoblox;
 
 			return createOxlintConfigs({
@@ -128,7 +128,7 @@ export function oxlintTest({
 					},
 				},
 			});
-		};
+		}
 
 		configs.push(
 			...vitestFragments(false),

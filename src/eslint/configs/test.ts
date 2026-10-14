@@ -84,7 +84,7 @@ export async function test({
 		};
 
 		const jestFiles = jestOptions.files ?? files;
-		const jestItemRules = (roblox: boolean): TypedFlatConfigItem["rules"] => {
+		function jestItemRules(roblox: boolean): TypedFlatConfigItem["rules"] {
 			return {
 				...jestRules({ extended: useJestExtended, isInEditor, roblox, stylistic }),
 				...sonarjsTestRules({ jest: true, roblox }),
@@ -93,7 +93,7 @@ export async function test({
 				...overrides,
 				...jestOptions.overrides,
 			};
-		};
+		}
 
 		const jestSettings = {
 			jest: {
@@ -164,7 +164,7 @@ export async function test({
 		};
 
 		const vitestFiles = vitestOptions.files ?? files;
-		const vitestItemRules = (roblox: boolean): TypedFlatConfigItem["rules"] => {
+		function vitestItemRules(roblox: boolean): TypedFlatConfigItem["rules"] {
 			return {
 				...vitestRules({ extended: useJestExtended, isInEditor, stylistic }),
 				...sonarjsTestRules({ roblox }),
@@ -172,7 +172,7 @@ export async function test({
 				...overrides,
 				...vitestOptions.overrides,
 			};
-		};
+		}
 
 		const vitestSettings = {
 			...(useJestExtended ? { jest: { globalPackage: "vitest" } } : {}),
