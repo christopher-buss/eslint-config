@@ -5,13 +5,15 @@ export const DEFAULT_FILES_PER_WORKER = 300;
 
 /**
  * Absolute worker cap for the passes that build a TypeScript program. Measured
- * on a 32-thread / 16-core machine against a 3191-file type-aware run: 4-6
- * workers all land at ~37-40s, then 8 workers regress to ~51s — concurrent
- * program builds saturate memory bandwidth well before they saturate cores.
- * Applies on top of the shared worker cap, and only bites on machines
- * with 28 or more threads; an explicit `LINT_MAX_WORKERS` overrides it.
+ * on a 32-thread / 16-core machine against a 3191-file type-aware run: 5 and 6
+ * workers tie at 37.3s, 4 takes 39.6s, then 8 workers regress to ~51s —
+ * concurrent program builds saturate memory bandwidth well before they
+ * saturate cores. Every worker holds its own programs, so the sixth bought no
+ * time for ~3.4 GB more. Applies on top of the shared worker cap, and only
+ * bites on machines with 24 or more threads; an explicit `LINT_MAX_WORKERS`
+ * overrides it.
  */
-export const TYPED_MAX_WORKERS = 6;
+export const TYPED_MAX_WORKERS = 5;
 
 /**
  * Default files-per-worker for the fast (`--type-aware=off`) pass. A syntactic

@@ -394,6 +394,12 @@ describe("resolveWorkerLimits", () => {
 		});
 	});
 
+	it("caps the program-building passes at five workers on a 32-thread machine", ({ expect }) => {
+		expect.assertions(1);
+
+		expect(resolveWorkerLimits({}, 32, false).typedMaxWorkers).toBe(5);
+	});
+
 	it("still caps the program-building passes in CI", ({ expect }) => {
 		expect.assertions(2);
 
