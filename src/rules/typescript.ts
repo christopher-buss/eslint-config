@@ -126,7 +126,6 @@ export function typescriptTypeAwareRules({
 		"ts/no-confusing-void-expression": "error",
 		"ts/no-deprecated": "error",
 		"ts/no-duplicate-type-constituents": "error",
-		"ts/no-empty-object-type": "error",
 		"ts/no-floating-promises": [
 			"error",
 			{
@@ -229,7 +228,9 @@ export function typescriptRecommendedOverrides(): TypedFlatConfigItem["rules"] {
 		"no-unsafe-negation": "off",
 		"no-var": "error",
 		"no-with": "off",
-		"prefer-const": "error",
+		// `prefer-const` is left out: ESLint keeps the javascript config's
+		// options under the preset's severity-only entry, but oxlint replaces
+		// them with the defaults.
 		"prefer-rest-params": "error",
 		"prefer-spread": "error",
 	};
