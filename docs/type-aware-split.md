@@ -122,7 +122,7 @@ loaded that your own config had not already loaded.
   enable a type-aware rule fail in the fast pass — the split only partitions
   config-file rules.
 - **Markdown fences**: the handful of syntax-only rules that live inside the
-  type-aware config blocks (for example `ts/no-empty-object-type`) follow the
-  type-aware pass and therefore no longer apply to fenced Markdown code blocks
-  (which only the fast pass lints). Type-aware rules never had real fence
-  coverage — fences have no type information.
+  type-aware config blocks (for example `ts/no-unnecessary-type-constraint`)
+  follow the type-aware pass and therefore no longer apply to fenced Markdown
+  code blocks (which only the fast pass lints). Type-aware rules never had real
+  fence coverage — fences have no type information.
