@@ -326,6 +326,7 @@ export function isentinel(
 		configs.push(
 			oxlintTest({
 				...getOverrides(options, "test"),
+				...(needsComplementOverlay ? { excludeFiles: robloxScopedFiles } : {}),
 				isInEditor,
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,

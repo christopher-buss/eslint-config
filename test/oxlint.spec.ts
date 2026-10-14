@@ -734,14 +734,20 @@ describe("scoped roblox complement", () => {
 		expect(nodeOverrides(config)).toHaveLength(0);
 	});
 
-	const outsideScope = ["a.ts", "a.tsx", "a.js"];
+	const outsideScope = [
+		{ filePath: "a.ts", test: false },
+		{ filePath: "a.tsx", test: false },
+		{ filePath: "a.js", test: false },
+		{ filePath: "a.spec.ts", test: { jest: true } },
+		{ filePath: "a.spec.ts", test: { vitest: true } },
+	] as const;
 
 	it.for(outsideScope)(
-		"gives %s the oxlint rules of roblox: false when outside the scope",
-		(filePath, { expect }) => {
+		"gives $filePath (test: $test) the oxlint rules of roblox: false when outside the scope",
+		({ filePath, test }, { expect }) => {
 			expect.assertions(1);
 
-			const base = { gitignore: false, spellCheck: false, type: "package" } as const;
+			const base = { gitignore: false, spellCheck: false, test, type: "package" } as const;
 			const unscoped = oxlintIsentinel({ ...base, name: "test/unscoped", roblox: false });
 			const scoped = oxlintIsentinel({
 				...base,
@@ -756,11 +762,11 @@ describe("scoped roblox complement", () => {
 	);
 
 	it.for(outsideScope)(
-		"gives %s the eslint rules of roblox: false when outside the scope",
-		async (filePath, { expect }) => {
+		"gives $filePath (test: $test) the eslint rules of roblox: false when outside the scope",
+		async ({ filePath, test }, { expect }) => {
 			expect.assertions(1);
 
-			const base = { gitignore: false, spellCheck: false, type: "package" } as const;
+			const base = { gitignore: false, spellCheck: false, test, type: "package" } as const;
 			const unscoped = await isentinel({ ...base, roblox: false });
 			const scoped = await isentinel({ ...base, roblox: { files: ["game/**/*.ts"] } });
 

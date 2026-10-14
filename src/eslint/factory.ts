@@ -507,6 +507,7 @@ export async function isentinel(
 		configs.push(
 			test({
 				...getOverrides(options, "test"),
+				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 				isInEditor,
 				roblox: enableRoblox,
 				type: projectType,

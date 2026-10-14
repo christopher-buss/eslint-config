@@ -31,6 +31,7 @@ import { createOxlintConfigs } from "../utils.ts";
  * @returns The generated config fragments.
  */
 export function oxlintTest({
+	excludeFiles,
 	files = GLOB_TESTS,
 	isInEditor = false,
 	jest = false,
@@ -45,7 +46,14 @@ export function oxlintTest({
 	OptionsOverrides &
 	OptionsProjectType &
 	OptionsStylistic &
-	OptionsTestFramework = {}): Array<TypedOxlintConfigItem> {
+	OptionsTestFramework & {
+		/**
+		 * When set, also re-apply the non-roblox rules to every test file
+		 * except these globs (the roblox scope). The framework choice stays
+		 * the same.
+		 */
+		excludeFiles?: Array<string>;
+	} = {}): Array<TypedOxlintConfigItem> {
 	const vitestOptions: OptionsVitest = typeof vitest === "object" ? vitest : {};
 	const vitestEnabled = vitest === true || typeof vitest === "object";
 	const jestOptions: OptionsJest = typeof jest === "object" ? jest : {};
@@ -56,19 +64,22 @@ export function oxlintTest({
 	const configs: Array<TypedOxlintConfigItem> = [];
 
 	if (enableJest) {
-		configs.push(
-			...createOxlintConfigs({
-				name: "isentinel/test/jest",
+		const jestFragments = (complement: boolean): Array<TypedOxlintConfigItem> => {
+			const roblox = complement ? false : isRoblox;
+
+			return createOxlintConfigs({
+				name: complement ? "isentinel/test/jest/complement" : "isentinel/test/jest",
+				...(complement ? { excludeFiles } : {}),
 				files: jestOptions.files?.flat() ?? files.flat(),
 				overrides: { ...overrides, ...jestOptions.overrides },
 				rules: {
 					...jestRules({
 						extended: jestOptions.extended === true,
 						isInEditor,
-						roblox: isRoblox,
+						roblox,
 						stylistic,
 					}),
-					...sonarjsTestRules({ jest: true, roblox: isRoblox }),
+					...sonarjsTestRules({ jest: true, roblox }),
 					...smallRulesTestRules(),
 				},
 				settings: {
@@ -77,7 +88,14 @@ export function oxlintTest({
 						version: 27,
 					},
 				},
-			}),
+			});
+		};
+
+		configs.push(
+			...jestFragments(false),
+			// The complement re-applies the non-roblox rules after the main
+			// fragment, so it wins for test files outside the roblox scope.
+			...(excludeFiles ? jestFragments(true) : []),
 			...createOxlintConfigs({
 				name: "isentinel/test/jest/type-tests",
 				files: [GLOB_TYPE_TESTS],
@@ -88,9 +106,12 @@ export function oxlintTest({
 	}
 
 	if (enableVitest) {
-		configs.push(
-			...createOxlintConfigs({
-				name: "isentinel/test/vitest",
+		const vitestFragments = (complement: boolean): Array<TypedOxlintConfigItem> => {
+			const roblox = complement ? false : isRoblox;
+
+			return createOxlintConfigs({
+				name: complement ? "isentinel/test/vitest/complement" : "isentinel/test/vitest",
+				...(complement ? { excludeFiles } : {}),
 				files: vitestOptions.files?.flat() ?? files.flat(),
 				overrides: { ...overrides, ...vitestOptions.overrides },
 				rules: {
@@ -99,14 +120,19 @@ export function oxlintTest({
 						isInEditor,
 						stylistic,
 					}),
-					...sonarjsTestRules({ roblox: isRoblox }),
+					...sonarjsTestRules({ roblox }),
 				},
 				settings: {
 					vitest: {
 						typecheck: vitestOptions.typecheck ?? false,
 					},
 				},
-			}),
+			});
+		};
+
+		configs.push(
+			...vitestFragments(false),
+			...(excludeFiles ? vitestFragments(true) : []),
 			...createOxlintConfigs({
 				name: "isentinel/test/vitest/type-tests",
 				files: [GLOB_TYPE_TESTS],
