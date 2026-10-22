@@ -86,6 +86,10 @@ export interface Scenario {
 	oxlint?: boolean;
 	/** Files written only in standalone mode, by relative path. */
 	standaloneFiles?: Record<string, string>;
+	/** Builds TypeScript programs; such scenarios run one at a time. */
+	typeAware?: boolean;
+	/** The preset may warn (the options it tests trigger a warning). */
+	warns?: boolean;
 }
 
 /** The files of a project tree, by POSIX relative path. */

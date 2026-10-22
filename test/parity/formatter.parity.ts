@@ -9,10 +9,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it } from "vitest";
+import type { ExpectStatic } from "vitest";
 
 import { runMode } from "./harness.ts";
+import type { ModeResult } from "./harness.ts";
 import { changedFiles, PARITY_FIXTURES, serializeTree } from "./project.ts";
 import type { Scenario } from "./project.ts";
+
+/** The prefix of every warning the preset prints. */
+const PRESET_WARNING = "[@isentinel/eslint-config]";
 
 const PACKAGE = '{ roblox: false, type: "package" }';
 
@@ -81,18 +86,20 @@ const scenarios: Array<Scenario> = [
 		eslint: typed(PACKAGE),
 		input: "fixtures/input",
 		knownDifference: IMPORT_FIX_ORDER,
+		typeAware: true,
 	},
 	{
 		name: "roblox-game",
 		eslint: typed('{ roblox: true, type: "game" }'),
 		input: "fixtures/input",
 		knownDifference: IMPORT_FIX_ORDER,
+		typeAware: true,
 	},
 
 	// Option sources.
 	{ name: "prettierrc-root", eslint: PACKAGE },
-	{ name: "prettierrc-overrides", eslint: PACKAGE },
-	{ name: "editorconfig", eslint: PACKAGE },
+	{ name: "prettierrc-overrides", eslint: PACKAGE, warns: true },
+	{ name: "editorconfig", eslint: PACKAGE, warns: true },
 	{ name: "oxfmtrc", eslint: PACKAGE, eslintOnly: [".oxfmtrc.json"], oxfmt: OXFMTRC },
 	{
 		name: "oxfmt-config",
@@ -120,48 +127,62 @@ const scenarios: Array<Scenario> = [
 			},
 		}`,
 		oxfmt: "{ printWidth: 80, semi: false, tabWidth: 2 }",
+		warns: true,
 	},
 	{
 		name: "json-use-spaces",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { useTabs: false } } }`,
 		oxfmt: "{ useTabs: false }",
+		warns: true,
 	},
 	{
 		name: "json-single-quote",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { singleQuote: true } } }`,
 		oxfmt: "{ singleQuote: true }",
+		warns: true,
 	},
 	{
 		name: "json-no-bracket-spacing",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { bracketSpacing: false } } }`,
 		oxfmt: "{ bracketSpacing: false }",
+		warns: true,
 	},
 	{
 		name: "jsdoc-print-width",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { jsdocPrintWidth: 100 } } }`,
 		standaloneFiles: { ".prettierrc": '{ "jsdocPrintWidth": 100 }\n' },
+		warns: true,
 	},
 	{
 		name: "formatters-partial",
 		eslint: `{ ...${PACKAGE}, formatters: { css: false, markdown: false, yaml: false } }`,
 		oxfmt: "{ formatters: { css: false, markdown: false, yaml: false } }",
+		warns: true,
 	},
 	{
 		name: "formatters-off-each",
 		eslint: `{ ...${PACKAGE}, formatters: ${ALL_FORMATTERS_OFF} }`,
 		oxfmt: `{ formatters: ${ALL_FORMATTERS_OFF} }`,
+		warns: true,
 	},
 	{
 		name: "formatters-false",
 		eslint: `{ ...${PACKAGE}, formatters: false }`,
 		oxfmt: "{ formatters: false }",
+		warns: true,
 	},
-	{ name: "stylistic-false", eslint: `{ ...${PACKAGE}, stylistic: false }`, oxfmt: null },
+	{
+		name: "stylistic-false",
+		eslint: `{ ...${PACKAGE}, stylistic: false }`,
+		oxfmt: null,
+		warns: true,
+	},
 	{ name: "max-len", eslint: `{ ...${PACKAGE}, stylistic: { maxLen: 80 } }` },
 	{
 		name: "user-ignores",
 		eslint: `{ ...${PACKAGE}, ignores: ["ignored/**"] }`,
 		oxfmt: '{ ignorePatterns: ["ignored/**"] }',
+		warns: true,
 	},
 	{
 		name: "gitignore",
@@ -172,40 +193,70 @@ const scenarios: Array<Scenario> = [
 	{ name: "subfolder", cwd: "app", eslint: PACKAGE },
 
 	// Hybrid mode: oxlint formats JS/TS in eslint mode.
-	{ name: "oxlint", eslint: `{ ...${PACKAGE}, oxlint: true }`, oxlint: true },
+	{ name: "oxlint", eslint: `{ ...${PACKAGE}, oxlint: true }`, oxlint: true, warns: true },
 ];
 
-describe.concurrent("formatter parity", () => {
-	it.for(scenarios)("$name", async (scenario, { expect }) => {
-		const [eslintRun, standaloneRun] = await Promise.allSettled([
-			runMode(scenario, "eslint"),
-			runMode(scenario, "standalone"),
-		]);
-		if (eslintRun.status === "rejected") {
-			throw eslintRun.reason;
-		}
+function compareModes(
+	scenario: Scenario,
+	eslint: ModeResult,
+	standalone: ModeResult,
+	expect: ExpectStatic,
+): void {
+	expect(changedFiles(eslint.tree, standalone.tree)).toStrictEqual(
+		scenario.knownDifference?.files ?? [],
+	);
+	if (!scenario.knownDifference) {
+		expect(standalone.tree).toStrictEqual(eslint.tree);
+	}
 
-		const eslint = eslintRun.value;
-		await expect
-			.soft(serializeTree(eslint.tree))
-			.toMatchFileSnapshot(path.join(PARITY_FIXTURES, "output", `${scenario.name}.txt`));
+	expect(standalone.fatal).toStrictEqual(eslint.fatal);
+	if (scenario.warns !== true) {
+		expect(eslint.warnings).not.toContain(PRESET_WARNING);
+		expect(standalone.warnings).not.toContain(PRESET_WARNING);
+	}
+}
 
-		if (standaloneRun.status === "rejected") {
-			throw standaloneRun.reason;
-		}
+async function checkScenario(scenario: Scenario, expect: ExpectStatic): Promise<void> {
+	const [eslintRun, standaloneRun] = await Promise.allSettled([
+		runMode(scenario, "eslint"),
+		runMode(scenario, "standalone"),
+	]);
+	if (eslintRun.status === "rejected") {
+		throw eslintRun.reason;
+	}
 
-		const standalone = standaloneRun.value;
-		expect(changedFiles(eslint.tree, standalone.tree)).toStrictEqual(
-			scenario.knownDifference?.files ?? [],
+	const eslint = eslintRun.value;
+	const standaloneRounds =
+		standaloneRun.status === "fulfilled" ? String(standaloneRun.value.rounds) : "failed";
+	const header = `rounds: eslint ${eslint.rounds}, standalone ${standaloneRounds}`;
+	await expect
+		.soft([header, serializeTree(eslint.tree)].join(String.fromCharCode(10)))
+		.toMatchFileSnapshot(path.join(PARITY_FIXTURES, "output", `${scenario.name}.txt`));
+
+	if (standaloneRun.status === "rejected") {
+		throw standaloneRun.reason;
+	}
+
+	compareModes(scenario, eslintRun.value, standaloneRun.value, expect);
+	if (scenario.knownDifference) {
+		await expect(serializeTree(standaloneRun.value.tree)).toMatchFileSnapshot(
+			path.join(PARITY_FIXTURES, "output", `${scenario.name}.standalone.txt`),
 		);
-		if (scenario.knownDifference) {
-			await expect(serializeTree(standalone.tree)).toMatchFileSnapshot(
-				path.join(PARITY_FIXTURES, "output", `${scenario.name}.standalone.txt`),
-			);
-		} else {
-			expect(standalone.tree).toStrictEqual(eslint.tree);
-		}
+	}
+}
 
-		expect(standalone.fatal).toStrictEqual(eslint.fatal);
-	});
+// Type-aware scenarios build TypeScript programs; run in parallel with the
+// rest they have crashed ESLint natively on Windows, so they run one by one.
+describe("formatter parity (type-aware)", () => {
+	it.for(scenarios.filter(({ typeAware }) => typeAware === true))(
+		"$name",
+		async (scenario, { expect }) => checkScenario(scenario, expect),
+	);
+});
+
+describe.concurrent("formatter parity", () => {
+	it.for(scenarios.filter(({ typeAware }) => typeAware !== true))(
+		"$name",
+		async (scenario, { expect }) => checkScenario(scenario, expect),
+	);
 });

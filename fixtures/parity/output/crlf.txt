@@ -1,3 +1,4 @@
+rounds: eslint 2, standalone 2
 === .babelrc ===
 {"presets":["a",   "b"]}
 
