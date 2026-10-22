@@ -10,9 +10,14 @@
 
 import type { OxfmtConfig } from "oxfmt";
 
-import { GLOB_EXCLUDE, GLOB_MARKDOWN, GLOB_YAML } from "../globs.ts";
+import { GLOB_EXCLUDE, GLOB_JSON5, GLOB_MARKDOWN, GLOB_YAML } from "../globs.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
-import { buildOxfmtOptions, markdownOxfmtOptions, YAML_OXFMT_OPTIONS } from "../rules/oxfmt.ts";
+import {
+	buildOxfmtOptions,
+	JSON5_OXFMT_OPTIONS,
+	markdownOxfmtOptions,
+	YAML_OXFMT_OPTIONS,
+} from "../rules/oxfmt.ts";
 
 export type { OxfmtConfig } from "oxfmt";
 
@@ -60,6 +65,7 @@ export function isentinelOxfmt({
 				options: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
 			},
 			{ files: [GLOB_YAML], options: { ...YAML_OXFMT_OPTIONS } },
+			{ files: [GLOB_JSON5], options: { ...JSON5_OXFMT_OPTIONS } },
 			...overrides,
 		],
 	};

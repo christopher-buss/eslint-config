@@ -32,6 +32,7 @@ const NON_JS_FORMATTER_CONFIGS = [
 	"isentinel/oxfmt/markdown",
 	"isentinel/oxfmt/graphql",
 	"isentinel/oxfmt/json",
+	"isentinel/oxfmt/json5",
 	"isentinel/oxfmt/yaml",
 ] as const;
 

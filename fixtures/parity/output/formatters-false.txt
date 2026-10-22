@@ -232,6 +232,9 @@ export type Pair<T> = [T, T];
 <!DOCTYPE html>
 <html><head><title>Page</title></head><body><div   class="a"><p>Text</p></div></body></html>
 
+=== plain.json5 ===
+{ "name": "plain",   "count": 1, "nested": { "flag": true } }
+
 === query.gql ===
 query   GetUser { user(id:1){name   email} }
 

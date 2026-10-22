@@ -4,6 +4,7 @@ import {
 	GLOB_ALL_JSON,
 	GLOB_CSS,
 	GLOB_JS,
+	GLOB_JSON5,
 	GLOB_JSX,
 	GLOB_LESS,
 	GLOB_MARKDOWN,
@@ -13,7 +14,12 @@ import {
 	GLOB_TSX,
 	GLOB_YAML,
 } from "../../globs.ts";
-import { buildOxfmtOptions, markdownOxfmtOptions, YAML_OXFMT_OPTIONS } from "../../rules/oxfmt.ts";
+import {
+	buildOxfmtOptions,
+	JSON5_OXFMT_OPTIONS,
+	markdownOxfmtOptions,
+	YAML_OXFMT_OPTIONS,
+} from "../../rules/oxfmt.ts";
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
@@ -224,13 +230,22 @@ export async function oxfmt(
 	}
 
 	if (formattingOptions.json) {
-		configs.push({
-			name: "isentinel/oxfmt/json",
-			files: [GLOB_ALL_JSON],
-			rules: {
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
+		configs.push(
+			{
+				name: "isentinel/oxfmt/json",
+				files: [GLOB_ALL_JSON],
+				rules: {
+					"oxfmt/oxfmt": ["error", oxfmtOptions],
+				},
 			},
-		});
+			{
+				name: "isentinel/oxfmt/json5",
+				files: [GLOB_JSON5],
+				rules: {
+					"oxfmt/oxfmt": ["error", { ...oxfmtOptions, ...JSON5_OXFMT_OPTIONS }],
+				},
+			},
+		);
 	}
 
 	if (formattingOptions.yaml) {

@@ -90,6 +90,7 @@ describe("isentinelOxfmt", () => {
 		expect(config.overrides!.map((override) => override.files)).toStrictEqual([
 			["**/*.md"],
 			["**/*.y{,a}ml"],
+			["**/*.json5"],
 			["*.json"],
 		]);
 		expect(config.overrides![0]!.options).toMatchObject({

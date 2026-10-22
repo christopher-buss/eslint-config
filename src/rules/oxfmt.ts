@@ -108,6 +108,15 @@ export function markdownOxfmtOptions(jsdocPrintWidth: unknown): {
 	} satisfies OxfmtOptions;
 }
 
+/**
+ * JSON5 formatting options layered over the base options. `jsonc/quote-props`
+ * owns the quoting of JSON5 keys; oxfmt's `consistent` would strip the quotes
+ * it adds, and `--fix` would loop.
+ */
+export const JSON5_OXFMT_OPTIONS = {
+	quoteProps: "preserve",
+} as const satisfies OxfmtOptions;
+
 /** YAML formatting options layered over the base options. */
 export const YAML_OXFMT_OPTIONS = {
 	tabWidth: 2,
