@@ -65,6 +65,7 @@ const scenarios: Array<Scenario> = [
 		eslintConfigs:
 			'{ files: ["**/*.vue"], languageOptions: { parser: parserPlain }, rules: { "ts/consistent-type-imports": "off" } }',
 		oxfmt: '{ componentExts: ["vue"] }',
+		warns: true,
 	},
 	{
 		name: "crlf",
