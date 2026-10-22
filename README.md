@@ -961,7 +961,7 @@ from the preset:
 // oxfmt.config.ts
 import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
 
-export default isentinelOxfmt({ printWidth: 100 });
+export default isentinelOxfmt({ cwd: import.meta.dirname, printWidth: 100 });
 ```
 
 ```ts
@@ -976,10 +976,26 @@ export default isentinel({
 `isentinelOxfmt` starts from the same options the linter uses (preset defaults,
 then `.editorconfig`, then `.prettierrc`). Each key you pass replaces its base
 value, except `ignorePatterns` and `overrides`, which are appended to the
-preset's (the shared ignore globs, and the Markdown and YAML overrides). Your
-overrides come last, so they win over the preset's. Only the root `.prettierrc`
-options are carried over, not its `overrides`. Pass `cwd` to resolve
-`.prettierrc` and `.editorconfig` from another directory.
+preset's. The override order is the one the `oxfmt/oxfmt` rule uses: the
+preset's Markdown, YAML and JSON5 overrides, then the `.editorconfig` sections
+(without keys you set at the root), then yours, then the `.prettierrc`
+`overrides`. Override globs without a slash are anchored to the config directory
+(`*.json` becomes `./*.json`), because the rule matches them only there. `cwd`
+is the directory to read `.prettierrc` and `.editorconfig` from (default
+`process.cwd()`). Pass `import.meta.dirname`, as the wizard does, so the result
+does not depend on where oxfmt runs.
+
+`isentinelOxfmt` takes `formatters` and `componentExts`, with the same meaning
+as in the factories, so oxfmt formats the same files the linter would. TOML,
+`.mdx` and other files the linter does not format are ignored.
+
+In standalone mode, oxfmt never sees the linter's options. The factories warn
+once when you set any of these, because they do not change formatting:
+`formatters` (any value except `true`), `stylistic: false`, `ignores`, or custom
+`gitignore` files. Set the equivalent in `isentinelOxfmt` instead (`formatters`,
+`componentExts`, `ignorePatterns`, and format options). The rule widths also
+come from the oxfmt config only, not from `formatters.prettierOptions` or
+`formatters.oxfmtOptions`.
 
 With `formatter: "standalone"`, the linter enables `oxfmt/oxfmt` nowhere but
 keeps the rules that turn off formatting conflicts. Lua formatting (Stylua)
@@ -1001,9 +1017,9 @@ them in one directory is an error, as in oxfmt. Its root options (without
 
 Nested oxfmt configs (a config file in a subdirectory) are not used, in either
 mode. One root config formats the whole project: the `oxfmt/oxfmt` rule sets
-`disableNestedConfig`, `isentinel-lint` passes `--config`, and the wizard's
-format scripts pass `--disable-nested-config`. Use `overrides` for per-folder
-options. Editor extensions can still read a nested config.
+`disableNestedConfig`, `isentinel-lint` passes `--config`, the wizard's format
+scripts pass `--disable-nested-config`, and its VS Code settings set
+`oxc.fmt.disableNestedConfig`. Use `overrides` for per-folder options.
 
 `flawless/arrow-return-style` uses two widths. `maxLen` is your limit: an arrow
 becomes implicit only if it fits. It comes from `stylistic.maxLen`, else
@@ -1013,7 +1029,18 @@ It always comes from the root `printWidth` of the oxfmt config, so that `--fix`
 agrees with oxfmt. An override that changes `printWidth` or `tabWidth` for JS or
 TS files gets a warning, because the linter uses the root values. In Markdown
 code blocks, `useOxfmt` uses the Markdown widths instead, because oxfmt formats
-embedded code with the Markdown options.
+embedded code with the Markdown options. Each oxfmt, `.editorconfig` or
+`.prettierrc` override that changes the Markdown widths reaches only the code
+blocks of the files it matches. The comment length rules take their `tabSize`
+from the same oxfmt widths.
+
+The stylistic `indent` and `quotes`, and the JSON bracket spacing, follow the
+oxfmt options (`useTabs`, `tabWidth`, `singleQuote`, `bracketSpacing`) unless
+you set them in `stylistic`.
+
+Both modes write the same output, with one known difference: when one import
+merges into another (`import/no-duplicates`), eslint mode can keep a comment
+above it twice. Standalone mode keeps it once.
 
 #### Type-Aware Split
 
