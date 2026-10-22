@@ -18,11 +18,12 @@ import {
 	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
-	resolveOxfmtConfigOptions,
+	resolveOxfmtConfig,
 	resolveSubOptions,
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
 } from "../utils.ts";
+import type { ResolvedOxfmtConfig } from "../utils.ts";
 import {
 	comments,
 	disables,
@@ -361,8 +362,11 @@ export async function isentinel(
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
 
-	const oxfmtConfigOptions =
-		stylisticOptions !== false && formatters !== false ? await resolveOxfmtConfigOptions() : {};
+	const oxfmtConfig: ResolvedOxfmtConfig =
+		stylisticOptions !== false && formatters !== false
+			? await resolveOxfmtConfig()
+			: { options: {} };
+	const oxfmtConfigOptions = oxfmtConfig.options;
 
 	// Shared with the oxlint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
@@ -403,10 +407,16 @@ export async function isentinel(
 					: {}),
 				antiSlop,
 				// oxfmt formats Markdown code blocks with the Markdown options
-				// whenever it formats Markdown.
+				// whenever it formats Markdown. Standalone oxfmt takes them from
+				// the config file, overrides included.
 				...(formatters !== false &&
 				(formatter === "standalone" || shouldEnableFeature(formatters, "markdown"))
-					? { markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]) }
+					? {
+							markdownCode: {
+								...markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
+								...(formatter === "standalone" ? oxfmtConfig.markdownWidths : {}),
+							},
+						}
 					: {}),
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,

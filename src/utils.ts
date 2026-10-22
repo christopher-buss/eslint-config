@@ -675,6 +675,9 @@ const OXFMT_CONFIG_NAMES = [...OXFMT_RC_FILES, ...OXFMT_CONFIG_MODULES];
 /** The extensions of the JS/TS files ESLint and oxlint format. */
 const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"];
 
+/** The extensions of the Markdown files ESLint lints code blocks in. */
+const MARKDOWN_EXTENSIONS = ["md"];
+
 /** Set once a process has warned about a JS/TS width override. */
 const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
 
@@ -702,6 +705,24 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 				lineWrappingStyle?: "balance" | "greedy";
 		  });
 };
+
+/** The widths oxfmt formats Markdown files with. */
+export interface MarkdownWidths {
+	printWidth?: number;
+	tabWidth?: number;
+}
+
+/** What the factories read from an oxfmt config. */
+export interface ResolvedOxfmtConfig {
+	/**
+	 * The widths oxfmt formats Markdown, and so its code blocks, with: the
+	 * root values, then those of each override that matches Markdown, in
+	 * order. Unset when there is no config.
+	 */
+	markdownWidths?: MarkdownWidths;
+	/** The root format options. */
+	options: OxfmtOptions;
+}
 
 /**
  * List the oxfmt config files in one directory, without walking up.
@@ -753,13 +774,14 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
  * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
  * `oxfmt.config.ts` or `oxfmt.config.mts`.
  *
- * @returns The oxfmt format options, or an empty object if none found.
+ * @returns The format options and Markdown widths; empty options if none
+ *   found.
  * @rejects When the config is ambiguous or cannot be loaded.
  */
-export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+export async function resolveOxfmtConfig(): Promise<ResolvedOxfmtConfig> {
 	const config = findOxfmtConfig();
 	if (config === undefined) {
-		return {};
+		return { options: {} };
 	}
 
 	if (!config.isModule) {
@@ -780,8 +802,9 @@ export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
 }
 
 /**
- * Synchronous {@link resolveOxfmtConfigOptions}, for the (synchronous) oxlint
- * factory. Loads a config module through jiti's synchronous API.
+ * Synchronous {@link resolveOxfmtConfig}, for the (synchronous) oxlint factory.
+ * Loads a config module through jiti's synchronous API. Oxlint does not lint
+ * Markdown code blocks, so it returns the format options alone.
  *
  * @returns The oxfmt format options, or an empty object if none found.
  * @throws When the config is ambiguous or cannot be loaded.
@@ -793,7 +816,7 @@ export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
 	}
 
 	if (!config.isModule) {
-		return rcConfig(config.path, fs.readFileSync(config.path, "utf-8"));
+		return rcConfig(config.path, fs.readFileSync(config.path, "utf-8")).options;
 	}
 
 	let loaded: unknown;
@@ -807,7 +830,7 @@ export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
 		throw loadError(config.path, err);
 	}
 
-	return moduleConfig(config.path, loaded);
+	return moduleConfig(config.path, loaded).options;
 }
 
 /**
@@ -872,13 +895,14 @@ function loadError(configPath: string, error: unknown): Error {
 }
 
 /**
- * Whether a glob can match a JS/TS file, judged by the extension of its last
- * segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
+ * Whether a glob can match a file with one of `extensions`, judged by the
+ * extension of its last segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
  *
  * @param glob - An override `files` glob.
- * @returns Whether it can match a JS/TS file.
+ * @param extensions - The extensions to look for.
+ * @returns Whether it can match such a file.
  */
-function globMatchesScript(glob: string): boolean {
+function globMatchesExtension(glob: string, extensions: ReadonlyArray<string>): boolean {
 	const base = glob.split("/").at(-1) ?? glob;
 	const dot = base.lastIndexOf(".");
 	if (dot === -1) {
@@ -887,10 +911,68 @@ function globMatchesScript(glob: string): boolean {
 
 	const extension = base.slice(dot + 1);
 	if (!GLOB_MAGIC.test(extension)) {
-		return SCRIPT_EXTENSIONS.includes(extension);
+		return extensions.includes(extension);
 	}
 
-	return SCRIPT_EXTENSIONS.some((candidate) => path.matchesGlob(candidate, extension));
+	return extensions.some((candidate) => path.matchesGlob(candidate, extension));
+}
+
+/**
+ * Whether an oxfmt override can apply to a file with one of `extensions`.
+ *
+ * @param override - One entry of the config's `overrides`.
+ * @param extensions - The extensions to look for.
+ * @returns Whether its `files` can match such a file.
+ */
+function overrideMatches(
+	override: Record<string, unknown>,
+	extensions: ReadonlyArray<string>,
+): boolean {
+	const files: Array<unknown> = Array.isArray(override["files"])
+		? override["files"]
+		: [override["files"]];
+	return files.some((glob) => typeof glob === "string" && globMatchesExtension(glob, extensions));
+}
+
+/**
+ * Pick `printWidth` and `tabWidth` out of a set of format options.
+ *
+ * @param options - Format options, of unknown shape.
+ * @returns The widths it sets.
+ */
+function widthsOf(options: unknown): MarkdownWidths {
+	if (!isRecord(options)) {
+		return {};
+	}
+
+	const { printWidth, tabWidth } = options;
+	return {
+		...(typeof printWidth === "number" ? { printWidth } : {}),
+		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
+}
+
+/**
+ * The widths oxfmt formats Markdown with: the root widths, then those of each
+ * override that can match a Markdown file, in order, as oxfmt applies them.
+ *
+ * @param root - The root format options.
+ * @param overrides - The config's `overrides`.
+ * @returns The Markdown widths the config sets.
+ */
+function markdownWidthsOf(root: Record<string, unknown>, overrides: unknown): MarkdownWidths {
+	const widths = widthsOf(root);
+	if (!Array.isArray(overrides)) {
+		return widths;
+	}
+
+	for (const override of overrides) {
+		if (isRecord(override) && overrideMatches(override, MARKDOWN_EXTENSIONS)) {
+			Object.assign(widths, widthsOf(override["options"]));
+		}
+	}
+
+	return widths;
 }
 
 /**
@@ -916,10 +998,7 @@ function warnScriptWidthOverrides(overrides: unknown, source: string): void {
 			return false;
 		}
 
-		const files: Array<unknown> = Array.isArray(override["files"])
-			? override["files"]
-			: [override["files"]];
-		return files.some((glob) => typeof glob === "string" && globMatchesScript(glob));
+		return overrideMatches(override, SCRIPT_EXTENSIONS);
 	});
 
 	if (changesScriptWidth) {
@@ -931,18 +1010,19 @@ function warnScriptWidthOverrides(overrides: unknown, source: string): void {
 }
 
 /**
- * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options. The rule takes
- * format options only, so `$schema`, `ignorePatterns` and `overrides` are
- * dropped.
+ * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options and the Markdown
+ * widths. The rule takes format options only, so `$schema`, `ignorePatterns`
+ * and `overrides` are dropped from the options.
  *
  * @param config - The loaded config.
  * @param config.$schema - Dropped.
  * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
- * @param config.overrides - Dropped, after the width check.
+ * @param config.overrides - Dropped, after the width check; read for the
+ *   Markdown widths.
  * @param source - The config file name, for the warning.
- * @returns The format options.
+ * @returns The format options and Markdown widths.
  */
-function toOxfmtRuleOptions(
+function toResolvedConfig(
 	{
 		$schema: _schema,
 		ignorePatterns: _ignorePatterns,
@@ -950,20 +1030,20 @@ function toOxfmtRuleOptions(
 		...options
 	}: Record<string, unknown>,
 	source: string,
-): OxfmtOptions {
+): ResolvedOxfmtConfig {
 	warnScriptWidthOverrides(overrides, source);
-	return options;
+	return { markdownWidths: markdownWidthsOf(options, overrides), options };
 }
 
-function moduleConfig(configPath: string, loaded: unknown): OxfmtOptions {
+function moduleConfig(configPath: string, loaded: unknown): ResolvedOxfmtConfig {
 	if (!isRecord(loaded)) {
 		throw loadError(configPath, new TypeError("the default export is not an object"));
 	}
 
-	return toOxfmtRuleOptions(loaded, path.basename(configPath));
+	return toResolvedConfig(loaded, path.basename(configPath));
 }
 
-function rcConfig(configPath: string, content: string): OxfmtOptions {
+function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
 	let parsed: unknown;
 	try {
 		parsed = getStaticJSONValue(parseJSON(content, { jsonSyntax: "jsonc" }));
@@ -975,7 +1055,7 @@ function rcConfig(configPath: string, content: string): OxfmtOptions {
 		throw loadError(configPath, new TypeError("the config is not an object"));
 	}
 
-	return toOxfmtRuleOptions(parsed, path.basename(configPath));
+	return toResolvedConfig(parsed, path.basename(configPath));
 }
 
 /**

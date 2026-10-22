@@ -57,6 +57,12 @@ function ruleOptions(rules: unknown, rule: string): unknown {
 	return Array.isArray(entry) ? entry[1] : undefined;
 }
 
+async function markdownCodeOptions(formatter: "eslint" | "standalone"): Promise<unknown> {
+	const configs = await isentinel({ formatter, roblox: false, type: "package" });
+	const { rules } = configs.find((config) => config.name === "isentinel/flawless/markdown-code")!;
+	return ruleOptions(rules, "flawless/arrow-return-style");
+}
+
 function enablesOxfmt(rules: unknown): boolean {
 	const entry = isRecord(rules) ? rules["oxfmt/oxfmt"] : undefined;
 	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
@@ -333,6 +339,52 @@ describe("markdown code widths", () => {
 		};
 
 		expect(widths).toStrictEqual([expected, expected]);
+	});
+
+	it("takes the Markdown widths from the standalone config, overrides included", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		useProject(onTestFinished, {
+			"oxfmt.config.ts": oxfmtConfigModule(
+				'{ overrides: [{ files: ["docs/**/*.md"], options: { printWidth: 100, tabWidth: 4 } }] }',
+			),
+		});
+
+		// The arrow limit stays shorter than the width oxfmt formats with.
+		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
+			maxLen: 80,
+			tabWidth: 4,
+			useOxfmt: { printWidth: 100 },
+		});
+		// ESLint formats Markdown itself, with the preset's Markdown options.
+		await expect(markdownCodeOptions("eslint")).resolves.toMatchObject({
+			maxLen: 80,
+			tabWidth: 2,
+			useOxfmt: { printWidth: 80 },
+		});
+	});
+
+	it("uses the root widths when no override matches Markdown", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {
+			".oxfmtrc.json": JSON.stringify({
+				overrides: [{ files: ["*.yaml"], options: { tabWidth: 2 } }],
+				printWidth: 90,
+				tabWidth: 3,
+			}),
+		});
+
+		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
+			tabWidth: 3,
+			useOxfmt: { printWidth: 90 },
+		});
 	});
 });
 
