@@ -401,16 +401,13 @@ export async function isentinel(
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
 				antiSlop,
-				// oxfmt formats Markdown code blocks with the Markdown options
-				// whenever it formats Markdown. Standalone oxfmt takes them from
-				// the config file, overrides included.
+				// oxfmt formats Markdown code blocks with the Markdown options,
+				// then the config's Markdown overrides, in both modes.
 				...(formatters !== false &&
 				(formatter === "standalone" || shouldEnableFeature(formatters, "markdown"))
 					? {
-							markdownCode: {
-								...markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
-								...(formatter === "standalone" ? oxfmtConfig.markdownWidths : {}),
-							},
+							markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
+							markdownCodeOverrides: oxfmtConfig.markdownOverrides,
 						}
 					: {}),
 				roblox: enableRoblox,

@@ -712,14 +712,20 @@ export interface MarkdownWidths {
 	tabWidth?: number;
 }
 
+/** A config override that changes the widths of some Markdown files. */
+export interface MarkdownWidthOverride {
+	/** The override's globs, relative to the config directory. */
+	files: Array<string>;
+	widths: MarkdownWidths;
+}
+
 /** What the factories read from an oxfmt config. */
 export interface ResolvedOxfmtConfig {
 	/**
-	 * The widths oxfmt formats Markdown, and so its code blocks, with: the
-	 * root values, then those of each override that matches Markdown, in
-	 * order. Unset when there is no config.
+	 * The overrides that change the Markdown widths, in order. Oxfmt formats
+	 * Markdown code blocks with these on top of the preset's Markdown options.
 	 */
-	markdownWidths?: MarkdownWidths;
+	markdownOverrides?: Array<MarkdownWidthOverride>;
 	/** The root format options. */
 	options: OxfmtOptions;
 }
@@ -953,26 +959,25 @@ function widthsOf(options: unknown): MarkdownWidths {
 }
 
 /**
- * The widths oxfmt formats Markdown with: the root widths, then those of each
- * override that can match a Markdown file, in order, as oxfmt applies them.
+ * The overrides that set `printWidth` or `tabWidth` for Markdown files.
  *
- * @param root - The root format options.
  * @param overrides - The config's `overrides`.
- * @returns The Markdown widths the config sets.
+ * @returns Each such override's globs and widths, in order.
  */
-function markdownWidthsOf(root: Record<string, unknown>, overrides: unknown): MarkdownWidths {
-	const widths = widthsOf(root);
+function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
 	if (!Array.isArray(overrides)) {
-		return widths;
+		return [];
 	}
 
-	for (const override of overrides) {
-		if (isRecord(override) && overrideMatches(override, MARKDOWN_EXTENSIONS)) {
-			Object.assign(widths, widthsOf(override["options"]));
+	return overrides.flatMap((override: unknown) => {
+		if (!isRecord(override) || !overrideMatches(override, MARKDOWN_EXTENSIONS)) {
+			return [];
 		}
-	}
 
-	return widths;
+		const widths = widthsOf(override["options"]);
+		const files = [override["files"]].flat().filter((glob) => typeof glob === "string");
+		return Object.keys(widths).length > 0 ? [{ files, widths }] : [];
+	});
 }
 
 /**
@@ -1032,7 +1037,7 @@ function toResolvedConfig(
 	source: string,
 ): ResolvedOxfmtConfig {
 	warnScriptWidthOverrides(overrides, source);
-	return { markdownWidths: markdownWidthsOf(options, overrides), options };
+	return { markdownOverrides: markdownOverridesOf(overrides), options };
 }
 
 function moduleConfig(configPath: string, loaded: unknown): ResolvedOxfmtConfig {

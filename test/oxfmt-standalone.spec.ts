@@ -409,36 +409,39 @@ describe("markdown code widths", () => {
 		expect(widths).toStrictEqual([expected, expected]);
 	});
 
-	it("takes the Markdown widths from the standalone config, overrides included", async ({
-		expect,
-		onTestFinished,
-	}) => {
-		expect.assertions(2);
+	it.for(["eslint", "standalone"] as const)(
+		"applies a Markdown override to the code blocks it matches (%s)",
+		async (formatter, { expect, onTestFinished }) => {
+			expect.assertions(3);
 
-		useProject(onTestFinished, {
-			"oxfmt.config.ts": oxfmtConfigModule(
-				'{ overrides: [{ files: ["docs/**/*.md"], options: { printWidth: 100, tabWidth: 4 } }] }',
-			),
-		});
+			useProject(onTestFinished, {
+				"oxfmt.config.ts": oxfmtConfigModule(
+					'{ overrides: [{ files: ["docs/**/*.md"], options: { printWidth: 100, tabWidth: 4 } }] }',
+				),
+			});
 
-		// The arrow limit stays shorter than the width oxfmt formats with.
-		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
-			maxLen: 80,
-			tabWidth: 4,
-			useOxfmt: { printWidth: 100 },
-		});
-		// ESLint formats Markdown itself, with the preset's Markdown options.
-		await expect(markdownCodeOptions("eslint")).resolves.toMatchObject({
-			maxLen: 80,
-			tabWidth: 2,
-			useOxfmt: { printWidth: 80 },
-		});
-	});
+			const configs = await isentinel({ formatter, roblox: false, type: "package" });
+			// The preset's own Markdown override comes first.
+			const override = configs
+				.filter((config) => config.name!.startsWith("isentinel/flawless/markdown-code/"))
+				.at(-1);
 
-	it("uses the root widths when no override matches Markdown", async ({
-		expect,
-		onTestFinished,
-	}) => {
+			expect(override!.files).toStrictEqual(["docs/**/*.md/**/*.{,c,m}[jt]s{,x}"]);
+			// The arrow limit stays shorter than the width oxfmt formats with.
+			expect(ruleOptions(override!.rules, "flawless/arrow-return-style")).toMatchObject({
+				maxLen: 80,
+				tabWidth: 4,
+				useOxfmt: { printWidth: 100 },
+			});
+			// Other Markdown files keep the preset's Markdown widths.
+			await expect(markdownCodeOptions(formatter)).resolves.toMatchObject({
+				tabWidth: 2,
+				useOxfmt: { printWidth: 80 },
+			});
+		},
+	);
+
+	it("ignores the root widths for Markdown code", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
 		useProject(onTestFinished, {
@@ -449,9 +452,11 @@ describe("markdown code widths", () => {
 			}),
 		});
 
+		// The preset's Markdown layer sets both widths, so the root ones never
+		// reach Markdown.
 		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
-			tabWidth: 3,
-			useOxfmt: { printWidth: 90 },
+			tabWidth: 2,
+			useOxfmt: { printWidth: 80 },
 		});
 	});
 });
