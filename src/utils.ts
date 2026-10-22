@@ -681,6 +681,9 @@ const MARKDOWN_EXTENSIONS = ["md"];
 /** Set once a process has warned about a JS/TS width override. */
 const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
 
+/** Set once a process has warned about options standalone oxfmt ignores. */
+const WARNED_STANDALONE = Symbol.for("@isentinel/eslint-config/standalone-options-warned");
+
 const GLOB_MAGIC = /[*?[\]{}]/;
 
 /** A found oxfmt config file. */
@@ -795,6 +798,49 @@ export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOver
 		const files = [override["files"]].flat().filter((glob) => typeof glob === "string");
 		return Object.keys(widths).length > 0 ? [{ files, widths }] : [];
 	});
+}
+
+/**
+ * Warn, at most once per process, about factory options that do not reach
+ * standalone oxfmt: it formats with `oxfmt.config.ts` alone.
+ *
+ * @param options - The factory options.
+ * @param options.formatters - Any value but `true` is ignored by oxfmt.
+ * @param options.gitignore - Custom ignore files do not reach oxfmt.
+ * @param options.ignores - User ignores do not reach oxfmt.
+ * @param options.stylistic - `false` does not stop oxfmt.
+ */
+export function warnStandaloneOptions({
+	formatters,
+	gitignore,
+	ignores,
+	stylistic,
+}: {
+	formatters?: unknown;
+	gitignore?: unknown;
+	ignores?: unknown;
+	stylistic?: unknown;
+}): void {
+	const state: Record<symbol, unknown> = globalThis;
+	if (state[WARNED_STANDALONE] === true) {
+		return;
+	}
+
+	const names = [
+		formatters !== undefined && formatters !== true ? "formatters" : undefined,
+		stylistic === false ? "stylistic: false" : undefined,
+		ignores === undefined || (Array.isArray(ignores) && ignores.length === 0)
+			? undefined
+			: "ignores",
+		isRecord(gitignore) ? "gitignore" : undefined,
+	].filter((name) => name !== undefined);
+
+	if (names.length > 0) {
+		state[WARNED_STANDALONE] = true;
+		console.warn(
+			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change formatting: ${names.join(", ")}. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
+		);
+	}
 }
 
 /**

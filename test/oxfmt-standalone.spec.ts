@@ -545,6 +545,37 @@ describe("markdown code widths", () => {
 });
 
 describe("formatter: standalone", () => {
+	it("warns once about options oxfmt does not see, and keeps them out of the widths", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(3);
+
+		useProject(onTestFinished, {});
+		const state: Record<symbol, unknown> = globalThis;
+		const key = Symbol.for("@isentinel/eslint-config/standalone-options-warned");
+		delete state[key];
+		onTestFinished(() => {
+			delete state[key];
+		});
+		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		const configs = await isentinel({
+			formatter: "standalone",
+			formatters: { prettierOptions: { printWidth: 60 } },
+			ignores: ["dist/**"],
+			roblox: false,
+			type: "package",
+		});
+		const { rules } = configs.find((config) => config.name === "isentinel/flawless/rules")!;
+
+		expect(warn).toHaveBeenCalledOnce();
+		expect(warn.mock.calls[0]![0]).toContain("formatters, ignores");
+		expect(ruleOptions(rules, "flawless/arrow-return-style")).toMatchObject({
+			useOxfmt: { printWidth: 100 },
+		});
+	});
+
 	it("gives the comment rules the oxfmt tabWidth", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 

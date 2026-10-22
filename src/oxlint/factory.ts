@@ -24,6 +24,7 @@ import {
 	resolveNodeMajor,
 	resolveOxfmtConfigOptionsSync,
 	resolveSubOptions,
+	warnStandaloneOptions,
 } from "../utils.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
@@ -199,7 +200,13 @@ export function isentinel(
 		return enableRoblox ? "game" : "package";
 	})();
 
-	const formatterOptions = typeof formatters === "object" ? formatters : {};
+	if (formatter === "standalone") {
+		warnStandaloneOptions(options);
+	}
+
+	// Standalone oxfmt never sees these, so the widths must not use them.
+	const formatterOptions =
+		formatter !== "standalone" && typeof formatters === "object" ? formatters : {};
 	// Standalone oxfmt formats whatever these options say, so the widths and
 	// style must always come from its config.
 	const oxfmtFormats =
