@@ -5,7 +5,7 @@ import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
-import { resolvePrettierSettings, withOxfmtWidths } from "../prettier-config.ts";
+import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
 import { buildOxfmtOptions, markdownOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
@@ -344,26 +344,10 @@ export async function isentinel(
 		return enableRoblox ? "game" : "package";
 	})();
 
-	const stylisticOptions = (() => {
-		if (options.stylistic === false) {
-			return false;
-		}
-
-		if (typeof options.stylistic === "object") {
-			return options.stylistic;
-		}
-
-		return {};
-	})();
-
-	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
-		stylisticOptions.jsx = enableJsx;
-	}
-
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
 
 	const oxfmtConfig: ResolvedOxfmtConfig =
-		stylisticOptions !== false && formatters !== false
+		formatters !== false && options.stylistic !== false
 			? await resolveOxfmtConfig()
 			: { options: {} };
 	const oxfmtConfigOptions = oxfmtConfig.options;
@@ -372,14 +356,25 @@ export async function isentinel(
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
 	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
-	const arrowStyleSettings = withOxfmtWidths(
-		prettierSettings,
-		buildOxfmtOptions({
-			oxfmtConfigOptions,
-			oxfmtOptions: formatterOptions.oxfmtOptions,
-			prettierOptions: prettierSettings,
-		}),
-	);
+	const effectiveOxfmtOptions = buildOxfmtOptions({
+		oxfmtConfigOptions,
+		oxfmtOptions: formatterOptions.oxfmtOptions,
+		prettierOptions: prettierSettings,
+	});
+	const arrowStyleSettings = withOxfmtWidths(prettierSettings, effectiveOxfmtOptions);
+
+	const stylisticOptions = (() => {
+		if (options.stylistic === false) {
+			return false;
+		}
+
+		const base = typeof options.stylistic === "object" ? options.stylistic : {};
+		return formatters === false ? base : withOxfmtStyle(base, effectiveOxfmtOptions);
+	})();
+
+	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
+		stylisticOptions.jsx = enableJsx;
+	}
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -562,6 +557,9 @@ export async function isentinel(
 		configs.push(
 			jsonc({
 				...getOverrides(options, "jsonc"),
+				bracketSpacing:
+					formatters === false || effectiveOxfmtOptions["bracketSpacing"] !== false,
+				singleQuote: formatters !== false && effectiveOxfmtOptions["singleQuote"] === true,
 				stylistic: stylisticOptions,
 			}),
 		);

@@ -23,6 +23,8 @@ import process from "node:process";
 import type { Options as PrettierOptions } from "prettier";
 import { getStaticYAMLValue, parseYAML } from "yaml-eslint-parser";
 
+import type { StylisticConfig } from "./types.ts";
+
 /** Preset defaults, overridden by any project-level configuration. */
 export const PRETTIER_DEFAULTS = {
 	arrowParens: "always",
@@ -137,6 +139,26 @@ export function withOxfmtWidths<T extends Record<string, unknown>>(
 		...settings,
 		...(typeof printWidth === "number" ? { printWidth } : {}),
 		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
+}
+
+/**
+ * Default the stylistic `indent` and `quotes` to what oxfmt writes, so the
+ * stylistic rules and oxfmt agree. Explicit `stylistic` values win.
+ *
+ * @param stylistic - The user's stylistic options.
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns The stylistic options with oxfmt's indent and quotes.
+ */
+export function withOxfmtStyle(
+	stylistic: StylisticConfig,
+	{ singleQuote, tabWidth, useTabs }: Record<string, unknown>,
+): StylisticConfig {
+	const spaces = typeof tabWidth === "number" ? tabWidth : 2;
+	return {
+		indent: useTabs === false ? spaces : "tab",
+		quotes: singleQuote === true ? "single" : "double",
+		...stylistic,
 	};
 }
 

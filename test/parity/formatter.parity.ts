@@ -106,6 +106,21 @@ const scenarios: Array<Scenario> = [
 		oxfmt: "{ printWidth: 80, semi: false, tabWidth: 2 }",
 	},
 	{
+		name: "json-use-spaces",
+		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { useTabs: false } } }`,
+		oxfmt: "{ useTabs: false }",
+	},
+	{
+		name: "json-single-quote",
+		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { singleQuote: true } } }`,
+		oxfmt: "{ singleQuote: true }",
+	},
+	{
+		name: "json-no-bracket-spacing",
+		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { bracketSpacing: false } } }`,
+		oxfmt: "{ bracketSpacing: false }",
+	},
+	{
 		name: "jsdoc-print-width",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { jsdocPrintWidth: 100 } } }`,
 		standaloneFiles: { ".prettierrc": '{ "jsdocPrintWidth": 100 }\n' },

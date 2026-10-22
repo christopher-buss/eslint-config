@@ -10,7 +10,7 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { resolvePrettierSettings, withOxfmtWidths } from "../prettier-config.ts";
+import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
@@ -199,22 +199,6 @@ export function isentinel(
 		return enableRoblox ? "game" : "package";
 	})();
 
-	const stylisticOptions = (() => {
-		if (options.stylistic === false) {
-			return false;
-		}
-
-		if (typeof options.stylistic === "object") {
-			return options.stylistic;
-		}
-
-		return {};
-	})();
-
-	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
-		stylisticOptions.jsx = enableJsx;
-	}
-
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
 	// Shared with the ESLint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
@@ -223,12 +207,26 @@ export function isentinel(
 		formatterOptions.prettierOptions,
 	);
 	const oxfmtConfigOptions =
-		stylisticOptions !== false && formatters !== false ? resolveOxfmtConfigOptionsSync() : {};
+		formatters !== false && options.stylistic !== false ? resolveOxfmtConfigOptionsSync() : {};
 	const oxfmtOptions = buildOxfmtOptions({
 		oxfmtConfigOptions,
 		oxfmtOptions: formatterOptions.oxfmtOptions,
 		prettierOptions: prettierSettings,
 	});
+
+	const stylisticOptions = (() => {
+		if (options.stylistic === false) {
+			return false;
+		}
+
+		const base = typeof options.stylistic === "object" ? options.stylistic : {};
+		return formatters === false ? base : withOxfmtStyle(base, oxfmtOptions);
+	})();
+
+	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
+		stylisticOptions.jsx = enableJsx;
+	}
+
 	const arrowStyleSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [

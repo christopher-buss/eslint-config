@@ -9,10 +9,19 @@ import type {
 } from "../types.ts";
 
 export async function jsonc({
+	bracketSpacing = true,
 	files = [GLOB_JSON, GLOB_JSON5, GLOB_JSONC],
 	overrides = {},
+	singleQuote = false,
 	stylistic = true,
-}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+}: OptionsFiles &
+	OptionsOverrides &
+	OptionsStylistic & {
+		/** Space inside braces; follows the formatter's `bracketSpacing`. */
+		bracketSpacing?: boolean;
+		/** JSON5 quotes; follows the formatter's `singleQuote`. */
+		singleQuote?: boolean;
+	} = {}): Promise<Array<TypedFlatConfigItem>> {
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = "tab" } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" || indent === "tab" ? indent : "tab";
@@ -74,7 +83,10 @@ export async function jsonc({
 								"error",
 								{ consistent: true, multiline: true },
 							],
-							"jsonc/object-curly-spacing": ["error", "always"],
+							"jsonc/object-curly-spacing": [
+								"error",
+								bracketSpacing ? "always" : "never",
+							],
 							"jsonc/object-property-newline": [
 								"error",
 								{ allowMultiplePropertiesPerLine: true },
@@ -87,6 +99,15 @@ export async function jsonc({
 				...overrides,
 			},
 		},
+		...(stylistic !== false && singleQuote
+			? [
+					{
+						name: "isentinel/jsonc/json5-quotes",
+						files: [GLOB_JSON5],
+						rules: { "jsonc/quotes": ["error", "single"] },
+					} satisfies TypedFlatConfigItem,
+				]
+			: []),
 		{
 			name: "isentinel/jsonc/tsconfig",
 			files: [GLOB_TSCONFIG],
