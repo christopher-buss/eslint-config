@@ -197,6 +197,7 @@ describe("heap flag on composed children", () => {
 		expect(byLabel(commands, "fast").env).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
 		expect(byLabel(commands, "typed").env).toStrictEqual({
 			ESLINT_TYPE_AWARE: "only",
+			ISENTINEL_QUIET_CONFIG_WARNINGS: "1",
 			NODE_OPTIONS: "--max-old-space-size=49152",
 		});
 	});

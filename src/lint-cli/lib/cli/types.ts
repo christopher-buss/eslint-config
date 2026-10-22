@@ -127,6 +127,11 @@ export interface ComposeContext {
 	/** Target paths to lint. */
 	paths: Array<string>;
 	/**
+	 * Silence the preset's config warnings in this child, because another
+	 * child of the same run prints them.
+	 */
+	quietWarnings?: boolean;
+	/**
 	 * Value for the ESLint child's `ESLINT_TYPE_AWARE`. `undefined` leaves it
 	 * unset (the full config).
 	 */

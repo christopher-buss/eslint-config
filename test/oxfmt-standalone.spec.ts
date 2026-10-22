@@ -583,13 +583,7 @@ describe("oxfmt style", () => {
 });
 
 describe("formatter: standalone", () => {
-	it("warns once about options oxfmt does not see, and keeps them out of the widths", async ({
-		expect,
-		onTestFinished,
-	}) => {
-		expect.assertions(3);
-
-		useProject(onTestFinished, {});
+	function useWarnings(onTestFinished: TestContext["onTestFinished"]): () => Array<string> {
 		const state: Record<symbol, unknown> = globalThis;
 		const key = Symbol.for("@isentinel/eslint-config/standalone-options-warned");
 		delete state[key];
@@ -597,21 +591,83 @@ describe("formatter: standalone", () => {
 			delete state[key];
 		});
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+		return () => {
+			return warn.mock.calls
+				.map(([message]) => String(message))
+				.filter((message) => message.includes('With formatter: "standalone"'));
+		};
+	}
+
+	const unseenOptions = {
+		componentExts: ["vue"],
+		formatters: { prettierOptions: { printWidth: 60 } },
+		gitignore: false,
+		ignores: ["dist/**"],
+		roblox: false,
+		stylistic: false,
+		type: "package" as const,
+	};
+
+	it("warns once about options oxfmt does not see", async ({ expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		useProject(onTestFinished, {});
+		const warnings = useWarnings(onTestFinished);
+
+		await isentinel({ ...unseenOptions, formatter: "standalone" });
+		await isentinel({ ...unseenOptions, formatter: "standalone" });
+
+		expect(warnings()).toHaveLength(1);
+		expect(warnings()[0]).toContain("formatters, componentExts, ignores, gitignore.");
+	});
+
+	it("keeps those options out of the widths", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {});
+		useWarnings(onTestFinished);
 
 		const configs = await isentinel({
 			formatter: "standalone",
 			formatters: { prettierOptions: { printWidth: 60 } },
-			ignores: ["dist/**"],
 			roblox: false,
 			type: "package",
 		});
 		const { rules } = configs.find((config) => config.name === "isentinel/flawless/rules")!;
 
-		expect(warn).toHaveBeenCalledOnce();
-		expect(warn.mock.calls[0]![0]).toContain("formatters, ignores");
 		expect(ruleOptions(rules, "flawless/arrow-return-style")).toMatchObject({
 			useOxfmt: { printWidth: 100 },
 		});
+	});
+
+	it.for([
+		["eslint mode", { ...unseenOptions, formatter: "eslint" }],
+		["default options", { formatter: "standalone", roblox: false, type: "package" }],
+		["stylistic: false", { formatter: "standalone", stylistic: false, type: "package" }],
+	] as const)("does not warn for %s", async ([, options], { expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {});
+		const warnings = useWarnings(onTestFinished);
+
+		await isentinel(options);
+
+		expect(warnings()).toStrictEqual([]);
+	});
+
+	it("does not warn in a child isentinel-lint quiets", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {});
+		const warnings = useWarnings(onTestFinished);
+		vi.stubEnv("ISENTINEL_QUIET_CONFIG_WARNINGS", "1");
+		onTestFinished(() => {
+			vi.unstubAllEnvs();
+		});
+
+		await isentinel({ ...unseenOptions, formatter: "standalone" });
+
+		expect(warnings()).toStrictEqual([]);
 	});
 
 	it("gives the comment rules the oxfmt tabWidth", async ({ expect, onTestFinished }) => {

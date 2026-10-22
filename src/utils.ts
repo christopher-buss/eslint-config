@@ -9,6 +9,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { isMainThread } from "node:worker_threads";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import { minVersion } from "semver";
 
@@ -16,6 +17,7 @@ import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import { isRecord } from "./guards.ts";
+import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -859,34 +861,42 @@ export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<Ov
  * standalone oxfmt: it formats with `oxfmt.config.ts` alone.
  *
  * @param options - The factory options.
+ * @param options.componentExts - Oxfmt formats only the extensions
+ *   `isentinelOxfmt` is given.
  * @param options.formatters - Any value but `true` is ignored by oxfmt.
- * @param options.gitignore - Custom ignore files do not reach oxfmt.
+ * @param options.gitignore - Custom ignore files, or `false`, do not reach
+ *   oxfmt.
  * @param options.ignores - User ignores do not reach oxfmt.
- * @param options.stylistic - `false` does not stop oxfmt.
  */
 export function warnStandaloneOptions({
+	componentExts,
 	formatters,
 	gitignore,
 	ignores,
-	stylistic,
 }: {
+	componentExts?: unknown;
 	formatters?: unknown;
 	gitignore?: unknown;
 	ignores?: unknown;
-	stylistic?: unknown;
 }): void {
 	const state: Record<symbol, unknown> = globalThis;
-	if (state[WARNED_STANDALONE] === true) {
+	// ESLint worker threads load the config again; the main thread warns.
+	// isentinel-lint quiets all of its children but one.
+	if (
+		!isMainThread ||
+		state[WARNED_STANDALONE] === true ||
+		process.env[QUIET_WARNINGS_ENV] === "1"
+	) {
 		return;
 	}
 
 	const names = [
 		formatters !== undefined && formatters !== true ? "formatters" : undefined,
-		stylistic === false ? "stylistic: false" : undefined,
+		Array.isArray(componentExts) && componentExts.length > 0 ? "componentExts" : undefined,
 		ignores === undefined || (Array.isArray(ignores) && ignores.length === 0)
 			? undefined
 			: "ignores",
-		isRecord(gitignore) ? "gitignore" : undefined,
+		gitignore === false || isRecord(gitignore) ? "gitignore" : undefined,
 	].filter((name) => name !== undefined);
 
 	if (names.length > 0) {

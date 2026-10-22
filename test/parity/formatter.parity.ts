@@ -177,7 +177,6 @@ const scenarios: Array<Scenario> = [
 		name: "stylistic-false",
 		eslint: `{ ...${PACKAGE}, stylistic: false }`,
 		oxfmt: null,
-		warns: true,
 	},
 	{ name: "max-len", eslint: `{ ...${PACKAGE}, stylistic: { maxLen: 80 } }` },
 	{

@@ -1,3 +1,4 @@
+import { QUIET_WARNINGS_ENV } from "../../../quiet-warnings.ts";
 import type {
 	ChildCommand,
 	ComposeContext,
@@ -113,6 +114,10 @@ export function composeEslintCommand(
 	const environment: Record<string, string | undefined> = {
 		ESLINT_TYPE_AWARE: context.typeAwareEnv,
 	};
+
+	if (context.quietWarnings === true) {
+		environment[QUIET_WARNINGS_ENV] = "1";
+	}
 
 	// Set only to raise the heap of a pass that builds a TypeScript program;
 	// otherwise the child inherits `NODE_OPTIONS` untouched.

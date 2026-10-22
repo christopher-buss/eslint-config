@@ -61,6 +61,8 @@ export function composePasses(
 				fix: false,
 				heap: pass.heap,
 				paths: options.paths,
+				// One child of the run prints the config warnings.
+				quietWarnings: commands.length > 0,
 				typeAwareEnv: pass.descriptor.typeAwareEnv,
 			}),
 		);
