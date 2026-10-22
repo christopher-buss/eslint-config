@@ -462,6 +462,21 @@ describe("markdown code widths", () => {
 });
 
 describe("formatter: standalone", () => {
+	it("gives the comment rules the oxfmt tabWidth", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".oxfmtrc.json": JSON.stringify({ tabWidth: 2 }) });
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const { rules } = configs.find(
+			(config) => config.name === "isentinel/eslint/comments/src",
+		)!;
+
+		expect(ruleOptions(rules, "comment-length/limit-single-line-comments")).toMatchObject({
+			tabSize: 2,
+		});
+	});
+
 	it("reads the oxfmt config widths with formatters: false", async ({
 		expect,
 		onTestFinished,

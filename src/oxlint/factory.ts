@@ -230,7 +230,7 @@ export function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
-	const arrowStyleSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
+	const widthSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({
@@ -403,7 +403,7 @@ export function isentinel(
 		}),
 		oxlintFlawless(
 			{ antiSlop, roblox: enableRoblox, stylistic: stylisticOptions },
-			arrowStyleSettings,
+			widthSettings,
 		),
 		// The complement re-applies the non-roblox rules last, so it wins for
 		// files outside the roblox scope.
@@ -416,11 +416,11 @@ export function isentinel(
 							roblox: false,
 							stylistic: stylisticOptions,
 						},
-						arrowStyleSettings,
+						widthSettings,
 					),
 				]
 			: []),
-		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+		oxlintComments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
 		oxlintDisables({
 			configDirectory: options.configDirectory,
 			root: rootGlobs,

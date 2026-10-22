@@ -364,7 +364,7 @@ export async function isentinel(
 		oxfmtOptions: formatterOptions.oxfmtOptions,
 		prettierOptions: prettierSettings,
 	});
-	const arrowStyleSettings = withOxfmtWidths(prettierSettings, effectiveOxfmtOptions);
+	const widthSettings = withOxfmtWidths(prettierSettings, effectiveOxfmtOptions);
 
 	const stylisticOptions = (() => {
 		if (options.stylistic === false) {
@@ -393,7 +393,7 @@ export async function isentinel(
 	// Base configs
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
-		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+		comments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
@@ -416,7 +416,7 @@ export async function isentinel(
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
-			arrowStyleSettings,
+			widthSettings,
 		),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
