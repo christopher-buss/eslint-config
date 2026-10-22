@@ -63,7 +63,15 @@ export async function oxfmt(
 	 * @returns The rule entry, or no rules.
 	 */
 	function formatRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
-		return standalone ? {} : { "oxfmt/oxfmt": ["error", { ...oxfmtOptions, ...layer }] };
+		// One root config, like the standalone CLI: nested configs are ignored.
+		return standalone
+			? {}
+			: {
+					"oxfmt/oxfmt": [
+						"error",
+						{ ...oxfmtOptions, ...layer, disableNestedConfig: true },
+					],
+				};
 	}
 
 	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt");

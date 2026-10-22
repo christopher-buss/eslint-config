@@ -19,8 +19,8 @@ export const LINT_SCRIPTS: Record<string, string> = {
 
 /** Scripts the standalone formatter setup adds, so oxfmt runs on its own. */
 export const FORMAT_SCRIPTS: Record<string, string> = {
-	"format": "oxfmt",
-	"format:check": "oxfmt --check",
+	"format": "oxfmt --disable-nested-config",
+	"format:check": "oxfmt --check --disable-nested-config",
 };
 
 /** Whether an existing script should be overwritten by the new value. */

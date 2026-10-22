@@ -109,7 +109,10 @@ describe("standalone setup", () => {
 
 		expect(manifest).toMatchObject({ devDependencies: { oxfmt: versionsMap.oxfmt } });
 		expect(manifest).toMatchObject({
-			scripts: { "format": "oxfmt", "format:check": "oxfmt --check" },
+			scripts: {
+				"format": "oxfmt --disable-nested-config",
+				"format:check": "oxfmt --check --disable-nested-config",
+			},
 		});
 	});
 

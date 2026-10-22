@@ -999,6 +999,12 @@ them in one directory is an error, as in oxfmt. Its root options (without
 `ignorePatterns` and `overrides`) override `formatters.prettierOptions`, and
 `formatters.oxfmtOptions` overrides them.
 
+Nested oxfmt configs (a config file in a subdirectory) are not used, in either
+mode. One root config formats the whole project: the `oxfmt/oxfmt` rule sets
+`disableNestedConfig`, `isentinel-lint` passes `--config`, and the wizard's
+format scripts pass `--disable-nested-config`. Use `overrides` for per-folder
+options. Editor extensions can still read a nested config.
+
 `flawless/arrow-return-style` uses two widths. `maxLen` is your limit: an arrow
 becomes implicit only if it fits. It comes from `stylistic.maxLen`, else
 `printWidth`, and it can be shorter than the formatter width on purpose.
