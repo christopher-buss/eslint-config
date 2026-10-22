@@ -10,7 +10,7 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { resolvePrettierSettings } from "../prettier-config.ts";
+import { resolvePrettierSettings, withOxfmtWidths } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
@@ -132,6 +132,7 @@ export function isentinel(
 		e18e: enableE18e = true,
 		env,
 		eslintPlugin: enableEslintPlugin = false,
+		formatter = "eslint",
 		formatters,
 		gitignore: enableGitignore = true,
 		globals,
@@ -221,6 +222,14 @@ export function isentinel(
 	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
 		formatterOptions.prettierOptions,
 	);
+	const oxfmtConfigOptions =
+		stylisticOptions !== false && formatters !== false ? resolveOxfmtConfigOptionsSync() : {};
+	const oxfmtOptions = buildOxfmtOptions({
+		oxfmtConfigOptions,
+		oxfmtOptions: formatterOptions.oxfmtOptions,
+		prettierOptions: prettierSettings,
+	});
+	const arrowStyleSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({
@@ -393,7 +402,7 @@ export function isentinel(
 		}),
 		oxlintFlawless(
 			{ antiSlop, roblox: enableRoblox, stylistic: stylisticOptions },
-			prettierSettings,
+			arrowStyleSettings,
 		),
 		// The complement re-applies the non-roblox rules last, so it wins for
 		// files outside the roblox scope.
@@ -406,7 +415,7 @@ export function isentinel(
 							roblox: false,
 							stylistic: stylisticOptions,
 						},
-						prettierSettings,
+						arrowStyleSettings,
 					),
 				]
 			: []),
@@ -419,17 +428,12 @@ export function isentinel(
 	);
 
 	if (stylisticOptions !== false && formatters !== false) {
-		const oxfmtConfigOptions = resolveOxfmtConfigOptionsSync();
-
 		// Oxfmt must be the last config
 		configs.push(
 			oxlintOxfmt({
 				componentExts: componentExtensions,
-				oxfmtOptions: buildOxfmtOptions({
-					oxfmtConfigOptions,
-					oxfmtOptions: formatterOptions.oxfmtOptions,
-					prettierOptions: prettierSettings,
-				}),
+				oxfmtOptions,
+				standalone: formatter === "standalone",
 			}),
 		);
 	}

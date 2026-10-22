@@ -3,6 +3,7 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import { findUp, findUpSync } from "find-up-simple";
+import { getStaticJSONValue, parseJSON } from "jsonc-eslint-parser";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -656,7 +657,36 @@ function environmentMatcher(
 	};
 }
 
-const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+/** JSON oxfmt config files oxfmt discovers. */
+const OXFMT_RC_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+
+/**
+ * Oxfmt config modules oxfmt discovers. It loads other module extensions only
+ * through `--config`, never by search.
+ */
+export const OXFMT_CONFIG_MODULES = ["oxfmt.config.ts", "oxfmt.config.mts"] as const;
+
+/** The config module the standalone setup writes. */
+export const OXFMT_CONFIG_MODULE = OXFMT_CONFIG_MODULES[0];
+
+/** Every file name oxfmt discovers. One directory may hold only one of them. */
+const OXFMT_CONFIG_NAMES = [...OXFMT_RC_FILES, ...OXFMT_CONFIG_MODULES];
+
+/** The extensions of the JS/TS files ESLint and oxlint format. */
+const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"];
+
+/** Set once a process has warned about a JS/TS width override. */
+const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
+
+const GLOB_MAGIC = /[*?[\]{}]/;
+
+/** A found oxfmt config file. */
+export interface OxfmtConfigFile {
+	/** Whether it is an `oxfmt.config.*` module rather than a JSON rc file. */
+	isModule: boolean;
+	/** Its absolute path. */
+	path: string;
+}
 
 /**
  * Oxfmt's generated types widen `jsdoc.commentLineStrategy` and
@@ -674,54 +704,108 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 };
 
 /**
- * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`.
+ * Find the oxfmt config the way oxfmt does: walk up from `cwd` to the
+ * filesystem root and take the first directory that holds one. Like oxfmt,
+ * refuse a directory that holds more than one.
  *
- * @returns The oxfmt configuration options, or an empty object if none found.
+ * @param cwd - Directory to start from.
+ * @returns The config file, if any.
+ * @throws When one directory holds more than one oxfmt config file.
  */
-export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
-	for (const filename of OXFMT_CONFIG_FILES) {
-		const configPath = path.resolve(process.cwd(), filename);
-		try {
-			const content = await fs.promises.readFile(configPath, "utf-8");
-			const parsed: unknown = JSON.parse(content);
-			if (!isRecord(parsed)) {
-				continue;
+export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | undefined {
+	let directory = path.resolve(cwd);
+	for (;;) {
+		const found: Array<string> = [];
+		for (const name of OXFMT_CONFIG_NAMES) {
+			if (fs.existsSync(path.join(directory, name))) {
+				found.push(name);
 			}
-
-			const { $schema: _, ...config } = parsed;
-			return config;
-		} catch {
-			continue;
 		}
-	}
 
-	return {};
+		found.sort();
+		const [first, second] = found;
+		if (second !== undefined) {
+			throw new Error(
+				`[@isentinel/eslint-config] Both '${first}' and '${second}' found in ${directory}. Keep one oxfmt config file.`,
+			);
+		}
+
+		if (first !== undefined) {
+			return {
+				isModule: OXFMT_CONFIG_MODULES.some((name) => name === first),
+				path: path.join(directory, first),
+			};
+		}
+
+		const parent = path.dirname(directory);
+		if (parent === directory) {
+			return undefined;
+		}
+
+		directory = parent;
+	}
 }
 
 /**
- * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`,
- * synchronously. Used by the (synchronous) oxlint factory.
+ * Resolve oxfmt format options from the config oxfmt itself would use (see
+ * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
+ * `oxfmt.config.ts` or `oxfmt.config.mts`.
  *
- * @returns The oxfmt configuration options, or an empty object if none found.
+ * @returns The oxfmt format options, or an empty object if none found.
+ * @rejects When the config is ambiguous or cannot be loaded.
  */
-export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
-	for (const filename of OXFMT_CONFIG_FILES) {
-		const configPath = path.resolve(process.cwd(), filename);
-		try {
-			const content = fs.readFileSync(configPath, "utf-8");
-			const parsed: unknown = JSON.parse(content);
-			if (!isRecord(parsed)) {
-				continue;
-			}
-
-			const { $schema: _, ...config } = parsed;
-			return config;
-		} catch {
-			continue;
-		}
+export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
+	const config = findOxfmtConfig();
+	if (config === undefined) {
+		return {};
 	}
 
-	return {};
+	if (!config.isModule) {
+		return rcConfig(config.path, await fs.promises.readFile(config.path, "utf-8"));
+	}
+
+	let loaded: unknown;
+	try {
+		const { createJiti } = await import("jiti");
+		loaded = await createJiti(import.meta.url, { moduleCache: false }).import(config.path, {
+			default: true,
+		});
+	} catch (err) {
+		throw loadError(config.path, err);
+	}
+
+	return moduleConfig(config.path, loaded);
+}
+
+/**
+ * Synchronous {@link resolveOxfmtConfigOptions}, for the (synchronous) oxlint
+ * factory. Loads a config module through jiti's synchronous API.
+ *
+ * @returns The oxfmt format options, or an empty object if none found.
+ * @throws When the config is ambiguous or cannot be loaded.
+ */
+export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
+	const config = findOxfmtConfig();
+	if (config === undefined) {
+		return {};
+	}
+
+	if (!config.isModule) {
+		return rcConfig(config.path, fs.readFileSync(config.path, "utf-8"));
+	}
+
+	let loaded: unknown;
+	try {
+		// Loaded on demand: most projects have no config module.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- require() is untyped; this is jiti's own module type.
+		const { createJiti } = require("jiti") as typeof import("jiti");
+		const module: unknown = createJiti(import.meta.url, { moduleCache: false })(config.path);
+		loaded = isRecord(module) && "default" in module ? module["default"] : module;
+	} catch (err) {
+		throw loadError(config.path, err);
+	}
+
+	return moduleConfig(config.path, loaded);
 }
 
 /**
@@ -776,6 +860,120 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+function loadError(configPath: string, error: unknown): Error {
+	return new Error(
+		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
+		{ cause: error },
+	);
+}
+
+/**
+ * Whether a glob can match a JS/TS file, judged by the extension of its last
+ * segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
+ *
+ * @param glob - An override `files` glob.
+ * @returns Whether it can match a JS/TS file.
+ */
+function globMatchesScript(glob: string): boolean {
+	const base = glob.split("/").at(-1) ?? glob;
+	const dot = base.lastIndexOf(".");
+	if (dot === -1) {
+		return base.includes("*");
+	}
+
+	const extension = base.slice(dot + 1);
+	if (!GLOB_MAGIC.test(extension)) {
+		return SCRIPT_EXTENSIONS.includes(extension);
+	}
+
+	return SCRIPT_EXTENSIONS.some((candidate) => path.matchesGlob(candidate, extension));
+}
+
+/**
+ * Warn, at most once per process, when an oxfmt override changes `printWidth`
+ * or `tabWidth` for JS/TS files: ESLint and oxlint use the root values.
+ *
+ * @param overrides - The config's `overrides`.
+ * @param source - The config file name.
+ */
+function warnScriptWidthOverrides(overrides: unknown, source: string): void {
+	const state: Record<symbol, unknown> = globalThis;
+	if (state[WARNED_SCRIPT_OVERRIDE] === true || !Array.isArray(overrides)) {
+		return;
+	}
+
+	const changesScriptWidth = overrides.some((override: unknown) => {
+		if (!isRecord(override) || !isRecord(override["options"])) {
+			return false;
+		}
+
+		const { printWidth, tabWidth } = override["options"];
+		if (printWidth === undefined && tabWidth === undefined) {
+			return false;
+		}
+
+		const files: Array<unknown> = Array.isArray(override["files"])
+			? override["files"]
+			: [override["files"]];
+		return files.some((glob) => typeof glob === "string" && globMatchesScript(glob));
+	});
+
+	if (changesScriptWidth) {
+		state[WARNED_SCRIPT_OVERRIDE] = true;
+		console.warn(
+			`[@isentinel/eslint-config] ${source} has an override that changes printWidth or tabWidth for JS/TS files. ESLint and oxlint use the root values for those files.`,
+		);
+	}
+}
+
+/**
+ * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options. The rule takes
+ * format options only, so `$schema`, `ignorePatterns` and `overrides` are
+ * dropped.
+ *
+ * @param config - The loaded config.
+ * @param config.$schema - Dropped.
+ * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
+ * @param config.overrides - Dropped, after the width check.
+ * @param source - The config file name, for the warning.
+ * @returns The format options.
+ */
+function toOxfmtRuleOptions(
+	{
+		$schema: _schema,
+		ignorePatterns: _ignorePatterns,
+		overrides,
+		...options
+	}: Record<string, unknown>,
+	source: string,
+): OxfmtOptions {
+	warnScriptWidthOverrides(overrides, source);
+	return options;
+}
+
+function moduleConfig(configPath: string, loaded: unknown): OxfmtOptions {
+	if (!isRecord(loaded)) {
+		throw loadError(configPath, new TypeError("the default export is not an object"));
+	}
+
+	return toOxfmtRuleOptions(loaded, path.basename(configPath));
+}
+
+function rcConfig(configPath: string, content: string): OxfmtOptions {
+	let parsed: unknown;
+	try {
+		parsed = getStaticJSONValue(parseJSON(content, { jsonSyntax: "jsonc" }));
+	} catch (err) {
+		throw loadError(configPath, err);
+	}
+
+	if (!isRecord(parsed)) {
+		throw loadError(configPath, new TypeError("the config is not an object"));
+	}
+
+	return toOxfmtRuleOptions(parsed, path.basename(configPath));
 }
 
 /**

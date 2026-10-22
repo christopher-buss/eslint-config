@@ -15,12 +15,18 @@ export function oxlintOxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles & {
 			oxfmtOptions?: Record<string, unknown>;
+			/**
+			 * Oxfmt runs as its own tool: keep the formatter-conflict
+			 * disables but leave `oxfmt/oxfmt` off.
+			 */
+			standalone?: boolean;
 		},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		files: oxfmtFiles,
 		oxfmtOptions = {},
+		standalone = false,
 	} = options ?? {};
 
 	// Disable rules that conflict with formatting — loaded sync via require()
@@ -100,11 +106,11 @@ export function oxlintOxfmt(
 			{
 				name: `${name}/js-plugin`,
 				files,
-				jsPlugins: [...jsPlugins, oxfmtPlugin],
+				jsPlugins: standalone ? jsPlugins : [...jsPlugins, oxfmtPlugin],
 				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 				rules: {
 					...jsPluginRules,
-					"oxfmt/oxfmt": ["error", oxfmtOptions],
+					...(standalone ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
 				} as TypedOxlintConfigItem["rules"],
 			},
 		];

@@ -115,6 +115,31 @@ export function resolvePrettierSettings(
 	};
 }
 
+/**
+ * Replace `printWidth` and `tabWidth` in the formatting settings with the
+ * values oxfmt really uses.
+ *
+ * `flawless/arrow-return-style` hands `printWidth` to oxfmt to predict its
+ * output (`useOxfmt.printWidth`), so it must match the width oxfmt formats
+ * with, or `--fix` ping-pongs. An oxfmt config can set a width that differs
+ * from the Prettier-shaped settings, so the oxfmt value wins.
+ *
+ * @template T - The settings shape.
+ * @param settings - The resolved formatting settings.
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns The settings with oxfmt's widths.
+ */
+export function withOxfmtWidths<T extends Record<string, unknown>>(
+	settings: T,
+	{ printWidth, tabWidth }: Record<string, unknown>,
+): T {
+	return {
+		...settings,
+		...(typeof printWidth === "number" ? { printWidth } : {}),
+		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
+}
+
 function readFileOrUndefined(filePath: string): string | undefined {
 	try {
 		return fs.readFileSync(filePath, "utf-8");

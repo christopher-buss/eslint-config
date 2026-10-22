@@ -387,6 +387,21 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	eslintPlugin?: boolean | OptionsOverrides;
 
 	/**
+	 * Where formatting runs.
+	 *
+	 * - `"eslint"`: oxfmt runs inside the linter as the `oxfmt/oxfmt` rule.
+	 * - `"standalone"`: oxfmt runs as its own tool (`oxfmt`, with an
+	 *   `oxfmt.config.ts` built by `isentinelOxfmt` from
+	 *   `@isentinel/eslint-config/oxfmt`). The linter keeps the
+	 *   formatter-conflict disables and still reads the oxfmt config so
+	 *   width-aware rules agree with it, but enables `oxfmt/oxfmt` nowhere.
+	 *   Lua formatting (Stylua) stays in ESLint, as oxfmt does not format Lua.
+	 *
+	 * @default "eslint"
+	 */
+	formatter?: "eslint" | "standalone";
+
+	/**
 	 * Use external formatters to format files.
 	 *
 	 * When set to `true`, it will enable all formatters.

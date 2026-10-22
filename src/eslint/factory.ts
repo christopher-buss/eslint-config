@@ -5,7 +5,8 @@ import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
-import { resolvePrettierSettings } from "../prettier-config.ts";
+import { resolvePrettierSettings, withOxfmtWidths } from "../prettier-config.ts";
+import { buildOxfmtOptions, markdownOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
@@ -243,6 +244,7 @@ export async function isentinel(
 		componentExts: componentExtensions = [],
 		e18e: enableE18e = true,
 		eslintPlugin: enableEslintPlugin = false,
+		formatter = "eslint",
 		formatters,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
@@ -359,12 +361,21 @@ export async function isentinel(
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
 
-	const oxfmtConfigOptions = formatters !== false ? await resolveOxfmtConfigOptions() : {};
+	const oxfmtConfigOptions =
+		stylisticOptions !== false && formatters !== false ? await resolveOxfmtConfigOptions() : {};
 
 	// Shared with the oxlint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
 	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
+	const arrowStyleSettings = withOxfmtWidths(
+		prettierSettings,
+		buildOxfmtOptions({
+			oxfmtConfigOptions,
+			oxfmtOptions: formatterOptions.oxfmtOptions,
+			prettierOptions: prettierSettings,
+		}),
+	);
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -391,10 +402,16 @@ export async function isentinel(
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
 				antiSlop,
+				// oxfmt formats Markdown code blocks with the Markdown options
+				// whenever it formats Markdown.
+				...(formatters !== false &&
+				(formatter === "standalone" || shouldEnableFeature(formatters, "markdown"))
+					? { markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]) }
+					: {}),
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
-			prettierSettings,
+			arrowStyleSettings,
 		),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
@@ -657,6 +674,7 @@ export async function isentinel(
 				// oxlint as a jsPlugin, which that mode does not load.
 				oxlint: oxlintMode === "full",
 				prettierOptions: prettierSettings,
+				standalone: formatter === "standalone",
 			}),
 		);
 	}

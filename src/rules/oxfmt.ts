@@ -84,3 +84,32 @@ export function buildOxfmtOptions({
 		...oxfmtOptions,
 	} satisfies OxfmtOptions;
 }
+
+/**
+ * Markdown formatting options layered over the base options. Shared by the
+ * ESLint config and the standalone oxfmt config so both format Markdown the
+ * same way.
+ *
+ * @param jsdocPrintWidth - Width for Markdown prose; 80 when unset.
+ * @returns Options applied on top of the base for Markdown files.
+ */
+export function markdownOxfmtOptions(jsdocPrintWidth: unknown): {
+	printWidth: number;
+	proseWrap: "always";
+	tabWidth: number;
+} {
+	return {
+		printWidth: Number(jsdocPrintWidth) || 80,
+		proseWrap: "always" as const,
+		// Embedded code blocks (e.g. YAML) that forbid tab indentation fall
+		// back to spaces; use 2 so they match the YAML options instead of the
+		// base width.
+		tabWidth: 2,
+	} satisfies OxfmtOptions;
+}
+
+/** YAML formatting options layered over the base options. */
+export const YAML_OXFMT_OPTIONS = {
+	tabWidth: 2,
+	useTabs: false,
+} as const satisfies OxfmtOptions;

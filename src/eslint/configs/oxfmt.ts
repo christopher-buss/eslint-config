@@ -13,7 +13,7 @@ import {
 	GLOB_TSX,
 	GLOB_YAML,
 } from "../../globs.ts";
-import { buildOxfmtOptions } from "../../rules/oxfmt.ts";
+import { buildOxfmtOptions, markdownOxfmtOptions, YAML_OXFMT_OPTIONS } from "../../rules/oxfmt.ts";
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
@@ -35,6 +35,11 @@ export async function oxfmt(
 			oxfmtOptions?: OxfmtOptions;
 			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
+			/**
+			 * Oxfmt runs as its own tool: keep the formatter-conflict
+			 * disables but enable `oxfmt/oxfmt` nowhere.
+			 */
+			standalone?: boolean;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
@@ -45,6 +50,7 @@ export async function oxfmt(
 		oxfmtOptions: userOxfmtOptions,
 		oxlint: enableOxlint = false,
 		prettierOptions = {},
+		standalone = false,
 	} = options ?? {};
 
 	const formattingOptions = {
@@ -97,7 +103,7 @@ export async function oxfmt(
 			// When running alongside oxlint, real JS/TS files are formatted by
 			// oxlint; ESLint keeps the formatting-conflict disables and only
 			// formats Markdown code blocks (below).
-			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
+			...(enableOxlint || standalone ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
 			"prefer-arrow-callback": "off",
 		},
 	});
@@ -116,10 +122,14 @@ export async function oxfmt(
 		rules: {
 			...rules,
 			"arrow-body-style": "off",
-			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
+			...(enableOxlint || standalone ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
 			"prefer-arrow-callback": "off",
 		},
 	});
+
+	if (standalone) {
+		return configs;
+	}
 
 	if (enableOxlint) {
 		configs.push({
@@ -193,12 +203,7 @@ export async function oxfmt(
 					"error",
 					{
 						...oxfmtOptions,
-						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
-						proseWrap: "always",
-						// Embedded code blocks (e.g. YAML) that forbid tab
-						// indentation fall back to spaces; use 2 so they match
-						// the standalone yaml config instead of the base width.
-						tabWidth: 2,
+						...markdownOxfmtOptions(prettierOptions["jsdocPrintWidth"]),
 					},
 				],
 			},
@@ -237,8 +242,7 @@ export async function oxfmt(
 					"error",
 					{
 						...oxfmtOptions,
-						tabWidth: 2,
-						useTabs: false,
+						...YAML_OXFMT_OPTIONS,
 					},
 				],
 			},

@@ -30,12 +30,19 @@ export async function flawless(
 			 * linted as standard-TS/Node land.
 			 */
 			complementIgnores?: Array<string>;
+			/**
+			 * The widths oxfmt formats Markdown code blocks with, when it
+			 * formats Markdown: it formats embedded code with the Markdown
+			 * options, not the root ones.
+			 */
+			markdownCode?: { printWidth?: number; tabWidth?: number };
 		} = {},
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		antiSlop = false,
 		complementIgnores,
+		markdownCode = {},
 		overridesTypeAware = {},
 		roblox = true,
 		stylistic = true,
@@ -82,8 +89,8 @@ export async function flawless(
 						files: [GLOB_MARKDOWN_CODE],
 						rules: arrowStyleRules({
 							maxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
-							printWidth,
-							tabWidth,
+							printWidth: markdownCode.printWidth ?? printWidth,
+							tabWidth: markdownCode.tabWidth ?? tabWidth,
 						}),
 					},
 				]
