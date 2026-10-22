@@ -7,6 +7,8 @@ import path from "node:path";
 import process from "node:process";
 import parseGitignore from "parse-gitignore-ts";
 
+import { OXFMT_CONFIG_MODULE } from "../../utils.ts";
+import { OXFMT_CONFIG_CONTENT } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 import { getEslintConfigContent } from "../utils.ts";
 
@@ -51,6 +53,10 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 		configLines.push(`${framework}: true,`);
 	}
 
+	if (result.formatter === "standalone") {
+		configLines.push('formatter: "standalone",');
+	}
+
 	const mainConfig = configLines.map((index) => `  ${index}`).join("\n");
 	const additionalConfig: Array<string> = [];
 
@@ -58,6 +64,16 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 
 	await fsp.writeFile(pathFlatConfig, eslintConfigContent);
 	log.success(ansis.green(`Created ${configFileName}`));
+
+	if (result.formatter === "standalone") {
+		const pathOxfmtConfig = path.join(cwd, OXFMT_CONFIG_MODULE);
+		if (fs.existsSync(pathOxfmtConfig)) {
+			log.warn(ansis.yellow(`${OXFMT_CONFIG_MODULE} already exists, left unchanged.`));
+		} else {
+			await fsp.writeFile(pathOxfmtConfig, OXFMT_CONFIG_CONTENT);
+			log.success(ansis.green(`Created ${OXFMT_CONFIG_MODULE}`));
+		}
+	}
 
 	const files = fs.readdirSync(cwd);
 	const legacyConfig: Array<string> = [];
