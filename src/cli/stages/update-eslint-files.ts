@@ -8,7 +8,7 @@ import process from "node:process";
 import parseGitignore from "parse-gitignore-ts";
 
 import { OXFMT_CONFIG_MODULE, oxfmtConfigNamesIn } from "../../utils.ts";
-import { OXFMT_CONFIG_CONTENT } from "../constants.ts";
+import { oxfmtConfigContent } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 import { getEslintConfigContent } from "../utils.ts";
 
@@ -72,7 +72,11 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 		if (existing !== undefined) {
 			log.warn(ansis.yellow(`${existing} already exists, left unchanged.`));
 		} else {
-			await fsp.writeFile(path.join(cwd, OXFMT_CONFIG_MODULE), OXFMT_CONFIG_CONTENT);
+			// oxfmt does not see ESLint's ignores, so it gets them too.
+			await fsp.writeFile(
+				path.join(cwd, OXFMT_CONFIG_MODULE),
+				oxfmtConfigContent(eslintIgnores),
+			);
 			log.success(ansis.green(`Created ${OXFMT_CONFIG_MODULE}`));
 		}
 	}

@@ -85,6 +85,18 @@ describe("standalone setup", () => {
 		);
 	});
 
+	it("hands migrated .eslintignore patterns to oxfmt too", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const cwd = useProject(onTestFinished);
+		fs.writeFileSync(path.join(cwd, ".eslintignore"), "generated/");
+		await updateEslintFiles(STANDALONE);
+
+		expect(fs.readFileSync(path.join(cwd, "oxfmt.config.ts"), "utf8")).toContain(
+			"ignorePatterns: [",
+		);
+	});
+
 	it("keeps an existing .oxfmtrc.json and writes no config module", async ({
 		expect,
 		onTestFinished,

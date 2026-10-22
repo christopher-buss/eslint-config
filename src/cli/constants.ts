@@ -101,11 +101,20 @@ export const formatterOptions: Array<PromItem<FormatterMode>> = [
 	},
 ];
 
-/** The {@link OXFMT_CONFIG_MODULE} the standalone setup writes. */
-export const OXFMT_CONFIG_CONTENT = `import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
+/**
+ * The {@link OXFMT_CONFIG_MODULE} the standalone setup writes.
+ *
+ * @param ignorePatterns - Patterns oxfmt should skip, as in ESLint `ignores`.
+ * @returns The module source.
+ */
+export function oxfmtConfigContent(ignorePatterns: ReadonlyArray<string> = []): string {
+	const ignores =
+		ignorePatterns.length > 0 ? `, ignorePatterns: ${JSON.stringify(ignorePatterns)}` : "";
+	return `import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
 
-export default isentinelOxfmt({ cwd: import.meta.dirname });
+export default isentinelOxfmt({ cwd: import.meta.dirname${ignores} });
 `;
+}
 
 export const frameworkOptions: Array<PromItem<FrameworkOption>> = [
 	{
