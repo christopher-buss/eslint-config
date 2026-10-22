@@ -71,6 +71,11 @@ export interface Scenario {
 	/** Copy this directory instead of the corpus (`fixtures/input`, say). */
 	input?: string;
 	/**
+	 * Files where the modes are known to differ. The standalone tree is then
+	 * pinned in `<name>.standalone.txt` instead of compared to eslint mode.
+	 */
+	knownDifference?: { files: Array<string>; reason: string };
+	/**
 	 * Source of the `isentinelOxfmt` options object `oxfmt.config.ts` passes.
 	 * `null` means standalone runs no oxfmt. Default `{}`.
 	 */

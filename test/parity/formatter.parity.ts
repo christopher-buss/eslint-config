@@ -16,6 +16,16 @@ import type { Scenario } from "./project.ts";
 
 const PACKAGE = '{ roblox: false, type: "package" }';
 
+/**
+ * In eslint mode, one fix pass merges oxfmt's import sort with
+ * `import/no-duplicates`, and a comment above a merged import is kept twice.
+ * Standalone oxfmt sorts once, after ESLint, and keeps it once.
+ */
+const IMPORT_FIX_ORDER = {
+	files: ["typescript.ts"],
+	reason: "eslint mode duplicates a comment above a merged import",
+};
+
 function typed(base: string): string {
 	return `{
 		...${base},
@@ -66,11 +76,17 @@ const scenarios: Array<Scenario> = [
 	},
 	// The repository's own fixtures, type-aware, as `fixtures.spec.ts` lints
 	// them.
-	{ name: "package", eslint: typed(PACKAGE), input: "fixtures/input" },
+	{
+		name: "package",
+		eslint: typed(PACKAGE),
+		input: "fixtures/input",
+		knownDifference: IMPORT_FIX_ORDER,
+	},
 	{
 		name: "roblox-game",
 		eslint: typed('{ roblox: true, type: "game" }'),
 		input: "fixtures/input",
+		knownDifference: IMPORT_FIX_ORDER,
 	},
 
 	// Option sources.
@@ -179,8 +195,17 @@ describe.concurrent("formatter parity", () => {
 		}
 
 		const standalone = standaloneRun.value;
-		expect(changedFiles(eslint.tree, standalone.tree)).toStrictEqual([]);
-		expect(standalone.tree).toStrictEqual(eslint.tree);
+		expect(changedFiles(eslint.tree, standalone.tree)).toStrictEqual(
+			scenario.knownDifference?.files ?? [],
+		);
+		if (scenario.knownDifference) {
+			await expect(serializeTree(standalone.tree)).toMatchFileSnapshot(
+				path.join(PARITY_FIXTURES, "output", `${scenario.name}.standalone.txt`),
+			);
+		} else {
+			expect(standalone.tree).toStrictEqual(eslint.tree);
+		}
+
 		expect(standalone.fatal).toStrictEqual(eslint.fatal);
 	});
 });
