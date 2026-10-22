@@ -345,11 +345,14 @@ export async function isentinel(
 	})();
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
+	// Standalone oxfmt formats whatever these options say, so the widths and
+	// style must always come from its config.
+	const oxfmtFormats =
+		formatter === "standalone" || (formatters !== false && options.stylistic !== false);
 
-	const oxfmtConfig: ResolvedOxfmtConfig =
-		formatters !== false && options.stylistic !== false
-			? await resolveOxfmtConfig()
-			: { options: {} };
+	const oxfmtConfig: ResolvedOxfmtConfig = oxfmtFormats
+		? await resolveOxfmtConfig()
+		: { options: {} };
 	const oxfmtConfigOptions = oxfmtConfig.options;
 
 	// Shared with the oxlint factory: these settings feed rule options (for
@@ -369,7 +372,7 @@ export async function isentinel(
 		}
 
 		const base = typeof options.stylistic === "object" ? options.stylistic : {};
-		return formatters === false ? base : withOxfmtStyle(base, effectiveOxfmtOptions);
+		return oxfmtFormats ? withOxfmtStyle(base, effectiveOxfmtOptions) : base;
 	})();
 
 	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
@@ -403,8 +406,8 @@ export async function isentinel(
 				antiSlop,
 				// oxfmt formats Markdown code blocks with the Markdown options,
 				// then the config's Markdown overrides, in both modes.
-				...(formatters !== false &&
-				(formatter === "standalone" || shouldEnableFeature(formatters, "markdown"))
+				...(formatter === "standalone" ||
+				(formatters !== false && shouldEnableFeature(formatters, "markdown"))
 					? {
 							markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
 							markdownCodeOverrides: oxfmtConfig.markdownOverrides,
@@ -554,9 +557,8 @@ export async function isentinel(
 		configs.push(
 			jsonc({
 				...getOverrides(options, "jsonc"),
-				bracketSpacing:
-					formatters === false || effectiveOxfmtOptions["bracketSpacing"] !== false,
-				singleQuote: formatters !== false && effectiveOxfmtOptions["singleQuote"] === true,
+				bracketSpacing: !oxfmtFormats || effectiveOxfmtOptions["bracketSpacing"] !== false,
+				singleQuote: oxfmtFormats && effectiveOxfmtOptions["singleQuote"] === true,
 				stylistic: stylisticOptions,
 			}),
 		);

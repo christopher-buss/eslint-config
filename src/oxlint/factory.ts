@@ -200,14 +200,17 @@ export function isentinel(
 	})();
 
 	const formatterOptions = typeof formatters === "object" ? formatters : {};
+	// Standalone oxfmt formats whatever these options say, so the widths and
+	// style must always come from its config.
+	const oxfmtFormats =
+		formatter === "standalone" || (formatters !== false && options.stylistic !== false);
 	// Shared with the ESLint factory: these settings feed rule options (for
 	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
 	// resolve them identically or their fixes disagree.
 	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
 		formatterOptions.prettierOptions,
 	);
-	const oxfmtConfigOptions =
-		formatters !== false && options.stylistic !== false ? resolveOxfmtConfigOptionsSync() : {};
+	const oxfmtConfigOptions = oxfmtFormats ? resolveOxfmtConfigOptionsSync() : {};
 	const oxfmtOptions = buildOxfmtOptions({
 		oxfmtConfigOptions,
 		oxfmtOptions: formatterOptions.oxfmtOptions,
@@ -220,7 +223,7 @@ export function isentinel(
 		}
 
 		const base = typeof options.stylistic === "object" ? options.stylistic : {};
-		return formatters === false ? base : withOxfmtStyle(base, oxfmtOptions);
+		return oxfmtFormats ? withOxfmtStyle(base, oxfmtOptions) : base;
 	})();
 
 	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {

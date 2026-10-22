@@ -462,6 +462,27 @@ describe("markdown code widths", () => {
 });
 
 describe("formatter: standalone", () => {
+	it("reads the oxfmt config widths with formatters: false", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".oxfmtrc.json": JSON.stringify({ printWidth: 90 }) });
+
+		const configs = await isentinel({
+			formatter: "standalone",
+			formatters: false,
+			roblox: false,
+			type: "package",
+		});
+		const { rules } = configs.find((config) => config.name === "isentinel/flawless/rules")!;
+
+		expect(ruleOptions(rules, "flawless/arrow-return-style")).toMatchObject({
+			useOxfmt: { printWidth: 90 },
+		});
+	});
+
 	it("keeps Stylua in ESLint", async ({ expect }) => {
 		expect.assertions(1);
 
