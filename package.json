@@ -72,6 +72,7 @@
 		"release": "bumpp -r",
 		"stub": "tsdown",
 		"test": "nr gen && vitest run",
+		"test:parity": "vitest run --config vitest.parity.config.ts",
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit",
 		"validate:oxlint": "node scripts/validate-oxlint.ts",

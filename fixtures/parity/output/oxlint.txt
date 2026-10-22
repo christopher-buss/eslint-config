@@ -1,0 +1,470 @@
+=== .babelrc ===
+{"presets":["a",   "b"]}
+
+=== .swcrc ===
+{"jsc":{"target":"es2020"}}
+
+=== cjs.cjs ===
+module.exports = { name: "common", values: [1, 2, 3] };
+
+=== component.vue ===
+<template>
+  <div   class="component">{{ message }}</div>
+</template>
+
+<script setup lang="ts">
+const message:string = 'hello'
+</script>
+
+=== cts.cts ===
+export const commonValue: string = "common";
+
+=== data.json ===
+{
+	"name": "data",
+	"values": [1, 2, 3],
+	"nested": { "deep": { "deeper": true } },
+	"long": ["aaaaaaaaaaaa", "bbbbbbbbbbbbb", "ccccccccccccc", "dddddddddddd", "eeeeeeeeeeee"]
+}
+
+=== data.json5 ===
+{ "name": "json5", "values": [1, 2, 3], "quoted-key": 1 }
+
+=== data.jsonc ===
+// comment
+{ "name": "jsonc", "values": [1, 2, 3] }
+
+=== docs/guide.md ===
+# Guide
+
+This guide paragraph is deliberately long so that prose wrapping has something
+to do in the docs folder too.
+
+```ts
+export const nearWidthArrow = (first: number, second: number) => {
+	return first + second + 12;
+};
+export const longerArrow = (firstValue: number, secondValue: number) => {
+	return firstValue + secondValue + 1234;
+};
+```
+
+=== imports.ts ===
+import { a } from "@scope/package";
+
+import fs from "node:fs";
+import path from "node:path";
+
+import { b } from "../parent";
+import { z } from "./mts.mts";
+import type { Declared } from "./types";
+
+export const used = [z, path, a, fs, b] as const;
+export type Used = Declared;
+
+=== js.js ===
+const items = [1, 2, 3];
+function double(value) {
+	return value * 2;
+}
+
+export const doubled = items.map((item) => double(item));
+export default { doubled, items };
+export function twice(value) {
+	return value * 2;
+}
+
+=== jsx.jsx ===
+export function Greeting({ name }) {
+	return (
+		<div className="greeting" id="main">
+			<span>{name}</span>
+		</div>
+	);
+}
+
+=== markdown.markdown ===
+# Corpus   Document
+
+This paragraph is deliberately long so that prose wrapping at eighty columns has something to do, and it keeps going past one hundred columns too.
+
+A line of seventy-nine characters for the width check goes right here..........
+
+A line of eighty characters for the width check goes right here.................
+
+A line of eighty-one characters for the width check goes right here..............
+
+*  list item one
+*  list item two
+
+| a | b |
+|---|---|
+| 1 | 2 |
+
+```ts
+const   value = {a:1}
+export const shortArrow = (value: number) => {
+	return value + 1;
+};
+export const nearWidthArrow = (first: number, second: number) => {
+	return first + second + 12;
+};
+export const overWidthArrow = (firstValue: number, secondValue: number) => firstValue + secondValue + 1;
+```
+
+```tsx
+export const Item = ({name}:{name:string}) => <li   className="item">{name}</li>
+```
+
+```js
+const   list = [1,2,3]
+```
+
+```json
+{"a":1,   "b":[1,2]}
+```
+
+```yaml
+key:   value
+list:
+    - one
+    - two
+```
+
+```css
+.a{color:red}
+```
+
+```lua
+local   x = 1
+```
+
+=== markdown.md ===
+# Corpus Document
+
+This paragraph is deliberately long so that prose wrapping at eighty columns has
+something to do, and it keeps going past one hundred columns too.
+
+A line of seventy-nine characters for the width check goes right here..........
+
+A line of eighty characters for the width check goes right here.................
+
+A line of eighty-one characters for the width check goes right
+here..............
+
+- list item one
+- list item two
+
+| a   | b   |
+| --- | --- |
+| 1   | 2   |
+
+```ts
+const value = { a: 1 };
+export const shortArrow = (value: number) => {
+	return value + 1;
+};
+export const nearWidthArrow = (first: number, second: number) => {
+	return first + second + 12;
+};
+export const overWidthArrow = (firstValue: number, secondValue: number) => {
+	return firstValue + secondValue + 1;
+};
+```
+
+```tsx
+export const Item = ({ name }: { name: string }) => {
+	return <li className="item">{name}</li>;
+};
+```
+
+```js
+const list = [1, 2, 3];
+```
+
+```json
+{ "a": 1, "b": [1, 2] }
+```
+
+```yaml
+key: value
+
+list:
+  - one
+  - two
+```
+
+```css
+.a {
+	color: red;
+}
+```
+
+```lua
+local   x = 1
+```
+
+=== mdx.mdx ===
+# MDX   Document
+
+*  item
+
+export const   value = 1
+
+=== mjs.mjs ===
+export const config = { name: "module", values: [1, 2, 3] };
+
+=== mts.mts ===
+export const moduleValue: number = 1;
+export type Pair<T> = [T, T];
+
+=== package.json ===
+{
+	"name": "parity-corpus",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"a": "1.0.0",
+		"b": "1.0.0"
+	}
+}
+
+=== page.htm ===
+<!DOCTYPE html>
+<html><head><title>Page</title></head><body><div   class="a"><p>Text</p></div></body></html>
+
+=== page.html ===
+<!doctype html>
+<html>
+	<head>
+		<title>Page</title>
+	</head>
+	<body>
+		<div class="a"><p>Text</p></div>
+	</body>
+</html>
+
+=== query.gql ===
+query   GetUser { user(id:1){name   email} }
+
+=== schema.graphql ===
+type Query {
+	user(id: ID!): User
+}
+type User {
+	name: String
+	email: String
+}
+
+=== spaces.ts ===
+export function indented(value: number): number {
+	if (value > 1) {
+		return value * 2;
+	}
+
+	return value;
+}
+
+=== style.css ===
+.a {
+	color: red;
+	margin: 0;
+}
+.b > .c {
+	padding: 1px 2px;
+}
+
+=== style.less ===
+@color: red;
+.a {
+	.b {
+		color: @color;
+	}
+}
+
+=== style.pcss ===
+.a {
+	color: red;
+	margin: 0;
+}
+
+=== style.scss ===
+$color: red;
+.a {
+	.b {
+		color: $color;
+	}
+}
+
+=== sub/nested.js ===
+export function identity(value) {
+	return value;
+}
+export const items = [1, 2, 3].map((item) => item * 2);
+
+=== sub/nested.json ===
+{
+	"nested": true,
+	"values": [1, 2, 3],
+	"more": { "a": "aaaaaaaaaaaaaaaaaaaa", "b": "bbbbbbbbbbbbbbbbbbbbbbbbb" }
+}
+
+=== sub/nested.md ===
+# Nested
+
+This nested paragraph is deliberately long so that prose wrapping has something
+to do here as well.
+
+```ts
+export const nearWidthArrow = (first: number, second: number) => {
+	return first + second + 12;
+};
+```
+
+=== sub/nested.ts ===
+export const nested = { value: 1 };
+export const nestedCall = someFunction(argumentNumberOne, argumentNumberTwo, argumentNumber3);
+
+declare function someFunction(...values: Array<unknown>): unknown;
+declare const argumentNumberOne: number;
+declare const argumentNumberTwo: number;
+declare const argumentNumber3: number;
+
+=== tagged.ts ===
+declare function css(strings: TemplateStringsArray): string;
+declare function gql(strings: TemplateStringsArray): string;
+
+export const style = css`
+	.button {
+		color: red;
+		margin: 0;
+	}
+`;
+
+export const query = gql`
+	query Get {
+		user(id: 1) {
+			name
+			email
+		}
+	}
+`;
+
+=== toml.toml ===
+[section]
+key = "value"
+list = [
+  1,
+  2,
+  3 
+]
+long = [
+  "aaaaaaaaaaaaaaa",
+  "bbbbbbbbbbbbbbbbbbbb",
+  "cccccccccccccccccccc",
+  "dddddddddddddddddddd" 
+]
+
+=== ts.ts ===
+interface Shape {
+	height: number;
+	width: number;
+}
+export function area(shape: Shape): number {
+	return shape.width * shape.height;
+}
+export const shapes: Array<Shape> = [
+	{ height: 2, width: 1 },
+	{ height: 4, width: 3 },
+];
+
+=== tsconfig.json ===
+{
+	"compilerOptions": { "target": "ESNext", "module": "ESNext", "strict": true },
+	"include": ["**/*"]
+}
+
+=== tsx.tsx ===
+interface Props {
+	label: string;
+}
+export function Button({ label }: Props) {
+	return (
+		<button className="button" type="button">
+			{label}
+		</button>
+	);
+}
+
+=== types.d.ts ===
+declare module "virtual:module" {
+	export const value: number;
+}
+export interface Declared {
+	name: string;
+	value: number;
+}
+
+=== widths.ts ===
+// Lines around 80 and 100 columns.
+export const width79 = ".....................................................";
+export const width80 = "......................................................";
+export const width81 = ".......................................................";
+export const width99 = ".........................................................................";
+export const width100 = ".........................................................................";
+export const width101 =
+	"..........................................................................";
+export const call99 = someFunction(argumentNumberOne, argumentNumberTwo, argumentNumberThree, 999);
+export const call101 = someFunction(
+	argumentNumberOne,
+	argumentNumberTwo,
+	argumentNumberThree,
+	9999,
+);
+
+declare function someFunction(...values: Array<unknown>): unknown;
+declare const argumentNumberOne: number;
+declare const argumentNumberTwo: number;
+declare const argumentNumberThree: number;
+
+export function shortArrow(value: number) {
+	return value + 1;
+}
+export function nearWidthArrow(firstValue: number, secondValue: number) {
+	return firstValue + secondValue + firstValue * secondValue + 1234567;
+}
+export function overWidthArrow(firstValue: number, secondValue: number) {
+	return firstValue + secondValue + firstValue * secondValue + firstValue - secondValue + 12345;
+}
+export const deepArrow = {
+	nested: {
+		inner: (firstValue: number, secondValue: number) => {
+			return firstValue + secondValue * firstValue - secondValue + 1234;
+		},
+	},
+};
+
+=== yaml.yaml ===
+key: value
+
+list:
+  - one
+  - two
+
+nested:
+  deep: true
+
+=== yml.yml ===
+key: value
+
+list:
+  - one
+  - two
+
+nested:
+  deep: true

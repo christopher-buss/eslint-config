@@ -1,0 +1,31 @@
+{
+	"printWidth": 90,
+	"arrowParens": "avoid",
+	"overrides": [
+		{
+			"files": [
+				"sub/**/*.ts"
+			],
+			"options": {
+				"semi": false
+			}
+		},
+		{
+			"files": [
+				"**/*.md"
+			],
+			"options": {
+				"printWidth": 70
+			}
+		},
+		{
+			"files": [
+				"docs/**/*.md"
+			],
+			"options": {
+				"printWidth": 100,
+				"tabWidth": 4
+			}
+		}
+	]
+}
