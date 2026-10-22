@@ -704,6 +704,16 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 };
 
 /**
+ * List the oxfmt config files in one directory, without walking up.
+ *
+ * @param directory - Directory to check.
+ * @returns The file names found, sorted.
+ */
+export function oxfmtConfigNamesIn(directory: string): Array<string> {
+	return OXFMT_CONFIG_NAMES.filter((name) => fs.existsSync(path.join(directory, name))).sort();
+}
+
+/**
  * Find the oxfmt config the way oxfmt does: walk up from `cwd` to the
  * filesystem root and take the first directory that holds one. Like oxfmt,
  * refuse a directory that holds more than one.
@@ -715,15 +725,7 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | undefined {
 	let directory = path.resolve(cwd);
 	for (;;) {
-		const found: Array<string> = [];
-		for (const name of OXFMT_CONFIG_NAMES) {
-			if (fs.existsSync(path.join(directory, name))) {
-				found.push(name);
-			}
-		}
-
-		found.sort();
-		const [first, second] = found;
+		const [first, second] = oxfmtConfigNamesIn(directory);
 		if (second !== undefined) {
 			throw new Error(
 				`[@isentinel/eslint-config] Both '${first}' and '${second}' found in ${directory}. Keep one oxfmt config file.`,

@@ -84,6 +84,20 @@ describe("standalone setup", () => {
 		);
 	});
 
+	it("keeps an existing .oxfmtrc.json and writes no config module", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		const cwd = useProject(onTestFinished);
+		fs.writeFileSync(path.join(cwd, ".oxfmtrc.json"), "{}");
+		await updateEslintFiles(STANDALONE);
+
+		expect(fs.existsSync(path.join(cwd, "oxfmt.config.ts"))).toBe(false);
+		expect(fs.readFileSync(path.join(cwd, ".oxfmtrc.json"), "utf8")).toBe("{}");
+	});
+
 	it("adds oxfmt and the format scripts to package.json", async ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 
