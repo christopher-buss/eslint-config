@@ -416,6 +416,51 @@ describe(".prettierrc overrides", () => {
 	});
 });
 
+describe(".editorconfig sections", () => {
+	const editorconfig = [
+		"root = true",
+		"[*]",
+		"indent_style = tab",
+		"[*.json]",
+		"max_line_length = 40",
+		"[*.md]",
+		"max_line_length = 60",
+		"tab_width = 3",
+	].join(String.fromCharCode(10));
+
+	it("become overrides after the preset's, without keys set in the root", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".editorconfig": editorconfig });
+
+		const { overrides } = isentinelOxfmt({ tabWidth: 4 });
+
+		expect(overrides!.slice(-2)).toStrictEqual([
+			{ files: ["./*.json"], options: { printWidth: 40 } },
+			{ files: ["./*.md"], options: { printWidth: 60 } },
+		]);
+	});
+
+	it("reach the Markdown code widths", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".editorconfig": editorconfig });
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const override = configs.find(
+			(config) => config.name === "isentinel/flawless/markdown-code/override-0",
+		);
+
+		expect(ruleOptions(override!.rules, "flawless/arrow-return-style")).toMatchObject({
+			tabWidth: 3,
+			useOxfmt: { printWidth: 60 },
+		});
+	});
+});
+
 describe("markdown code widths", () => {
 	it("hands arrow-return-style the Markdown widths in Markdown code", async ({
 		expect,

@@ -13,7 +13,7 @@ import type { OxfmtConfig, OxfmtOverrideConfig } from "oxfmt";
 import { resolveFormattedLanguages, unformattedFilePatterns } from "../formatted-files.ts";
 import type { FormattedFilesOptions } from "../formatted-files.ts";
 import { GLOB_EXCLUDE, GLOB_JSON5, GLOB_MARKDOWN, GLOB_YAML } from "../globs.ts";
-import { resolvePrettierSettings } from "../prettier-config.ts";
+import { editorConfigOverrides, resolvePrettierSettings } from "../prettier-config.ts";
 import {
 	anchorOverrideGlobs,
 	buildOxfmtOptions,
@@ -75,6 +75,7 @@ export function isentinelOxfmt({
 		prettierSettings["overrides"],
 	);
 	const languages = resolveFormattedLanguages(formatters);
+	const sectionOverrides = editorConfigOverrides(cwd, rest);
 
 	return {
 		...base,
@@ -97,7 +98,7 @@ export function isentinelOxfmt({
 			...(languages.json
 				? [{ files: [GLOB_JSON5], options: { ...JSON5_OXFMT_OPTIONS } }]
 				: []),
-			...anchorOverrideGlobs([...overrides, ...prettierOverrides]),
+			...anchorOverrideGlobs([...sectionOverrides, ...overrides, ...prettierOverrides]),
 		],
 	};
 }

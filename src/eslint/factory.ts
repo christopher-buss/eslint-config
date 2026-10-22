@@ -5,7 +5,12 @@ import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
-import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
+import {
+	editorConfigOverrides,
+	resolvePrettierSettings,
+	withOxfmtStyle,
+	withOxfmtWidths,
+} from "../prettier-config.ts";
 import { buildOxfmtOptions, markdownOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
@@ -23,6 +28,7 @@ import {
 	resolveSubOptions,
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
+	warnScriptWidthOverrides,
 } from "../utils.ts";
 import type { ResolvedOxfmtConfig } from "../utils.ts";
 import {
@@ -380,6 +386,12 @@ export async function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
+	// The `.editorconfig` sections, as the rule's config loader applies them.
+	const sectionOverrides = oxfmtFormats
+		? editorConfigOverrides(undefined, oxfmtConfigOptions)
+		: [];
+	warnScriptWidthOverrides(sectionOverrides, ".editorconfig");
+
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
 	if (enableGitignore !== false) {
@@ -412,6 +424,7 @@ export async function isentinel(
 					? {
 							markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
 							markdownCodeOverrides: [
+								...markdownOverridesOf(sectionOverrides),
 								...(oxfmtConfig.markdownOverrides ?? []),
 								// The `.prettierrc` overrides apply last, in
 								// both modes.

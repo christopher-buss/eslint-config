@@ -798,6 +798,40 @@ export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOver
 }
 
 /**
+ * Warn, at most once per process, when an oxfmt override changes `printWidth`
+ * or `tabWidth` for JS/TS files: ESLint and oxlint use the root values.
+ *
+ * @param overrides - The config's `overrides`.
+ * @param source - The config file name.
+ */
+export function warnScriptWidthOverrides(overrides: unknown, source: string): void {
+	const state: Record<symbol, unknown> = globalThis;
+	if (state[WARNED_SCRIPT_OVERRIDE] === true || !Array.isArray(overrides)) {
+		return;
+	}
+
+	const changesScriptWidth = overrides.some((override: unknown) => {
+		if (!isRecord(override) || !isRecord(override["options"])) {
+			return false;
+		}
+
+		const { printWidth, tabWidth } = override["options"];
+		if (printWidth === undefined && tabWidth === undefined) {
+			return false;
+		}
+
+		return overrideMatches(override, SCRIPT_EXTENSIONS);
+	});
+
+	if (changesScriptWidth) {
+		state[WARNED_SCRIPT_OVERRIDE] = true;
+		console.warn(
+			`[@isentinel/eslint-config] ${source} has an override that changes printWidth or tabWidth for JS/TS files. ESLint and oxlint use the root values for those files.`,
+		);
+	}
+}
+
+/**
  * Resolve oxfmt format options from the config oxfmt itself would use (see
  * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
  * `oxfmt.config.ts` or `oxfmt.config.mts`.
@@ -978,40 +1012,6 @@ function loadError(configPath: string, error: unknown): Error {
 		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
 		{ cause: error },
 	);
-}
-
-/**
- * Warn, at most once per process, when an oxfmt override changes `printWidth`
- * or `tabWidth` for JS/TS files: ESLint and oxlint use the root values.
- *
- * @param overrides - The config's `overrides`.
- * @param source - The config file name.
- */
-function warnScriptWidthOverrides(overrides: unknown, source: string): void {
-	const state: Record<symbol, unknown> = globalThis;
-	if (state[WARNED_SCRIPT_OVERRIDE] === true || !Array.isArray(overrides)) {
-		return;
-	}
-
-	const changesScriptWidth = overrides.some((override: unknown) => {
-		if (!isRecord(override) || !isRecord(override["options"])) {
-			return false;
-		}
-
-		const { printWidth, tabWidth } = override["options"];
-		if (printWidth === undefined && tabWidth === undefined) {
-			return false;
-		}
-
-		return overrideMatches(override, SCRIPT_EXTENSIONS);
-	});
-
-	if (changesScriptWidth) {
-		state[WARNED_SCRIPT_OVERRIDE] = true;
-		console.warn(
-			`[@isentinel/eslint-config] ${source} has an override that changes printWidth or tabWidth for JS/TS files. ESLint and oxlint use the root values for those files.`,
-		);
-	}
 }
 
 /**
