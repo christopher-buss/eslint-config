@@ -229,8 +229,11 @@ export function isentinel(
 			return false;
 		}
 
-		const base = typeof options.stylistic === "object" ? options.stylistic : {};
-		return oxfmtFormats ? withOxfmtStyle(base, oxfmtOptions) : base;
+		if (typeof options.stylistic === "object") {
+			return options.stylistic;
+		}
+
+		return {};
 	})();
 
 	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
@@ -358,7 +361,11 @@ export function isentinel(
 				...resolveSubOptions(options, "perfectionist"),
 				type: projectType,
 			}),
-			oxlintStylistic(stylisticOptions),
+			// Only the JS/TS stylistic rules follow oxfmt's indent and quotes:
+			// other consumers (TOML) format files oxfmt does not touch.
+			oxlintStylistic(
+				oxfmtFormats ? withOxfmtStyle(stylisticOptions, oxfmtOptions) : stylisticOptions,
+			),
 		);
 	}
 

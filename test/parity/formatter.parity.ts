@@ -129,6 +129,8 @@ const scenarios: Array<Scenario> = [
 		oxfmt: "{ printWidth: 80, semi: false, tabWidth: 2 }",
 		warns: true,
 	},
+	{ name: "json-editorconfig-spaces", eslint: PACKAGE },
+	{ name: "json-prettierrc-spaces", eslint: PACKAGE },
 	{
 		name: "json-use-spaces",
 		eslint: `{ ...${PACKAGE}, formatters: { prettierOptions: { useTabs: false } } }`,

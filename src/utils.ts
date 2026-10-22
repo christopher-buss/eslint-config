@@ -677,6 +677,7 @@ const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"]
 
 /** The extensions of the Markdown files ESLint lints code blocks in. */
 const MARKDOWN_EXTENSIONS = ["md"];
+const JSON_EXTENSIONS = ["json", "json5", "jsonc"];
 
 /** Set once a process has warned about a JS/TS width override. */
 const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
@@ -716,9 +717,14 @@ export interface MarkdownWidths {
 }
 
 /** A config override that changes the widths of some Markdown files. */
-export interface MarkdownWidthOverride {
-	/** The override's globs, relative to the config directory. */
+/** Where an oxfmt override applies, relative to the config directory. */
+export interface OverrideScope {
+	/** Globs it skips: its `excludeFiles` and its negated `files`. */
+	excludeFiles: Array<string>;
 	files: Array<string>;
+}
+
+export interface MarkdownWidthOverride extends OverrideScope {
 	widths: MarkdownWidths;
 }
 
@@ -731,6 +737,8 @@ export interface ResolvedOxfmtConfig {
 	markdownOverrides?: Array<MarkdownWidthOverride>;
 	/** The root format options. */
 	options: OxfmtOptions;
+	/** The config's overrides. */
+	overrides?: Array<unknown>;
 }
 
 /**
@@ -782,7 +790,7 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
  * The overrides that set `printWidth` or `tabWidth` for Markdown files.
  *
  * @param overrides - The config's `overrides`.
- * @returns Each such override's globs and widths, in order.
+ * @returns Each such override's scope and widths, in order.
  */
 export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
 	if (!Array.isArray(overrides)) {
@@ -795,8 +803,54 @@ export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOver
 		}
 
 		const widths = widthsOf(override["options"]);
-		const files = [override["files"]].flat().filter((glob) => typeof glob === "string");
-		return Object.keys(widths).length > 0 ? [{ files, widths }] : [];
+		return Object.keys(widths).length > 0 ? [{ ...scopeOf(override), widths }] : [];
+	});
+}
+
+/**
+ * Where an override applies: its `files`, minus its `excludeFiles` and any
+ * negated glob in `files`.
+ *
+ * @param override - One override.
+ * @returns Its scope.
+ */
+function scopeOf(override: Record<string, unknown>): OverrideScope {
+	const strings = (value: unknown): Array<string> => {
+		return [value].flat().filter((glob): glob is string => typeof glob === "string");
+	};
+
+	const globs = strings(override["files"]);
+	return {
+		excludeFiles: [
+			...strings(override["excludeFiles"]),
+			...globs.filter((glob) => glob.startsWith("!")).map((glob) => glob.slice(1)),
+		],
+		files: globs.filter((glob) => !glob.startsWith("!")),
+	};
+}
+
+/** Oxfmt options that change the layout the JSON rules check. */
+const JSON_LAYOUT_KEYS = ["bracketSpacing", "singleQuote", "tabWidth", "useTabs"];
+
+/**
+ * The overrides that change the layout of JSON files, where the JSON layout
+ * rules, set from the root options, would disagree with oxfmt.
+ *
+ * @param overrides - Overrides, of unknown shape.
+ * @returns Each such override's scope, in order.
+ */
+export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<OverrideScope> {
+	return overrides.flatMap((override: unknown) => {
+		if (
+			!isRecord(override) ||
+			!isRecord(override["options"]) ||
+			!overrideMatches(override, JSON_EXTENSIONS)
+		) {
+			return [];
+		}
+
+		const { options } = override;
+		return JSON_LAYOUT_KEYS.some((key) => key in options) ? [scopeOf(override)] : [];
 	});
 }
 
@@ -1035,24 +1089,6 @@ function overrideMatches(
 	return files.some((glob) => typeof glob === "string" && globMatchesExtension(glob, extensions));
 }
 
-/**
- * Pick `printWidth` and `tabWidth` out of a set of format options.
- *
- * @param options - Format options, of unknown shape.
- * @returns The widths it sets.
- */
-function widthsOf(options: unknown): MarkdownWidths {
-	if (!isRecord(options)) {
-		return {};
-	}
-
-	const { printWidth, tabWidth } = options;
-	return {
-		...(typeof printWidth === "number" ? { printWidth } : {}),
-		...(typeof tabWidth === "number" ? { tabWidth } : {}),
-	};
-}
-
 function loadError(configPath: string, error: unknown): Error {
 	return new Error(
 		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
@@ -1083,7 +1119,11 @@ function toResolvedConfig(
 	source: string,
 ): ResolvedOxfmtConfig {
 	warnScriptWidthOverrides(overrides, source);
-	return { markdownOverrides: markdownOverridesOf(overrides), options };
+	return {
+		markdownOverrides: markdownOverridesOf(overrides),
+		options,
+		overrides: Array.isArray(overrides) ? overrides : [],
+	};
 }
 
 function moduleConfig(configPath: string, loaded: unknown): ResolvedOxfmtConfig {
@@ -1107,6 +1147,24 @@ function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
 	}
 
 	return toResolvedConfig(parsed, path.basename(configPath));
+}
+
+/**
+ * Pick `printWidth` and `tabWidth` out of a set of format options.
+ *
+ * @param options - Format options, of unknown shape.
+ * @returns The widths it sets.
+ */
+function widthsOf(options: unknown): MarkdownWidths {
+	if (!isRecord(options)) {
+		return {};
+	}
+
+	const { printWidth, tabWidth } = options;
+	return {
+		...(typeof printWidth === "number" ? { printWidth } : {}),
+		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
 }
 
 /**

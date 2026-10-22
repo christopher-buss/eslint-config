@@ -544,6 +544,44 @@ describe("markdown code widths", () => {
 	});
 });
 
+describe("oxfmt style", () => {
+	it("gives oxfmt's indent and quotes to the JS/TS rules only", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		useProject(onTestFinished, {});
+
+		const configs = await isentinel({
+			formatters: { prettierOptions: { singleQuote: true, useTabs: false } },
+			roblox: false,
+			type: "package",
+		});
+		const toml = configs.find((config) => config.name === "isentinel/toml/rules");
+		const style = configs.find((config) => config.name === "isentinel/stylistic");
+
+		expect(ruleEntry(toml!.rules, "toml/indent")).toStrictEqual(["error", 2]);
+		expect(ruleEntry(style!.rules, "style/quotes")).toContain("single");
+	});
+
+	it("turns off the JSON layout rules where an override changes the layout", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		useProject(onTestFinished, {
+			".editorconfig": ["root = true", "[*.json]", "indent_style = space"].join(
+				String.fromCharCode(10),
+			),
+		});
+
+		expect(ruleEntry(await effectiveRules("data.json"), "jsonc/indent")).toContain(0);
+		expect(ruleEntry(await effectiveRules("data.jsonc"), "jsonc/indent")).toContain("tab");
+	});
+});
+
 describe("formatter: standalone", () => {
 	it("warns once about options oxfmt does not see, and keeps them out of the widths", async ({
 		expect,

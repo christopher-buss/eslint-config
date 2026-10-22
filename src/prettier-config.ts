@@ -149,6 +149,20 @@ export function withOxfmtWidths<T extends Record<string, unknown>>(
 }
 
 /**
+ * The indent oxfmt writes.
+ *
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns `"tab"`, or the number of spaces.
+ */
+export function oxfmtIndent({ tabWidth, useTabs }: Record<string, unknown>): "tab" | number {
+	if (useTabs !== false) {
+		return "tab";
+	}
+
+	return typeof tabWidth === "number" ? tabWidth : 2;
+}
+
+/**
  * Default the stylistic `indent` and `quotes` to what oxfmt writes, so the
  * stylistic rules and oxfmt agree. Explicit `stylistic` values win.
  *
@@ -158,12 +172,11 @@ export function withOxfmtWidths<T extends Record<string, unknown>>(
  */
 export function withOxfmtStyle(
 	stylistic: StylisticConfig,
-	{ singleQuote, tabWidth, useTabs }: Record<string, unknown>,
+	oxfmtOptions: Record<string, unknown>,
 ): StylisticConfig {
-	const spaces = typeof tabWidth === "number" ? tabWidth : 2;
 	return {
-		indent: useTabs === false ? spaces : "tab",
-		quotes: singleQuote === true ? "single" : "double",
+		indent: oxfmtIndent(oxfmtOptions),
+		quotes: oxfmtOptions["singleQuote"] === true ? "single" : "double",
 		...stylistic,
 	};
 }

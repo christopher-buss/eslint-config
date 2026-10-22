@@ -103,10 +103,11 @@ export async function flawless(
 					},
 					// Each override reaches only the code blocks of the files it
 					// matches, as in oxfmt.
-					...markdownCodeOverrides.map(({ files, widths }, index) => {
+					...markdownCodeOverrides.map(({ excludeFiles, files, widths }, index) => {
 						return {
 							name: `isentinel/flawless/markdown-code/override-${index}`,
 							files: files.map((glob) => `${glob}/${GLOB_SRC}`),
+							ignores: excludeFiles.map((glob) => `${glob}/**`),
 							rules: markdownCodeRules({ ...markdownCode, ...widths }),
 						};
 					}),

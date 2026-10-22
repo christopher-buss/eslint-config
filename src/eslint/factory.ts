@@ -7,11 +7,16 @@ import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import {
 	editorConfigOverrides,
+	oxfmtIndent,
 	resolvePrettierSettings,
 	withOxfmtStyle,
 	withOxfmtWidths,
 } from "../prettier-config.ts";
-import { buildOxfmtOptions, markdownOxfmtOptions } from "../rules/oxfmt.ts";
+import {
+	buildOxfmtOptions,
+	markdownOxfmtOptions,
+	migratePrettierOverrides,
+} from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
@@ -20,6 +25,7 @@ import {
 	isAgentAutofixDisabled,
 	isInAgentSession,
 	isInEditorEnvironment,
+	jsonLayoutOverrides,
 	markdownOverridesOf,
 	mergeGlobs,
 	overrideRuleSeverity,
@@ -385,8 +391,11 @@ export async function isentinel(
 			return false;
 		}
 
-		const base = typeof options.stylistic === "object" ? options.stylistic : {};
-		return oxfmtFormats ? withOxfmtStyle(base, effectiveOxfmtOptions) : base;
+		if (typeof options.stylistic === "object") {
+			return options.stylistic;
+		}
+
+		return {};
 	})();
 
 	if (stylisticOptions !== false && !("jsx" in stylisticOptions)) {
@@ -545,7 +554,13 @@ export async function isentinel(
 
 	if (stylisticOptions !== false) {
 		configs.push(
-			stylistic(stylisticOptions),
+			// Only the JS/TS stylistic rules follow oxfmt's indent and quotes:
+			// other consumers (TOML) format files oxfmt does not touch.
+			stylistic(
+				oxfmtFormats
+					? withOxfmtStyle(stylisticOptions, effectiveOxfmtOptions)
+					: stylisticOptions,
+			),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
 		);
 	}
@@ -584,6 +599,16 @@ export async function isentinel(
 			jsonc({
 				...getOverrides(options, "jsonc"),
 				bracketSpacing: !oxfmtFormats || effectiveOxfmtOptions["bracketSpacing"] !== false,
+				...(oxfmtFormats
+					? {
+							formatIndent: oxfmtIndent(effectiveOxfmtOptions),
+							layoutOverrides: jsonLayoutOverrides([
+								...sectionOverrides,
+								...(oxfmtConfig.overrides ?? []),
+								...migratePrettierOverrides(prettierSettings["overrides"]),
+							]),
+						}
+					: {}),
 				singleQuote: oxfmtFormats && effectiveOxfmtOptions["singleQuote"] === true,
 				stylistic: stylisticOptions,
 			}),

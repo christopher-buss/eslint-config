@@ -363,15 +363,15 @@ export const query = gql`
 [section]
 key = "value"
 list = [
-    1,
-    2,
-    3 
+  1,
+  2,
+  3 
 ]
 long = [
-    "aaaaaaaaaaaaaaa",
-    "bbbbbbbbbbbbbbbbbbbb",
-    "cccccccccccccccccccc",
-    "dddddddddddddddddddd" 
+  "aaaaaaaaaaaaaaa",
+  "bbbbbbbbbbbbbbbbbbbb",
+  "cccccccccccccccccccc",
+  "dddddddddddddddddddd" 
 ]
 
 === ts.ts ===
