@@ -102,7 +102,7 @@ export const formatterOptions: Array<PromItem<FormatterMode>> = [
 /** The {@link OXFMT_CONFIG_MODULE} the standalone setup writes. */
 export const OXFMT_CONFIG_CONTENT = `import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
 
-export default isentinelOxfmt();
+export default isentinelOxfmt({ cwd: import.meta.dirname });
 `;
 
 export const frameworkOptions: Array<PromItem<FrameworkOption>> = [

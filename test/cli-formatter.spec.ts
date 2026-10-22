@@ -80,7 +80,7 @@ describe("standalone setup", () => {
 			'formatter: "standalone",',
 		);
 		expect(fs.readFileSync(path.join(cwd, "oxfmt.config.ts"), "utf8")).toBe(
-			'import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";\n\nexport default isentinelOxfmt();\n',
+			'import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";\n\nexport default isentinelOxfmt({ cwd: import.meta.dirname });\n',
 		);
 	});
 
