@@ -75,6 +75,11 @@ export function parseArguments(
 			description: "Use ESLint's on-disk cache.",
 			type: "boolean",
 		})
+		.option("oxfmt", {
+			default: true,
+			description: "Run oxfmt when an oxfmt.config.* file exists.",
+			type: "boolean",
+		})
 		.option("oxlint-type-aware", {
 			default: true,
 			description: "Pass --type-aware to oxlint.",
@@ -150,6 +155,7 @@ export function parseArguments(
 		eslintArgs,
 		filesFrom,
 		fix,
+		oxfmt: parsed.oxfmt,
 		oxlint: oxlintOnly,
 		oxlintArgs,
 		oxlintTypeAware: parsed.oxlintTypeAware,

@@ -1,8 +1,8 @@
 import { createRequire } from "node:module";
 
 import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
+import { FORMATTED_FILES } from "../../formatted-files.ts";
 import { stylisticRuleNames } from "../../generated/stylistic.ts";
-import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { isRecord } from "../../guards.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
@@ -15,12 +15,18 @@ export function oxlintOxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles & {
 			oxfmtOptions?: Record<string, unknown>;
+			/**
+			 * Oxfmt runs as its own tool: keep the formatter-conflict
+			 * disables but leave `oxfmt/oxfmt` off.
+			 */
+			standalone?: boolean;
 		},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
 		files: oxfmtFiles,
 		oxfmtOptions = {},
+		standalone = false,
 	} = options ?? {};
 
 	// Disable rules that conflict with formatting — loaded sync via require()
@@ -76,10 +82,9 @@ export function oxlintOxfmt(
 		specifier: resolveJsPluginSpecifier("eslint-plugin-oxfmt"),
 	};
 
-	const jsFiles = oxfmtFiles?.flat() ?? [GLOB_JS, GLOB_JSX];
+	const jsFiles = oxfmtFiles?.flat() ?? [...FORMATTED_FILES.javascript];
 	const tsFiles = oxfmtFiles?.flat() ?? [
-		GLOB_TS,
-		GLOB_TSX,
+		...FORMATTED_FILES.typescript,
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
@@ -100,11 +105,18 @@ export function oxlintOxfmt(
 			{
 				name: `${name}/js-plugin`,
 				files,
-				jsPlugins: [...jsPlugins, oxfmtPlugin],
+				jsPlugins: standalone ? jsPlugins : [...jsPlugins, oxfmtPlugin],
 				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 				rules: {
 					...jsPluginRules,
-					"oxfmt/oxfmt": ["error", oxfmtOptions],
+					...(standalone
+						? {}
+						: {
+								"oxfmt/oxfmt": [
+									"error",
+									{ ...oxfmtOptions, disableNestedConfig: true },
+								],
+							}),
 				} as TypedOxlintConfigItem["rules"],
 			},
 		];

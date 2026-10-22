@@ -9,6 +9,7 @@ import {
 import { arrowStyleRules, flawlessRules, flawlessTypeAwareRules } from "../../rules/flawless.ts";
 import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
+import type { MarkdownWidthOverride, MarkdownWidths } from "../../utils.ts";
 import type {
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
@@ -30,12 +31,22 @@ export async function flawless(
 			 * linted as standard-TS/Node land.
 			 */
 			complementIgnores?: Array<string>;
+			/**
+			 * The widths oxfmt formats Markdown code blocks with, when it
+			 * formats Markdown: it formats embedded code with the Markdown
+			 * options, not the root ones.
+			 */
+			markdownCode?: MarkdownWidths;
+			/** Oxfmt config overrides that change the Markdown widths. */
+			markdownCodeOverrides?: Array<MarkdownWidthOverride>;
 		} = {},
 	prettierOptions: PrettierOptions = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		antiSlop = false,
 		complementIgnores,
+		markdownCode = {},
+		markdownCodeOverrides = [],
 		overridesTypeAware = {},
 		roblox = true,
 		stylistic = true,
@@ -63,6 +74,14 @@ export async function flawless(
 		tabWidth,
 	};
 
+	function markdownCodeRules(widths: MarkdownWidths): TypedFlatConfigItem["rules"] {
+		return arrowStyleRules({
+			maxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
+			printWidth: widths.printWidth ?? printWidth,
+			tabWidth: widths.tabWidth ?? tabWidth,
+		});
+	}
+
 	return [
 		{
 			name: "isentinel/flawless/setup",
@@ -80,12 +99,18 @@ export async function flawless(
 					{
 						name: "isentinel/flawless/markdown-code",
 						files: [GLOB_MARKDOWN_CODE],
-						rules: arrowStyleRules({
-							maxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
-							printWidth,
-							tabWidth,
-						}),
+						rules: markdownCodeRules(markdownCode),
 					},
+					// Each override reaches only the code blocks of the files it
+					// matches, as in oxfmt.
+					...markdownCodeOverrides.map(({ excludeFiles, files, widths }, index) => {
+						return {
+							name: `isentinel/flawless/markdown-code/override-${index}`,
+							files: files.map((glob) => `${glob}/${GLOB_SRC}`),
+							ignores: excludeFiles.map((glob) => `${glob}/**`),
+							rules: markdownCodeRules({ ...markdownCode, ...widths }),
+						};
+					}),
 				]
 			: []),
 		// The complement re-applies the non-roblox rules last, so it wins for

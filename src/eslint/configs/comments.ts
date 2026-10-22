@@ -1,13 +1,32 @@
-import { GLOB_SRC } from "../../globs.ts";
+import { GLOB_MARKDOWN_CODE, GLOB_SRC } from "../../globs.ts";
 import { commentLengthRules, commentsRules } from "../../rules/comments.ts";
 import { interopDefault } from "../../utils.ts";
+import type { MarkdownWidthOverride, MarkdownWidths } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export async function comments({
+	markdownCode,
+	markdownCodeOverrides = [],
 	prettierOptions = {},
 	stylistic = true,
-}: OptionsFormatters & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+}: OptionsFormatters &
+	OptionsStylistic & {
+		/** The widths oxfmt formats Markdown code blocks with. */
+		markdownCode?: MarkdownWidths;
+		/** Oxfmt config overrides that change the Markdown widths. */
+		markdownCodeOverrides?: Array<MarkdownWidthOverride>;
+	} = {}): Promise<Array<TypedFlatConfigItem>> {
+	function lengthRules(tabSize: number | undefined): TypedFlatConfigItem["rules"] {
+		return commentLengthRules({
+			maxLength: (Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
+			/* Remove when oxc wraps multi-line comments: https://github.com/oxc-project/oxc/issues/24633 */
+			multiLineMaxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
+			semanticComments: ["oxlint-disable", "oxlint-enable"],
+			tabSize: tabSize ?? prettierOptions.tabWidth ?? 4,
+		});
+	}
+
 	const pluginCommentLength = lazyPlugin("eslint-plugin-comment-length");
 	// Registered but never read here; `stylistic()` is what reads the object,
 	// and it is skipped entirely when `stylistic: false`.
@@ -45,14 +64,30 @@ export async function comments({
 					{
 						name: "isentinel/eslint/comments/src",
 						files: [GLOB_SRC],
-						rules: commentLengthRules({
-							maxLength: (Number(prettierOptions["jsdocPrintWidth"]) || 80) + 2,
-							/* Remove when oxc wraps multi-line comments: https://github.com/oxc-project/oxc/issues/24633 */
-							multiLineMaxLength: Number(prettierOptions["jsdocPrintWidth"]) || 80,
-							semanticComments: ["oxlint-disable", "oxlint-enable"],
-							tabSize: prettierOptions.tabWidth ?? 4,
-						}),
+						rules: lengthRules(undefined),
 					} as TypedFlatConfigItem,
+					// Code blocks in Markdown use the Markdown widths, as oxfmt.
+					...(markdownCode === undefined
+						? []
+						: [
+								{
+									name: "isentinel/eslint/comments/markdown-code",
+									files: [GLOB_MARKDOWN_CODE],
+									rules: lengthRules(markdownCode.tabWidth),
+								} as TypedFlatConfigItem,
+								...markdownCodeOverrides.map(
+									({ excludeFiles, files, widths }, index) => {
+										return {
+											name: `isentinel/eslint/comments/markdown-code/override-${index}`,
+											files: files.map((glob) => `${glob}/${GLOB_SRC}`),
+											ignores: excludeFiles.map((glob) => `${glob}/**`),
+											rules: lengthRules(
+												widths.tabWidth ?? markdownCode.tabWidth,
+											),
+										} as TypedFlatConfigItem;
+									},
+								),
+							]),
 				]
 			: []),
 	];

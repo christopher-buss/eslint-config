@@ -136,6 +136,8 @@ export function planFixChild(
 			fix: true,
 			heap: planPassHeap(FULL_PASS.label, heap, { concurrency, dirtyCount: targets.length }),
 			paths: targets,
+			// The check children already printed the config warnings.
+			quietWarnings: true,
 			typeAwareEnv: FULL_PASS.typeAwareEnv,
 		},
 	);

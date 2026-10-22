@@ -14,6 +14,9 @@ Flags:
   --oxlint                 Run only oxlint.
   --fix                    Check as usual, then fix only the files the checks
                            reported, in one further ESLint child.
+  --no-oxfmt               Skip the oxfmt pass. It runs when the project has an
+                           oxfmt.config.* file: oxfmt --check alongside the
+                           linters, or oxfmt --write last with --fix.
   --agents, --no-agents    Emit agent-friendly output. On by default when an AI
                            agent session is detected (AI_AGENT, CLAUDECODE, ...).
   --type-aware=off|only|full

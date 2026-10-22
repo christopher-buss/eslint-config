@@ -5,7 +5,7 @@ import { dependenciesMap } from "../src/cli/constants.ts";
 
 const collator = new Intl.Collator();
 
-const names = new Set(["eslint", ...Object.values(dependenciesMap).flat()]);
+const names = new Set(["eslint", "oxfmt", ...Object.values(dependenciesMap).flat()]);
 
 const yaml = parsePnpmWorkspaceYaml(
 	await fs.readFile(new URL("../pnpm-workspace.yaml", import.meta.url), "utf-8"),

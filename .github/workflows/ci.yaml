@@ -116,3 +116,8 @@ jobs:
 
       - name: Test
         run: nr test
+
+      # Too slow for the pre-commit hook: runs ESLint and oxfmt over many
+      # scratch projects in both formatter modes.
+      - name: Formatter parity
+        run: nr test:parity

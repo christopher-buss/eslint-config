@@ -1,0 +1,35 @@
+{
+	"overrides": [
+		{
+			"files": [
+				"*.json"
+			],
+			"options": {
+				"printWidth": 40
+			}
+		},
+		{
+			"files": "*.md",
+			"options": {
+				"printWidth": 60
+			}
+		},
+		{
+			"files": [
+				"sub/**"
+			],
+			"options": {
+				"printWidth": 60,
+				"semi": false
+			}
+		},
+		{
+			"files": [
+				"**/*.yaml"
+			],
+			"options": {
+				"printWidth": 30
+			}
+		}
+	]
+}

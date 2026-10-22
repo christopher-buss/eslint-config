@@ -10,7 +10,7 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { resolvePrettierSettings } from "../prettier-config.ts";
+import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
@@ -24,6 +24,7 @@ import {
 	resolveNodeMajor,
 	resolveOxfmtConfigOptionsSync,
 	resolveSubOptions,
+	warnStandaloneOptions,
 } from "../utils.ts";
 import { oxlintComments } from "./configs/comments.ts";
 import { oxlintDisables } from "./configs/disables.ts";
@@ -132,6 +133,7 @@ export function isentinel(
 		e18e: enableE18e = true,
 		env,
 		eslintPlugin: enableEslintPlugin = false,
+		formatter = "eslint",
 		formatters,
 		gitignore: enableGitignore = true,
 		globals,
@@ -198,6 +200,30 @@ export function isentinel(
 		return enableRoblox ? "game" : "package";
 	})();
 
+	if (formatter === "standalone") {
+		warnStandaloneOptions(options);
+	}
+
+	// Standalone oxfmt never sees these, so the widths must not use them.
+	const formatterOptions =
+		formatter !== "standalone" && typeof formatters === "object" ? formatters : {};
+	// Standalone oxfmt formats whatever these options say, so the widths and
+	// style must always come from its config.
+	const oxfmtFormats =
+		formatter === "standalone" || (formatters !== false && options.stylistic !== false);
+	// Shared with the ESLint factory: these settings feed rule options (for
+	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
+	// resolve them identically or their fixes disagree.
+	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
+		formatterOptions.prettierOptions,
+	);
+	const oxfmtConfigOptions = oxfmtFormats ? resolveOxfmtConfigOptionsSync() : {};
+	const oxfmtOptions = buildOxfmtOptions({
+		oxfmtConfigOptions,
+		oxfmtOptions: formatterOptions.oxfmtOptions,
+		prettierOptions: prettierSettings,
+	});
+
 	const stylisticOptions = (() => {
 		if (options.stylistic === false) {
 			return false;
@@ -214,13 +240,7 @@ export function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
-	const formatterOptions = typeof formatters === "object" ? formatters : {};
-	// Shared with the ESLint factory: these settings feed rule options (for
-	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
-	// resolve them identically or their fixes disagree.
-	const prettierSettings: Record<string, unknown> = resolvePrettierSettings(
-		formatterOptions.prettierOptions,
-	);
+	const widthSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
 
 	const configs: Array<Array<TypedOxlintConfigItem>> = [
 		oxlintJavascript({
@@ -341,7 +361,11 @@ export function isentinel(
 				...resolveSubOptions(options, "perfectionist"),
 				type: projectType,
 			}),
-			oxlintStylistic(stylisticOptions),
+			// Only the JS/TS stylistic rules follow oxfmt's indent and quotes:
+			// other consumers (TOML) format files oxfmt does not touch.
+			oxlintStylistic(
+				oxfmtFormats ? withOxfmtStyle(stylisticOptions, oxfmtOptions) : stylisticOptions,
+			),
 		);
 	}
 
@@ -393,7 +417,7 @@ export function isentinel(
 		}),
 		oxlintFlawless(
 			{ antiSlop, roblox: enableRoblox, stylistic: stylisticOptions },
-			prettierSettings,
+			widthSettings,
 		),
 		// The complement re-applies the non-roblox rules last, so it wins for
 		// files outside the roblox scope.
@@ -406,11 +430,11 @@ export function isentinel(
 							roblox: false,
 							stylistic: stylisticOptions,
 						},
-						prettierSettings,
+						widthSettings,
 					),
 				]
 			: []),
-		oxlintComments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+		oxlintComments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
 		oxlintDisables({
 			configDirectory: options.configDirectory,
 			root: rootGlobs,
@@ -419,17 +443,12 @@ export function isentinel(
 	);
 
 	if (stylisticOptions !== false && formatters !== false) {
-		const oxfmtConfigOptions = resolveOxfmtConfigOptionsSync();
-
 		// Oxfmt must be the last config
 		configs.push(
 			oxlintOxfmt({
 				componentExts: componentExtensions,
-				oxfmtOptions: buildOxfmtOptions({
-					oxfmtConfigOptions,
-					oxfmtOptions: formatterOptions.oxfmtOptions,
-					prettierOptions: prettierSettings,
-				}),
+				oxfmtOptions,
+				standalone: formatter === "standalone",
 			}),
 		);
 	}

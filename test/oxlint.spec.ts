@@ -245,6 +245,8 @@ describe("oxlint hybrid coverage", () => {
 			// Oxlint cannot lint Markdown code blocks, so hybrid mode must
 			// keep the ESLint-only effective rule set for Markdown-virtual
 			// files (the synthesized markdown-code siblings provide this).
+			// `oxfmt/oxfmt` skips virtual files, so where it is on there does
+			// not matter.
 			const markdownPath = "docs/guide.md/0_0.ts";
 			const markdownBefore = enabledFromEffective(
 				effectiveEslintRules([...eslintOnly], markdownPath),
@@ -252,6 +254,8 @@ describe("oxlint hybrid coverage", () => {
 			const markdownAfter = enabledFromEffective(
 				effectiveEslintRules([...hybrid], markdownPath),
 			);
+			markdownBefore.delete("oxfmt/oxfmt");
+			markdownAfter.delete("oxfmt/oxfmt");
 			const lostInMarkdown = [...markdownBefore].filter((rule) => !markdownAfter.has(rule));
 			const gainedInMarkdown = [...markdownAfter].filter((rule) => !markdownBefore.has(rule));
 

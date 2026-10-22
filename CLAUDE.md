@@ -135,10 +135,12 @@ Two bins:
   "fast" pass and a type-aware "typed" pass (`passes.ts`, `ESLINT_TYPE_AWARE`),
   each with its own cache keyed by config variant. `--fix` adds one further
   full-config child over just the files those passes reported messages on, read
-  back out of their caches (`plan/fix.ts`). Worker counts are sized from a
-  git-derived dirty count (`files.ts`, `concurrency.ts`) that is corrected for
-  ESLint-ignored files (`ignored.ts`) and busted on config drift
-  (`config-hash.ts`); `run.ts` is the entry point.
+  back out of their caches (`plan/fix.ts`). When the project has an
+  `oxfmt.config.*` file it also runs `oxfmt --check` with the checks, or
+  `oxfmt --write` last with `--fix` (`--no-oxfmt` turns it off). Worker counts
+  are sized from a git-derived dirty count (`files.ts`, `concurrency.ts`) that
+  is corrected for ESLint-ignored files (`ignored.ts`) and busted on config
+  drift (`config-hash.ts`); `run.ts` is the entry point.
 
 ## Plugin Renaming Map
 

@@ -99,6 +99,7 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 		eslintArgs: [],
 		filesFrom: undefined,
 		fix: false,
+		oxfmt: true,
 		oxlint: false,
 		oxlintArgs: [],
 		oxlintTypeAware: true,
@@ -1031,7 +1032,7 @@ describe("compose --print", () => {
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1111,7 +1112,7 @@ describe("compose --print", () => {
 		expect(printLines(["package.json"], directory)).toStrictEqual([
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off package.json",
-			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off package.json",
 		]);
 	});
@@ -1137,7 +1138,7 @@ describe("compose --print", () => {
 			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
 			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});

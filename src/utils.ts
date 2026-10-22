@@ -3,11 +3,13 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 
 import type { Linter } from "eslint";
 import { findUp, findUpSync } from "find-up-simple";
+import { getStaticJSONValue, parseJSON } from "jsonc-eslint-parser";
 import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { isMainThread } from "node:worker_threads";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import { minVersion } from "semver";
 
@@ -15,6 +17,9 @@ import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import { isRecord } from "./guards.ts";
+import { editorConfigOverrides } from "./prettier-config.ts";
+import type { EditorConfigOverride } from "./prettier-config.ts";
+import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -656,7 +661,44 @@ function environmentMatcher(
 	};
 }
 
-const OXFMT_CONFIG_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+/** JSON oxfmt config files oxfmt discovers. */
+const OXFMT_RC_FILES = [".oxfmtrc.json", ".oxfmtrc.jsonc"];
+
+/**
+ * Oxfmt config modules oxfmt discovers. It loads other module extensions only
+ * through `--config`, never by search.
+ */
+export const OXFMT_CONFIG_MODULES = ["oxfmt.config.ts", "oxfmt.config.mts"] as const;
+
+/** The config module the standalone setup writes. */
+export const OXFMT_CONFIG_MODULE = OXFMT_CONFIG_MODULES[0];
+
+/** Every file name oxfmt discovers. One directory may hold only one of them. */
+const OXFMT_CONFIG_NAMES = [...OXFMT_RC_FILES, ...OXFMT_CONFIG_MODULES];
+
+/** The extensions of the JS/TS files ESLint and oxlint format. */
+const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"];
+
+/** The extensions of the Markdown files ESLint lints code blocks in. */
+const MARKDOWN_EXTENSIONS = ["md"];
+const JSON_EXTENSIONS = ["json", "json5", "jsonc"];
+const LEADING_DOT_SLASH = /^\.\//;
+
+/** Set once a process has warned about a JS/TS width override. */
+const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
+
+/** Set once a process has warned about options standalone oxfmt ignores. */
+const WARNED_STANDALONE = Symbol.for("@isentinel/eslint-config/standalone-options-warned");
+
+const GLOB_MAGIC = /[*?[\]{}]/;
+
+/** A found oxfmt config file. */
+export interface OxfmtConfigFile {
+	/** Whether it is an `oxfmt.config.*` module rather than a JSON rc file. */
+	isModule: boolean;
+	/** Its absolute path. */
+	path: string;
+}
 
 /**
  * Oxfmt's generated types widen `jsdoc.commentLineStrategy` and
@@ -673,55 +715,297 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 		  });
 };
 
-/**
- * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`.
- *
- * @returns The oxfmt configuration options, or an empty object if none found.
- */
-export async function resolveOxfmtConfigOptions(): Promise<OxfmtOptions> {
-	for (const filename of OXFMT_CONFIG_FILES) {
-		const configPath = path.resolve(process.cwd(), filename);
-		try {
-			const content = await fs.promises.readFile(configPath, "utf-8");
-			const parsed: unknown = JSON.parse(content);
-			if (!isRecord(parsed)) {
-				continue;
-			}
+/** The widths oxfmt formats Markdown files with. */
+export interface MarkdownWidths {
+	printWidth?: number;
+	tabWidth?: number;
+}
 
-			const { $schema: _, ...config } = parsed;
-			return config;
-		} catch {
-			continue;
-		}
-	}
+/** A config override that changes the widths of some Markdown files. */
+/** Where an oxfmt override applies, relative to the config directory. */
+export interface OverrideScope {
+	/** Globs it skips: its `excludeFiles` and its negated `files`. */
+	excludeFiles: Array<string>;
+	files: Array<string>;
+}
 
-	return {};
+export interface MarkdownWidthOverride extends OverrideScope {
+	widths: MarkdownWidths;
+}
+
+/** What the factories read from an oxfmt config. */
+export interface ResolvedOxfmtConfig {
+	/**
+	 * The overrides that change the Markdown widths, in order. Oxfmt formats
+	 * Markdown code blocks with these on top of the preset's Markdown options.
+	 */
+	markdownOverrides?: Array<MarkdownWidthOverride>;
+	/** The root format options. */
+	options: OxfmtOptions;
+	/** The config's overrides. */
+	overrides?: Array<unknown>;
 }
 
 /**
- * Resolve oxfmt configuration from `.oxfmtrc.json` or `.oxfmtrc.jsonc`,
- * synchronously. Used by the (synchronous) oxlint factory.
+ * List the oxfmt config files in one directory, without walking up.
  *
- * @returns The oxfmt configuration options, or an empty object if none found.
+ * @param directory - Directory to check.
+ * @returns The file names found, sorted.
  */
-export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
-	for (const filename of OXFMT_CONFIG_FILES) {
-		const configPath = path.resolve(process.cwd(), filename);
-		try {
-			const content = fs.readFileSync(configPath, "utf-8");
-			const parsed: unknown = JSON.parse(content);
-			if (!isRecord(parsed)) {
-				continue;
-			}
+export function oxfmtConfigNamesIn(directory: string): Array<string> {
+	return OXFMT_CONFIG_NAMES.filter((name) => fs.existsSync(path.join(directory, name))).sort();
+}
 
-			const { $schema: _, ...config } = parsed;
-			return config;
-		} catch {
-			continue;
+/**
+ * Find the oxfmt config the way oxfmt does: walk up from `cwd` to the
+ * filesystem root and take the first directory that holds one. Like oxfmt,
+ * refuse a directory that holds more than one.
+ *
+ * @param cwd - Directory to start from.
+ * @returns The config file, if any.
+ * @throws When one directory holds more than one oxfmt config file.
+ */
+export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | undefined {
+	let directory = path.resolve(cwd);
+	for (;;) {
+		const [first, second] = oxfmtConfigNamesIn(directory);
+		if (second !== undefined) {
+			throw new Error(
+				`[@isentinel/eslint-config] Both '${first}' and '${second}' found in ${directory}. Keep one oxfmt config file.`,
+			);
 		}
+
+		if (first !== undefined) {
+			return {
+				isModule: OXFMT_CONFIG_MODULES.some((name) => name === first),
+				path: path.join(directory, first),
+			};
+		}
+
+		const parent = path.dirname(directory);
+		if (parent === directory) {
+			return undefined;
+		}
+
+		directory = parent;
+	}
+}
+
+/**
+ * The overrides that set `printWidth` or `tabWidth` for Markdown files.
+ *
+ * @param overrides - The config's `overrides`.
+ * @returns Each such override's scope and widths, in order.
+ */
+export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
+	if (!Array.isArray(overrides)) {
+		return [];
 	}
 
-	return {};
+	return overrides.flatMap((override: unknown) => {
+		if (!isRecord(override) || !overrideMatches(override, MARKDOWN_EXTENSIONS)) {
+			return [];
+		}
+
+		const widths = widthsOf(override["options"]);
+		return Object.keys(widths).length > 0 ? [{ ...scopeOf(override), widths }] : [];
+	});
+}
+
+/**
+ * Where an override applies: its `files`, minus its `excludeFiles` and any
+ * negated glob in `files`.
+ *
+ * @param override - One override.
+ * @returns Its scope.
+ */
+function scopeOf(override: Record<string, unknown>): OverrideScope {
+	const strings = (value: unknown): Array<string> => {
+		return [value].flat().filter((glob): glob is string => typeof glob === "string");
+	};
+
+	const globs = strings(override["files"]);
+	return {
+		excludeFiles: [
+			...strings(override["excludeFiles"]),
+			...globs.filter((glob) => glob.startsWith("!")).map((glob) => glob.slice(1)),
+		],
+		files: globs.filter((glob) => !glob.startsWith("!")),
+	};
+}
+
+/** Oxfmt options that change the layout the JSON rules check. */
+const JSON_LAYOUT_KEYS = ["bracketSpacing", "singleQuote", "tabWidth", "useTabs"];
+
+/**
+ * The overrides that change the layout of JSON files, where the JSON layout
+ * rules, set from the root options, would disagree with oxfmt.
+ *
+ * @param overrides - Overrides, of unknown shape.
+ * @returns Each such override's scope, in order.
+ */
+export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<OverrideScope> {
+	return overrides.flatMap((override: unknown) => {
+		if (
+			!isRecord(override) ||
+			!isRecord(override["options"]) ||
+			!overrideMatches(override, JSON_EXTENSIONS)
+		) {
+			return [];
+		}
+
+		const { options } = override;
+		return JSON_LAYOUT_KEYS.some((key) => key in options) ? [scopeOf(override)] : [];
+	});
+}
+
+/**
+ * Warn, at most once per process, about factory options that do not reach
+ * standalone oxfmt: it formats with `oxfmt.config.ts` alone.
+ *
+ * @param options - The factory options.
+ * @param options.componentExts - Oxfmt formats only the extensions
+ *   `isentinelOxfmt` is given.
+ * @param options.formatters - Any value but `true` is ignored by oxfmt.
+ * @param options.gitignore - Custom ignore files, or `false`, do not reach
+ *   oxfmt.
+ * @param options.ignores - User ignores do not reach oxfmt.
+ */
+export function warnStandaloneOptions({
+	componentExts,
+	formatters,
+	gitignore,
+	ignores,
+}: {
+	componentExts?: unknown;
+	formatters?: unknown;
+	gitignore?: unknown;
+	ignores?: unknown;
+}): void {
+	const state: Record<symbol, unknown> = globalThis;
+	// ESLint worker threads load the config again; the main thread warns.
+	// isentinel-lint quiets all of its children but one.
+	if (
+		!isMainThread ||
+		state[WARNED_STANDALONE] === true ||
+		process.env[QUIET_WARNINGS_ENV] === "1"
+	) {
+		return;
+	}
+
+	const names = [
+		formatters !== undefined && formatters !== true ? "formatters" : undefined,
+		Array.isArray(componentExts) && componentExts.length > 0 ? "componentExts" : undefined,
+		ignores === undefined || (Array.isArray(ignores) && ignores.length === 0)
+			? undefined
+			: "ignores",
+		gitignore === false || isRecord(gitignore) ? "gitignore" : undefined,
+	].filter((name) => name !== undefined);
+
+	if (names.length > 0) {
+		state[WARNED_STANDALONE] = true;
+		console.warn(
+			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change formatting: ${names.join(", ")}. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
+		);
+	}
+}
+
+/**
+ * Warn, at most once per process, when an oxfmt override changes `printWidth`
+ * or `tabWidth` for JS/TS files: ESLint and oxlint use the root values.
+ *
+ * @param overrides - The config's `overrides`.
+ * @param source - The config file name.
+ */
+export function warnScriptWidthOverrides(overrides: unknown, source: string): void {
+	const state: Record<symbol, unknown> = globalThis;
+	if (state[WARNED_SCRIPT_OVERRIDE] === true || !Array.isArray(overrides)) {
+		return;
+	}
+
+	const changesScriptWidth = overrides.some((override: unknown) => {
+		if (!isRecord(override) || !isRecord(override["options"])) {
+			return false;
+		}
+
+		const { printWidth, tabWidth } = override["options"];
+		if (printWidth === undefined && tabWidth === undefined) {
+			return false;
+		}
+
+		return overrideMatches(override, SCRIPT_EXTENSIONS);
+	});
+
+	if (changesScriptWidth) {
+		state[WARNED_SCRIPT_OVERRIDE] = true;
+		console.warn(
+			`[@isentinel/eslint-config] ${source} has an override that changes printWidth or tabWidth for JS/TS files. ESLint and oxlint use the root values for those files.`,
+		);
+	}
+}
+
+/**
+ * Resolve oxfmt format options from the config oxfmt itself would use (see
+ * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
+ * `oxfmt.config.ts` or `oxfmt.config.mts`.
+ *
+ * @returns The format options and Markdown widths; empty options if none
+ *   found.
+ * @rejects When the config is ambiguous or cannot be loaded.
+ */
+export async function resolveOxfmtConfig(): Promise<ResolvedOxfmtConfig> {
+	const config = findOxfmtConfig();
+	if (config === undefined) {
+		return { options: {} };
+	}
+
+	if (!config.isModule) {
+		return rcConfig(config.path, await fs.promises.readFile(config.path, "utf-8"));
+	}
+
+	let loaded: unknown;
+	try {
+		const { createJiti } = await import("jiti");
+		loaded = await createJiti(import.meta.url, { moduleCache: false }).import(config.path, {
+			default: true,
+		});
+	} catch (err) {
+		throw loadError(config.path, err);
+	}
+
+	return moduleConfig(config.path, loaded);
+}
+
+/**
+ * Synchronous {@link resolveOxfmtConfig}, for the (synchronous) oxlint factory.
+ * Loads a config module through jiti's synchronous API. Oxlint does not lint
+ * Markdown code blocks, so it returns the format options alone.
+ *
+ * @returns The oxfmt format options, or an empty object if none found.
+ * @throws When the config is ambiguous or cannot be loaded.
+ */
+export function resolveOxfmtConfigOptionsSync(): OxfmtOptions {
+	const config = findOxfmtConfig();
+	if (config === undefined) {
+		return {};
+	}
+
+	if (!config.isModule) {
+		return rcConfig(config.path, fs.readFileSync(config.path, "utf-8")).options;
+	}
+
+	let loaded: unknown;
+	try {
+		// Loaded on demand: most projects have no config module.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- require() is untyped; this is jiti's own module type.
+		const { createJiti } = require("jiti") as typeof import("jiti");
+		const module: unknown = createJiti(import.meta.url, { moduleCache: false })(config.path);
+		loaded = isRecord(module) && "default" in module ? module["default"] : module;
+	} catch (err) {
+		throw loadError(config.path, err);
+	}
+
+	return moduleConfig(config.path, loaded).options;
 }
 
 /**
@@ -776,6 +1060,160 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+/**
+ * Whether a glob can match a file with one of `extensions`, judged by the
+ * extension of its last segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
+ *
+ * @param glob - An override `files` glob.
+ * @param extensions - The extensions to look for.
+ * @returns Whether it can match such a file.
+ */
+function globMatchesExtension(glob: string, extensions: ReadonlyArray<string>): boolean {
+	const base = glob.split("/").at(-1) ?? glob;
+	const dot = base.lastIndexOf(".");
+	if (dot === -1) {
+		return base.includes("*");
+	}
+
+	const extension = base.slice(dot + 1);
+	if (!GLOB_MAGIC.test(extension)) {
+		return extensions.includes(extension);
+	}
+
+	return extensions.some((candidate) => path.matchesGlob(candidate, extension));
+}
+
+/**
+ * Whether an oxfmt override can apply to a file with one of `extensions`.
+ *
+ * @param override - One entry of the config's `overrides`.
+ * @param extensions - The extensions to look for.
+ * @returns Whether its `files` can match such a file.
+ */
+function overrideMatches(
+	override: Record<string, unknown>,
+	extensions: ReadonlyArray<string>,
+): boolean {
+	const files: Array<unknown> = Array.isArray(override["files"])
+		? override["files"]
+		: [override["files"]];
+	return files.some((glob) => typeof glob === "string" && globMatchesExtension(glob, extensions));
+}
+
+function loadError(configPath: string, error: unknown): Error {
+	return new Error(
+		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
+		{ cause: error },
+	);
+}
+
+/**
+ * Whether a config override is an `.editorconfig` section that
+ * `isentinelOxfmt` copied in: the same globs (anchored or not) and a subset
+ * of its options.
+ *
+ * @param override - One config override.
+ * @param sections - The `.editorconfig` sections, as overrides.
+ * @returns Whether it mirrors one of them.
+ */
+function mirrorsSection(override: unknown, sections: ReadonlyArray<EditorConfigOverride>): boolean {
+	if (!isRecord(override) || !isRecord(override["options"])) {
+		return false;
+	}
+
+	const { options } = override;
+	const files = [override["files"]]
+		.flat()
+		.map((glob) => (typeof glob === "string" ? glob.replace(LEADING_DOT_SLASH, "") : glob));
+	return sections.some((section) => {
+		return (
+			section.files.length === files.length &&
+			section.files.every((glob, index) => glob === files[index]) &&
+			Object.entries(options).every(([key, value]) => section.options[key] === value)
+		);
+	});
+}
+
+/**
+ * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options and the Markdown
+ * widths. The rule takes format options only, so `$schema`, `ignorePatterns`
+ * and `overrides` are dropped from the options.
+ *
+ * @param config - The loaded config.
+ * @param config.$schema - Dropped.
+ * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
+ * @param config.overrides - Dropped, after the width check; read for the
+ *   Markdown widths.
+ * @param configPath - The config file, for the warning.
+ * @returns The format options and Markdown widths.
+ */
+function toResolvedConfig(
+	{
+		$schema: _schema,
+		ignorePatterns: _ignorePatterns,
+		overrides,
+		...options
+	}: Record<string, unknown>,
+	configPath: string,
+): ResolvedOxfmtConfig {
+	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
+	// name the real source of those.
+	const sections = editorConfigOverrides(path.dirname(configPath));
+	const list: Array<unknown> = Array.isArray(overrides) ? overrides : [];
+	const copied = list.filter((override) => mirrorsSection(override, sections));
+	warnScriptWidthOverrides(copied, ".editorconfig");
+	warnScriptWidthOverrides(
+		list.filter((override) => !copied.includes(override)),
+		path.basename(configPath),
+	);
+	return {
+		markdownOverrides: markdownOverridesOf(overrides),
+		options,
+		overrides: Array.isArray(overrides) ? overrides : [],
+	};
+}
+
+function moduleConfig(configPath: string, loaded: unknown): ResolvedOxfmtConfig {
+	if (!isRecord(loaded)) {
+		throw loadError(configPath, new TypeError("the default export is not an object"));
+	}
+
+	return toResolvedConfig(loaded, configPath);
+}
+
+function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
+	let parsed: unknown;
+	try {
+		parsed = getStaticJSONValue(parseJSON(content, { jsonSyntax: "jsonc" }));
+	} catch (err) {
+		throw loadError(configPath, err);
+	}
+
+	if (!isRecord(parsed)) {
+		throw loadError(configPath, new TypeError("the config is not an object"));
+	}
+
+	return toResolvedConfig(parsed, configPath);
+}
+
+/**
+ * Pick `printWidth` and `tabWidth` out of a set of format options.
+ *
+ * @param options - Format options, of unknown shape.
+ * @returns The widths it sets.
+ */
+function widthsOf(options: unknown): MarkdownWidths {
+	if (!isRecord(options)) {
+		return {};
+	}
+
+	const { printWidth, tabWidth } = options;
+	return {
+		...(typeof printWidth === "number" ? { printWidth } : {}),
+		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
 }
 
 /**

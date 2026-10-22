@@ -1,22 +1,17 @@
 import type { Options as PrettierOptions } from "prettier";
 
+import { FORMATTED_FILES, resolveFormattedLanguages } from "../../formatted-files.ts";
+import { GLOB_JSON5 } from "../../globs.ts";
 import {
-	GLOB_ALL_JSON,
-	GLOB_CSS,
-	GLOB_JS,
-	GLOB_JSX,
-	GLOB_LESS,
-	GLOB_MARKDOWN,
-	GLOB_POSTCSS,
-	GLOB_SCSS,
-	GLOB_TS,
-	GLOB_TSX,
-	GLOB_YAML,
-} from "../../globs.ts";
-import { buildOxfmtOptions } from "../../rules/oxfmt.ts";
+	buildOxfmtOptions,
+	JSON5_OXFMT_OPTIONS,
+	markdownOxfmtOptions,
+	YAML_OXFMT_OPTIONS,
+} from "../../rules/oxfmt.ts";
 import type { OxfmtOptions } from "../../utils.ts";
-import { interopDefault, parserPlain, renameRules, resolveWithDefaults } from "../../utils.ts";
+import { interopDefault, parserPlain, renameRules } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
+import { oxfmtSingleFix } from "../oxfmt-single-fix.ts";
 import { defaultPluginRenaming } from "../plugin-renaming.ts";
 import type {
 	OptionsComponentExtensions,
@@ -35,6 +30,11 @@ export async function oxfmt(
 			oxfmtOptions?: OxfmtOptions;
 			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
+			/**
+			 * Oxfmt runs as its own tool: keep the formatter-conflict
+			 * disables and the plain parsers but enable `oxfmt/oxfmt` nowhere.
+			 */
+			standalone?: boolean;
 		},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
@@ -45,17 +45,10 @@ export async function oxfmt(
 		oxfmtOptions: userOxfmtOptions,
 		oxlint: enableOxlint = false,
 		prettierOptions = {},
+		standalone = false,
 	} = options ?? {};
 
-	const formattingOptions = {
-		css: true,
-		graphql: true,
-		html: true,
-		json: true,
-		markdown: true,
-		yaml: true,
-		...resolveWithDefaults(formatters, {}),
-	} satisfies OptionsFormatters;
+	const languages = resolveFormattedLanguages(formatters);
 
 	const oxfmtOptions = buildOxfmtOptions({
 		oxfmtConfigOptions,
@@ -63,7 +56,26 @@ export async function oxfmt(
 		prettierOptions,
 	});
 
-	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt");
+	/**
+	 * The `oxfmt/oxfmt` entry for a block, with an options layer over the
+	 * base; none when oxfmt runs on its own.
+	 *
+	 * @param layer - Options applied over the base options.
+	 * @returns The rule entry, or no rules.
+	 */
+	function formatRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
+		// One root config, like the standalone CLI: nested configs are ignored.
+		return standalone
+			? {}
+			: {
+					"oxfmt/oxfmt": [
+						"error",
+						{ ...oxfmtOptions, ...layer, disableNestedConfig: true },
+					],
+				};
+	}
+
+	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt", oxfmtSingleFix);
 	const configPrettier = await interopDefault(import("eslint-config-prettier/flat"));
 
 	const rulesToIgnore = ["curly", "style/quotes"];
@@ -81,171 +93,108 @@ export async function oxfmt(
 		},
 	];
 
-	const jsFiles = oxfmtFiles ?? [
-		GLOB_JS,
-		GLOB_JSX,
-		`${GLOB_MARKDOWN}/${GLOB_JS}`,
-		`${GLOB_MARKDOWN}/${GLOB_JSX}`,
-	];
-
-	configs.push({
-		name: "isentinel/oxfmt/javascript",
-		files: jsFiles,
-		rules: {
-			...rules,
-			"arrow-body-style": "off",
-			// When running alongside oxlint, real JS/TS files are formatted by
-			// oxlint; ESLint keeps the formatting-conflict disables and only
-			// formats Markdown code blocks (below).
-			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
-			"prefer-arrow-callback": "off",
-		},
-	});
-
-	const tsFiles = oxfmtFiles ?? [
-		GLOB_TS,
-		GLOB_TSX,
-		`${GLOB_MARKDOWN}/${GLOB_TS}`,
-		`${GLOB_MARKDOWN}/${GLOB_TSX}`,
-		...componentExtensions.map((extension) => `**/*.${extension}`),
-	];
-
-	configs.push({
-		name: "isentinel/oxfmt/typescript",
-		files: tsFiles,
-		rules: {
-			...rules,
-			"arrow-body-style": "off",
-			...(enableOxlint ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
-			"prefer-arrow-callback": "off",
-		},
-	});
-
-	if (enableOxlint) {
-		configs.push({
-			name: "isentinel/oxfmt/markdown-code",
-			files: [
-				`${GLOB_MARKDOWN}/${GLOB_JS}`,
-				`${GLOB_MARKDOWN}/${GLOB_JSX}`,
-				`${GLOB_MARKDOWN}/${GLOB_TS}`,
-				`${GLOB_MARKDOWN}/${GLOB_TSX}`,
+	// The script globs also match Markdown code blocks, so the conflict
+	// disables reach them. The rule itself skips those virtual files.
+	const scriptBlocks = [
+		["javascript", oxfmtFiles ?? [...FORMATTED_FILES.javascript]],
+		[
+			"typescript",
+			oxfmtFiles ?? [
+				...FORMATTED_FILES.typescript,
+				...componentExtensions.map((extension) => `**/*.${extension}`),
 			],
+		],
+	] as const;
+
+	for (const [name, files] of scriptBlocks) {
+		configs.push({
+			name: `isentinel/oxfmt/${name}`,
+			files,
 			rules: {
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
+				...rules,
+				"arrow-body-style": "off",
+				// When running alongside oxlint, oxlint formats JS/TS files;
+				// ESLint keeps the formatting-conflict disables.
+				...(enableOxlint ? {} : formatRule()),
+				"prefer-arrow-callback": "off",
 			},
 		});
 	}
 
-	if (formattingOptions.css) {
+	if (languages.css) {
+		configs.push(
+			plainBlock("css", [...FORMATTED_FILES.css], formatRule()),
+			plainBlock("scss", [...FORMATTED_FILES.scss], formatRule()),
+			plainBlock("less", [...FORMATTED_FILES.less], formatRule()),
+		);
+	}
+
+	if (languages.html) {
+		configs.push(plainBlock("html", [...FORMATTED_FILES.html], formatRule()));
+	}
+
+	// The blocks below only enable the rule, so oxfmt on its own needs none.
+	if (!standalone && languages.markdown) {
+		configs.push({
+			name: "isentinel/oxfmt/markdown",
+			files: [...FORMATTED_FILES.markdown],
+			rules: formatRule(markdownOxfmtOptions(prettierOptions["jsdocPrintWidth"])),
+		});
+	}
+
+	if (languages.graphql) {
+		configs.push(plainBlock("graphql", [...FORMATTED_FILES.graphql], formatRule()));
+	}
+
+	if (!standalone && languages.json) {
 		configs.push(
 			{
-				name: "isentinel/oxfmt/css",
-				files: [GLOB_CSS, GLOB_POSTCSS],
-				languageOptions: {
-					parser: parserPlain,
-				},
-				rules: {
-					"oxfmt/oxfmt": ["error", oxfmtOptions],
-				},
+				name: "isentinel/oxfmt/json",
+				files: [...FORMATTED_FILES.json],
+				rules: formatRule(),
 			},
 			{
-				name: "isentinel/oxfmt/scss",
-				files: [GLOB_SCSS],
-				languageOptions: {
-					parser: parserPlain,
-				},
-				rules: {
-					"oxfmt/oxfmt": ["error", oxfmtOptions],
-				},
-			},
-			{
-				name: "isentinel/oxfmt/less",
-				files: [GLOB_LESS],
-				languageOptions: {
-					parser: parserPlain,
-				},
-				rules: {
-					"oxfmt/oxfmt": ["error", oxfmtOptions],
-				},
+				name: "isentinel/oxfmt/json5",
+				files: [GLOB_JSON5],
+				rules: formatRule(JSON5_OXFMT_OPTIONS),
 			},
 		);
 	}
 
-	if (formattingOptions.html) {
-		configs.push({
-			name: "isentinel/oxfmt/html",
-			files: ["**/*.html"],
-			languageOptions: {
-				parser: parserPlain,
-			},
-			rules: {
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
-			},
-		});
-	}
-
-	if (formattingOptions.markdown) {
-		configs.push({
-			name: "isentinel/oxfmt/markdown",
-			files: [GLOB_MARKDOWN],
-			rules: {
-				"oxfmt/oxfmt": [
-					"error",
-					{
-						...oxfmtOptions,
-						printWidth: Number(prettierOptions["jsdocPrintWidth"]) || 80,
-						proseWrap: "always",
-						// Embedded code blocks (e.g. YAML) that forbid tab
-						// indentation fall back to spaces; use 2 so they match
-						// the standalone yaml config instead of the base width.
-						tabWidth: 2,
-					},
-				],
-			},
-		});
-	}
-
-	if (formattingOptions.graphql) {
-		configs.push({
-			name: "isentinel/oxfmt/graphql",
-			files: ["**/*.graphql"],
-			languageOptions: {
-				parser: parserPlain,
-			},
-			rules: {
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
-			},
-		});
-	}
-
-	if (formattingOptions.json) {
-		configs.push({
-			name: "isentinel/oxfmt/json",
-			files: [GLOB_ALL_JSON],
-			rules: {
-				"oxfmt/oxfmt": ["error", oxfmtOptions],
-			},
-		});
-	}
-
-	if (formattingOptions.yaml) {
+	if (!standalone && languages.yaml) {
 		configs.push({
 			name: "isentinel/oxfmt/yaml",
-			files: [GLOB_YAML],
-			rules: {
-				"oxfmt/oxfmt": [
-					"error",
-					{
-						...oxfmtOptions,
-						tabWidth: 2,
-						useTabs: false,
-					},
-				],
-			},
+			files: [...FORMATTED_FILES.yaml],
+			rules: formatRule(YAML_OXFMT_OPTIONS),
 		});
 	}
 
 	return configs;
+}
+
+/**
+ * A block for a language ESLint has no parser for: the plain parser lets
+ * `oxfmt/oxfmt` see the file, and keeps ESLint from parsing Markdown code
+ * blocks in it as JavaScript.
+ *
+ * @param name - Appended to `isentinel/oxfmt/` to name the block.
+ * @param files - Globs of the files the block applies to.
+ * @param rules - Rules to enable for those files.
+ * @returns The config block.
+ */
+function plainBlock(
+	name: string,
+	files: Array<string>,
+	rules: TypedFlatConfigItem["rules"],
+): TypedFlatConfigItem {
+	return {
+		name: `isentinel/oxfmt/${name}`,
+		files,
+		languageOptions: {
+			parser: parserPlain,
+		},
+		rules,
+	};
 }
 
 export { type OxfmtOptions } from "../../utils.ts";

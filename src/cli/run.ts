@@ -1,18 +1,20 @@
-import { cancel, confirm, group, log, multiselect, outro } from "@clack/prompts";
+import { cancel, confirm, group, log, multiselect, outro, select } from "@clack/prompts";
 
 import ansis from "ansis";
 import fs from "node:fs";
 import process from "node:process";
 
 import { isStringArray } from "../guards.ts";
-import { frameworkOptions, frameworks } from "./constants.ts";
+import { formatterOptions, frameworkOptions, frameworks } from "./constants.ts";
 import { updateEslintFiles } from "./stages/update-eslint-files.ts";
 import { updatePackageJson } from "./stages/update-package-json.ts";
 import { updateVscodeSettings } from "./stages/update-vscode-settings.ts";
-import type { FrameworkOption, PromptResult } from "./types.ts";
+import type { FormatterMode, FrameworkOption, PromptResult } from "./types.ts";
 import { isGitClean } from "./utils.ts";
 
 export interface CliRunOptions {
+	/** Where formatting runs: `eslint` or `standalone` (oxfmt on its own). */
+	formatter?: string;
 	/** Use the framework template for optimal customization: react. */
 	frameworks?: Array<string>;
 	/** Skip prompts and use default values. */
@@ -36,8 +38,13 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 		return process.exit(1);
 	}
 
+	const argumentFormatter = formatterOptions.find(
+		({ value }) => value === options.formatter,
+	)?.value;
+
 	// Set default value for promptResult if `argSkipPrompt` is enabled
 	let result: PromptResult = {
+		formatter: argumentFormatter ?? "eslint",
 		frameworks: argumentTemplate ?? [],
 		uncommittedConfirmed: false,
 		updateVscodeSettings: true,
@@ -58,7 +65,19 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					});
 				},
 
-				// eslint-disable-next-line perfectionist/sort-objects -- `group` runs the prompts in key order, and `frameworks` reads `uncommittedConfirmed`.
+				// eslint-disable-next-line perfectionist/sort-objects -- `group` runs the prompts in key order, and `formatter` and `frameworks` read `uncommittedConfirmed`.
+				formatter: async ({ results }) => {
+					if (argumentFormatter !== undefined || results.uncommittedConfirmed !== true) {
+						return;
+					}
+
+					return select<FormatterMode>({
+						initialValue: "eslint",
+						message: "Where should formatting run?",
+						options: formatterOptions,
+					});
+				},
+
 				frameworks: async ({ results }) => {
 					const isArgumentTemplateValid =
 						argumentTemplate &&
@@ -104,11 +123,14 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 		// express the early-returning generators), so the result is read back as
 		// a record and validated into the shape `PromptResult` promises.
 		const {
+			formatter: groupedFormatter,
 			frameworks: groupedFrameworks,
 			uncommittedConfirmed,
 			updateVscodeSettings: shouldUpdateVscode,
 		} = grouped;
 		result = {
+			formatter:
+				argumentFormatter ?? (groupedFormatter === "standalone" ? "standalone" : "eslint"),
 			frameworks: isStringArray(groupedFrameworks)
 				? groupedFrameworks.filter((value): value is FrameworkOption => {
 						return frameworks.some((option) => option === value);

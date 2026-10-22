@@ -1,12 +1,49 @@
 import ansis from "ansis";
 
-import type { FrameworkOption, PromItem } from "./types.ts";
+import { OXFMT_CONFIG_MODULE } from "../utils.ts";
+import type { FormatterMode, FrameworkOption, PromItem } from "./types.ts";
 
-export const vscodeSettingsString = `
+/** The VS Code extension that runs oxfmt. */
+export const OXC_VSCODE_EXTENSION = "oxc.oxc-vscode";
+
+/** Languages oxfmt formats on save in the standalone setup. */
+const OXFMT_LANGUAGES = [
+	"css",
+	"graphql",
+	"html",
+	"javascript",
+	"javascriptreact",
+	"json",
+	"jsonc",
+	"less",
+	"markdown",
+	"scss",
+	"typescript",
+	"typescriptreact",
+	"yaml",
+];
+
+const eslintFormatterSettings = `
   // Disable the default formatter, use eslint instead
   "prettier.enable": false,
   "editor.formatOnSave": false,
+`;
 
+const standaloneFormatterSettings = `
+  // Format with oxfmt; eslint only lints
+  "prettier.enable": false,
+  "eslint.format.enable": false,
+  // One root oxfmt config, as the CLI and lint runs use
+  "oxc.fmt.disableNestedConfig": true,
+${OXFMT_LANGUAGES.map((language) => {
+	return `  "[${language}]": {
+    "editor.defaultFormatter": "${OXC_VSCODE_EXTENSION}",
+    "editor.formatOnSave": true
+  },`;
+}).join("\n")}
+`;
+
+const lintSettings = `
   // Auto fix
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
@@ -40,6 +77,44 @@ export const vscodeSettingsString = `
 	  "luau"
   ]
 `;
+
+/**
+ * The VS Code settings the wizard adds, as the body of a JSON object.
+ *
+ * @param formatter - Where formatting runs.
+ * @returns The settings text.
+ */
+export function vscodeSettingsString(formatter: FormatterMode = "eslint"): string {
+	return `${formatter === "standalone" ? standaloneFormatterSettings : eslintFormatterSettings}${lintSettings}`;
+}
+
+export const formatterOptions: Array<PromItem<FormatterMode>> = [
+	{
+		hint: "oxfmt runs as an ESLint rule",
+		label: "ESLint",
+		value: "eslint",
+	},
+	{
+		hint: `oxfmt runs as its own tool, with ${OXFMT_CONFIG_MODULE}`,
+		label: "Standalone oxfmt",
+		value: "standalone",
+	},
+];
+
+/**
+ * The {@link OXFMT_CONFIG_MODULE} the standalone setup writes.
+ *
+ * @param ignorePatterns - Patterns oxfmt should skip, as in ESLint `ignores`.
+ * @returns The module source.
+ */
+export function oxfmtConfigContent(ignorePatterns: ReadonlyArray<string> = []): string {
+	const ignores =
+		ignorePatterns.length > 0 ? `, ignorePatterns: ${JSON.stringify(ignorePatterns)}` : "";
+	return `import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
+
+export default isentinelOxfmt({ cwd: import.meta.dirname${ignores} });
+`;
+}
 
 export const frameworkOptions: Array<PromItem<FrameworkOption>> = [
 	{

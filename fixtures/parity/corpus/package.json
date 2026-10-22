@@ -1,0 +1,1 @@
+{"version":"1.0.0","name":"parity-corpus","type":"module","private":true,"scripts":{"test":"vitest","build":"tsdown"},"devDependencies":{"b":"1.0.0","a":"1.0.0"}}

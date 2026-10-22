@@ -56,10 +56,11 @@ export function resetCancellation(): void {
 }
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
-const PREFIX_COLOR: Record<ToolLabel, "blue" | "cyan" | "magenta"> = {
+const PREFIX_COLOR: Record<ToolLabel, "blue" | "cyan" | "magenta" | "yellow"> = {
 	eslint: "blue",
 	fast: "blue",
 	oxc: "magenta",
+	oxfmt: "yellow",
 	typed: "cyan",
 };
 

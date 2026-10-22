@@ -7,6 +7,8 @@ import path from "node:path";
 import process from "node:process";
 import parseGitignore from "parse-gitignore-ts";
 
+import { OXFMT_CONFIG_MODULE, oxfmtConfigNamesIn } from "../../utils.ts";
+import { oxfmtConfigContent } from "../constants.ts";
 import type { PromptResult } from "../types.ts";
 import { getEslintConfigContent } from "../utils.ts";
 
@@ -51,6 +53,10 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 		configLines.push(`${framework}: true,`);
 	}
 
+	if (result.formatter === "standalone") {
+		configLines.push('formatter: "standalone",');
+	}
+
 	const mainConfig = configLines.map((index) => `  ${index}`).join("\n");
 	const additionalConfig: Array<string> = [];
 
@@ -58,6 +64,22 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 
 	await fsp.writeFile(pathFlatConfig, eslintConfigContent);
 	log.success(ansis.green(`Created ${configFileName}`));
+
+	if (result.formatter === "standalone") {
+		// oxfmt refuses a directory with two config files, so keep any one
+		// that is already there.
+		const [existing] = oxfmtConfigNamesIn(cwd);
+		if (existing !== undefined) {
+			log.warn(ansis.yellow(`${existing} already exists, left unchanged.`));
+		} else {
+			// oxfmt does not see ESLint's ignores, so it gets them too.
+			await fsp.writeFile(
+				path.join(cwd, OXFMT_CONFIG_MODULE),
+				oxfmtConfigContent(eslintIgnores),
+			);
+			log.success(ansis.green(`Created ${OXFMT_CONFIG_MODULE}`));
+		}
+	}
 
 	const files = fs.readdirSync(cwd);
 	const legacyConfig: Array<string> = [];

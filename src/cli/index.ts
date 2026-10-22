@@ -28,6 +28,11 @@ const instance = yargs(hideBin(process.argv))
 					description: "Skip prompts and use default values",
 					type: "boolean",
 				})
+				.option("formatter", {
+					choices: ["eslint", "standalone"],
+					description: "Where formatting runs: in ESLint, or oxfmt on its own",
+					type: "string",
+				})
 				.option("template", {
 					alias: "t",
 					description:

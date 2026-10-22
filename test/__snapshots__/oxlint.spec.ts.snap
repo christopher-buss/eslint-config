@@ -6933,6 +6933,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
@@ -7101,6 +7102,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
@@ -11020,6 +11022,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
@@ -11188,6 +11191,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
@@ -17618,6 +17622,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",
@@ -17786,6 +17791,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           {
             "arrowParens": "always",
+            "disableNestedConfig": true,
             "endOfLine": "lf",
             "printWidth": 100,
             "quoteProps": "consistent",

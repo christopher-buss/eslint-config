@@ -23,6 +23,8 @@ import process from "node:process";
 import type { Options as PrettierOptions } from "prettier";
 import { getStaticYAMLValue, parseYAML } from "yaml-eslint-parser";
 
+import type { StylisticConfig } from "./types.ts";
+
 /** Preset defaults, overridden by any project-level configuration. */
 export const PRETTIER_DEFAULTS = {
 	arrowParens: "always",
@@ -71,6 +73,12 @@ const REGEXP_SPECIAL = /[$()*+.?[\\\]^{|}]/g;
  */
 const GLOB_TOKEN = /\*\*\/?|\{[^{}]*\}|[$()*+.?[\\\]^{|}]/g;
 
+/** An `.editorconfig` section turned into an oxfmt override. */
+export type EditorConfigOverride = {
+	files: Array<string>;
+	options: Record<string, unknown>;
+};
+
 interface EditorConfigSection {
 	pattern: string;
 	properties: Record<string, string>;
@@ -113,6 +121,105 @@ export function resolvePrettierSettings(
 		...resolveProjectPrettierConfig(cwd),
 		...prettierOptions,
 	};
+}
+
+/**
+ * Replace `printWidth` and `tabWidth` in the formatting settings with the
+ * values oxfmt really uses.
+ *
+ * `flawless/arrow-return-style` hands `printWidth` to oxfmt to predict its
+ * output (`useOxfmt.printWidth`), so it must match the width oxfmt formats
+ * with, or `--fix` ping-pongs. An oxfmt config can set a width that differs
+ * from the Prettier-shaped settings, so the oxfmt value wins.
+ *
+ * @template T - The settings shape.
+ * @param settings - The resolved formatting settings.
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns The settings with oxfmt's widths.
+ */
+export function withOxfmtWidths<T extends Record<string, unknown>>(
+	settings: T,
+	{ printWidth, tabWidth }: Record<string, unknown>,
+): T {
+	return {
+		...settings,
+		...(typeof printWidth === "number" ? { printWidth } : {}),
+		...(typeof tabWidth === "number" ? { tabWidth } : {}),
+	};
+}
+
+/**
+ * The indent oxfmt writes.
+ *
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns `"tab"`, or the number of spaces.
+ */
+export function oxfmtIndent({ tabWidth, useTabs }: Record<string, unknown>): "tab" | number {
+	if (useTabs !== false) {
+		return "tab";
+	}
+
+	return typeof tabWidth === "number" ? tabWidth : 2;
+}
+
+/**
+ * Default the stylistic `indent` and `quotes` to what oxfmt writes, so the
+ * stylistic rules and oxfmt agree. Explicit `stylistic` values win.
+ *
+ * @param stylistic - The user's stylistic options.
+ * @param oxfmtOptions - The effective oxfmt options.
+ * @returns The stylistic options with oxfmt's indent and quotes.
+ */
+export function withOxfmtStyle(
+	stylistic: StylisticConfig,
+	oxfmtOptions: Record<string, unknown>,
+): StylisticConfig {
+	return {
+		indent: oxfmtIndent(oxfmtOptions),
+		quotes: oxfmtOptions["singleQuote"] === true ? "single" : "double",
+		...stylistic,
+	};
+}
+
+/**
+ * Turn the nearest `.editorconfig`'s sections into oxfmt overrides, the way
+ * the `oxfmt/oxfmt` rule's config loader does: `[*]` is skipped (it feeds the
+ * root options), and each other section becomes an override whose globs are
+ * relative to `cwd`. A key set in the oxfmt config root wins over the
+ * sections.
+ *
+ * @param cwd - The config directory.
+ * @param root - The oxfmt config root options.
+ * @returns The overrides, in file order.
+ */
+export function editorConfigOverrides(
+	cwd: string = process.cwd(),
+	root: Record<string, unknown> = {},
+): Array<EditorConfigOverride> {
+	for (const directory of ancestorDirectories(cwd)) {
+		const contents = readFileOrUndefined(path.join(directory, ".editorconfig"));
+		if (contents === undefined) {
+			continue;
+		}
+
+		const prefix = path.relative(cwd, directory).split(path.sep).join("/");
+		return parseEditorConfig(contents).sections.flatMap(({ pattern, properties }) => {
+			const options = Object.fromEntries(
+				Object.entries(editorConfigToOxfmt(properties)).filter(
+					([key]) => !Object.hasOwn(root, key),
+				),
+			);
+			if (pattern === "*" || Object.keys(options).length === 0) {
+				return [];
+			}
+
+			const glob =
+				prefix === "" ? pattern : `${prefix}/${pattern.replace(LEADING_SLASH, "")}`;
+			return [{ files: [glob], options }];
+		});
+	}
+
+	return [];
 }
 
 function readFileOrUndefined(filePath: string): string | undefined {
@@ -388,4 +495,49 @@ function resolveEditorConfigOptions(cwd: string): PrettierOptions {
 	}
 
 	return editorConfigToPrettier(properties);
+}
+
+/**
+ * Map one `.editorconfig` section to oxfmt options, as the rule's config
+ * loader does.
+ *
+ * @param properties - The section's properties.
+ * @returns The oxfmt options it sets.
+ */
+function editorConfigToOxfmt(properties: Record<string, string>): Record<string, unknown> {
+	const options: Record<string, unknown> = {};
+	const endOfLine = properties["end_of_line"];
+	if (endOfLine === "cr" || endOfLine === "crlf" || endOfLine === "lf") {
+		options["endOfLine"] = endOfLine;
+	}
+
+	const indentStyle = properties["indent_style"];
+	if (indentStyle === "tab" || indentStyle === "space") {
+		options["useTabs"] = indentStyle === "tab";
+	}
+
+	const quoteType = properties["quote_type"];
+	if (quoteType === "single" || quoteType === "double") {
+		options["singleQuote"] = quoteType === "single";
+	}
+
+	const indentSize = Number(properties["indent_size"]);
+	const tabWidth = Number(properties["tab_width"]);
+	if (options["useTabs"] === false && properties["indent_size"] && Number.isFinite(indentSize)) {
+		options["tabWidth"] = indentSize;
+	} else if (properties["tab_width"] && Number.isFinite(tabWidth)) {
+		options["tabWidth"] = tabWidth;
+	}
+
+	const printWidth = Number(properties["max_line_length"]);
+	if (properties["max_line_length"] && Number.isFinite(printWidth)) {
+		options["printWidth"] = printWidth;
+	}
+
+	const finalNewline = properties["insert_final_newline"];
+	if (finalNewline === "true" || finalNewline === "false") {
+		options["insertFinalNewline"] = finalNewline === "true";
+	}
+
+	return options;
 }

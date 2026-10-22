@@ -5,7 +5,18 @@ import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
-import { resolvePrettierSettings } from "../prettier-config.ts";
+import {
+	editorConfigOverrides,
+	oxfmtIndent,
+	resolvePrettierSettings,
+	withOxfmtStyle,
+	withOxfmtWidths,
+} from "../prettier-config.ts";
+import {
+	buildOxfmtOptions,
+	markdownOxfmtOptions,
+	migratePrettierOverrides,
+} from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
@@ -14,14 +25,19 @@ import {
 	isAgentAutofixDisabled,
 	isInAgentSession,
 	isInEditorEnvironment,
+	jsonLayoutOverrides,
+	markdownOverridesOf,
 	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
-	resolveOxfmtConfigOptions,
+	resolveOxfmtConfig,
 	resolveSubOptions,
 	shouldEnableFeature,
 	typeAwareSplitFromEnvironment,
+	warnScriptWidthOverrides,
+	warnStandaloneOptions,
 } from "../utils.ts";
+import type { ResolvedOxfmtConfig } from "../utils.ts";
 import {
 	comments,
 	disables,
@@ -243,6 +259,7 @@ export async function isentinel(
 		componentExts: componentExtensions = [],
 		e18e: enableE18e = true,
 		eslintPlugin: enableEslintPlugin = false,
+		formatter = "eslint",
 		formatters,
 		gitignore: enableGitignore = true,
 		jsdoc: enableJsdoc = true,
@@ -341,6 +358,34 @@ export async function isentinel(
 		return enableRoblox ? "game" : "package";
 	})();
 
+	if (formatter === "standalone") {
+		warnStandaloneOptions(options);
+	}
+
+	// Standalone oxfmt never sees these, so the widths must not use them.
+	const formatterOptions =
+		formatter !== "standalone" && typeof formatters === "object" ? formatters : {};
+	// Standalone oxfmt formats whatever these options say, so the widths and
+	// style must always come from its config.
+	const oxfmtFormats =
+		formatter === "standalone" || (formatters !== false && options.stylistic !== false);
+
+	const oxfmtConfig: ResolvedOxfmtConfig = oxfmtFormats
+		? await resolveOxfmtConfig()
+		: { options: {} };
+	const oxfmtConfigOptions = oxfmtConfig.options;
+
+	// Shared with the oxlint factory: these settings feed rule options (for
+	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
+	// resolve them identically or their fixes disagree.
+	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
+	const effectiveOxfmtOptions = buildOxfmtOptions({
+		oxfmtConfigOptions,
+		oxfmtOptions: formatterOptions.oxfmtOptions,
+		prettierOptions: prettierSettings,
+	});
+	const widthSettings = withOxfmtWidths(prettierSettings, effectiveOxfmtOptions);
+
 	const stylisticOptions = (() => {
 		if (options.stylistic === false) {
 			return false;
@@ -357,14 +402,11 @@ export async function isentinel(
 		stylisticOptions.jsx = enableJsx;
 	}
 
-	const formatterOptions = typeof formatters === "object" ? formatters : {};
-
-	const oxfmtConfigOptions = formatters !== false ? await resolveOxfmtConfigOptions() : {};
-
-	// Shared with the oxlint factory: these settings feed rule options (for
-	// example `flawless/arrow-return-style`'s `maxLen`), so both engines must
-	// resolve them identically or their fixes disagree.
-	const prettierSettings = resolvePrettierSettings(formatterOptions.prettierOptions);
+	// The `.editorconfig` sections, as the rule's config loader applies them.
+	const sectionOverrides = oxfmtFormats
+		? editorConfigOverrides(undefined, oxfmtConfigOptions)
+		: [];
+	warnScriptWidthOverrides(sectionOverrides, ".editorconfig");
 
 	const configs: Array<Awaitable<Array<TypedFlatConfigItem>>> = [];
 
@@ -377,10 +419,30 @@ export async function isentinel(
 		);
 	}
 
+	// oxfmt formats Markdown code blocks with the Markdown options, then the
+	// config's Markdown overrides, in both modes.
+	const markdownCodeWidths =
+		formatter === "standalone" ||
+		(formatters !== false && shouldEnableFeature(formatters, "markdown"))
+			? {
+					markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
+					markdownCodeOverrides: [
+						...markdownOverridesOf(sectionOverrides),
+						...(oxfmtConfig.markdownOverrides ?? []),
+						// The `.prettierrc` overrides apply last, in both modes.
+						...markdownOverridesOf(prettierSettings["overrides"]),
+					],
+				}
+			: {};
+
 	// Base configs
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
-		comments({ prettierOptions: prettierSettings, stylistic: stylisticOptions }),
+		comments({
+			...markdownCodeWidths,
+			prettierOptions: widthSettings,
+			stylistic: stylisticOptions,
+		}),
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
@@ -391,10 +453,11 @@ export async function isentinel(
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
 				antiSlop,
+				...markdownCodeWidths,
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
-			prettierSettings,
+			widthSettings,
 		),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
@@ -497,7 +560,13 @@ export async function isentinel(
 
 	if (stylisticOptions !== false) {
 		configs.push(
-			stylistic(stylisticOptions),
+			// Only the JS/TS stylistic rules follow oxfmt's indent and quotes:
+			// other consumers (TOML) format files oxfmt does not touch.
+			stylistic(
+				oxfmtFormats
+					? withOxfmtStyle(stylisticOptions, effectiveOxfmtOptions)
+					: stylisticOptions,
+			),
 			perfectionist({ ...resolveSubOptions(options, "perfectionist"), type: projectType }),
 		);
 	}
@@ -535,6 +604,18 @@ export async function isentinel(
 		configs.push(
 			jsonc({
 				...getOverrides(options, "jsonc"),
+				bracketSpacing: !oxfmtFormats || effectiveOxfmtOptions["bracketSpacing"] !== false,
+				...(oxfmtFormats
+					? {
+							formatIndent: oxfmtIndent(effectiveOxfmtOptions),
+							layoutOverrides: jsonLayoutOverrides([
+								...sectionOverrides,
+								...(oxfmtConfig.overrides ?? []),
+								...migratePrettierOverrides(prettierSettings["overrides"]),
+							]),
+						}
+					: {}),
+				singleQuote: oxfmtFormats && effectiveOxfmtOptions["singleQuote"] === true,
 				stylistic: stylisticOptions,
 			}),
 		);
@@ -657,6 +738,7 @@ export async function isentinel(
 				// oxlint as a jsPlugin, which that mode does not load.
 				oxlint: oxlintMode === "full",
 				prettierOptions: prettierSettings,
+				standalone: formatter === "standalone",
 			}),
 		);
 	}

@@ -35,6 +35,10 @@
 			"default": "./dist/index.mjs"
 		},
 		"./formatter-agents": "./dist/formatter-agents.mjs",
+		"./oxfmt": {
+			"types": "./dist/oxfmt.d.mts",
+			"default": "./dist/oxfmt.mjs"
+		},
 		"./oxlint": {
 			"types": "./dist/oxlint.d.mts",
 			"default": "./dist/oxlint.mjs"
@@ -68,6 +72,7 @@
 		"release": "bumpp -r",
 		"stub": "tsdown",
 		"test": "nr gen && vitest run",
+		"test:parity": "vitest run --config vitest.parity.config.ts",
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit",
 		"validate:oxlint": "node scripts/validate-oxlint.ts",
@@ -117,6 +122,7 @@
 		"file-entry-cache": "catalog:prod",
 		"find-up-simple": "catalog:prod",
 		"globals": "catalog:prod",
+		"jiti": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
 		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
@@ -156,7 +162,6 @@
 		"eslint-plugin-react-x": "catalog:peer",
 		"eslint-plugin-testing-library": "catalog:peer",
 		"eslint-typegen": "catalog:dev",
-		"jiti": "catalog:dev",
 		"oxlint": "catalog:peer",
 		"oxlint-tsgolint": "catalog:peer",
 		"parse-gitignore-ts": "catalog:dev",

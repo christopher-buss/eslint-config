@@ -1,15 +1,15 @@
 import { describe, it, vi } from "vitest";
 
 import type { ConfirmOverwrite } from "../src/cli/stages/update-package-json.ts";
-import { LINT_SCRIPTS, mergeLintScripts } from "../src/cli/stages/update-package-json.ts";
+import { LINT_SCRIPTS, mergeScripts } from "../src/cli/stages/update-package-json.ts";
 
-describe("mergeLintScripts", () => {
+describe("mergeScripts", () => {
 	it("adds both lint scripts when absent", async ({ expect }) => {
 		expect.assertions(3);
 
 		const scripts: Record<string, string> = {};
 
-		const result = await mergeLintScripts(scripts, { skipPrompt: false });
+		const result = await mergeScripts(scripts, { skipPrompt: false });
 
 		expect(scripts).toStrictEqual(LINT_SCRIPTS);
 		expect(result.added).toStrictEqual(["lint", "lint:fix"]);
@@ -21,7 +21,7 @@ describe("mergeLintScripts", () => {
 
 		const scripts: Record<string, string> = { build: "tsc" };
 
-		const result = await mergeLintScripts(scripts, { skipPrompt: false });
+		const result = await mergeScripts(scripts, { skipPrompt: false });
 
 		expect(scripts).toStrictEqual({
 			"build": "tsc",
@@ -37,7 +37,7 @@ describe("mergeLintScripts", () => {
 		const scripts: Record<string, string> = { ...LINT_SCRIPTS };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>();
 
-		const result = await mergeLintScripts(scripts, {
+		const result = await mergeScripts(scripts, {
 			confirmOverwrite,
 			skipPrompt: false,
 		});
@@ -57,7 +57,7 @@ describe("mergeLintScripts", () => {
 		};
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>();
 
-		const result = await mergeLintScripts(scripts, {
+		const result = await mergeScripts(scripts, {
 			confirmOverwrite,
 			skipPrompt: true,
 		});
@@ -75,7 +75,7 @@ describe("mergeLintScripts", () => {
 
 		const scripts: Record<string, string> = { lint: "eslint" };
 
-		const result = await mergeLintScripts(scripts, { skipPrompt: true });
+		const result = await mergeScripts(scripts, { skipPrompt: true });
 
 		expect(scripts).toStrictEqual({ "lint": "eslint", "lint:fix": "isentinel-lint --fix" });
 		expect(result.added).toStrictEqual(["lint:fix"]);
@@ -88,7 +88,7 @@ describe("mergeLintScripts", () => {
 		const scripts: Record<string, string> = { "lint": "eslint", "lint:fix": "eslint --fix" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(true);
 
-		const result = await mergeLintScripts(scripts, {
+		const result = await mergeScripts(scripts, {
 			confirmOverwrite,
 			skipPrompt: false,
 		});
@@ -104,7 +104,7 @@ describe("mergeLintScripts", () => {
 		const scripts: Record<string, string> = { lint: "eslint" };
 		const confirmOverwrite = vi.fn<ConfirmOverwrite>().mockResolvedValue(false);
 
-		const result = await mergeLintScripts(scripts, {
+		const result = await mergeScripts(scripts, {
 			confirmOverwrite,
 			skipPrompt: false,
 		});

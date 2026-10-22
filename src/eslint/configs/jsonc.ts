@@ -1,5 +1,6 @@
 import { GLOB_JSON, GLOB_JSON5, GLOB_JSONC, GLOB_TSCONFIG } from "../../globs.ts";
 import { interopDefault, resolveWithDefaults } from "../../utils.ts";
+import type { OverrideScope } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
@@ -9,12 +10,30 @@ import type {
 } from "../types.ts";
 
 export async function jsonc({
+	bracketSpacing = true,
 	files = [GLOB_JSON, GLOB_JSON5, GLOB_JSONC],
+	formatIndent,
+	layoutOverrides = [],
 	overrides = {},
+	singleQuote = false,
 	stylistic = true,
-}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+}: OptionsFiles &
+	OptionsOverrides &
+	OptionsStylistic & {
+		/** Space inside braces; follows the formatter's `bracketSpacing`. */
+		bracketSpacing?: boolean;
+		/** The indent oxfmt writes, used unless `stylistic.indent` is set. */
+		formatIndent?: "tab" | number;
+		/**
+		 * Overrides that change oxfmt's JSON layout. The layout rules are off
+		 * where they apply.
+		 */
+		layoutOverrides?: Array<OverrideScope>;
+		/** JSON5 quotes; follows the formatter's `singleQuote`. */
+		singleQuote?: boolean;
+	} = {}): Promise<Array<TypedFlatConfigItem>> {
 	const defaults = resolveWithDefaults(stylistic, {});
-	const { indent = "tab" } = defaults === false ? {} : defaults;
+	const { indent = formatIndent ?? "tab" } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" || indent === "tab" ? indent : "tab";
 
 	const pluginJsonc = lazyPlugin("eslint-plugin-jsonc");
@@ -74,7 +93,10 @@ export async function jsonc({
 								"error",
 								{ consistent: true, multiline: true },
 							],
-							"jsonc/object-curly-spacing": ["error", "always"],
+							"jsonc/object-curly-spacing": [
+								"error",
+								bracketSpacing ? "always" : "never",
+							],
 							"jsonc/object-property-newline": [
 								"error",
 								{ allowMultiplePropertiesPerLine: true },
@@ -87,6 +109,29 @@ export async function jsonc({
 				...overrides,
 			},
 		},
+		...(stylistic !== false && singleQuote
+			? [
+					{
+						name: "isentinel/jsonc/json5-quotes",
+						files: [GLOB_JSON5],
+						rules: { "jsonc/quotes": ["error", "single"] },
+					} satisfies TypedFlatConfigItem,
+				]
+			: []),
+		...(stylistic === false
+			? []
+			: layoutOverrides.map(({ excludeFiles, files: overrideFiles }, index) => {
+					return {
+						name: `isentinel/jsonc/oxfmt-override-${index}`,
+						files: overrideFiles,
+						ignores: excludeFiles,
+						rules: {
+							"jsonc/indent": "off",
+							"jsonc/object-curly-spacing": "off",
+							"jsonc/quotes": "off",
+						},
+					} satisfies TypedFlatConfigItem;
+				})),
 		{
 			name: "isentinel/jsonc/tsconfig",
 			files: [GLOB_TSCONFIG],

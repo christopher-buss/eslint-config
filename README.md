@@ -399,6 +399,7 @@ or `--`.
 | `--oxlint-args "<args>"`       | Extra arguments forwarded verbatim to oxlint.                                                                                      |
 | `--files0-from <file\|->`      | Read the paths to lint from a NUL-delimited UTF-8 list (`-` for stdin); an empty list exits 0.                                     |
 | `--print`                      | Print the composed commands without running them.                                                                                  |
+| `--no-oxfmt`                   | Skip the oxfmt pass that runs when the project has an `oxfmt.config.*` file (see [Standalone oxfmt](#standalone-oxfmt)).           |
 | `-- <args>`                    | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).                                                            |
 | `-h`, `--help`                 | Show help.                                                                                                                         |
 | `-v`, `--version`              | Show the version.                                                                                                                  |
@@ -948,6 +949,103 @@ pnpm i -D oxlint oxlint-tsgolint
 
 See [docs/oxlint.md](./docs/oxlint.md) for the per-rule mapping, what stays in
 ESLint and why, and migration notes.
+
+#### Standalone oxfmt
+
+By default, oxfmt runs inside the linter as the `oxfmt/oxfmt` rule. To run it as
+its own tool (`oxfmt`, editor format-on-save through the oxc extension), set
+`formatter: "standalone"` in both factories and add an `oxfmt.config.ts` built
+from the preset:
+
+```ts
+// oxfmt.config.ts
+import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
+
+export default isentinelOxfmt({ cwd: import.meta.dirname, printWidth: 100 });
+```
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	formatter: "standalone",
+});
+```
+
+`isentinelOxfmt` starts from the same options the linter uses (preset defaults,
+then `.editorconfig`, then `.prettierrc`). Each key you pass replaces its base
+value, except `ignorePatterns` and `overrides`, which are appended to the
+preset's. The override order is the one the `oxfmt/oxfmt` rule uses: the
+preset's Markdown, YAML and JSON5 overrides, then the `.editorconfig` sections
+(without keys you set at the root), then yours, then the `.prettierrc`
+`overrides`. Override globs without a slash are anchored to the config directory
+(`*.json` becomes `./*.json`), because the rule matches them only there. `cwd`
+is the directory to read `.prettierrc` and `.editorconfig` from (default
+`process.cwd()`). Pass `import.meta.dirname`, as the wizard does, so the result
+does not depend on where oxfmt runs.
+
+`isentinelOxfmt` takes `formatters` and `componentExts`, with the same meaning
+as in the factories, so oxfmt formats the same files the linter would. TOML,
+`.mdx` and other files the linter does not format are ignored.
+
+In standalone mode, oxfmt never sees the linter's options. The factories warn
+once per lint run when you set any of these, because they do not change
+formatting: `formatters` (any value except `true`), `componentExts`, `ignores`,
+or `gitignore` (`false` or custom files). Set the equivalent in `isentinelOxfmt`
+instead (`formatters`, `componentExts`, `ignorePatterns`, and format options).
+`stylistic: false` turns off the stylistic lint rules but not oxfmt. The rule
+widths also come from the oxfmt config only, not from
+`formatters.prettierOptions` or `formatters.oxfmtOptions`. The setup wizard
+copies migrated `.eslintignore` patterns to both configs.
+
+With `formatter: "standalone"`, the linter enables `oxfmt/oxfmt` nowhere but
+keeps the rules that turn off formatting conflicts. Lua formatting (Stylua)
+stays in ESLint, because oxfmt does not format Lua. The setup wizard can write
+all of this for you.
+
+`isentinel-lint` runs `oxfmt --check` next to the linters whenever it finds an
+`oxfmt.config.ts` or `oxfmt.config.mts`, and `oxfmt --write` last with `--fix`.
+It does this whatever the `formatter` option is, so set
+`formatter: "standalone"` with such a file, or the files are formatted twice.
+Pass `--no-oxfmt` to skip the pass.
+
+Both factories read the oxfmt config that oxfmt itself uses: `.oxfmtrc.json`,
+`.oxfmtrc.jsonc`, `oxfmt.config.ts` or `oxfmt.config.mts`, in the nearest
+directory from the working directory up to the filesystem root. More than one of
+them in one directory is an error, as in oxfmt. Its root options (without
+`ignorePatterns` and `overrides`) override `formatters.prettierOptions`, and
+`formatters.oxfmtOptions` overrides them.
+
+Nested oxfmt configs (a config file in a subdirectory) are not used, in either
+mode. One root config formats the whole project: the `oxfmt/oxfmt` rule sets
+`disableNestedConfig`, `isentinel-lint` passes `--config`, the wizard's format
+scripts pass `--disable-nested-config`, and its VS Code settings set
+`oxc.fmt.disableNestedConfig`. Use `overrides` for per-folder options. The same
+holds for `.editorconfig`: only the nearest one at or above the root config is
+read, so a `.editorconfig` in a subdirectory does not change formatting.
+
+`flawless/arrow-return-style` uses two widths. `maxLen` is your limit: an arrow
+becomes implicit only if it fits. It comes from `stylistic.maxLen`, else
+`printWidth`, and it can be shorter than the formatter width on purpose.
+`useOxfmt.printWidth` is the width the rule gives oxfmt to predict its output.
+It always comes from the root `printWidth` of the oxfmt config, so that `--fix`
+agrees with oxfmt. An override that changes `printWidth` or `tabWidth` for JS or
+TS files gets a warning, because the linter uses the root values. In Markdown
+code blocks, `useOxfmt` uses the Markdown widths instead, because oxfmt formats
+embedded code with the Markdown options. Each oxfmt, `.editorconfig` or
+`.prettierrc` override that changes the Markdown widths reaches only the code
+blocks of the files it matches. The comment length rules take their `tabSize`
+from the same oxfmt widths.
+
+The stylistic `indent` and `quotes`, and the JSON bracket spacing, follow the
+oxfmt options (`useTabs`, `tabWidth`, `singleQuote`, `bracketSpacing`) unless
+you set them in `stylistic`.
+
+Both modes write the same output, with one known difference: when one import
+merges into another (`import/no-duplicates`), eslint mode sorts the imports
+before the merge and standalone mode after it, so comments above the merged
+import can end in a different order.
 
 #### Type-Aware Split
 

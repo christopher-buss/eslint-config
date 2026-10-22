@@ -1,0 +1,2 @@
+# Expected outputs keep the exact bytes the tools write, CRLF included.
+* -text

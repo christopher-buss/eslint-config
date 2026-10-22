@@ -18,10 +18,10 @@ export type TypeAwareOption = "full" | "off" | "only";
  * Logical identifier for each linter child the runner drives. `"fast"` and
  * `"typed"` are the two ESLint passes of the default concurrent mode.
  */
-export type ToolLabel = "eslint" | "fast" | "oxc" | "typed";
+export type ToolLabel = "eslint" | "fast" | "oxc" | "oxfmt" | "typed";
 
 /** Logical binary name resolved from the consumer's `node_modules`. */
-export type ToolBin = "eslint" | "oxlint";
+export type ToolBin = "eslint" | "oxfmt" | "oxlint";
 
 /**
  * Fully parsed and validated `isentinel-lint` invocation. All ambiguity has
@@ -49,6 +49,11 @@ export interface LintCliOptions {
 	 * child then fixes the files they reported messages on.
 	 */
 	fix: boolean;
+	/**
+	 * Run the oxfmt pass when the project has an `oxfmt.config.*` file (the
+	 * standalone formatter setup). `--no-oxfmt` turns it off.
+	 */
+	oxfmt: boolean;
 	/** Whether to pass `--type-aware` to oxlint. */
 	oxlint: boolean;
 	/** Extra arguments forwarded verbatim to oxlint. */
@@ -121,6 +126,11 @@ export interface ComposeContext {
 	heap: PassHeap | undefined;
 	/** Target paths to lint. */
 	paths: Array<string>;
+	/**
+	 * Silence the preset's config warnings in this child, because another
+	 * child of the same run prints them.
+	 */
+	quietWarnings?: boolean;
 	/**
 	 * Value for the ESLint child's `ESLINT_TYPE_AWARE`. `undefined` leaves it
 	 * unset (the full config).

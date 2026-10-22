@@ -17,6 +17,12 @@ export const LINT_SCRIPTS: Record<string, string> = {
 	"lint:fix": "isentinel-lint --fix",
 };
 
+/** Scripts the standalone formatter setup adds, so oxfmt runs on its own. */
+export const FORMAT_SCRIPTS: Record<string, string> = {
+	"format": "oxfmt --disable-nested-config",
+	"format:check": "oxfmt --check --disable-nested-config",
+};
+
 /** Whether an existing script should be overwritten by the new value. */
 export type ConfirmOverwrite = (
 	name: string,
@@ -24,7 +30,7 @@ export type ConfirmOverwrite = (
 	desired: string,
 ) => Promise<boolean>;
 
-/** Outcome of merging {@link LINT_SCRIPTS} into a scripts block. */
+/** Outcome of merging scripts into a scripts block. */
 export interface ScriptMergeResult {
 	/** Names of scripts newly added because none existed. */
 	added: Array<string>;
@@ -33,23 +39,30 @@ export interface ScriptMergeResult {
 }
 
 /**
- * Merge the lint scripts into a `scripts` block in place. Missing scripts are
- * always added. An existing script with identical content is left untouched. An
- * existing script with different content is preserved in skip-prompt mode, and
- * otherwise only overwritten when {@link ConfirmOverwrite} resolves true.
+ * Merge the lint scripts (or `options.desired`) into a `scripts` block in
+ * place. Missing scripts are always added. An existing script with identical
+ * content is left untouched. An existing script with different content is
+ * preserved in skip-prompt mode, and otherwise only overwritten when
+ * {@link ConfirmOverwrite} resolves true.
  *
  * @param scripts - The consumer's `scripts` block, mutated in place.
- * @param options - Skip-prompt flag and the overwrite confirmation callback.
+ * @param options - Skip-prompt flag, the overwrite confirmation callback and
+ *   the scripts to merge (default {@link LINT_SCRIPTS}).
  * @returns Which scripts were added and which were overwritten.
  */
-export async function mergeLintScripts(
+export async function mergeScripts(
 	scripts: Partial<Record<string, string>>,
-	options: { confirmOverwrite?: ConfirmOverwrite; skipPrompt: boolean },
+	options: {
+		confirmOverwrite?: ConfirmOverwrite;
+		desired?: Record<string, string>;
+		skipPrompt: boolean;
+	},
 ): Promise<ScriptMergeResult> {
 	const added: Array<string> = [];
 	const overwritten: Array<string> = [];
 
-	for (const [name, desired] of Object.entries(LINT_SCRIPTS)) {
+	const entries = Object.entries(options.desired ?? LINT_SCRIPTS);
+	for (const [name, desired] of entries) {
 		const existing = scripts[name];
 		if (existing === undefined) {
 			scripts[name] = desired;
@@ -84,6 +97,9 @@ export async function updatePackageJson(result: PromptResult, skipPrompt = false
 	parsedPackage.devDependencies ??= {};
 	parsedPackage.devDependencies["@isentinel/eslint-config"] = `^${ownPackageJson.version}`;
 	parsedPackage.devDependencies["eslint"] ??= versionsMap.eslint;
+	if (result.formatter === "standalone") {
+		parsedPackage.devDependencies["oxfmt"] ??= versionsMap.oxfmt;
+	}
 
 	const addedPackages: Array<string> = [];
 
@@ -106,7 +122,7 @@ export async function updatePackageJson(result: PromptResult, skipPrompt = false
 
 	parsedPackage.scripts ??= {};
 	const { scripts = {} } = parsedPackage;
-	const { added, overwritten } = await mergeLintScripts(scripts, {
+	const { added, overwritten } = await mergeScripts(scripts, {
 		confirmOverwrite: async (name, existing, desired) => {
 			const answer = await confirm({
 				initialValue: false,
@@ -114,15 +130,16 @@ export async function updatePackageJson(result: PromptResult, skipPrompt = false
 			});
 			return answer === true;
 		},
+		desired:
+			result.formatter === "standalone"
+				? { ...LINT_SCRIPTS, ...FORMAT_SCRIPTS }
+				: LINT_SCRIPTS,
 		skipPrompt,
 	});
 
 	const touched = [...added, ...overwritten];
 	if (touched.length) {
-		note(
-			ansis.dim(touched.map((name) => `${name}: ${scripts[name]}`).join("\n")),
-			"Lint scripts",
-		);
+		note(ansis.dim(touched.map((name) => `${name}: ${scripts[name]}`).join("\n")), "Scripts");
 	}
 
 	await fsp.writeFile(pathPackageJSON, JSON.stringify(parsedPackage, null, 2));

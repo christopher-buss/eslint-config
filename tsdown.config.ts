@@ -22,6 +22,7 @@ const entries = {
 	"lint-bootstrap": "src/lint-cli/bootstrap.ts",
 	"lint-cli": "src/lint-cli/index.ts",
 	"lint-ignored": "src/lint-cli/ignored-child.ts",
+	"oxfmt": "src/oxfmt/index.ts",
 	"oxlint": "src/oxlint/index.ts",
 } satisfies Record<string, string>;
 
@@ -112,6 +113,13 @@ export default defineConfig([
 			],
 		},
 		entry: { oxlint: entries.oxlint },
+	},
+	{
+		...sharedOptions,
+		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
+		// both factories; keep it small and its runtime deps external.
+		deps: { neverBundle: true },
+		entry: { oxfmt: entries.oxfmt },
 	},
 	{
 		// Dependency-usage check only: unplugin-unused inspects a single

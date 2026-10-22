@@ -32,6 +32,7 @@ const NON_JS_FORMATTER_CONFIGS = [
 	"isentinel/oxfmt/markdown",
 	"isentinel/oxfmt/graphql",
 	"isentinel/oxfmt/json",
+	"isentinel/oxfmt/json5",
 	"isentinel/oxfmt/yaml",
 ] as const;
 
@@ -95,10 +96,7 @@ describe("oxlint hybrid formatter coverage", () => {
 
 		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
 
-		expect(formattingConfigNames(configs)).toStrictEqual([
-			"isentinel/oxfmt/markdown-code",
-			...NON_JS_FORMATTER_CONFIGS,
-		]);
+		expect(formattingConfigNames(configs)).toStrictEqual([...NON_JS_FORMATTER_CONFIGS]);
 	});
 
 	it("should report formatting on a YAML file in hybrid mode", async ({ expect }) => {
