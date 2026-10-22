@@ -444,6 +444,35 @@ describe(".editorconfig sections", () => {
 		]);
 	});
 
+	it("are named as the source of a JS/TS width warning in standalone mode", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {
+			".editorconfig": ["root = true", "[sub/**]", "tab_width = 2"].join(
+				String.fromCharCode(10),
+			),
+			"oxfmt.config.ts": oxfmtConfigModule("{}"),
+		});
+		const state: Record<symbol, unknown> = globalThis;
+		const key = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
+		delete state[key];
+		onTestFinished(() => {
+			delete state[key];
+		});
+		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		await isentinel({ formatter: "standalone", roblox: false, type: "package" });
+
+		expect(
+			warn.mock.calls
+				.map(([message]) => String(message))
+				.filter((message) => message.includes("printWidth or tabWidth")),
+		).toStrictEqual([expect.stringContaining("] .editorconfig has an override")]);
+	});
+
 	it("reach the Markdown code widths", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
@@ -523,6 +552,50 @@ describe("markdown code widths", () => {
 			});
 		},
 	);
+
+	it("skips excluded and negated globs of a Markdown override", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {
+			".oxfmtrc.json": JSON.stringify({
+				overrides: [
+					{
+						excludeFiles: ["docs/old/**"],
+						files: ["docs/**/*.md", "!docs/skip.md"],
+						options: { printWidth: 100 },
+					},
+				],
+			}),
+		});
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const override = configs.find(
+			(config) => config.name === "isentinel/flawless/markdown-code/override-0",
+		);
+
+		expect(override!.ignores).toStrictEqual(["docs/old/**/**", "docs/skip.md/**"]);
+	});
+
+	it("gives the comment rules the Markdown tabWidth in code blocks", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {});
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const { rules } = configs.find(
+			(config) => config.name === "isentinel/eslint/comments/markdown-code",
+		)!;
+
+		expect(ruleOptions(rules, "comment-length/limit-single-line-comments")).toMatchObject({
+			tabSize: 2,
+		});
+	});
 
 	it("ignores the root widths for Markdown code", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);

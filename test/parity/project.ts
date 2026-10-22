@@ -22,7 +22,8 @@ const OXLINT_URL = sourceUrl("oxlint/index.ts");
 const UTILS_URL = sourceUrl("utils.ts");
 
 /** Files that configure the run rather than being formatted by it. */
-const CONFIG_FILES = new Set(["eslint.config.ts", "oxfmt.config.ts", "oxlint.config.ts"]);
+const OXFMT_CONFIG_FILE = "oxfmt.config.ts";
+const CONFIG_FILES = new Set(["eslint.config.ts", OXFMT_CONFIG_FILE, "oxlint.config.ts"]);
 
 const BASE_OPTIONS = `{
 	isAgent: false,
@@ -107,6 +108,17 @@ export function changedFiles(before: Tree, after: Tree): Array<string> {
 	return [...names].filter((name) => before.get(name) !== after.get(name)).sort();
 }
 
+/** Files that change formatting when found in a parent directory. */
+const OUTER_CONFIGS = [
+	".editorconfig",
+	".oxfmtrc.json",
+	".oxfmtrc.jsonc",
+	".prettierrc",
+	".prettierrc.json",
+	OXFMT_CONFIG_FILE,
+	"oxfmt.config.mts",
+];
+
 /**
  * Create a scenario's scratch project for one mode.
  *
@@ -120,6 +132,7 @@ export async function prepareProject(scenario: Scenario, mode: Mode): Promise<st
 	);
 	const runDirectory = path.join(root, scenario.cwd ?? ".");
 
+	await assertNoOuterConfig(root);
 	await copyInputs(scenario, root, runDirectory);
 	await writeConfigs(scenario, mode, root, runDirectory);
 
@@ -197,6 +210,31 @@ export function stripConfigFiles(tree: Tree, scenario: Scenario, mode: Mode): Tr
 			return !CONFIG_FILES.has(path.posix.basename(name)) && !excluded.has(name);
 		}),
 	);
+}
+
+/**
+ * Fail when a directory above the project holds a config the tools would
+ * read, so a stray file cannot change what a scenario tests.
+ *
+ * @param root - The project root.
+ * @rejects When such a file exists.
+ */
+async function assertNoOuterConfig(root: string): Promise<void> {
+	let directory = path.dirname(root);
+	while (path.dirname(directory) !== directory) {
+		for (const name of OUTER_CONFIGS) {
+			const file = path.join(directory, name);
+			const found = await fs
+				.stat(file)
+				.then(() => true)
+				.catch(() => false);
+			if (found) {
+				throw new Error(`parity: ${file} sits above the scratch project; remove it`);
+			}
+		}
+
+		directory = path.dirname(directory);
+	}
 }
 
 async function writeFiles(root: string, files: Record<string, string> = {}): Promise<void> {

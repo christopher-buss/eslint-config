@@ -1021,7 +1021,9 @@ Nested oxfmt configs (a config file in a subdirectory) are not used, in either
 mode. One root config formats the whole project: the `oxfmt/oxfmt` rule sets
 `disableNestedConfig`, `isentinel-lint` passes `--config`, the wizard's format
 scripts pass `--disable-nested-config`, and its VS Code settings set
-`oxc.fmt.disableNestedConfig`. Use `overrides` for per-folder options.
+`oxc.fmt.disableNestedConfig`. Use `overrides` for per-folder options. The same
+holds for `.editorconfig`: only the nearest one at or above the root config is
+read, so a `.editorconfig` in a subdirectory does not change formatting.
 
 `flawless/arrow-return-style` uses two widths. `maxLen` is your limit: an arrow
 becomes implicit only if it fits. It comes from `stylistic.maxLen`, else

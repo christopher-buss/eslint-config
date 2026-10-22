@@ -17,6 +17,8 @@ import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
 import { isRecord } from "./guards.ts";
+import { editorConfigOverrides } from "./prettier-config.ts";
+import type { EditorConfigOverride } from "./prettier-config.ts";
 import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
@@ -680,6 +682,7 @@ const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"]
 /** The extensions of the Markdown files ESLint lints code blocks in. */
 const MARKDOWN_EXTENSIONS = ["md"];
 const JSON_EXTENSIONS = ["json", "json5", "jsonc"];
+const LEADING_DOT_SLASH = /^\.\//;
 
 /** Set once a process has warned about a JS/TS width override. */
 const WARNED_SCRIPT_OVERRIDE = Symbol.for("@isentinel/eslint-config/oxfmt-override-warned");
@@ -1107,6 +1110,33 @@ function loadError(configPath: string, error: unknown): Error {
 }
 
 /**
+ * Whether a config override is an `.editorconfig` section that
+ * `isentinelOxfmt` copied in: the same globs (anchored or not) and a subset
+ * of its options.
+ *
+ * @param override - One config override.
+ * @param sections - The `.editorconfig` sections, as overrides.
+ * @returns Whether it mirrors one of them.
+ */
+function mirrorsSection(override: unknown, sections: ReadonlyArray<EditorConfigOverride>): boolean {
+	if (!isRecord(override) || !isRecord(override["options"])) {
+		return false;
+	}
+
+	const { options } = override;
+	const files = [override["files"]]
+		.flat()
+		.map((glob) => (typeof glob === "string" ? glob.replace(LEADING_DOT_SLASH, "") : glob));
+	return sections.some((section) => {
+		return (
+			section.files.length === files.length &&
+			section.files.every((glob, index) => glob === files[index]) &&
+			Object.entries(options).every(([key, value]) => section.options[key] === value)
+		);
+	});
+}
+
+/**
  * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options and the Markdown
  * widths. The rule takes format options only, so `$schema`, `ignorePatterns`
  * and `overrides` are dropped from the options.
@@ -1116,7 +1146,7 @@ function loadError(configPath: string, error: unknown): Error {
  * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
  * @param config.overrides - Dropped, after the width check; read for the
  *   Markdown widths.
- * @param source - The config file name, for the warning.
+ * @param configPath - The config file, for the warning.
  * @returns The format options and Markdown widths.
  */
 function toResolvedConfig(
@@ -1126,9 +1156,18 @@ function toResolvedConfig(
 		overrides,
 		...options
 	}: Record<string, unknown>,
-	source: string,
+	configPath: string,
 ): ResolvedOxfmtConfig {
-	warnScriptWidthOverrides(overrides, source);
+	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
+	// name the real source of those.
+	const sections = editorConfigOverrides(path.dirname(configPath));
+	const list: Array<unknown> = Array.isArray(overrides) ? overrides : [];
+	const copied = list.filter((override) => mirrorsSection(override, sections));
+	warnScriptWidthOverrides(copied, ".editorconfig");
+	warnScriptWidthOverrides(
+		list.filter((override) => !copied.includes(override)),
+		path.basename(configPath),
+	);
 	return {
 		markdownOverrides: markdownOverridesOf(overrides),
 		options,
@@ -1141,7 +1180,7 @@ function moduleConfig(configPath: string, loaded: unknown): ResolvedOxfmtConfig 
 		throw loadError(configPath, new TypeError("the default export is not an object"));
 	}
 
-	return toResolvedConfig(loaded, path.basename(configPath));
+	return toResolvedConfig(loaded, configPath);
 }
 
 function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
@@ -1156,7 +1195,7 @@ function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
 		throw loadError(configPath, new TypeError("the config is not an object"));
 	}
 
-	return toResolvedConfig(parsed, path.basename(configPath));
+	return toResolvedConfig(parsed, configPath);
 }
 
 /**

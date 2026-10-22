@@ -109,7 +109,14 @@ export function oxlintOxfmt(
 				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
 				rules: {
 					...jsPluginRules,
-					...(standalone ? {} : { "oxfmt/oxfmt": ["error", oxfmtOptions] }),
+					...(standalone
+						? {}
+						: {
+								"oxfmt/oxfmt": [
+									"error",
+									{ ...oxfmtOptions, disableNestedConfig: true },
+								],
+							}),
 				} as TypedOxlintConfigItem["rules"],
 			},
 		];

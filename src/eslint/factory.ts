@@ -419,10 +419,30 @@ export async function isentinel(
 		);
 	}
 
+	// oxfmt formats Markdown code blocks with the Markdown options, then the
+	// config's Markdown overrides, in both modes.
+	const markdownCodeWidths =
+		formatter === "standalone" ||
+		(formatters !== false && shouldEnableFeature(formatters, "markdown"))
+			? {
+					markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
+					markdownCodeOverrides: [
+						...markdownOverridesOf(sectionOverrides),
+						...(oxfmtConfig.markdownOverrides ?? []),
+						// The `.prettierrc` overrides apply last, in both modes.
+						...markdownOverridesOf(prettierSettings["overrides"]),
+					],
+				}
+			: {};
+
 	// Base configs
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
-		comments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
+		comments({
+			...markdownCodeWidths,
+			prettierOptions: widthSettings,
+			stylistic: stylisticOptions,
+		}),
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
@@ -433,21 +453,7 @@ export async function isentinel(
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
 				antiSlop,
-				// oxfmt formats Markdown code blocks with the Markdown options,
-				// then the config's Markdown overrides, in both modes.
-				...(formatter === "standalone" ||
-				(formatters !== false && shouldEnableFeature(formatters, "markdown"))
-					? {
-							markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
-							markdownCodeOverrides: [
-								...markdownOverridesOf(sectionOverrides),
-								...(oxfmtConfig.markdownOverrides ?? []),
-								// The `.prettierrc` overrides apply last, in
-								// both modes.
-								...markdownOverridesOf(prettierSettings["overrides"]),
-							],
-						}
-					: {}),
+				...markdownCodeWidths,
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
