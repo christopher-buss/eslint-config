@@ -11,6 +11,7 @@ import {
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
+import { oxfmtSingleFix } from "../oxfmt-single-fix.ts";
 import { defaultPluginRenaming } from "../plugin-renaming.ts";
 import type {
 	OptionsComponentExtensions,
@@ -74,7 +75,7 @@ export async function oxfmt(
 				};
 	}
 
-	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt");
+	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt", oxfmtSingleFix);
 	const configPrettier = await interopDefault(import("eslint-config-prettier/flat"));
 
 	const rulesToIgnore = ["curly", "style/quotes"];

@@ -22,13 +22,13 @@ const PRESET_WARNING = "[@isentinel/eslint-config]";
 const PACKAGE = '{ roblox: false, type: "package" }';
 
 /**
- * In eslint mode, one fix pass merges oxfmt's import sort with
- * `import/no-duplicates`, and a comment above a merged import is kept twice.
- * Standalone oxfmt sorts once, after ESLint, and keeps it once.
+ * In eslint mode, the oxfmt fix can win a pass over `import/no-duplicates`,
+ * so imports are sorted before they merge. Standalone merges first, then
+ * sorts. The comments above the merged import end in a different order.
  */
 const IMPORT_FIX_ORDER = {
 	files: ["typescript.ts"],
-	reason: "eslint mode duplicates a comment above a merged import",
+	reason: "comments above a merged import end in a different order",
 };
 
 function typed(base: string): string {

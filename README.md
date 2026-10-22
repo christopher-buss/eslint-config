@@ -1039,8 +1039,9 @@ oxfmt options (`useTabs`, `tabWidth`, `singleQuote`, `bracketSpacing`) unless
 you set them in `stylistic`.
 
 Both modes write the same output, with one known difference: when one import
-merges into another (`import/no-duplicates`), eslint mode can keep a comment
-above it twice. Standalone mode keeps it once.
+merges into another (`import/no-duplicates`), eslint mode sorts the imports
+before the merge and standalone mode after it, so comments above the merged
+import can end in a different order.
 
 #### Type-Aware Split
 

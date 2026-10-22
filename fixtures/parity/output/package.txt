@@ -1,4 +1,4 @@
-rounds: eslint 3, standalone 3
+rounds: eslint 4, standalone 3
 === _tsconfig.lint.json ===
 {
 	"compilerOptions": {
@@ -908,7 +908,6 @@ import {} from "node:path";
 
 // Fixable: import/no-duplicates (duplicate module)
 // Fixable: ts/consistent-type-imports (should use type import)
-// Fixable: import/no-duplicates (duplicate module)
 
 // Fixable: prefer-const (never reassigned)
 const neverReassigned = "hello";
