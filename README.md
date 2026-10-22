@@ -399,6 +399,7 @@ or `--`.
 | `--oxlint-args "<args>"`       | Extra arguments forwarded verbatim to oxlint.                                                                                      |
 | `--files0-from <file\|->`      | Read the paths to lint from a NUL-delimited UTF-8 list (`-` for stdin); an empty list exits 0.                                     |
 | `--print`                      | Print the composed commands without running them.                                                                                  |
+| `--no-oxfmt`                   | Skip the oxfmt pass that runs when the project has an `oxfmt.config.*` file (see [Standalone oxfmt](#standalone-oxfmt)).           |
 | `-- <args>`                    | Forward args to the single selected tool (needs `--eslint`/`--oxlint`).                                                            |
 | `-h`, `--help`                 | Show help.                                                                                                                         |
 | `-v`, `--version`              | Show the version.                                                                                                                  |
@@ -948,6 +949,65 @@ pnpm i -D oxlint oxlint-tsgolint
 
 See [docs/oxlint.md](./docs/oxlint.md) for the per-rule mapping, what stays in
 ESLint and why, and migration notes.
+
+#### Standalone oxfmt
+
+By default, oxfmt runs inside the linter as the `oxfmt/oxfmt` rule. To run it as
+its own tool (`oxfmt`, editor format-on-save through the oxc extension), set
+`formatter: "standalone"` in both factories and add an `oxfmt.config.ts` built
+from the preset:
+
+```ts
+// oxfmt.config.ts
+import { isentinelOxfmt } from "@isentinel/eslint-config/oxfmt";
+
+export default isentinelOxfmt({ printWidth: 100 });
+```
+
+```ts
+// eslint.config.ts
+import isentinel from "@isentinel/eslint-config";
+
+export default isentinel({
+	formatter: "standalone",
+});
+```
+
+`isentinelOxfmt` starts from the same options the linter uses (preset defaults,
+then `.editorconfig`, then `.prettierrc`). Each key you pass replaces its base
+value, except `ignorePatterns` and `overrides`, which are appended to the
+preset's (the shared ignore globs, and the Markdown and YAML overrides). Your
+overrides come last, so they win over the preset's. Only the root `.prettierrc`
+options are carried over, not its `overrides`. Pass `cwd` to resolve
+`.prettierrc` and `.editorconfig` from another directory.
+
+With `formatter: "standalone"`, the linter enables `oxfmt/oxfmt` nowhere but
+keeps the rules that turn off formatting conflicts. Lua formatting (Stylua)
+stays in ESLint, because oxfmt does not format Lua. The setup wizard can write
+all of this for you.
+
+`isentinel-lint` runs `oxfmt --check` next to the linters whenever it finds an
+`oxfmt.config.ts` or `oxfmt.config.mts`, and `oxfmt --write` last with `--fix`.
+It does this whatever the `formatter` option is, so set
+`formatter: "standalone"` with such a file, or the files are formatted twice.
+Pass `--no-oxfmt` to skip the pass.
+
+Both factories read the oxfmt config that oxfmt itself uses: `.oxfmtrc.json`,
+`.oxfmtrc.jsonc`, `oxfmt.config.ts` or `oxfmt.config.mts`, in the nearest
+directory from the working directory up to the filesystem root. More than one of
+them in one directory is an error, as in oxfmt. Its root options (without
+`ignorePatterns` and `overrides`) override `formatters.prettierOptions`, and
+`formatters.oxfmtOptions` overrides them.
+
+`flawless/arrow-return-style` uses two widths. `maxLen` is your limit: an arrow
+becomes implicit only if it fits. It comes from `stylistic.maxLen`, else
+`printWidth`, and it can be shorter than the formatter width on purpose.
+`useOxfmt.printWidth` is the width the rule gives oxfmt to predict its output.
+It always comes from the root `printWidth` of the oxfmt config, so that `--fix`
+agrees with oxfmt. An override that changes `printWidth` or `tabWidth` for JS or
+TS files gets a warning, because the linter uses the root values. In Markdown
+code blocks, `useOxfmt` uses the Markdown widths instead, because oxfmt formats
+embedded code with the Markdown options.
 
 #### Type-Aware Split
 
