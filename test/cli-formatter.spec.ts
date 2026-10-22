@@ -44,11 +44,12 @@ function readJsonc(text: string): Record<string, unknown> {
 
 describe("vscodeSettingsString", () => {
 	it("hands formatting to the oxc extension in standalone mode", ({ expect }) => {
-		expect.assertions(3);
+		expect.assertions(4);
 
 		const settings = readJsonc(`{${vscodeSettingsString("standalone")}}`);
 
 		expect(settings["eslint.format.enable"]).toBe(false);
+		expect(settings["oxc.fmt.disableNestedConfig"]).toBe(true);
 		expect(settings["[typescript]"]).toStrictEqual({
 			"editor.defaultFormatter": OXC_VSCODE_EXTENSION,
 			"editor.formatOnSave": true,

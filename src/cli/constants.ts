@@ -33,6 +33,8 @@ const standaloneFormatterSettings = `
   // Format with oxfmt; eslint only lints
   "prettier.enable": false,
   "eslint.format.enable": false,
+  // One root oxfmt config, as the CLI and lint runs use
+  "oxc.fmt.disableNestedConfig": true,
 ${OXFMT_LANGUAGES.map((language) => {
 	return `  "[${language}]": {
     "editor.defaultFormatter": "${OXC_VSCODE_EXTENSION}",
