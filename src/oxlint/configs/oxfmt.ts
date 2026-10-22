@@ -1,8 +1,8 @@
 import { createRequire } from "node:module";
 
 import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
+import { FORMATTED_FILES } from "../../formatted-files.ts";
 import { stylisticRuleNames } from "../../generated/stylistic.ts";
-import { GLOB_JS, GLOB_JSX, GLOB_TS, GLOB_TSX } from "../../globs.ts";
 import { isRecord } from "../../guards.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
@@ -82,10 +82,9 @@ export function oxlintOxfmt(
 		specifier: resolveJsPluginSpecifier("eslint-plugin-oxfmt"),
 	};
 
-	const jsFiles = oxfmtFiles?.flat() ?? [GLOB_JS, GLOB_JSX];
+	const jsFiles = oxfmtFiles?.flat() ?? [...FORMATTED_FILES.javascript];
 	const tsFiles = oxfmtFiles?.flat() ?? [
-		GLOB_TS,
-		GLOB_TSX,
+		...FORMATTED_FILES.typescript,
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 

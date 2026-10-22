@@ -1,3 +1,5 @@
+// cspell:words cjsx ctsx mjsx mtsx
+import { ESLint } from "eslint";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -6,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import type { TestContext } from "vitest";
 import { describe, it, vi } from "vitest";
 
+import { expandBraces, unformattedFilePatterns } from "../src/formatted-files.ts";
 import { GLOB_EXCLUDE } from "../src/globs.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
@@ -63,6 +66,18 @@ async function markdownCodeOptions(formatter: "eslint" | "standalone"): Promise<
 	return ruleOptions(rules, "flawless/arrow-return-style");
 }
 
+async function effectiveRules(file: string): Promise<unknown> {
+	const configs = await isentinel({ roblox: false, type: "package" });
+	const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
+	const config: unknown = await eslint.calculateConfigForFile(file);
+	return isRecord(config) ? config["rules"] : undefined;
+}
+
+function severityOf(rules: unknown, rule: string): unknown {
+	const entry = ruleEntry(rules, rule);
+	return Array.isArray(entry) ? entry[0] : entry;
+}
+
 function enablesOxfmt(rules: unknown): boolean {
 	const entry = isRecord(rules) ? rules["oxfmt/oxfmt"] : undefined;
 	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
@@ -86,7 +101,11 @@ describe("isentinelOxfmt", () => {
 
 		expect(config.printWidth).toBe(120);
 		expect(config.sortImports).toBe(false);
-		expect(config.ignorePatterns).toStrictEqual([...GLOB_EXCLUDE, "generated/**"]);
+		expect(config.ignorePatterns).toStrictEqual([
+			...unformattedFilePatterns(),
+			...GLOB_EXCLUDE,
+			"generated/**",
+		]);
 		expect(config.overrides!.map((override) => override.files)).toStrictEqual([
 			["**/*.md"],
 			["**/*.y{,a}ml"],
@@ -97,6 +116,54 @@ describe("isentinelOxfmt", () => {
 			printWidth: 80,
 			proseWrap: "always",
 		});
+	});
+
+	it("formats only the files ESLint mode formats", ({ expect }) => {
+		expect.assertions(4);
+
+		const patterns = unformattedFilePatterns();
+
+		expect(patterns.slice(0, 2)).toStrictEqual(["*", "!*/"]);
+		expect(patterns).toContain("!**/*.cjs");
+		expect(patterns).toContain("!**/*.json5");
+		expect(
+			patterns.filter((pattern) => /toml|mdx|markdown|htm$|gql|vue/.test(pattern)),
+		).toStrictEqual([]);
+	});
+
+	it("takes componentExts and formatters as the factories do", ({ expect }) => {
+		expect.assertions(3);
+
+		const patterns = unformattedFilePatterns({
+			componentExts: ["vue"],
+			formatters: { css: false, markdown: false },
+		});
+
+		expect(patterns).toContain("!**/*.vue");
+		expect(patterns).not.toContain("!**/*.md");
+		expect(unformattedFilePatterns({ formatters: false })).toStrictEqual([
+			"*",
+			"!*/",
+			"!**/*.js",
+			"!**/*.cjs",
+			"!**/*.mjs",
+			"!**/*.jsx",
+			"!**/*.cjsx",
+			"!**/*.mjsx",
+			"!**/*.ts",
+			"!**/*.cts",
+			"!**/*.mts",
+			"!**/*.tsx",
+			"!**/*.ctsx",
+			"!**/*.mtsx",
+		]);
+	});
+
+	it("expands brace sets for ignore files", ({ expect }) => {
+		expect.assertions(2);
+
+		expect(expandBraces("**/*.y{,a}ml")).toStrictEqual(["**/*.yml", "**/*.yaml"]);
+		expect(expandBraces("a{b,{c,d}}e")).toStrictEqual(["abe", "ace", "ade"]);
 	});
 
 	it("starts from the preset defaults", ({ expect, onTestFinished }) => {
@@ -417,6 +484,15 @@ describe("formatter: standalone", () => {
 				"style/indent"
 			],
 		).toBe("off");
+	});
+
+	it("turns the formatter-conflict rules off in Markdown code blocks", async ({ expect }) => {
+		expect.assertions(2);
+
+		const rules = await effectiveRules("docs/guide.md/0_0.ts");
+
+		expect(severityOf(rules, "style/indent")).toBe(0);
+		expect(severityOf(rules, "arrow-body-style")).toBe(0);
 	});
 
 	it("enables oxfmt/oxfmt nowhere in oxlint", ({ expect }) => {
