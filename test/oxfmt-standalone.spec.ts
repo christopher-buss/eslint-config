@@ -110,7 +110,7 @@ describe("isentinelOxfmt", () => {
 			["**/*.md"],
 			["**/*.y{,a}ml"],
 			["**/*.json5"],
-			["*.json"],
+			["./*.json"],
 		]);
 		expect(config.overrides![0]!.options).toMatchObject({
 			printWidth: 80,
@@ -375,6 +375,44 @@ describe("oxfmt config discovery", () => {
 		await isentinel({ roblox: false, type: "package" });
 
 		expect(warn).toHaveBeenCalledOnce();
+	});
+});
+
+describe(".prettierrc overrides", () => {
+	const prettierrc = JSON.stringify({
+		overrides: [
+			{ files: "*.md", options: { printWidth: 60 } },
+			{ files: ["sub/**"], options: { jsdocPrintWidth: 10, semi: false } },
+		],
+	});
+
+	it("appends them last, with array files and anchored globs", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".prettierrc": prettierrc });
+
+		const { overrides } = isentinelOxfmt({
+			overrides: [{ files: ["*.ts"], options: { semi: false } }],
+		});
+
+		expect(overrides!.slice(-3)).toStrictEqual([
+			{ files: ["./*.ts"], options: { semi: false } },
+			{ files: ["./*.md"], options: { printWidth: 60 } },
+			{ files: ["sub/**"], options: { semi: false } },
+		]);
+	});
+
+	it("does not crash ESLint mode on a string files", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, { ".prettierrc": prettierrc });
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
+
+		await expect(
+			eslint.lintText("const a = 1;" + String.fromCharCode(10), { filePath: "a.ts" }),
+		).resolves.toBeDefined();
 	});
 });
 

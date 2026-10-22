@@ -34,6 +34,14 @@ const defaultSortImports = {
 	newlinesBetween: true,
 };
 
+/** A Prettier override, migrated to oxfmt's shape. */
+// A type alias, not an interface, so it fits oxfmt's indexed override type.
+export type MigratedOverride = {
+	excludeFiles?: Array<string>;
+	files: Array<string>;
+	options: Record<string, unknown>;
+};
+
 /**
  * Migrate Prettier options to oxfmt options, dropping unsupported keys.
  *
@@ -54,10 +62,70 @@ export function migratePrettierOptions(
 			continue;
 		}
 
-		oxfmtOptions[key] = value;
+		oxfmtOptions[key] = key === "overrides" ? migratePrettierOverrides(value) : value;
 	}
 
 	return oxfmtOptions;
+}
+
+/**
+ * Migrate Prettier `overrides`: oxfmt wants `files` as an array, and the
+ * nested options migrated like the root ones.
+ *
+ * @param overrides - The `overrides` value, of unknown shape.
+ * @returns The overrides in oxfmt's shape; empty when not an array.
+ */
+export function migratePrettierOverrides(overrides: unknown): Array<MigratedOverride> {
+	if (!Array.isArray(overrides)) {
+		return [];
+	}
+
+	return overrides.flatMap((override: unknown) => {
+		if (typeof override !== "object" || override === null) {
+			return [];
+		}
+
+		const { excludeFiles, files, options } = override as Record<string, unknown>;
+		return [
+			{
+				...(excludeFiles === undefined ? {} : { excludeFiles: stringsOf(excludeFiles) }),
+				files: stringsOf(files),
+				options:
+					typeof options === "object" && options !== null
+						? migratePrettierOptions(options as Record<string, unknown>)
+						: {},
+			},
+		];
+	});
+}
+
+/**
+ * Anchor slash-less override globs to the config directory. The oxfmt CLI
+ * matches `*.json` at any depth, but the ESLint rule matches it against the
+ * path from the config directory, so only top-level files; `./*.json` means
+ * the latter to both.
+ *
+ * @template T - The override shape.
+ * @param overrides - Oxfmt overrides.
+ * @returns The overrides with anchored globs.
+ */
+export function anchorOverrideGlobs<
+	T extends { excludeFiles?: Array<string>; files: Array<string> },
+>(overrides: ReadonlyArray<T>): Array<T> {
+	function anchor(glob: string): string {
+		const negated = glob.startsWith("!");
+		const body = negated ? glob.slice(1) : glob;
+		const anchored = body.includes("/") ? body : `./${body}`;
+		return negated ? `!${anchored}` : anchored;
+	}
+
+	return overrides.map((override) => {
+		return {
+			...override,
+			...(override.excludeFiles ? { excludeFiles: override.excludeFiles.map(anchor) } : {}),
+			files: override.files.map(anchor),
+		};
+	});
 }
 
 /**
@@ -106,6 +174,10 @@ export function markdownOxfmtOptions(jsdocPrintWidth: unknown): {
 		// base width.
 		tabWidth: 2,
 	} satisfies OxfmtOptions;
+}
+
+function stringsOf(value: unknown): Array<string> {
+	return [value].flat().filter((item): item is string => typeof item === "string");
 }
 
 /**

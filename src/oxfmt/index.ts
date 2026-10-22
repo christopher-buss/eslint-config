@@ -8,16 +8,18 @@
  * factory.
  */
 
-import type { OxfmtConfig } from "oxfmt";
+import type { OxfmtConfig, OxfmtOverrideConfig } from "oxfmt";
 
 import { resolveFormattedLanguages, unformattedFilePatterns } from "../formatted-files.ts";
 import type { FormattedFilesOptions } from "../formatted-files.ts";
 import { GLOB_EXCLUDE, GLOB_JSON5, GLOB_MARKDOWN, GLOB_YAML } from "../globs.ts";
 import { resolvePrettierSettings } from "../prettier-config.ts";
 import {
+	anchorOverrideGlobs,
 	buildOxfmtOptions,
 	JSON5_OXFMT_OPTIONS,
 	markdownOxfmtOptions,
+	migratePrettierOverrides,
 	YAML_OXFMT_OPTIONS,
 } from "../rules/oxfmt.ts";
 
@@ -40,8 +42,9 @@ export type IsentinelOxfmtOptions = FormattedFilesOptions &
  * key in `config` replaces its base value. `ignorePatterns` and `overrides`
  * are the exception: the user's entries are appended to the preset's, so a
  * user override wins over the preset's Markdown, YAML and JSON5 overrides.
- * Only the root `.prettierrc` options are carried over; its `overrides` are
- * not.
+ * The `.prettierrc` overrides come last, as in ESLint mode. Slash-less
+ * override globs are anchored to the config directory (`*.json` becomes
+ * `./*.json`), so they match the files the ESLint rule matches.
  *
  * Oxfmt formats the files ESLint mode formats, and no others: TOML, `.mdx` and
  * the like stay as they are.
@@ -68,6 +71,9 @@ export function isentinelOxfmt({
 }: IsentinelOxfmtOptions = {}): OxfmtConfig {
 	const prettierSettings: Record<string, unknown> = resolvePrettierSettings({}, cwd);
 	const base = buildOxfmtOptions({ prettierOptions: prettierSettings });
+	const prettierOverrides: Array<OxfmtOverrideConfig> = migratePrettierOverrides(
+		prettierSettings["overrides"],
+	);
 	const languages = resolveFormattedLanguages(formatters);
 
 	return {
@@ -91,7 +97,7 @@ export function isentinelOxfmt({
 			...(languages.json
 				? [{ files: [GLOB_JSON5], options: { ...JSON5_OXFMT_OPTIONS } }]
 				: []),
-			...overrides,
+			...anchorOverrideGlobs([...overrides, ...prettierOverrides]),
 		],
 	};
 }

@@ -776,6 +776,28 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
 }
 
 /**
+ * The overrides that set `printWidth` or `tabWidth` for Markdown files.
+ *
+ * @param overrides - The config's `overrides`.
+ * @returns Each such override's globs and widths, in order.
+ */
+export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
+	if (!Array.isArray(overrides)) {
+		return [];
+	}
+
+	return overrides.flatMap((override: unknown) => {
+		if (!isRecord(override) || !overrideMatches(override, MARKDOWN_EXTENSIONS)) {
+			return [];
+		}
+
+		const widths = widthsOf(override["options"]);
+		const files = [override["files"]].flat().filter((glob) => typeof glob === "string");
+		return Object.keys(widths).length > 0 ? [{ files, widths }] : [];
+	});
+}
+
+/**
  * Resolve oxfmt format options from the config oxfmt itself would use (see
  * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
  * `oxfmt.config.ts` or `oxfmt.config.mts`.
@@ -893,13 +915,6 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	return options[key] !== false;
 }
 
-function loadError(configPath: string, error: unknown): Error {
-	return new Error(
-		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
-		{ cause: error },
-	);
-}
-
 /**
  * Whether a glob can match a file with one of `extensions`, judged by the
  * extension of its last segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
@@ -958,26 +973,11 @@ function widthsOf(options: unknown): MarkdownWidths {
 	};
 }
 
-/**
- * The overrides that set `printWidth` or `tabWidth` for Markdown files.
- *
- * @param overrides - The config's `overrides`.
- * @returns Each such override's globs and widths, in order.
- */
-function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
-	if (!Array.isArray(overrides)) {
-		return [];
-	}
-
-	return overrides.flatMap((override: unknown) => {
-		if (!isRecord(override) || !overrideMatches(override, MARKDOWN_EXTENSIONS)) {
-			return [];
-		}
-
-		const widths = widthsOf(override["options"]);
-		const files = [override["files"]].flat().filter((glob) => typeof glob === "string");
-		return Object.keys(widths).length > 0 ? [{ files, widths }] : [];
-	});
+function loadError(configPath: string, error: unknown): Error {
+	return new Error(
+		`[@isentinel/eslint-config] Failed to load ${path.basename(configPath)}: ${String(error)}`,
+		{ cause: error },
+	);
 }
 
 /**

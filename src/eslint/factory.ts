@@ -15,6 +15,7 @@ import {
 	isAgentAutofixDisabled,
 	isInAgentSession,
 	isInEditorEnvironment,
+	markdownOverridesOf,
 	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
@@ -410,7 +411,12 @@ export async function isentinel(
 				(formatters !== false && shouldEnableFeature(formatters, "markdown"))
 					? {
 							markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
-							markdownCodeOverrides: oxfmtConfig.markdownOverrides,
+							markdownCodeOverrides: [
+								...(oxfmtConfig.markdownOverrides ?? []),
+								// The `.prettierrc` overrides apply last, in
+								// both modes.
+								...markdownOverridesOf(prettierSettings["overrides"]),
+							],
 						}
 					: {}),
 				roblox: enableRoblox,
