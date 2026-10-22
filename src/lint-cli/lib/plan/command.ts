@@ -44,6 +44,36 @@ export function composeOxlintCommand(
 }
 
 /**
+ * Compose the oxfmt child command. Oxfmt receives the run's own targets and
+ * applies its config's `ignorePatterns` to them, so a whole-tree run passes
+ * `.` and lets oxfmt walk the tree itself. Like every engine child it is
+ * launched through the bootstrap, so a long file list never reaches the OS
+ * command line..
+ *
+ * @param options - The parsed CLI options.
+ * @param context - The child's settings.
+ * @param context.configPath - The config module, passed as `--config` so oxfmt
+ *   uses the file the lint factories read.
+ * @param context.write - Format the files in place rather than check them.
+ * @returns The oxfmt child command.
+ */
+export function composeOxfmtCommand(
+	options: LintCliOptions,
+	{ configPath, write }: { configPath: string; write: boolean },
+): ChildCommand {
+	// A hook hands over every staged file, most of which oxfmt may not format
+	// (Lua, say) or its config ignores; neither is a failure.
+	const args = [
+		write ? "--write" : "--check",
+		"--config",
+		configPath,
+		"--no-error-on-unmatched-pattern",
+		...pathArguments(options.paths),
+	];
+	return { args, bin: "oxfmt", env: {}, label: "oxfmt", watchHeap: false };
+}
+
+/**
  * Compose the ESLint child command.
  *
  * @param options - The parsed CLI options.

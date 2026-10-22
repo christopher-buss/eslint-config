@@ -29,6 +29,8 @@ export const CACHE_BUST_PATTERNS = [
 	"*.config.*",
 	"**/tsconfig*.json",
 	".oxlintrc*",
+	".oxfmtrc*",
+	"oxfmt.config.*",
 	".prettierrc*",
 	"pnpm-lock.yaml",
 	"package-lock.json",

@@ -99,6 +99,7 @@ function options(overrides: Partial<LintCliOptions> = {}): LintCliOptions {
 		eslintArgs: [],
 		filesFrom: undefined,
 		fix: false,
+		oxfmt: true,
 		oxlint: false,
 		oxlintArgs: [],
 		oxlintTypeAware: true,

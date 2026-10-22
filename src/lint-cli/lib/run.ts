@@ -1,6 +1,7 @@
 import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
+import { findOxfmtConfig } from "../../utils.ts";
 import { readFileList } from "./cli/file-list.ts";
 import { parseArguments } from "./cli/options.ts";
 import type { ChildCommand, LintCliOptions } from "./cli/types.ts";
@@ -8,6 +9,7 @@ import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
 import { execute, executeStaged, resetCancellation } from "./exec/execute.ts";
 import { formatCommandLine } from "./exec/shell.ts";
+import { composeOxfmtCommand } from "./plan/command.ts";
 import { compose, composePasses } from "./plan/compose.ts";
 import { plan } from "./plan/plan.ts";
 import type { StagedPlan } from "./plan/plan.ts";
@@ -57,9 +59,14 @@ export async function runLint(
 	const run = resolveRunContext(cwd, environment, !options.print);
 	const staged = plan(options, run);
 	const { commands, notice } = compose(staged.eager, options);
-
+	const oxfmtConfig = findOxfmtModule(options, cwd);
+	const formatCommand =
+		oxfmtConfig === undefined
+			? undefined
+			: composeOxfmtCommand(options, { configPath: oxfmtConfig, write: options.fix });
 	if (options.print) {
-		for (const command of commands) {
+		const printed = formatCommand === undefined ? commands : [...commands, formatCommand];
+		for (const command of printed) {
 			process.stdout.write(`${formatCommandLine(command)}\n`);
 		}
 
@@ -90,13 +97,24 @@ export async function runLint(
 		);
 	}
 
+	if (formatCommand !== undefined && !isPackageExists("oxfmt", { paths: [cwd] })) {
+		throw new CliError(
+			"oxfmt is not installed, but this project has an `oxfmt.config.*` file. " +
+				"Install oxfmt, or pass --no-oxfmt to skip formatting.",
+		);
+	}
+
 	if (notice !== undefined) {
 		process.stderr.write(notice);
 	}
 
 	const { resolveFixChild } = staged;
 	if (resolveFixChild === undefined) {
-		const checkOnly = await runChecks(commands, cwd, staged, options);
+		// The format check reads files nothing else writes, so it runs
+		// alongside the lint checks. A fix run writes instead, after the lint
+		// fixes (below).
+		const checkCommands = formatCommand === undefined ? commands : [...commands, formatCommand];
+		const checkOnly = await runChecks(checkCommands, cwd, staged, options);
 		return checkOnly.code;
 	}
 
@@ -108,17 +126,50 @@ export async function runLint(
 	const checks = await runChecks(byBin.eslint ?? [], cwd, staged, options);
 
 	const fixChild = resolveFixChild(checks.passes);
-	if (fixChild === undefined) {
-		return oxlintCode || checks.code;
-	}
-
 	// The fix child re-lints every file the checks reported, under a config that
 	// is a superset of theirs, so what it reports is what survives fixing. Its
 	// code replaces theirs rather than joining it, or a run that fixed
 	// everything it found would still fail. The one thing that hides is a check
 	// child that died fatally while its sibling still reported files — rare, and
 	// the fix child runs the same type-aware rules, so it dies too.
-	return oxlintCode || (await execute([fixChild], cwd, true));
+	const lintCode =
+		fixChild === undefined
+			? oxlintCode || checks.code
+			: oxlintCode || (await execute([fixChild], cwd, true));
+
+	// Formatting goes last, so it settles whatever the lint fixes wrote.
+	if (formatCommand === undefined) {
+		return lintCode;
+	}
+
+	const formatCode = await execute([formatCommand], cwd, true);
+	return lintCode || formatCode;
+}
+
+/**
+ * The oxfmt config module the run formats with. The oxfmt pass is on when the
+ * project runs oxfmt as its own tool (an `oxfmt.config.ts` or
+ * `oxfmt.config.mts`, found the way oxfmt finds it), unless `--no-oxfmt` or a
+ * single-engine flag (`--eslint`, `--oxlint`) says otherwise.
+ *
+ * @param options - The parsed CLI options.
+ * @param cwd - The working directory.
+ * @returns The config module path, or `undefined` to skip the pass.
+ * @throws {CliError} When one directory holds more than one oxfmt config.
+ */
+function findOxfmtModule(options: LintCliOptions, cwd: string): string | undefined {
+	if (!options.oxfmt || options.eslint || options.oxlint) {
+		return undefined;
+	}
+
+	let config: ReturnType<typeof findOxfmtConfig>;
+	try {
+		config = findOxfmtConfig(cwd);
+	} catch (err) {
+		throw new CliError(err instanceof Error ? err.message : String(err));
+	}
+
+	return config?.isModule === true ? config.path : undefined;
 }
 
 /**
