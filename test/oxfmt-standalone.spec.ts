@@ -421,7 +421,7 @@ describe(".prettierrc overrides", () => {
 		const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
 
 		await expect(
-			eslint.lintText("const a = 1;" + String.fromCharCode(10), { filePath: "a.ts" }),
+			eslint.lintText(`const a = 1;${String.fromCharCode(10)}`, { filePath: "a.ts" }),
 		).resolves.toBeDefined();
 	});
 });

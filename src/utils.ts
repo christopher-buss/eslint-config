@@ -774,6 +774,16 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
 }
 
 /**
+ * The string globs of an override's `files` or `excludeFiles`.
+ *
+ * @param value - One glob or a list of them, of unknown shape.
+ * @returns The string globs.
+ */
+function globsOf(value: unknown): Array<string> {
+	return [value].flat().filter((glob): glob is string => typeof glob === "string");
+}
+
+/**
  * Where an override applies: its `files`, minus its `excludeFiles` and any
  * negated glob in `files`.
  *
@@ -781,14 +791,10 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
  * @returns Its scope.
  */
 function scopeOf(override: Record<string, unknown>): OverrideScope {
-	const strings = (value: unknown): Array<string> => {
-		return [value].flat().filter((glob): glob is string => typeof glob === "string");
-	};
-
-	const globs = strings(override["files"]);
+	const globs = globsOf(override["files"]);
 	return {
 		excludeFiles: [
-			...strings(override["excludeFiles"]),
+			...globsOf(override["excludeFiles"]),
 			...globs.filter((glob) => glob.startsWith("!")).map((glob) => glob.slice(1)),
 		],
 		files: globs.filter((glob) => !glob.startsWith("!")),

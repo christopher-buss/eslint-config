@@ -1,3 +1,4 @@
+import { isRecord } from "../guards.ts";
 import type { OxfmtOptions } from "../utils.ts";
 
 const UNSUPPORTED_PRETTIER_KEYS = new Set([
@@ -35,7 +36,7 @@ const defaultSortImports = {
 };
 
 /** A Prettier override, migrated to oxfmt's shape. */
-// A type alias, not an interface, so it fits oxfmt's indexed override type.
+// oxlint-disable-next-line typescript/consistent-type-definitions -- an interface does not fit oxfmt's indexed override type.
 export type MigratedOverride = {
 	excludeFiles?: Array<string>;
 	files: Array<string>;
@@ -81,19 +82,16 @@ export function migratePrettierOverrides(overrides: unknown): Array<MigratedOver
 	}
 
 	return overrides.flatMap((override: unknown) => {
-		if (typeof override !== "object" || override === null) {
+		if (!isRecord(override)) {
 			return [];
 		}
 
-		const { excludeFiles, files, options } = override as Record<string, unknown>;
+		const { excludeFiles, files, options } = override;
 		return [
 			{
 				...(excludeFiles === undefined ? {} : { excludeFiles: stringsOf(excludeFiles) }),
 				files: stringsOf(files),
-				options:
-					typeof options === "object" && options !== null
-						? migratePrettierOptions(options as Record<string, unknown>)
-						: {},
+				options: isRecord(options) ? migratePrettierOptions(options) : {},
 			},
 		];
 	});
@@ -112,18 +110,13 @@ export function migratePrettierOverrides(overrides: unknown): Array<MigratedOver
 export function anchorOverrideGlobs<
 	T extends { excludeFiles?: Array<string>; files: Array<string> },
 >(overrides: ReadonlyArray<T>): Array<T> {
-	function anchor(glob: string): string {
-		const negated = glob.startsWith("!");
-		const body = negated ? glob.slice(1) : glob;
-		const anchored = body.includes("/") ? body : `./${body}`;
-		return negated ? `!${anchored}` : anchored;
-	}
-
 	return overrides.map((override) => {
 		return {
 			...override,
-			...(override.excludeFiles ? { excludeFiles: override.excludeFiles.map(anchor) } : {}),
-			files: override.files.map(anchor),
+			...(override.excludeFiles
+				? { excludeFiles: override.excludeFiles.map(anchorGlob) }
+				: {}),
+			files: override.files.map(anchorGlob),
 		};
 	});
 }
@@ -198,3 +191,16 @@ export const YAML_OXFMT_OPTIONS = {
 	tabWidth: 2,
 	useTabs: false,
 } as const satisfies OxfmtOptions;
+
+/**
+ * Anchor one slash-less glob to the config directory, keeping its negation.
+ *
+ * @param glob - An override glob.
+ * @returns The anchored glob.
+ */
+function anchorGlob(glob: string): string {
+	const negated = glob.startsWith("!");
+	const body = negated ? glob.slice(1) : glob;
+	const anchored = body.includes("/") ? body : `./${body}`;
+	return negated ? `!${anchored}` : anchored;
+}
