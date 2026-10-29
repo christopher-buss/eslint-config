@@ -514,7 +514,7 @@ describe("markdown code widths", () => {
 			maxObjectProperties: 2,
 			namedExportsAlwaysUseExplicitReturn: true,
 			objectReturnStyle: "complex-explicit",
-			tabWidth: 2,
+			tabWidth: 4,
 			useOxfmt: { printWidth: 80 },
 		};
 
@@ -547,7 +547,7 @@ describe("markdown code widths", () => {
 			});
 			// Other Markdown files keep the preset's Markdown widths.
 			await expect(markdownCodeOptions(formatter)).resolves.toMatchObject({
-				tabWidth: 2,
+				tabWidth: 4,
 				useOxfmt: { printWidth: 80 },
 			});
 		},
@@ -579,7 +579,45 @@ describe("markdown code widths", () => {
 		expect(override!.ignores).toStrictEqual(["docs/old/**/**", "docs/skip.md/**"]);
 	});
 
-	it("gives the comment rules the Markdown tabWidth in code blocks", async ({
+	it("keeps an explicit arrow body whose tab-expanded line is too long", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = useProject(onTestFinished, {});
+		// The implicit form is 80 columns at 2 per tab, 88 at 4.
+		const markdown = [
+			"```ts",
+			"function a(): void {",
+			"\tif (b) {",
+			"\t\tif (c) {",
+			"\t\t\td(",
+			"\t\t\t\t((attemptNumber: number) => {",
+			"\t\t\t\t\treturn Math.min(1000 * 2 ** attemptNumber, 30000);",
+			"\t\t\t\t}),",
+			"\t\t\t);",
+			"\t\t}",
+			"\t}",
+			"}",
+			"```",
+			"",
+		].join("\n");
+
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const eslint = new ESLint({
+			cwd: directory,
+			overrideConfig: [...configs],
+			overrideConfigFile: true,
+		});
+		const [result] = await eslint.lintText(markdown, { filePath: "docs/a.md" });
+
+		expect(
+			result!.messages.filter((message) => message.ruleId === "flawless/arrow-return-style"),
+		).toStrictEqual([]);
+	});
+
+	it("gives the comment rules the root tabWidth in code blocks", async ({
 		expect,
 		onTestFinished,
 	}) => {
@@ -593,11 +631,11 @@ describe("markdown code widths", () => {
 		)!;
 
 		expect(ruleOptions(rules, "comment-length/limit-single-line-comments")).toMatchObject({
-			tabSize: 2,
+			tabSize: 4,
 		});
 	});
 
-	it("ignores the root widths for Markdown code", async ({ expect, onTestFinished }) => {
+	it("ignores the root printWidth for Markdown code", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
 		useProject(onTestFinished, {
@@ -608,10 +646,11 @@ describe("markdown code widths", () => {
 			}),
 		});
 
-		// The preset's Markdown layer sets both widths, so the root ones never
-		// reach Markdown.
+		// The preset's Markdown layer sets the printWidth, so the root one never
+		// reaches Markdown. Tabs keep the root width: the Markdown tabWidth is
+		// only the space indent of blocks that cannot use tabs.
 		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
-			tabWidth: 2,
+			tabWidth: 3,
 			useOxfmt: { printWidth: 80 },
 		});
 	});

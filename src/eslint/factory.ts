@@ -420,12 +420,17 @@ export async function isentinel(
 	}
 
 	// oxfmt formats Markdown code blocks with the Markdown options, then the
-	// config's Markdown overrides, in both modes.
+	// config's Markdown overrides, in both modes. The Markdown `tabWidth` is
+	// only the space indent of blocks that cannot use tabs (YAML), so tabs in
+	// code blocks keep the root width.
 	const markdownCodeWidths =
 		formatter === "standalone" ||
 		(formatters !== false && shouldEnableFeature(formatters, "markdown"))
 			? {
-					markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
+					markdownCode: {
+						printWidth: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"])
+							.printWidth,
+					},
 					markdownCodeOverrides: [
 						...markdownOverridesOf(sectionOverrides),
 						...(oxfmtConfig.markdownOverrides ?? []),
