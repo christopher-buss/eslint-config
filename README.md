@@ -1041,8 +1041,10 @@ Oxfmt formats the prose at the Markdown width (`jsdocPrintWidth`, else 80) and
 leaves code blocks alone (`embeddedLanguageFormatting: "off"`). ESLint formats
 each code block with `oxfmt/oxfmt` and the options of its language, the same as
 a file of that language: a TypeScript block uses the root `printWidth`, a YAML
-block the YAML options. The lint rules in a code block use the same widths as in
-a source file. ESLint does not format code blocks in files it ignores.
+block the YAML options. Overrides and `.editorconfig` sections, which match by
+path, do not reach code blocks; the config's `ignorePatterns` do. The lint rules
+in a code block use the same widths as in a source file. ESLint does not format
+code blocks in files it ignores.
 
 The stylistic `indent` and `quotes`, and the JSON bracket spacing, follow the
 oxfmt options (`useTabs`, `tabWidth`, `singleQuote`, `bracketSpacing`) unless

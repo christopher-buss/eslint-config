@@ -31,6 +31,8 @@ export async function oxfmt(
 		OptionsOverrides & {
 			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
+			/** The oxfmt config's ignore patterns, for Markdown code blocks. */
+			oxfmtIgnorePatterns?: Array<string>;
 			oxfmtOptions?: OxfmtOptions;
 			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
@@ -46,6 +48,7 @@ export async function oxfmt(
 		files: oxfmtFiles,
 		formatters = {},
 		oxfmtConfigOptions = {},
+		oxfmtIgnorePatterns = [],
 		oxfmtOptions: userOxfmtOptions,
 		oxlint: enableOxlint = false,
 		prettierOptions = {},
@@ -68,20 +71,39 @@ export async function oxfmt(
 	 * @returns The rule entry, or no rules.
 	 */
 	function formatRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
-		return standalone ? {} : codeBlockRule(layer);
+		// One root config, like the standalone CLI: nested configs are ignored.
+		return standalone
+			? {}
+			: {
+					"oxfmt/oxfmt": [
+						"error",
+						{ ...oxfmtOptions, ...layer, disableNestedConfig: true },
+					],
+				};
 	}
 
 	/**
 	 * The `oxfmt/oxfmt` entry for Markdown code blocks, in every mode: oxfmt
-	 * leaves them alone, and oxlint cannot read Markdown.
+	 * leaves them alone, and oxlint cannot read Markdown. A code block takes
+	 * the root options of its language only: the rule does not load the
+	 * config, so its overrides and the `.editorconfig` sections, which match
+	 * by path, do not reach the block. The config's ignore patterns still do.
 	 *
 	 * @param layer - Options applied over the base options.
 	 * @returns The rule entry.
 	 */
 	function codeBlockRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
-		// One root config, like the standalone CLI: nested configs are ignored.
 		return {
-			"oxfmt/oxfmt": ["error", { ...oxfmtOptions, ...layer, disableNestedConfig: true }],
+			"oxfmt/oxfmt": [
+				"error",
+				{
+					...oxfmtOptions,
+					...layer,
+					ignorePatterns: oxfmtIgnorePatterns,
+					overrides: [],
+					useConfig: false,
+				},
+			],
 		};
 	}
 

@@ -707,6 +707,7 @@ export async function isentinel(
 							}
 						: formatters,
 				oxfmtConfigOptions,
+				oxfmtIgnorePatterns: oxfmtConfig.ignorePatterns,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
 				// Native-only hybrid keeps formatting in ESLint: oxfmt runs in
 				// oxlint as a jsPlugin, which that mode does not load.

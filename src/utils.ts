@@ -16,7 +16,7 @@ import { minVersion } from "semver";
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
-import { isRecord } from "./guards.ts";
+import { isRecord, isStringArray } from "./guards.ts";
 import { editorConfigOverrides } from "./prettier-config.ts";
 import type { EditorConfigOverride } from "./prettier-config.ts";
 import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
@@ -722,6 +722,8 @@ export interface OverrideScope {
 
 /** What the factories read from an oxfmt config. */
 export interface ResolvedOxfmtConfig {
+	/** The config's ignore patterns. */
+	ignorePatterns?: Array<string>;
 	/** The root format options. */
 	options: OxfmtOptions;
 	/** The config's overrides. */
@@ -1104,24 +1106,20 @@ function mirrorsSection(override: unknown, sections: ReadonlyArray<EditorConfigO
 }
 
 /**
- * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options and its
- * overrides. The rule takes format options only, so `$schema`,
- * `ignorePatterns` and `overrides` are dropped from the options.
+ * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options, its ignore
+ * patterns and its overrides. The rule takes format options only, so
+ * `$schema`, `ignorePatterns` and `overrides` are dropped from the options.
  *
  * @param config - The loaded config.
  * @param config.$schema - Dropped.
- * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
+ * @param config.ignorePatterns - Dropped from the options; oxfmt applies them
+ *   itself, except in Markdown code blocks.
  * @param config.overrides - Dropped from the options, after the width check.
  * @param configPath - The config file, for the warning.
- * @returns The format options and overrides.
+ * @returns The format options, ignore patterns and overrides.
  */
 function toResolvedConfig(
-	{
-		$schema: _schema,
-		ignorePatterns: _ignorePatterns,
-		overrides,
-		...options
-	}: Record<string, unknown>,
+	{ $schema: _schema, ignorePatterns, overrides, ...options }: Record<string, unknown>,
 	configPath: string,
 ): ResolvedOxfmtConfig {
 	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
@@ -1135,6 +1133,7 @@ function toResolvedConfig(
 		path.basename(configPath),
 	);
 	return {
+		ignorePatterns: isStringArray(ignorePatterns) ? ignorePatterns : [],
 		options,
 		overrides: Array.isArray(overrides) ? overrides : [],
 	};

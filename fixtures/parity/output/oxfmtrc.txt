@@ -335,8 +335,8 @@ something to do here as well.
 
 ```ts
 export const nearWidthArrow = (first: number, second: number) => {
-	return first + second + 12
-}
+	return first + second + 12;
+};
 ```
 
 === sub/nested.ts ===

@@ -552,6 +552,56 @@ describe("markdown code blocks", () => {
 		]);
 	});
 
+	it.for(["eslint", "standalone"] as const)(
+		"keeps path overrides out of code blocks (%s)",
+		async (formatter, { expect, onTestFinished }) => {
+			expect.assertions(1);
+
+			const directory = useProject(onTestFinished, {
+				".oxfmtrc.json": JSON.stringify({
+					overrides: [{ files: ["sub/**/*.ts"], options: { semi: false } }],
+				}),
+			});
+			const configs = await isentinel({ formatter, roblox: false, type: "package" });
+			const eslint = new ESLint({
+				cwd: directory,
+				fix: true,
+				overrideConfig: [...configs],
+				overrideConfigFile: true,
+			});
+			const [block] = await eslint.lintText(
+				["```ts", "const a = 1", "```", ""].join(newline),
+				{ filePath: "sub/a.md" },
+			);
+
+			// A TypeScript file in `sub/` would lose its semicolon.
+			expect(block!.output).toContain("const a = 1;");
+		},
+	);
+
+	it("keeps the config's ignore patterns for code blocks", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = useProject(onTestFinished, {
+			".oxfmtrc.json": JSON.stringify({ ignorePatterns: ["old/**"] }),
+		});
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const eslint = new ESLint({
+			cwd: directory,
+			fix: true,
+			overrideConfig: [...configs],
+			overrideConfigFile: true,
+		});
+		const [result] = await eslint.lintText(
+			["```ts", "const   a = 1", "```", ""].join(newline),
+			{
+				filePath: "old/a.md",
+			},
+		);
+
+		expect(result!.output).toBeUndefined();
+	});
+
 	it("leaves code blocks alone when Markdown is not formatted", async ({
 		expect,
 		onTestFinished,
