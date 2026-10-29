@@ -181,17 +181,26 @@ export async function oxfmt(
 		});
 	}
 
+	const codeBlocks = markdownCodeBlocks(languages, componentExtensions).map(
+		([name, files, layer]) => {
+			return {
+				name: `isentinel/oxfmt/markdown-code/${name}`,
+				// Each language glob, inside a Markdown file.
+				files: files.map((glob) => `${GLOB_MARKDOWN}/${glob}`),
+				rules: codeBlockRule(layer),
+			};
+		},
+	);
 	if (languages.markdown) {
-		configs.push(
-			...markdownCodeBlocks(languages, componentExtensions).map(([name, files, layer]) => {
-				return {
-					name: `isentinel/oxfmt/markdown-code/${name}`,
-					// Each language glob, inside a Markdown file.
-					files: files.map((glob) => `${GLOB_MARKDOWN}/${glob}`),
-					rules: codeBlockRule(layer),
-				};
-			}),
-		);
+		configs.push(...codeBlocks);
+	} else {
+		// The script blocks above match code blocks too: Markdown that is not
+		// formatted keeps its code blocks as they are.
+		configs.push({
+			name: "isentinel/oxfmt/markdown-code",
+			files: codeBlocks.flatMap((block) => block.files),
+			rules: { "oxfmt/oxfmt": "off" },
+		});
 	}
 
 	return configs;

@@ -60,8 +60,11 @@ function ruleOptions(rules: unknown, rule: string): unknown {
 	return Array.isArray(entry) ? entry[1] : undefined;
 }
 
-async function effectiveRules(file: string): Promise<unknown> {
-	const configs = await isentinel({ roblox: false, type: "package" });
+async function effectiveRules(
+	file: string,
+	options: Parameters<typeof isentinel>[0] = {},
+): Promise<unknown> {
+	const configs = await isentinel({ roblox: false, type: "package", ...options });
 	const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
 	const config: unknown = await eslint.calculateConfigForFile(file);
 	return isRecord(config) ? config["rules"] : undefined;
@@ -547,6 +550,18 @@ describe("markdown code blocks", () => {
 			"Some prose text that is long enough to need wrapping at eighty columns when it",
 			"is formatted.",
 		]);
+	});
+
+	it("leaves code blocks alone when Markdown is not formatted", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		useProject(onTestFinished, {});
+		const rules = await effectiveRules("docs/a.md/0.ts", { formatters: false });
+
+		expect(severityOf(rules, "oxfmt/oxfmt")).toBe(0);
 	});
 
 	it("gives code blocks the lint rule options of a source file", async ({
