@@ -990,10 +990,12 @@ as in the factories, so oxfmt formats the same files the linter would. TOML,
 `.mdx` and other files the linter does not format are ignored.
 
 In standalone mode, oxfmt never sees the linter's options. The factories warn
-once per lint run when you set any of these, because they do not change
-formatting: `formatters` (any value except `true`), `componentExts`, `ignores`,
-or `gitignore` (`false` or custom files). Set the equivalent in `isentinelOxfmt`
-instead (`formatters`, `componentExts`, `ignorePatterns`, and format options).
+once per lint run when you set any of these, because they do not change what
+oxfmt formats: `formatters` (any value except `true`), `componentExts`,
+`ignores`, or `gitignore` (`false` or custom files). They change only which
+Markdown code blocks ESLint formats: `formatters` chooses their languages, and
+the ignores choose their files. Set the equivalent in `isentinelOxfmt` instead
+(`formatters`, `componentExts`, `ignorePatterns`, and format options).
 `stylistic: false` turns off the stylistic lint rules but not oxfmt. The rule
 widths also come from the oxfmt config only, not from
 `formatters.prettierOptions` or `formatters.oxfmtOptions`. The setup wizard

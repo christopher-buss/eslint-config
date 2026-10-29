@@ -828,7 +828,8 @@ export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<Ov
 
 /**
  * Warn, at most once per process, about factory options that do not reach
- * standalone oxfmt: it formats with `oxfmt.config.ts` alone.
+ * standalone oxfmt: it formats with `oxfmt.config.ts` alone. They still choose
+ * which Markdown code blocks ESLint formats.
  *
  * @param options - The factory options.
  * @param options.componentExts - Oxfmt formats only the extensions
@@ -872,7 +873,7 @@ export function warnStandaloneOptions({
 	if (names.length > 0) {
 		state[WARNED_STANDALONE] = true;
 		console.warn(
-			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change formatting: ${names.join(", ")}. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
+			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change what oxfmt formats: ${names.join(", ")}. They change only which Markdown code blocks ESLint formats. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
 		);
 	}
 }
