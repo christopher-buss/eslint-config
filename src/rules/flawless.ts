@@ -2,7 +2,6 @@ import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "..
 
 export interface ArrowStyleRuleOptions {
 	maxLen?: number;
-	maxLength?: number;
 	printWidth?: number;
 	tabWidth?: number;
 }
@@ -11,35 +10,6 @@ export interface ArrowStyleRuleOptions {
 export interface FlawlessRuleOptions extends OptionsHasRoblox {
 	/** Add the anti-slop rules. */
 	antiSlop?: boolean;
-}
-
-/**
- * Arrow return style rule on its own, for the Markdown code block override
- * where only the line width differs.
- *
- * @param options - Shared rule options.
- * @returns The rule map.
- */
-export function arrowStyleRules({
-	maxLen,
-	maxLength,
-	printWidth,
-	tabWidth,
-}: ArrowStyleRuleOptions = {}): TypedFlatConfigItem["rules"] {
-	return {
-		"flawless/arrow-return-style": [
-			"error",
-			{
-				jsxAlwaysUseExplicitReturn: true,
-				maxLen: maxLength ?? maxLen ?? printWidth ?? 100,
-				maxObjectProperties: 2,
-				namedExportsAlwaysUseExplicitReturn: true,
-				objectReturnStyle: "complex-explicit" as const,
-				...(tabWidth !== undefined ? { tabWidth } : {}),
-				...(printWidth !== undefined ? { useOxfmt: { printWidth } } : {}),
-			},
-		],
-	};
 }
 
 /**
@@ -118,6 +88,33 @@ function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem
 		"flawless/no-unsafe-dictionary-type": "error",
 
 		...(roblox ? {} : { "flawless/no-reflect-get": "error" }),
+	};
+}
+
+/**
+ * The arrow return style rule.
+ *
+ * @param options - Shared rule options.
+ * @returns The rule map.
+ */
+function arrowStyleRules({
+	maxLen,
+	printWidth,
+	tabWidth,
+}: ArrowStyleRuleOptions = {}): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/arrow-return-style": [
+			"error",
+			{
+				jsxAlwaysUseExplicitReturn: true,
+				maxLen: maxLen ?? printWidth ?? 100,
+				maxObjectProperties: 2,
+				namedExportsAlwaysUseExplicitReturn: true,
+				objectReturnStyle: "complex-explicit" as const,
+				...(tabWidth !== undefined ? { tabWidth } : {}),
+				...(printWidth !== undefined ? { useOxfmt: { printWidth } } : {}),
+			},
+		],
 	};
 }
 

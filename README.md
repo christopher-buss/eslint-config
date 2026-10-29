@@ -999,10 +999,10 @@ widths also come from the oxfmt config only, not from
 `formatters.prettierOptions` or `formatters.oxfmtOptions`. The setup wizard
 copies migrated `.eslintignore` patterns to both configs.
 
-With `formatter: "standalone"`, the linter enables `oxfmt/oxfmt` nowhere but
-keeps the rules that turn off formatting conflicts. Lua formatting (Stylua)
-stays in ESLint, because oxfmt does not format Lua. The setup wizard can write
-all of this for you.
+With `formatter: "standalone"`, the linter enables `oxfmt/oxfmt` only in
+Markdown code blocks (see below), but keeps the rules that turn off formatting
+conflicts. Lua formatting (Stylua) stays in ESLint, because oxfmt does not
+format Lua. The setup wizard can write all of this for you.
 
 `isentinel-lint` runs `oxfmt --check` next to the linters whenever it finds an
 `oxfmt.config.ts` or `oxfmt.config.mts`, and `oxfmt --write` last with `--fix`.
@@ -1031,12 +1031,16 @@ becomes implicit only if it fits. It comes from `stylistic.maxLen`, else
 `useOxfmt.printWidth` is the width the rule gives oxfmt to predict its output.
 It always comes from the root `printWidth` of the oxfmt config, so that `--fix`
 agrees with oxfmt. An override that changes `printWidth` or `tabWidth` for JS or
-TS files gets a warning, because the linter uses the root values. In Markdown
-code blocks, `useOxfmt` uses the Markdown widths instead, because oxfmt formats
-embedded code with the Markdown options. Each oxfmt, `.editorconfig` or
-`.prettierrc` override that changes the Markdown widths reaches only the code
-blocks of the files it matches. The comment length rules take their `tabSize`
-from the same oxfmt widths.
+TS files gets a warning, because the linter uses the root values. The comment
+length rules take their `tabSize` from the same oxfmt widths.
+
+Markdown prose and Markdown code blocks are formatted separately, in both modes.
+Oxfmt formats the prose at the Markdown width (`jsdocPrintWidth`, else 80) and
+leaves code blocks alone (`embeddedLanguageFormatting: "off"`). ESLint formats
+each code block with `oxfmt/oxfmt` and the options of its language, the same as
+a file of that language: a TypeScript block uses the root `printWidth`, a YAML
+block the YAML options. The lint rules in a code block use the same widths as in
+a source file. ESLint does not format code blocks in files it ignores.
 
 The stylistic `indent` and `quotes`, and the JSON bracket spacing, follow the
 oxfmt options (`useTabs`, `tabWidth`, `singleQuote`, `bracketSpacing`) unless

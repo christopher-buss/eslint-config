@@ -158,20 +158,24 @@ export function buildOxfmtOptions({
  * ESLint config and the standalone oxfmt config so both format Markdown the
  * same way.
  *
+ * Oxfmt would format code blocks with these options too, at the prose width.
+ * It leaves them alone instead, and ESLint formats each block with the options
+ * of its own language (see `isentinel/oxfmt/markdown-code/*`).
+ *
  * @param jsdocPrintWidth - Width for Markdown prose; 80 when unset.
  * @returns Options applied on top of the base for Markdown files.
  */
 export function markdownOxfmtOptions(jsdocPrintWidth: unknown): {
+	embeddedLanguageFormatting: "off";
 	printWidth: number;
 	proseWrap: "always";
 	tabWidth: number;
 } {
 	return {
+		embeddedLanguageFormatting: "off" as const,
 		printWidth: Number(jsdocPrintWidth) || 80,
 		proseWrap: "always" as const,
-		// Embedded code blocks (e.g. YAML) that forbid tab indentation fall
-		// back to spaces; use 2 so they match the YAML options instead of the
-		// base width.
+		// The indent of nested list items.
 		tabWidth: 2,
 	} satisfies OxfmtOptions;
 }
