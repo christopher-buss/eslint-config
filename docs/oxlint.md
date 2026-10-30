@@ -248,19 +248,14 @@ the rule prefix is keyed on, so register with the exported resolver rather than
 a bare specifier, or the rules silently go with the drop:
 
 ```ts
-import {
-	isentinel,
-	resolveJsPluginSpecifier,
-} from "@isentinel/eslint-config/oxlint";
+import { isentinel, resolveJsPluginSpecifier } from "@isentinel/eslint-config/oxlint";
 
 export default isentinel(
 	{ name: "project/options", jsPlugins: false },
 	{
 		name: "local/my-plugin",
 		files: ["**/*.ts"],
-		jsPlugins: [
-			{ name: "my", specifier: resolveJsPluginSpecifier("eslint-plugin-my") },
-		],
+		jsPlugins: [{ name: "my", specifier: resolveJsPluginSpecifier("eslint-plugin-my") }],
 		rules: { "my/some-rule": "error" },
 	},
 );

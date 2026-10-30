@@ -177,10 +177,7 @@ export const shortArrow = (value: number) => {
 export const nearWidthArrow = (first: number, second: number) => {
 	return first + second + 12;
 };
-export const overWidthArrow = (
-	firstValue: number,
-	secondValue: number,
-) => {
+export const overWidthArrow = (firstValue: number, secondValue: number) => {
 	return firstValue + secondValue + 1;
 };
 ```

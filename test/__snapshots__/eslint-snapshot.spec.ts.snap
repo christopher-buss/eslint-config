@@ -1370,16 +1370,6 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
   },
   {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/eslint/comments/markdown-code",
-    "rules": [
-      "comment-length/limit-multi-line-comments [{"maxLength":80,"mode":"compact-on-overflow","semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-      "comment-length/limit-single-line-comments [{"maxLength":82,"semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-    ],
-  },
-  {
     "name": "isentinel/flawless/setup",
     "plugins": [
       "flawless",
@@ -1402,15 +1392,6 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "flawless/no-shape-in-symbol-names",
       "flawless/no-unsafe-dictionary-type",
       "flawless/prefer-parameter-destructuring (warn)",
-    ],
-  },
-  {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/flawless/markdown-code",
-    "rules": [
-      "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":80,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":2,"useOxfmt":{"printWidth":80}}]",
     ],
   },
   {
@@ -3806,7 +3787,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
     ],
   },
   {
@@ -3846,6 +3827,99 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     "name": "isentinel/oxfmt/yaml",
     "rules": [
       "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}js",
+      "**/*.md/**/*.{,c,m}jsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/javascript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}ts",
+      "**/*.md/**/*.{,c,m}tsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/typescript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.css",
+      "**/*.md/**/*.{p,post}css",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/css",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.scss",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/scss",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.less",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/less",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.html",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/html",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.graphql",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/graphql",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json{,5,c}",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json5",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json5",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.y{,a}ml",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/yaml",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
     ],
   },
   {
@@ -3918,16 +3992,6 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
   },
   {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/eslint/comments/markdown-code",
-    "rules": [
-      "comment-length/limit-multi-line-comments [{"maxLength":80,"mode":"compact-on-overflow","semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-      "comment-length/limit-single-line-comments [{"maxLength":82,"semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-    ],
-  },
-  {
     "name": "isentinel/flawless/setup",
     "plugins": [
       "flawless",
@@ -3944,15 +4008,6 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "flawless/no-export-default-arrow",
       "flawless/no-floating-point-equality",
       "flawless/prefer-parameter-destructuring (warn)",
-    ],
-  },
-  {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/flawless/markdown-code",
-    "rules": [
-      "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":80,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":2,"useOxfmt":{"printWidth":80}}]",
     ],
   },
   {
@@ -6274,7 +6329,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
     ],
   },
   {
@@ -6314,6 +6369,99 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     "name": "isentinel/oxfmt/yaml",
     "rules": [
       "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}js",
+      "**/*.md/**/*.{,c,m}jsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/javascript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}ts",
+      "**/*.md/**/*.{,c,m}tsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/typescript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.css",
+      "**/*.md/**/*.{p,post}css",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/css",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.scss",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/scss",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.less",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/less",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.html",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/html",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.graphql",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/graphql",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json{,5,c}",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json5",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json5",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.y{,a}ml",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/yaml",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
     ],
   },
   {
@@ -6386,16 +6534,6 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
   },
   {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/eslint/comments/markdown-code",
-    "rules": [
-      "comment-length/limit-multi-line-comments [{"maxLength":80,"mode":"compact-on-overflow","semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-      "comment-length/limit-single-line-comments [{"maxLength":82,"semanticComments":["oxlint-disable","oxlint-enable"],"tabSize":2}]",
-    ],
-  },
-  {
     "name": "isentinel/flawless/setup",
     "plugins": [
       "flawless",
@@ -6417,15 +6555,6 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "flawless/no-shape-in-symbol-names",
       "flawless/no-unsafe-dictionary-type",
       "flawless/prefer-parameter-destructuring (warn)",
-    ],
-  },
-  {
-    "files": [
-      "**/*.md/**/*.{,c,m}[jt]s{,x}",
-    ],
-    "name": "isentinel/flawless/markdown-code",
-    "rules": [
-      "flawless/arrow-return-style [{"jsxAlwaysUseExplicitReturn":true,"maxLen":80,"maxObjectProperties":2,"namedExportsAlwaysUseExplicitReturn":true,"objectReturnStyle":"complex-explicit","tabWidth":2,"useOxfmt":{"printWidth":80}}]",
     ],
   },
   {
@@ -9266,7 +9395,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
     ],
   },
   {
@@ -9306,6 +9435,99 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     "name": "isentinel/oxfmt/yaml",
     "rules": [
       "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}js",
+      "**/*.md/**/*.{,c,m}jsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/javascript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.{,c,m}ts",
+      "**/*.md/**/*.{,c,m}tsx",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/typescript",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.css",
+      "**/*.md/**/*.{p,post}css",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/css",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.scss",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/scss",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.less",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/less",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.html",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/html",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.graphql",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/graphql",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json{,5,c}",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.json5",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/json5",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.md/**/*.y{,a}ml",
+    ],
+    "name": "isentinel/oxfmt/markdown-code/yaml",
+    "rules": [
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","ignorePatterns":[],"overrides":[],"useConfig":false}]",
     ],
   },
   {

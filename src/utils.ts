@@ -16,7 +16,7 @@ import { minVersion } from "semver";
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
 import { GLOB_SRC_EXT } from "./globs.ts";
-import { isRecord } from "./guards.ts";
+import { isRecord, isStringArray } from "./guards.ts";
 import { editorConfigOverrides } from "./prettier-config.ts";
 import type { EditorConfigOverride } from "./prettier-config.ts";
 import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
@@ -679,8 +679,6 @@ const OXFMT_CONFIG_NAMES = [...OXFMT_RC_FILES, ...OXFMT_CONFIG_MODULES];
 /** The extensions of the JS/TS files ESLint and oxlint format. */
 const SCRIPT_EXTENSIONS = ["cjs", "cts", "js", "jsx", "mjs", "mts", "ts", "tsx"];
 
-/** The extensions of the Markdown files ESLint lints code blocks in. */
-const MARKDOWN_EXTENSIONS = ["md"];
 const JSON_EXTENSIONS = ["json", "json5", "jsonc"];
 const LEADING_DOT_SLASH = /^\.\//;
 
@@ -715,13 +713,6 @@ export type OxfmtOptions = Omit<FormatConfig, "jsdoc"> & {
 		  });
 };
 
-/** The widths oxfmt formats Markdown files with. */
-export interface MarkdownWidths {
-	printWidth?: number;
-	tabWidth?: number;
-}
-
-/** A config override that changes the widths of some Markdown files. */
 /** Where an oxfmt override applies, relative to the config directory. */
 export interface OverrideScope {
 	/** Globs it skips: its `excludeFiles` and its negated `files`. */
@@ -729,17 +720,10 @@ export interface OverrideScope {
 	files: Array<string>;
 }
 
-export interface MarkdownWidthOverride extends OverrideScope {
-	widths: MarkdownWidths;
-}
-
 /** What the factories read from an oxfmt config. */
 export interface ResolvedOxfmtConfig {
-	/**
-	 * The overrides that change the Markdown widths, in order. Oxfmt formats
-	 * Markdown code blocks with these on top of the preset's Markdown options.
-	 */
-	markdownOverrides?: Array<MarkdownWidthOverride>;
+	/** The config's ignore patterns. */
+	ignorePatterns?: Array<string>;
 	/** The root format options. */
 	options: OxfmtOptions;
 	/** The config's overrides. */
@@ -792,24 +776,13 @@ export function findOxfmtConfig(cwd: string = process.cwd()): OxfmtConfigFile | 
 }
 
 /**
- * The overrides that set `printWidth` or `tabWidth` for Markdown files.
+ * The string globs of an override's `files` or `excludeFiles`.
  *
- * @param overrides - The config's `overrides`.
- * @returns Each such override's scope and widths, in order.
+ * @param value - One glob or a list of them, of unknown shape.
+ * @returns The string globs.
  */
-export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOverride> {
-	if (!Array.isArray(overrides)) {
-		return [];
-	}
-
-	return overrides.flatMap((override: unknown) => {
-		if (!isRecord(override) || !overrideMatches(override, MARKDOWN_EXTENSIONS)) {
-			return [];
-		}
-
-		const widths = widthsOf(override["options"]);
-		return Object.keys(widths).length > 0 ? [{ ...scopeOf(override), widths }] : [];
-	});
+function globsOf(value: unknown): Array<string> {
+	return [value].flat().filter((glob): glob is string => typeof glob === "string");
 }
 
 /**
@@ -820,14 +793,10 @@ export function markdownOverridesOf(overrides: unknown): Array<MarkdownWidthOver
  * @returns Its scope.
  */
 function scopeOf(override: Record<string, unknown>): OverrideScope {
-	const strings = (value: unknown): Array<string> => {
-		return [value].flat().filter((glob): glob is string => typeof glob === "string");
-	};
-
-	const globs = strings(override["files"]);
+	const globs = globsOf(override["files"]);
 	return {
 		excludeFiles: [
-			...strings(override["excludeFiles"]),
+			...globsOf(override["excludeFiles"]),
 			...globs.filter((glob) => glob.startsWith("!")).map((glob) => glob.slice(1)),
 		],
 		files: globs.filter((glob) => !glob.startsWith("!")),
@@ -861,7 +830,8 @@ export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<Ov
 
 /**
  * Warn, at most once per process, about factory options that do not reach
- * standalone oxfmt: it formats with `oxfmt.config.ts` alone.
+ * standalone oxfmt: it formats with `oxfmt.config.ts` alone. They still choose
+ * which Markdown code blocks ESLint formats.
  *
  * @param options - The factory options.
  * @param options.componentExts - Oxfmt formats only the extensions
@@ -905,7 +875,7 @@ export function warnStandaloneOptions({
 	if (names.length > 0) {
 		state[WARNED_STANDALONE] = true;
 		console.warn(
-			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change formatting: ${names.join(", ")}. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
+			`[@isentinel/eslint-config] With formatter: "standalone", oxfmt formats with oxfmt.config.ts alone, so these options do not change what oxfmt formats: ${names.join(", ")}. They change only which Markdown code blocks ESLint formats. Set the equivalent in isentinelOxfmt() (formatters, componentExts, ignorePatterns, format options).`,
 		);
 	}
 }
@@ -949,8 +919,7 @@ export function warnScriptWidthOverrides(overrides: unknown, source: string): vo
  * {@link findOxfmtConfig}): `.oxfmtrc.json`, `.oxfmtrc.jsonc`,
  * `oxfmt.config.ts` or `oxfmt.config.mts`.
  *
- * @returns The format options and Markdown widths; empty options if none
- *   found.
+ * @returns The format options and overrides; empty options if none found.
  * @rejects When the config is ambiguous or cannot be loaded.
  */
 export async function resolveOxfmtConfig(): Promise<ResolvedOxfmtConfig> {
@@ -1137,25 +1106,20 @@ function mirrorsSection(override: unknown, sections: ReadonlyArray<EditorConfigO
 }
 
 /**
- * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options and the Markdown
- * widths. The rule takes format options only, so `$schema`, `ignorePatterns`
- * and `overrides` are dropped from the options.
+ * Turn a loaded oxfmt config into `oxfmt/oxfmt` rule options, its ignore
+ * patterns and its overrides. The rule takes format options only, so
+ * `$schema`, `ignorePatterns` and `overrides` are dropped from the options.
  *
  * @param config - The loaded config.
  * @param config.$schema - Dropped.
- * @param config.ignorePatterns - Dropped; oxfmt applies them itself.
- * @param config.overrides - Dropped, after the width check; read for the
- *   Markdown widths.
+ * @param config.ignorePatterns - Dropped from the options; oxfmt applies them
+ *   itself, except in Markdown code blocks.
+ * @param config.overrides - Dropped from the options, after the width check.
  * @param configPath - The config file, for the warning.
- * @returns The format options and Markdown widths.
+ * @returns The format options, ignore patterns and overrides.
  */
 function toResolvedConfig(
-	{
-		$schema: _schema,
-		ignorePatterns: _ignorePatterns,
-		overrides,
-		...options
-	}: Record<string, unknown>,
+	{ $schema: _schema, ignorePatterns, overrides, ...options }: Record<string, unknown>,
 	configPath: string,
 ): ResolvedOxfmtConfig {
 	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
@@ -1169,7 +1133,7 @@ function toResolvedConfig(
 		path.basename(configPath),
 	);
 	return {
-		markdownOverrides: markdownOverridesOf(overrides),
+		ignorePatterns: isStringArray(ignorePatterns) ? ignorePatterns : [],
 		options,
 		overrides: Array.isArray(overrides) ? overrides : [],
 	};
@@ -1196,24 +1160,6 @@ function rcConfig(configPath: string, content: string): ResolvedOxfmtConfig {
 	}
 
 	return toResolvedConfig(parsed, configPath);
-}
-
-/**
- * Pick `printWidth` and `tabWidth` out of a set of format options.
- *
- * @param options - Format options, of unknown shape.
- * @returns The widths it sets.
- */
-function widthsOf(options: unknown): MarkdownWidths {
-	if (!isRecord(options)) {
-		return {};
-	}
-
-	const { printWidth, tabWidth } = options;
-	return {
-		...(typeof printWidth === "number" ? { printWidth } : {}),
-		...(typeof tabWidth === "number" ? { tabWidth } : {}),
-	};
 }
 
 /**

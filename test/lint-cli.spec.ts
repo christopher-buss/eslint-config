@@ -683,7 +683,10 @@ describe("cache helpers", () => {
 		seeded.reconcile();
 
 		expect(openCache(cacheFile, false)!.removeEntries([files[0]!])).toBe(1);
-		expect(fileEntryCache.createFromFile(cacheFile).cache.keys()).toStrictEqual(files.slice(1));
+		// The cache does not keep its keys in insertion order.
+		expect(fileEntryCache.createFromFile(cacheFile).cache.keys().toSorted()).toStrictEqual(
+			files.slice(1),
+		);
 	});
 
 	it("leaves a changed file dirty after a removal writes the cache", ({

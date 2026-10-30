@@ -12,11 +12,7 @@ import {
 	withOxfmtStyle,
 	withOxfmtWidths,
 } from "../prettier-config.ts";
-import {
-	buildOxfmtOptions,
-	markdownOxfmtOptions,
-	migratePrettierOverrides,
-} from "../rules/oxfmt.ts";
+import { buildOxfmtOptions, migratePrettierOverrides } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { RuleOptions } from "../typegen.d.ts";
 import {
@@ -26,7 +22,6 @@ import {
 	isInAgentSession,
 	isInEditorEnvironment,
 	jsonLayoutOverrides,
-	markdownOverridesOf,
 	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
@@ -419,30 +414,10 @@ export async function isentinel(
 		);
 	}
 
-	// oxfmt formats Markdown code blocks with the Markdown options, then the
-	// config's Markdown overrides, in both modes.
-	const markdownCodeWidths =
-		formatter === "standalone" ||
-		(formatters !== false && shouldEnableFeature(formatters, "markdown"))
-			? {
-					markdownCode: markdownOxfmtOptions(prettierSettings["jsdocPrintWidth"]),
-					markdownCodeOverrides: [
-						...markdownOverridesOf(sectionOverrides),
-						...(oxfmtConfig.markdownOverrides ?? []),
-						// The `.prettierrc` overrides apply last, in both modes.
-						...markdownOverridesOf(prettierSettings["overrides"]),
-					],
-				}
-			: {};
-
 	// Base configs
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
-		comments({
-			...markdownCodeWidths,
-			prettierOptions: widthSettings,
-			stylistic: stylisticOptions,
-		}),
+		comments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
@@ -453,7 +428,6 @@ export async function isentinel(
 					? { typeAware: typescriptOptions.typeAware }
 					: {}),
 				antiSlop,
-				...markdownCodeWidths,
 				roblox: enableRoblox,
 				stylistic: stylisticOptions,
 			},
@@ -733,6 +707,7 @@ export async function isentinel(
 							}
 						: formatters,
 				oxfmtConfigOptions,
+				oxfmtIgnorePatterns: oxfmtConfig.ignorePatterns,
 				oxfmtOptions: formatterOptions.oxfmtOptions,
 				// Native-only hybrid keeps formatting in ESLint: oxfmt runs in
 				// oxlint as a jsPlugin, which that mode does not load.

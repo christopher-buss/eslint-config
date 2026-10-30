@@ -213,16 +213,10 @@ const value = { a: 1 };
 export const shortArrow = (value: number) => {
 	return value + 1;
 };
-export const nearWidthArrow = (
-	first: number,
-	second: number,
-) => {
+export const nearWidthArrow = (first: number, second: number) => {
 	return first + second + 12;
 };
-export const overWidthArrow = (
-	firstValue: number,
-	secondValue: number,
-) => {
+export const overWidthArrow = (firstValue: number, secondValue: number) => {
 	return firstValue + secondValue + 1;
 };
 ```
@@ -382,12 +376,9 @@ This nested paragraph is deliberately long so that prose
 wrapping has something to do here as well.
 
 ```ts
-export const nearWidthArrow = (
-	first: number,
-	second: number,
-) => {
-	return first + second + 12
-}
+export const nearWidthArrow = (first: number, second: number) => {
+	return first + second + 12;
+};
 ```
 
 === sub/nested.ts ===

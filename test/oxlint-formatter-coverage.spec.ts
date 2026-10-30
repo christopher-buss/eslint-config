@@ -36,6 +36,9 @@ const NON_JS_FORMATTER_CONFIGS = [
 	"isentinel/oxfmt/yaml",
 ] as const;
 
+/** Oxlint cannot read Markdown, so these keep formatting in ESLint. */
+const MARKDOWN_CODE_PREFIX = "isentinel/oxfmt/markdown-code/";
+
 type FactoryOptions = OptionsConfig & TypedFlatConfigItem & { namedConfigs?: false };
 
 async function resolveConfigs(
@@ -96,7 +99,22 @@ describe("oxlint hybrid formatter coverage", () => {
 
 		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
 
-		expect(formattingConfigNames(configs)).toStrictEqual([...NON_JS_FORMATTER_CONFIGS]);
+		expect(
+			formattingConfigNames(configs).filter((name) => !name.startsWith(MARKDOWN_CODE_PREFIX)),
+		).toStrictEqual([...NON_JS_FORMATTER_CONFIGS]);
+	});
+
+	it("should keep formatting Markdown code blocks in ESLint", async ({ expect }) => {
+		expect.assertions(1);
+
+		const configs = await resolveConfigs({ ...baseOptions, oxlint: true });
+
+		expect(formattingConfigNames(configs)).toStrictEqual(
+			expect.arrayContaining([
+				`${MARKDOWN_CODE_PREFIX}javascript`,
+				`${MARKDOWN_CODE_PREFIX}typescript`,
+			]),
+		);
 	});
 
 	it("should report formatting on a YAML file in hybrid mode", async ({ expect }) => {

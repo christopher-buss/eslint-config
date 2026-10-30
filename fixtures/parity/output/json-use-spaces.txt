@@ -43,10 +43,10 @@ to do in the docs folder too.
 
 ```ts
 export const nearWidthArrow = (first: number, second: number) => {
-  return first + second + 12;
+    return first + second + 12;
 };
 export const longerArrow = (firstValue: number, secondValue: number) => {
-  return firstValue + secondValue + 1234;
+    return firstValue + secondValue + 1234;
 };
 ```
 
@@ -163,19 +163,19 @@ here..............
 ```ts
 const value = { a: 1 };
 export const shortArrow = (value: number) => {
-  return value + 1;
+    return value + 1;
 };
 export const nearWidthArrow = (first: number, second: number) => {
-  return first + second + 12;
+    return first + second + 12;
 };
 export const overWidthArrow = (firstValue: number, secondValue: number) => {
-  return firstValue + secondValue + 1;
+    return firstValue + secondValue + 1;
 };
 ```
 
 ```tsx
 export const Item = ({ name }: { name: string }) => {
-  return <li className="item">{name}</li>;
+    return <li className="item">{name}</li>;
 };
 ```
 
@@ -197,7 +197,7 @@ list:
 
 ```css
 .a {
-  color: red;
+    color: red;
 }
 ```
 
@@ -326,7 +326,7 @@ to do here as well.
 
 ```ts
 export const nearWidthArrow = (first: number, second: number) => {
-  return first + second + 12;
+    return first + second + 12;
 };
 ```
 

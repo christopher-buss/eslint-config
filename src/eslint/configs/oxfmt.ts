@@ -1,7 +1,7 @@
 import type { Options as PrettierOptions } from "prettier";
 
 import { FORMATTED_FILES, resolveFormattedLanguages } from "../../formatted-files.ts";
-import { GLOB_JSON5 } from "../../globs.ts";
+import { GLOB_JSON5, GLOB_MARKDOWN } from "../../globs.ts";
 import {
 	buildOxfmtOptions,
 	JSON5_OXFMT_OPTIONS,
@@ -11,6 +11,7 @@ import {
 import type { OxfmtOptions } from "../../utils.ts";
 import { interopDefault, parserPlain, renameRules } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
+import { oxfmtMarkdownCode } from "../oxfmt-markdown-code.ts";
 import { oxfmtSingleFix } from "../oxfmt-single-fix.ts";
 import { defaultPluginRenaming } from "../plugin-renaming.ts";
 import type {
@@ -21,12 +22,17 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
+/** A code-block language: its name, its globs and its options layer. */
+type CodeBlock = [name: string, files: Array<string>, layer: OxfmtOptions];
+
 export async function oxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles &
 		OptionsOverrides & {
 			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
+			/** The oxfmt config's ignore patterns, for Markdown code blocks. */
+			oxfmtIgnorePatterns?: Array<string>;
 			oxfmtOptions?: OxfmtOptions;
 			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
@@ -42,6 +48,7 @@ export async function oxfmt(
 		files: oxfmtFiles,
 		formatters = {},
 		oxfmtConfigOptions = {},
+		oxfmtIgnorePatterns = [],
 		oxfmtOptions: userOxfmtOptions,
 		oxlint: enableOxlint = false,
 		prettierOptions = {},
@@ -75,7 +82,34 @@ export async function oxfmt(
 				};
 	}
 
-	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt", oxfmtSingleFix);
+	/**
+	 * The `oxfmt/oxfmt` entry for Markdown code blocks, in every mode: oxfmt
+	 * leaves them alone, and oxlint cannot read Markdown. A code block takes
+	 * the root options of its language only: the rule does not load the
+	 * config, so its overrides and the `.editorconfig` sections, which match
+	 * by path, do not reach the block. The config's ignore patterns still do.
+	 *
+	 * @param layer - Options applied over the base options.
+	 * @returns The rule entry.
+	 */
+	function codeBlockRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
+		return {
+			"oxfmt/oxfmt": [
+				"error",
+				{
+					...oxfmtOptions,
+					...layer,
+					ignorePatterns: oxfmtIgnorePatterns,
+					overrides: [],
+					useConfig: false,
+				},
+			],
+		};
+	}
+
+	const pluginOxfmt = lazyPlugin("eslint-plugin-oxfmt", (plugin) => {
+		return oxfmtSingleFix(oxfmtMarkdownCode(plugin));
+	});
 	const configPrettier = await interopDefault(import("eslint-config-prettier/flat"));
 
 	const rulesToIgnore = ["curly", "style/quotes"];
@@ -94,7 +128,7 @@ export async function oxfmt(
 	];
 
 	// The script globs also match Markdown code blocks, so the conflict
-	// disables reach them. The rule itself skips those virtual files.
+	// disables reach them. The code-block configs below format those.
 	const scriptBlocks = [
 		["javascript", oxfmtFiles ?? [...FORMATTED_FILES.javascript]],
 		[
@@ -169,7 +203,84 @@ export async function oxfmt(
 		});
 	}
 
+	const codeBlocks = markdownCodeBlocks(languages, componentExtensions).map(
+		([name, files, layer]) => {
+			return {
+				name: `isentinel/oxfmt/markdown-code/${name}`,
+				// Each language glob, inside a Markdown file.
+				files: files.map((glob) => `${GLOB_MARKDOWN}/${glob}`),
+				rules: codeBlockRule(layer),
+			};
+		},
+	);
+	if (languages.markdown) {
+		configs.push(...codeBlocks);
+	} else {
+		// The script blocks above match code blocks too: Markdown that is not
+		// formatted keeps its code blocks as they are.
+		configs.push({
+			name: "isentinel/oxfmt/markdown-code",
+			files: codeBlocks.flatMap((block) => block.files),
+			rules: { "oxfmt/oxfmt": "off" },
+		});
+	}
+
 	return configs;
+}
+
+/**
+ * The code-block languages to format, with the options each one uses: the
+ * same as a file of that language. Markdown blocks are left out: a config
+ * that matches their virtual `*.md/*.md` files makes ESLint fail.
+ *
+ * @param languages - Which languages are formatted.
+ * @param componentExtensions - Component extensions formatted as TypeScript.
+ * @returns The code-block languages.
+ */
+function markdownCodeBlocks(
+	languages: ReturnType<typeof resolveFormattedLanguages>,
+	componentExtensions: Array<string>,
+): Array<CodeBlock> {
+	const blocks: Array<CodeBlock> = [
+		["javascript", [...FORMATTED_FILES.javascript], {}],
+		[
+			"typescript",
+			[
+				...FORMATTED_FILES.typescript,
+				...componentExtensions.map((extension) => `**/*.${extension}`),
+			],
+			{},
+		],
+	];
+
+	if (languages.css) {
+		blocks.push(
+			["css", [...FORMATTED_FILES.css], {}],
+			["scss", [...FORMATTED_FILES.scss], {}],
+			["less", [...FORMATTED_FILES.less], {}],
+		);
+	}
+
+	if (languages.html) {
+		blocks.push(["html", [...FORMATTED_FILES.html], {}]);
+	}
+
+	if (languages.graphql) {
+		blocks.push(["graphql", [...FORMATTED_FILES.graphql], {}]);
+	}
+
+	if (languages.json) {
+		blocks.push(
+			["json", [...FORMATTED_FILES.json], {}],
+			["json5", [GLOB_JSON5], JSON5_OXFMT_OPTIONS],
+		);
+	}
+
+	if (languages.yaml) {
+		blocks.push(["yaml", [...FORMATTED_FILES.yaml], YAML_OXFMT_OPTIONS]);
+	}
+
+	return blocks;
 }
 
 /**

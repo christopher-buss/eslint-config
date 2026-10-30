@@ -60,14 +60,11 @@ function ruleOptions(rules: unknown, rule: string): unknown {
 	return Array.isArray(entry) ? entry[1] : undefined;
 }
 
-async function markdownCodeOptions(formatter: "eslint" | "standalone"): Promise<unknown> {
-	const configs = await isentinel({ formatter, roblox: false, type: "package" });
-	const { rules } = configs.find((config) => config.name === "isentinel/flawless/markdown-code")!;
-	return ruleOptions(rules, "flawless/arrow-return-style");
-}
-
-async function effectiveRules(file: string): Promise<unknown> {
-	const configs = await isentinel({ roblox: false, type: "package" });
+async function effectiveRules(
+	file: string,
+	options: Parameters<typeof isentinel>[0] = {},
+): Promise<unknown> {
+	const configs = await isentinel({ roblox: false, type: "package", ...options });
 	const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
 	const config: unknown = await eslint.calculateConfigForFile(file);
 	return isRecord(config) ? config["rules"] : undefined;
@@ -82,6 +79,21 @@ function enablesOxfmt(rules: unknown): boolean {
 	const entry = isRecord(rules) ? rules["oxfmt/oxfmt"] : undefined;
 	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
 	return severity !== undefined && severity !== "off" && severity !== 0;
+}
+
+/**
+ * The `files` globs of every config that enables `oxfmt/oxfmt`.
+ *
+ * @param configs - The resolved configs.
+ * @returns The globs, as strings.
+ */
+function formattedGlobs(
+	configs: ReadonlyArray<{ files?: unknown; rules?: unknown }>,
+): Array<string> {
+	return configs
+		.filter((config) => enablesOxfmt(config.rules))
+		.flatMap((config) => [config.files ?? []].flat(2))
+		.map(String);
 }
 
 describe("isentinelOxfmt", () => {
@@ -113,6 +125,7 @@ describe("isentinelOxfmt", () => {
 			["./*.json"],
 		]);
 		expect(config.overrides![0]!.options).toMatchObject({
+			embeddedLanguageFormatting: "off",
 			printWidth: 80,
 			proseWrap: "always",
 		});
@@ -411,7 +424,7 @@ describe(".prettierrc overrides", () => {
 		const eslint = new ESLint({ overrideConfig: [...configs], overrideConfigFile: true });
 
 		await expect(
-			eslint.lintText("const a = 1;" + String.fromCharCode(10), { filePath: "a.ts" }),
+			eslint.lintText(`const a = 1;${String.fromCharCode(10)}`, { filePath: "a.ts" }),
 		).resolves.toBeDefined();
 	});
 });
@@ -472,148 +485,154 @@ describe(".editorconfig sections", () => {
 				.filter((message) => message.includes("printWidth or tabWidth")),
 		).toStrictEqual([expect.stringContaining("] .editorconfig has an override")]);
 	});
-
-	it("reach the Markdown code widths", async ({ expect, onTestFinished }) => {
-		expect.assertions(1);
-
-		useProject(onTestFinished, { ".editorconfig": editorconfig });
-
-		const configs = await isentinel({ roblox: false, type: "package" });
-		const override = configs.find(
-			(config) => config.name === "isentinel/flawless/markdown-code/override-0",
-		);
-
-		expect(ruleOptions(override!.rules, "flawless/arrow-return-style")).toMatchObject({
-			tabWidth: 3,
-			useOxfmt: { printWidth: 60 },
-		});
-	});
 });
 
-describe("markdown code widths", () => {
-	it("hands arrow-return-style the Markdown widths in Markdown code", async ({
-		expect,
-		onTestFinished,
-	}) => {
-		expect.assertions(1);
+describe("markdown code blocks", () => {
+	const newline = String.fromCharCode(10);
+	// Prose over 80 columns, a TypeScript line between 80 and 100 columns, and
+	// a YAML block out of shape.
+	const markdown = [
+		"Some prose text that is long enough to need wrapping at eighty columns when it is formatted.",
+		"",
+		"```ts",
+		"function a(): void {",
+		"	if (b) {",
+		"		d((attemptNumber: number) => Math.min(1000 * 2 ** attemptNumber, 30000), eeeeeee);",
+		"	}",
+		"}",
+		"```",
+		"",
+		"```yaml",
+		"a:",
+		"        b: 1",
+		"```",
+		"",
+	].join(newline);
 
-		useProject(onTestFinished, {});
-
-		const widths = await Promise.all(
-			(["eslint", "standalone"] as const).map(async (formatter) => {
-				const configs = await isentinel({ formatter, roblox: false, type: "package" });
-				const { rules } = configs.find(
-					(config) => config.name === "isentinel/flawless/markdown-code",
-				)!;
-				return ruleOptions(rules, "flawless/arrow-return-style");
-			}),
-		);
-		const expected = {
-			jsxAlwaysUseExplicitReturn: true,
-			maxLen: 80,
-			maxObjectProperties: 2,
-			namedExportsAlwaysUseExplicitReturn: true,
-			objectReturnStyle: "complex-explicit",
-			tabWidth: 2,
-			useOxfmt: { printWidth: 80 },
-		};
-
-		expect(widths).toStrictEqual([expected, expected]);
-	});
+	async function fix(formatter: "eslint" | "standalone", directory: string): Promise<string> {
+		const configs = await isentinel({ formatter, roblox: false, type: "package" });
+		const eslint = new ESLint({
+			cwd: directory,
+			fix: true,
+			overrideConfig: [...configs],
+			overrideConfigFile: true,
+		});
+		const [result] = await eslint.lintText(markdown, { filePath: "docs/a.md" });
+		return result!.output ?? markdown;
+	}
 
 	it.for(["eslint", "standalone"] as const)(
-		"applies a Markdown override to the code blocks it matches (%s)",
+		"formats each code block with the options of its language (%s)",
 		async (formatter, { expect, onTestFinished }) => {
-			expect.assertions(3);
+			expect.assertions(2);
 
-			useProject(onTestFinished, {
-				"oxfmt.config.ts": oxfmtConfigModule(
-					'{ overrides: [{ files: ["docs/**/*.md"], options: { printWidth: 100, tabWidth: 4 } }] }',
-				),
-			});
+			const directory = useProject(onTestFinished, {});
+			const output = await fix(formatter, directory);
 
-			const configs = await isentinel({ formatter, roblox: false, type: "package" });
-			// The preset's own Markdown override comes first.
-			const override = configs
-				.filter((config) => config.name!.startsWith("isentinel/flawless/markdown-code/"))
-				.at(-1);
-
-			expect(override!.files).toStrictEqual(["docs/**/*.md/**/*.{,c,m}[jt]s{,x}"]);
-			// The arrow limit stays shorter than the width oxfmt formats with.
-			expect(ruleOptions(override!.rules, "flawless/arrow-return-style")).toMatchObject({
-				maxLen: 80,
-				tabWidth: 4,
-				useOxfmt: { printWidth: 100 },
-			});
-			// Other Markdown files keep the preset's Markdown widths.
-			await expect(markdownCodeOptions(formatter)).resolves.toMatchObject({
-				tabWidth: 2,
-				useOxfmt: { printWidth: 80 },
-			});
+			// The TypeScript line fits the root printWidth, so it stays whole.
+			expect(output).toContain(
+				"		d((attemptNumber: number) => Math.min(1000 * 2 ** attemptNumber, 30000), eeeeeee);",
+			);
+			expect(output).toContain(["```yaml", "a:", "  b: 1", "```"].join(newline));
 		},
 	);
 
-	it("skips excluded and negated globs of a Markdown override", async ({
+	it("formats the prose at the Markdown width in eslint mode", async ({
 		expect,
 		onTestFinished,
 	}) => {
 		expect.assertions(1);
 
-		useProject(onTestFinished, {
-			".oxfmtrc.json": JSON.stringify({
-				overrides: [
-					{
-						excludeFiles: ["docs/old/**"],
-						files: ["docs/**/*.md", "!docs/skip.md"],
-						options: { printWidth: 100 },
-					},
-				],
-			}),
-		});
+		const directory = useProject(onTestFinished, {});
+		const output = await fix("eslint", directory);
 
-		const configs = await isentinel({ roblox: false, type: "package" });
-		const override = configs.find(
-			(config) => config.name === "isentinel/flawless/markdown-code/override-0",
-		);
-
-		expect(override!.ignores).toStrictEqual(["docs/old/**/**", "docs/skip.md/**"]);
+		expect(output.split(newline).slice(0, 2)).toStrictEqual([
+			"Some prose text that is long enough to need wrapping at eighty columns when it",
+			"is formatted.",
+		]);
 	});
 
-	it("gives the comment rules the Markdown tabWidth in code blocks", async ({
+	it.for(["eslint", "standalone"] as const)(
+		"keeps path overrides out of code blocks (%s)",
+		async (formatter, { expect, onTestFinished }) => {
+			expect.assertions(1);
+
+			const directory = useProject(onTestFinished, {
+				".oxfmtrc.json": JSON.stringify({
+					overrides: [{ files: ["sub/**/*.ts"], options: { semi: false } }],
+				}),
+			});
+			const configs = await isentinel({ formatter, roblox: false, type: "package" });
+			const eslint = new ESLint({
+				cwd: directory,
+				fix: true,
+				overrideConfig: [...configs],
+				overrideConfigFile: true,
+			});
+			const [block] = await eslint.lintText(
+				["```ts", "const a = 1", "```", ""].join(newline),
+				{ filePath: "sub/a.md" },
+			);
+
+			// A TypeScript file in `sub/` would lose its semicolon.
+			expect(block!.output).toContain("const a = 1;");
+		},
+	);
+
+	it("keeps the config's ignore patterns for code blocks", async ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = useProject(onTestFinished, {
+			".oxfmtrc.json": JSON.stringify({ ignorePatterns: ["old/**"] }),
+		});
+		const configs = await isentinel({ roblox: false, type: "package" });
+		const eslint = new ESLint({
+			cwd: directory,
+			fix: true,
+			overrideConfig: [...configs],
+			overrideConfigFile: true,
+		});
+		const [result] = await eslint.lintText(
+			["```ts", "const   a = 1", "```", ""].join(newline),
+			{
+				filePath: "old/a.md",
+			},
+		);
+
+		expect(result!.output).toBeUndefined();
+	});
+
+	it("leaves code blocks alone when Markdown is not formatted", async ({
 		expect,
 		onTestFinished,
 	}) => {
 		expect.assertions(1);
 
 		useProject(onTestFinished, {});
+		const rules = await effectiveRules("docs/a.md/0.ts", { formatters: false });
 
-		const configs = await isentinel({ roblox: false, type: "package" });
-		const { rules } = configs.find(
-			(config) => config.name === "isentinel/eslint/comments/markdown-code",
-		)!;
-
-		expect(ruleOptions(rules, "comment-length/limit-single-line-comments")).toMatchObject({
-			tabSize: 2,
-		});
+		expect(severityOf(rules, "oxfmt/oxfmt")).toBe(0);
 	});
 
-	it("ignores the root widths for Markdown code", async ({ expect, onTestFinished }) => {
-		expect.assertions(1);
+	it("gives code blocks the lint rule options of a source file", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
 
-		useProject(onTestFinished, {
-			".oxfmtrc.json": JSON.stringify({
-				overrides: [{ files: ["*.yaml"], options: { tabWidth: 2 } }],
-				printWidth: 90,
-				tabWidth: 3,
-			}),
-		});
+		useProject(onTestFinished, {});
 
-		// The preset's Markdown layer sets both widths, so the root ones never
-		// reach Markdown.
-		await expect(markdownCodeOptions("standalone")).resolves.toMatchObject({
-			tabWidth: 2,
-			useOxfmt: { printWidth: 80 },
-		});
+		const [source, block] = await Promise.all([
+			effectiveRules("src/a.ts"),
+			effectiveRules("docs/a.md/0.ts"),
+		]);
+
+		expect(ruleEntry(block, "flawless/arrow-return-style")).toStrictEqual(
+			ruleEntry(source, "flawless/arrow-return-style"),
+		);
+		expect(ruleEntry(block, "comment-length/limit-single-line-comments")).toStrictEqual(
+			ruleEntry(source, "comment-length/limit-single-line-comments"),
+		);
 	});
 });
 
@@ -789,7 +808,7 @@ describe("formatter: standalone", () => {
 		).toBe(true);
 	});
 
-	it("enables oxfmt/oxfmt nowhere in ESLint but keeps the conflict disables", async ({
+	it("enables oxfmt/oxfmt in ESLint for Markdown code blocks only, and keeps the conflict disables", async ({
 		expect,
 	}) => {
 		expect.assertions(2);
@@ -800,7 +819,9 @@ describe("formatter: standalone", () => {
 			type: "package",
 		});
 
-		expect(configs.some((config) => enablesOxfmt(config.rules))).toBe(false);
+		expect(
+			formattedGlobs(configs).filter((glob) => !glob.startsWith("**/*.md/")),
+		).toStrictEqual([]);
 		expect(
 			configs.find((config) => config.name === "isentinel/oxfmt/typescript")!.rules![
 				"style/indent"
