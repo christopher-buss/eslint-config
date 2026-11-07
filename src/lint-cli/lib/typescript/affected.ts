@@ -473,6 +473,7 @@ function collectAffected(
  * @param buildInfoPath - The variant's buildinfo file.
  */
 function persistBuilderState(
+	// oxlint-disable-next-line id-length -- TypeScript owns this name (https://github.com/oxc-project/oxc/issues/29035).
 	builder: TypeScript.EmitAndSemanticDiagnosticsBuilderProgram,
 	buildInfoPath: string,
 ): void {
