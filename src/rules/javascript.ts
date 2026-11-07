@@ -5,6 +5,14 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
+/** `id-length` options shared by the ESLint rule and the native oxlint rule. */
+export const ID_LENGTH_OPTIONS = {
+	exceptions: ["_", "x", "y", "z", "a", "b", "e"],
+	max: 30,
+	min: 2,
+	properties: "never" as const,
+};
+
 /**
  * Core JavaScript rules shared between the ESLint and oxlint factories.
  *
@@ -230,15 +238,6 @@ export function javascriptRules({
 
 		...(stylistic !== false
 			? {
-					"id-length": [
-						"error",
-						{
-							exceptions: ["_", "x", "y", "z", "a", "b", "e"],
-							max: 30,
-							min: 2,
-							properties: "never",
-						},
-					],
 					"max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
 					"no-lone-blocks": "error",
 					"no-multi-str": "error",

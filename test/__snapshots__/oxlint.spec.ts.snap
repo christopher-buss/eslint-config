@@ -3005,6 +3005,31 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "globals": {
         "AI": "readonly",
         "AICreateMonitor": "readonly",
@@ -4290,24 +4315,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "func-style": [
           "error",
           "declaration",
-        ],
-        "id-length": [
-          "error",
-          {
-            "checkGeneric": false,
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
         ],
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
@@ -7428,6 +7435,31 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "globals": {
         "AI": "readonly",
         "AICreateMonitor": "readonly",
@@ -8710,24 +8742,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "default-case-last": "error",
         "eqeqeq": "error",
         "for-direction": "error",
-        "id-length": [
-          "error",
-          {
-            "checkGeneric": false,
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -11540,6 +11554,31 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "globals": {
         "AI": "readonly",
         "AICreateMonitor": "readonly",
@@ -12822,24 +12861,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "default-case-last": "error",
         "eqeqeq": "error",
         "for-direction": "error",
-        "id-length": [
-          "error",
-          {
-            "checkGeneric": false,
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -13944,6 +13965,34 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "small-rules/no-array-constructor-elements": "error",
         "small-rules/no-array-size-assignment": "error",
         "small-rules/no-recursive": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "src/**",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
       },
     },
     {
@@ -15238,24 +15287,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "func-style": [
           "error",
           "declaration",
-        ],
-        "id-length": [
-          "error",
-          {
-            "checkGeneric": false,
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
         ],
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
