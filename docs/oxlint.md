@@ -106,12 +106,18 @@ entry routed to a jsPlugin instead would configure a different rule and leave
 the native one on its defaults.
 
 Jest and React prefer their jsPlugins; Vitest and Unicorn prefer native
-implementations. `no-loop-func` and `unicorn/no-lonely-if` are exact jsPlugin
-preferences, the last because its JS implementation currently has better autofix
-parity. Whenever a preferred jsPlugin also has a native implementation, the
-generated config disables the native rule at the same scope so categories cannot
-activate a duplicate. This suppression remains in native-only mode even though
-the JS rule itself stays in ESLint.
+implementations. `no-loop-func`, `unicorn/no-lonely-if` and
+`unicorn/no-useless-undefined` are exact jsPlugin preferences. The JS
+implementation of `unicorn/no-lonely-if` currently has better autofix parity.
+The native `unicorn/no-useless-undefined` autofix breaks syntax and drops types
+and comments ([oxc#28978](https://github.com/oxc-project/oxc/issues/28978)), and
+the native rule misses reports
+([oxc#28979](https://github.com/oxc-project/oxc/issues/28979),
+[oxc#28988](https://github.com/oxc-project/oxc/issues/28988)). Whenever a
+preferred jsPlugin also has a native implementation, the generated config
+disables the native rule at the same scope so categories cannot activate a
+duplicate. This suppression remains in native-only mode even though the JS rule
+itself stays in ESLint.
 
 The generated capability data in `src/generated/` is rule names only: which
 rules oxlint implements natively (from `oxlint --rules`), which rules the

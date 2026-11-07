@@ -77,7 +77,7 @@ exports[`oxlint standalone fixtures > should produce the expected diagnostics 1`
   "javascript.js:64 eslint(no-lonely-if)",
   "javascript.js:71 eslint(prefer-const)",
   "javascript.js:71 eslint-js(no-undef-init)",
-  "javascript.js:71 unicorn(no-useless-undefined)",
+  "javascript.js:71 unicorn-js(no-useless-undefined)",
   "javascript.js:74 eslint(no-useless-rename)",
   "javascript.js:77 eslint(no-useless-computed-key)",
   "javascript.js:8 eslint(eqeqeq)",

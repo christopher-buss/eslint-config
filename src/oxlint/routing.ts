@@ -131,12 +131,17 @@ const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
 /**
  * Rules that take the ESLint plugin even though Oxlint ports them natively.
  * `unicorn/no-lonely-if` is here because its JS implementation currently has
- * better autofix parity. A native preference needs no entry — that is what
- * every family gets by default.
+ * better autofix parity. `unicorn/no-useless-undefined` is here because the
+ * native autofix breaks syntax and drops types and comments
+ * (https://github.com/oxc-project/oxc/issues/28978) and the native rule misses
+ * reports (https://github.com/oxc-project/oxc/issues/28979,
+ * https://github.com/oxc-project/oxc/issues/28988). A native preference needs
+ * no entry — that is what every family gets by default.
  */
 const JS_PLUGIN_PREFERRED_RULES: ReadonlySet<string> = new Set([
 	"no-loop-func",
 	"unicorn/no-lonely-if",
+	"unicorn/no-useless-undefined",
 ]);
 
 /**
