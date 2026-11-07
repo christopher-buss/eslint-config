@@ -32,10 +32,7 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 		semi,
 	});
 
-	// The preset's `style/jsx-*` rules only report on JSX, which a `.ts` or
-	// `.js` file cannot contain, so they go to their own JSX/TSX-scoped block.
 	const presetRules = Object.entries(config.rules ?? {});
-	const isJsxRule = ([name]: [string, unknown]): boolean => name.startsWith("style/jsx-");
 
 	return [
 		{
@@ -68,4 +65,13 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 					},
 				]),
 	];
+}
+
+/**
+ * The preset's `style/jsx-*` rules only report on JSX, which a `.ts` or `.js`
+ * file cannot contain, so they go to their own JSX/TSX-scoped block.
+ * @param root0
+ */
+function isJsxRule([name]: [string, unknown]): boolean {
+	return name.startsWith("style/jsx-");
 }
