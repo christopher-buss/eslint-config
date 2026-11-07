@@ -677,6 +677,9 @@ function realEngineFixture(
 		path.join(directory, ".oxlintrc.json"),
 		JSON.stringify({ rules: { "no-debugger": "error" } }),
 	);
+	// Without its own tsconfig, the type-aware invalidation would find this
+	// repository's and build a program for all of it on every run.
+	fs.writeFileSync(path.join(directory, "tsconfig.json"), JSON.stringify({ include: ["*.ts"] }));
 	const body = `let value = 1;\n${withDebugger ? "debugger;\n" : ""}export default value;\n`;
 	for (const name of [...SELECTED, UNSELECTED]) {
 		fs.writeFileSync(path.join(directory, name), body);

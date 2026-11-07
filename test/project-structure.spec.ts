@@ -91,6 +91,11 @@ const CASES: Array<StructureCase> = [
 	},
 ];
 
+type OxlintConfig = ReturnType<typeof oxlintIsentinel>;
+
+/** A `jsPlugins` entry, by name or as a bare specifier. */
+type JsPluginEntry = NonNullable<OxlintConfig["jsPlugins"]>[number];
+
 /**
  * Write a project tree under a fresh directory.
  *
@@ -147,6 +152,35 @@ async function lint(
 		.sort();
 }
 
+const PLUGIN = RULE.slice(0, RULE.indexOf("/"));
+
+function isStructurePlugin(entry: JsPluginEntry): boolean {
+	return typeof entry === "object" && entry.name === PLUGIN;
+}
+
+/**
+ * Keep only `folder-structure` and its plugin. The factory's options for the
+ * rule stay as they are; every other jsPlugin would only add load time, as
+ * oxlint starts each one on every run.
+ *
+ * @param config - The factory's config.
+ * @returns The config with one jsPlugin and one rule.
+ */
+function onlyStructureRule(config: OxlintConfig): OxlintConfig {
+	const overrides = (config.overrides ?? []).flatMap((override) => {
+		const rules = Object.fromEntries(
+			Object.entries(override.rules ?? {}).filter(([name]) => name === RULE),
+		);
+		if (Object.keys(rules).length === 0) {
+			return [];
+		}
+
+		return [{ ...override, jsPlugins: override.jsPlugins?.filter(isStructurePlugin), rules }];
+	});
+
+	return { ...config, jsPlugins: config.jsPlugins?.filter(isStructurePlugin), overrides };
+}
+
 /**
  * Lint a project tree with the same config through the oxlint binary, which
  * runs the rule as a jsPlugin.
@@ -179,7 +213,7 @@ async function lintWithOxlint(
 
 	await fs.writeFile(
 		path.join(projectDirectory, ".oxlintrc.json"),
-		JSON.stringify(config, undefined, "\t"),
+		JSON.stringify(onlyStructureRule(config), undefined, "\t"),
 	);
 
 	// The tree is lint-clean for `folder-structure` in most cases, and the
