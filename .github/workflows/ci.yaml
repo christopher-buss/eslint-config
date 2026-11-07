@@ -95,7 +95,8 @@ jobs:
         run: nr typecheck
 
   # Too slow for the pre-commit hook: runs ESLint and oxfmt over many scratch
-  # projects in both formatter modes. Its own job, so it runs beside `test`.
+  # projects in both formatter modes. Its own sharded job, so it runs beside
+  # `test`.
   parity:
     runs-on: ubuntu-latest
 
@@ -118,6 +119,13 @@ jobs:
 
       - name: Formatter parity
         run: nr test:parity
+        env:
+          PARITY_SHARD: ${{ matrix.shard }}/2
+
+    strategy:
+      matrix:
+        shard: [1, 2]
+      fail-fast: false
 
   test:
     runs-on: ubuntu-latest

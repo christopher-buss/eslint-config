@@ -327,29 +327,56 @@ async function checkScenario(scenario: Scenario, expect: ExpectStatic): Promise<
 	}
 }
 
+/** `PARITY_SHARD`: the shard, then the shard count. */
+const SHARD_PATTERN = /^(\d+)\/(\d+)$/;
+
+/**
+ * The scenarios this run owns. `PARITY_SHARD=i/n` (CI) takes every n-th
+ * scenario from the i-th, after sorting the type-aware ones first, so each
+ * shard gets its share of the slowest scenarios. Unset, the run takes all.
+ *
+ * @returns The scenarios to run, type-aware first.
+ */
+function shardScenarios(): Array<Scenario> {
+	const sorted = scenarios.toSorted(
+		(a, b) => Number(b.typeAware ?? false) - Number(a.typeAware ?? false),
+	);
+	const shard = process.env["PARITY_SHARD"];
+	if (shard === undefined || shard === "") {
+		return sorted;
+	}
+
+	const match = SHARD_PATTERN.exec(shard);
+	const index = Number(match?.[1]);
+	const count = Number(match?.[2]);
+	if (match === null || index < 1 || index > count) {
+		throw new Error(`PARITY_SHARD must be "i/n" with 1 <= i <= n, got "${shard}"`);
+	}
+
+	return sorted.filter((_, position) => position % count === index - 1);
+}
+
+const owned = shardScenarios();
+
 // Type-aware scenarios build TypeScript programs; run in parallel with the
 // rest they have crashed ESLint natively on Windows, so there they run one by
 // one. Elsewhere they run with the rest, first, as they take the most rounds.
 if (process.platform === "win32") {
 	describe("formatter parity (type-aware)", () => {
-		it.for(scenarios.filter(({ typeAware }) => typeAware === true))(
+		it.for(owned.filter(({ typeAware }) => typeAware === true))(
 			"$name",
 			async (scenario, { expect }) => checkScenario(scenario, expect),
 		);
 	});
 
 	describe.concurrent("formatter parity", () => {
-		it.for(scenarios.filter(({ typeAware }) => typeAware !== true))(
+		it.for(owned.filter(({ typeAware }) => typeAware !== true))(
 			"$name",
 			async (scenario, { expect }) => checkScenario(scenario, expect),
 		);
 	});
 } else {
 	describe.concurrent("formatter parity", () => {
-		it.for(
-			scenarios.toSorted(
-				(a, b) => Number(b.typeAware ?? false) - Number(a.typeAware ?? false),
-			),
-		)("$name", async (scenario, { expect }) => checkScenario(scenario, expect));
+		it.for(owned)("$name", async (scenario, { expect }) => checkScenario(scenario, expect));
 	});
 }
