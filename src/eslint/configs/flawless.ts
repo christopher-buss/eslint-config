@@ -1,5 +1,9 @@
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_SRC, GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { flawlessRules, flawlessTypeAwareRules } from "../../rules/flawless.ts";
+import {
+	flawlessRules,
+	flawlessTypeAwareJsxRules,
+	flawlessTypeAwareRules,
+} from "../../rules/flawless.ts";
 import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { getTsConfig, interopDefault } from "../../utils.ts";
 import type {
@@ -77,6 +81,18 @@ export async function flawless(
 						files: [GLOB_SRC],
 						ignores: complementIgnores,
 						rules: flawlessRules({ ...sharedRuleOptions, roblox: false }),
+					},
+				]
+			: []),
+		// Before the general type-aware block, so `overridesTypeAware` still
+		// wins on TSX files.
+		...(isTypeAware
+			? [
+					{
+						name: "isentinel/flawless/tsx/rules-type-aware",
+						files: [GLOB_TSX],
+						ignores: ignoresTypeAware,
+						rules: flawlessTypeAwareJsxRules(),
 					},
 				]
 			: []),

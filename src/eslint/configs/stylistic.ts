@@ -1,7 +1,7 @@
 import type PluginStylistic from "@stylistic/eslint-plugin";
 
-import { GLOB_SRC } from "../../globs.ts";
-import { stylisticRules } from "../../rules/stylistic.ts";
+import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../../globs.ts";
+import { stylisticJsxRules, stylisticRules } from "../../rules/stylistic.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 
@@ -32,6 +32,11 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 		semi,
 	});
 
+	// The preset's `style/jsx-*` rules only report on JSX, which a `.ts` or
+	// `.js` file cannot contain, so they go to their own JSX/TSX-scoped block.
+	const presetRules = Object.entries(config.rules ?? {});
+	const isJsxRule = ([name]: [string, unknown]): boolean => name.startsWith("style/jsx-");
+
 	return [
 		{
 			name: "isentinel/stylistic/setup",
@@ -44,10 +49,23 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 			name: "isentinel/stylistic",
 			files: [GLOB_SRC],
 			rules: {
-				...config.rules,
+				...Object.fromEntries(presetRules.filter((entry) => !isJsxRule(entry))),
 
 				...stylisticRules({ indent, jsx, quotes, semi }),
 			},
 		},
+		...(jsx === false
+			? []
+			: [
+					{
+						name: "isentinel/stylistic/jsx",
+						files: [GLOB_JSX, GLOB_TSX],
+						rules: {
+							...Object.fromEntries(presetRules.filter(isJsxRule)),
+
+							...stylisticJsxRules({ jsx }),
+						},
+					},
+				]),
 	];
 }

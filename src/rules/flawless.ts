@@ -15,7 +15,8 @@ export interface FlawlessRuleOptions extends OptionsHasRoblox {
 /**
  * Base (non-React) flawless rules shared between the ESLint and oxlint
  * factories. The React flawless rules live in the react rule map; the
- * type-aware rules live in {@link flawlessTypeAwareRules}, plus the type-aware
+ * type-aware rules live in {@link flawlessTypeAwareRules} and
+ * {@link flawlessTypeAwareJsxRules}, plus the type-aware
  * `flawless/naming-convention` in its own config; the test-only rules, and the
  * non-JS `flawless/no-redundant-tsconfig-options`, `flawless/toml-*` and
  * `flawless/yaml-*` rules are configured by their own configs.
@@ -64,9 +65,21 @@ export function flawlessTypeAwareRules({
 }: FlawlessRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
 		"flawless/no-redundant-type-annotation": "error",
-		"flawless/prefer-read-only-props": "error",
 
 		...(antiSlop ? antiSlopTypeAwareRules({ roblox }) : {}),
+	};
+}
+
+/**
+ * Type-aware flawless rules that only check function components. ESLint only,
+ * like {@link flawlessTypeAwareRules}. Scoped to TSX files: type information is
+ * only available for TypeScript, and components live in `.tsx` files.
+ *
+ * @returns The rule map.
+ */
+export function flawlessTypeAwareJsxRules(): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/prefer-read-only-props": "error",
 	};
 }
 
