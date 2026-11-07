@@ -18,6 +18,9 @@ export default isentinel(
 		type: "package",
 		typescript: {
 			erasableOnly: true,
+			// The tsconfig includes root files, so only the inspector config
+			// (excluded there, as it imports the built package) sits outside.
+			outOfProjectFiles: ["eslint-inspector.config.ts"],
 		},
 	},
 	{

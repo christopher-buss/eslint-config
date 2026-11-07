@@ -1,13 +1,17 @@
 {
 	"extends": "@isentinel/tsconfig/typescript",
 	"compilerOptions": {
-		"allowImportingTsExtensions": true
+		"allowJs": true,
+		"exactOptionalPropertyTypes": false,
+		"isolatedDeclarations": false
 	},
 	"exclude": [
 		"**/node_modules",
 		"./**/.*/",
+		"./dist",
 		"./_fixtures/**/*.*",
 		"./fixtures/**/*.*",
-		"./references/**/*.*"
+		"./references/**/*.*",
+		"./eslint-inspector.config.ts"
 	]
 }
