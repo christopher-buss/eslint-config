@@ -7,7 +7,6 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 import type { TestContext } from "vitest";
 import { describe, it } from "vitest";
 
@@ -16,7 +15,29 @@ import { isRecord, isStringArray } from "../src/guards.ts";
 /** The A/B child (see `test/buildinfo-child.ts`). */
 const CHILD = fileURLToPath(new URL("./buildinfo-child.ts", import.meta.url));
 
-const execFileAsync = promisify(execFile);
+/**
+ * Run the child on a fixture.
+ *
+ * @param directory - The fixture project root.
+ * @param outFile - Where the child writes its answer.
+ * @rejects With the child's stderr when it fails.
+ */
+async function runChild(directory: string, outFile: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		execFile(
+			process.execPath,
+			[CHILD, directory, outFile],
+			{ cwd: directory },
+			(error, _stdout, stderr) => {
+				if (error === null) {
+					resolve();
+				} else {
+					reject(new Error(`buildinfo child failed: ${stderr}`, { cause: error }));
+				}
+			},
+		);
+	});
+}
 
 /** Where every state file the runner writes lands inside a fixture. */
 const STATE_DIRECTORY = "node_modules/.cache/isentinel-lint";
@@ -199,7 +220,7 @@ function readJson(file: string): Record<string, unknown> {
 async function runPass(directory: string): Promise<ChildResult> {
 	const outFile = path.join(os.tmpdir(), `buildinfo-ab-${process.pid}-${Math.random()}.json`);
 	try {
-		await execFileAsync(process.execPath, [CHILD, directory, outFile], { cwd: directory });
+		await runChild(directory, outFile);
 
 		const { affected, firstRun, skipped } = readJson(outFile);
 		return {
