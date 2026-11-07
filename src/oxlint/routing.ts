@@ -66,7 +66,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"ts/no-shadow":
 		"Oxlint's native port does not check members of declare namespace / declare module blocks in .d.ts files (https://github.com/oxc-project/oxc/issues/27469)",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise, ts/prefer-destructuring (also has no native oxlint port)",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"unicorn/no-useless-coercion":
