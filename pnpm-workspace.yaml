@@ -67,7 +67,7 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.78.0
+    oxlint: 1.91.0
     oxlint-tsgolint: 7.0.2001
   prod:
     "@antfu/install-pkg": 2.0.1
@@ -78,7 +78,7 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
-    "@oxlint/plugins": 1.78.0
+    "@oxlint/plugins": 1.91.0
     "@pobammer-ts/small-rules": 2.14.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.65.0
