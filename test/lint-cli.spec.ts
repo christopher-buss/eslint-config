@@ -12,7 +12,13 @@ import type { TestContext } from "vitest";
 import { describe, it, vi } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
-import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../src/hybrid-status.ts";
+import {
+	HYBRID_STATUS_ENV,
+	hybridStatusPath,
+	readHybridStatus,
+	writeHybridStatus,
+	writeHybridStatusForCwd,
+} from "../src/hybrid-status.ts";
 import type { HybridStatus } from "../src/hybrid-status.ts";
 import { applyHashBust, PACKAGE_RESOLUTION } from "../src/lint-cli/lib/cache/bust.ts";
 import type { BustOutcome } from "../src/lint-cli/lib/cache/bust.ts";
@@ -927,7 +933,7 @@ describe("command composition", () => {
 			"4",
 			"src",
 		]);
-		expect(command.env).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
+		expect(command.env).toStrictEqual({ ESLINT_TYPE_AWARE: "off", [HYBRID_STATUS_ENV]: "1" });
 		expect(command.label).toBe("fast");
 	});
 
@@ -991,7 +997,7 @@ describe("formatCommandLine", () => {
 		);
 
 		expect(formatCommandLine(command)).toBe(
-			"ESLINT_TYPE_AWARE=off eslint --cache --cache-location .eslintcache-fast " +
+			"ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location .eslintcache-fast " +
 				"--no-warn-ignored --concurrency 4 --cache-strategy content .",
 		);
 	});
@@ -1033,9 +1039,9 @@ describe("compose --print", () => {
 
 		expect(printLines([], directory)).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1047,7 +1053,7 @@ describe("compose --print", () => {
 
 		expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
 			"oxlint --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1059,7 +1065,7 @@ describe("compose --print", () => {
 
 		expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1089,7 +1095,7 @@ describe("compose --print", () => {
 
 		expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
+			`ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
 		]);
 	});
 
@@ -1103,7 +1109,7 @@ describe("compose --print", () => {
 
 		expect(printLines([], directory, { CI: "true" })).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
+			`ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
 		]);
 	});
 
@@ -1113,9 +1119,9 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["package.json"], directory)).toStrictEqual([
-			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off package.json",
-			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off package.json",
 		]);
 	});
@@ -1139,9 +1145,9 @@ describe("compose --print", () => {
 		// be composed up front and never appears in a printed plan.
 		expect(printLines(["--fix"], directory)).toStrictEqual([
 			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
+			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
-			`ESLINT_TYPE_AWARE=only ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
 	});
@@ -1957,6 +1963,50 @@ describe("hybrid status file", () => {
 		expect(readHybridStatus(directory)).toBeUndefined();
 	});
 
+	it("ignores factory writes outside an isentinel-lint ESLint child", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		writeHybridStatus(directory, true);
+		vi.spyOn(process, "cwd").mockReturnValue(directory);
+		vi.stubEnv(HYBRID_STATUS_ENV, undefined);
+		onTestFinished(() => {
+			vi.restoreAllMocks();
+			vi.unstubAllEnvs();
+		});
+
+		// A test or script that builds a non-hybrid config in the project root
+		// must not overwrite the status of the config the lint run uses.
+		writeHybridStatusForCwd(false);
+
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
+	});
+
+	it("records factory writes inside an isentinel-lint ESLint child", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		writeHybridStatus(directory, true);
+		vi.spyOn(process, "cwd").mockReturnValue(directory);
+		vi.stubEnv(HYBRID_STATUS_ENV, "1");
+		onTestFinished(() => {
+			vi.restoreAllMocks();
+			vi.unstubAllEnvs();
+		});
+
+		writeHybridStatusForCwd(false);
+
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
+	});
+
 	it("returns undefined for malformed status content", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
@@ -2542,10 +2592,10 @@ describe("full-pass env hygiene", () => {
 
 		expect(
 			composeEslintCommand(options(), baseContext({ typeAwareEnv: "off" })).env,
-		).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
+		).toStrictEqual({ ESLINT_TYPE_AWARE: "off", [HYBRID_STATUS_ENV]: "1" });
 		expect(
 			composeEslintCommand(options(), baseContext({ typeAwareEnv: "only" })).env,
-		).toStrictEqual({ ESLINT_TYPE_AWARE: "only" });
+		).toStrictEqual({ ESLINT_TYPE_AWARE: "only", [HYBRID_STATUS_ENV]: "1" });
 	});
 });
 
@@ -2560,7 +2610,7 @@ describe("explicit --type-aware selection in CI", () => {
 
 		expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
 			"oxlint --type-aware --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=only ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
+			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
 	});
@@ -2572,7 +2622,7 @@ describe("explicit --type-aware selection in CI", () => {
 
 		expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
 			"oxlint --no-error-on-unmatched-pattern .",
-			`ESLINT_TYPE_AWARE=off eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
+			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
 	});
