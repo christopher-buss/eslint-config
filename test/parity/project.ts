@@ -16,6 +16,8 @@ export const PROJECT_ROOT = path.resolve(import.meta.dirname, "../..");
 /** Committed parity inputs and expected outputs. */
 export const PARITY_FIXTURES = path.join(PROJECT_ROOT, "fixtures", "parity");
 
+const CORPUS = path.join(PARITY_FIXTURES, "corpus");
+
 const ESLINT_URL = sourceUrl("index.ts");
 const OXFMT_URL = sourceUrl("oxfmt/index.ts");
 const OXLINT_URL = sourceUrl("oxlint/index.ts");
@@ -41,10 +43,12 @@ export interface Scenario {
 	/** Unique name; also the overlay and output directory name. */
 	name: string;
 	/**
-	 * Copy the shared corpus (`fixtures/parity/corpus`) into the project.
-	 * Default `true`.
+	 * Copy the shared corpus (`fixtures/parity/corpus`) into the project:
+	 * `true` for all of it, or the corpus-relative paths to copy. Each file
+	 * type loads more plugins, so a scenario that tests one option source
+	 * copies only the files that source changes. Default `true`.
 	 */
-	corpus?: boolean;
+	corpus?: Array<string> | boolean;
 	/** Files converted to CRLF line endings after the copy. */
 	crlf?: Array<string>;
 	/**
@@ -256,8 +260,13 @@ async function exists(target: string): Promise<boolean> {
 async function copyInputs(scenario: Scenario, root: string, runDirectory: string): Promise<void> {
 	if (scenario.input !== undefined) {
 		await fs.cp(path.join(PROJECT_ROOT, scenario.input), runDirectory, { recursive: true });
+	} else if (Array.isArray(scenario.corpus)) {
+		for (const file of scenario.corpus) {
+			await fs.mkdir(path.dirname(path.join(runDirectory, file)), { recursive: true });
+			await fs.copyFile(path.join(CORPUS, file), path.join(runDirectory, file));
+		}
 	} else if (scenario.corpus !== false) {
-		await fs.cp(path.join(PARITY_FIXTURES, "corpus"), runDirectory, { recursive: true });
+		await fs.cp(CORPUS, runDirectory, { recursive: true });
 	}
 
 	const overlay = path.join(PARITY_FIXTURES, "scenarios", scenario.name);

@@ -94,6 +94,31 @@ jobs:
       - name: Typecheck
         run: nr typecheck
 
+  # Too slow for the pre-commit hook: runs ESLint and oxfmt over many scratch
+  # projects in both formatter modes. Its own job, so it runs beside `test`.
+  parity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Set node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+
+      - name: Setup
+        run: npm i -g @antfu/ni
+
+      - name: Install
+        run: nci
+
+      - name: Formatter parity
+        run: nr test:parity
+
   test:
     runs-on: ubuntu-latest
 
@@ -116,8 +141,3 @@ jobs:
 
       - name: Test
         run: nr test
-
-      # Too slow for the pre-commit hook: runs ESLint and oxfmt over many
-      # scratch projects in both formatter modes.
-      - name: Formatter parity
-        run: nr test:parity

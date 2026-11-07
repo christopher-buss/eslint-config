@@ -35,8 +35,6 @@ export interface ModeResult {
 	 * `path: message`. Both modes must report the same ones.
 	 */
 	fatal: Array<string>;
-	/** Rounds the mode needed to settle. */
-	rounds: number;
 	/** The settled tree, config files excluded. */
 	tree: Tree;
 	/** What the tools printed on stderr, for warnings. */
@@ -218,17 +216,16 @@ function relativeTo(root: string, file: string): string {
 }
 
 /**
- * After the tree settles: a plain `eslint` run must report no fixable problem
- * and no `oxfmt/oxfmt` message, and oxfmt (when it runs) must find every file
- * formatted.
+ * After the tree settles: the settled round's `eslint --fix` changed nothing,
+ * so its results are what a plain run reports. They must hold no fixable
+ * problem and no `oxfmt/oxfmt` message. In standalone mode the round's
+ * `oxfmt --write` changed nothing either, so every file is formatted.
  *
- * @param round - The settled project.
- * @returns The plain run's results.
- * @rejects When a check fails.
+ * @param root - The project root.
+ * @param results - The settled round's ESLint results.
+ * @throws When a fixable problem remains.
  */
-async function assertClean(round: Round): Promise<Array<EslintResult>> {
-	const { oxfmtConfig, root, runDirectory } = round;
-	const { results } = await lint(round, false);
+function assertClean(root: string, results: Array<EslintResult>): void {
 	const unsettled = results.flatMap((file) => {
 		return file.messages
 			.filter((message) => message.fix !== undefined || message.ruleId === "oxfmt/oxfmt")
@@ -239,12 +236,6 @@ async function assertClean(round: Round): Promise<Array<EslintResult>> {
 	if (unsettled.length > 0) {
 		throw new Error(`eslint still reports fixable problems:\n${unsettled.join("\n")}`);
 	}
-
-	if (oxfmtConfig !== undefined) {
-		check(await runOxfmt(runDirectory, oxfmtConfig, false), "oxfmt --check", [0]);
-	}
-
-	return results;
 }
 
 function fatalProblems(root: string, results: Array<EslintResult>): Array<string> {
@@ -262,13 +253,19 @@ function fatalProblems(root: string, results: Array<EslintResult>): Array<string
  *
  * @param round - The project.
  * @param previous - The tree before the round.
- * @returns The files each step changed, the new tree, and stderr.
+ * @returns The files each step changed, ESLint's results, the new tree, and
+ *   stderr.
  */
 async function runRound(
 	round: Round,
 	previous: Tree,
-): Promise<{ changed: Array<string>; stderr: string; tree: Tree }> {
-	const { stderr } = await lint(round, true);
+): Promise<{
+	changed: Array<string>;
+	results: Array<EslintResult>;
+	stderr: string;
+	tree: Tree;
+}> {
+	const { results, stderr } = await lint(round, true);
 	const linted = await readTree(round.root);
 	const changed = changedFiles(previous, linted).map((file) => `${file} (lint)`);
 
@@ -278,7 +275,7 @@ async function runRound(
 
 	const tree = await readTree(round.root);
 	changed.push(...changedFiles(linted, tree).map((file) => `${file} (oxfmt)`));
-	return { changed, stderr, tree };
+	return { changed, results, stderr, tree };
 }
 
 /**
@@ -312,9 +309,9 @@ async function settle(scenario: Scenario, mode: Mode, root: string): Promise<Mod
 		warnings += step.stderr;
 		({ changed } = step);
 		if (changed.length === 0) {
-			const results = await assertClean(round);
+			assertClean(root, step.results);
 			const tree = stripConfigFiles(step.tree, scenario, mode);
-			return { fatal: fatalProblems(root, results), rounds: count, tree, warnings };
+			return { fatal: fatalProblems(root, step.results), tree, warnings };
 		}
 
 		previous = step.tree;
