@@ -6,9 +6,13 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
+  - "@oxlint/plugins@1.92.0"
   - eslint@10.10.0
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.5
+  - oxlint@1.92.0
+  - oxlint-plugin-eslint@1.92.0
+  - oxlint-tsgolint@7.0.2006
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -69,8 +73,8 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.78.0
-    oxlint-tsgolint: 7.0.2001
+    oxlint: 1.92.0
+    oxlint-tsgolint: 7.0.2006
   prod:
     "@antfu/install-pkg": 2.0.1
     "@clack/prompts": 1.7.0
@@ -80,7 +84,7 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
-    "@oxlint/plugins": 1.78.0
+    "@oxlint/plugins": 1.92.0
     "@pobammer-ts/small-rules": 2.14.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.65.0
@@ -119,7 +123,7 @@ catalogs:
     jsonc-eslint-parser: 3.1.0
     local-pkg: 1.2.1
     oxfmt: 0.72.0
-    oxlint-plugin-eslint: 1.78.0
+    oxlint-plugin-eslint: 1.92.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.6
     semver: 7.8.5
