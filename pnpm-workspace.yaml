@@ -79,7 +79,7 @@ catalogs:
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
     "@oxlint/plugins": 1.78.0
-    "@pobammer-ts/small-rules": 2.14.0
+    "@pobammer-ts/small-rules": 2.19.1
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.65.0
     "@typescript-eslint/parser": 8.65.0
