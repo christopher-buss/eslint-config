@@ -37,8 +37,8 @@ catalogs:
       specifier: 3.1.0
       version: 3.1.0
     '@isentinel/tsconfig':
-      specifier: 1.2.0
-      version: 1.2.0
+      specifier: 3.0.0
+      version: 3.0.0
     '@rbxts/types':
       specifier: 1.0.943
       version: 1.0.943
@@ -498,7 +498,7 @@ importers:
         version: 'link:'
       '@isentinel/tsconfig':
         specifier: catalog:dev
-        version: 1.2.0(typescript@6.0.3)
+        version: 3.0.0(typescript@6.0.3)
       '@rbxts/types':
         specifier: catalog:dev
         version: 1.0.943
@@ -1097,8 +1097,8 @@ packages:
     resolution: {integrity: sha512-Qz0B8/91H7vTF6kNp8TfhACXhpOZtVca+YY+HRij+W1nzdeJEx7z8KMeGO27FUBW9ZWCcvTYFdCkTMKfDvPMbg==}
     engines: {node: '>=20.18.0'}
 
-  '@isentinel/tsconfig@1.2.0':
-    resolution: {integrity: sha512-MTsDJjte6XV+t3UtbE93UOStGgJ6jw5XG8UoGcyuI8E9mEAOZFhqmdKT8LVXgqncM5Knbe4H/lAUVvRHO+l6tA==}
+  '@isentinel/tsconfig@3.0.0':
+    resolution: {integrity: sha512-j187ESnoLFO6wwU0PpL9b/JDtvEa6TwABaiVSOw41li3yoZyfg4ZEudRWElbxVdvp7hiBgCESTZEohkYS03bsQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       typescript: ^5.5.0
@@ -4947,7 +4947,7 @@ snapshots:
 
   '@isentinel/dict-roblox@1.0.23': {}
 
-  '@isentinel/tsconfig@1.2.0(typescript@6.0.3)':
+  '@isentinel/tsconfig@3.0.0(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
 
