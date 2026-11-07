@@ -16,7 +16,7 @@ import type {
 	Rules,
 } from "../../types.ts";
 import { runsInTsgolint } from "../routing.ts";
-import type { TypedOxlintConfigItem } from "../types.ts";
+import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
 export function oxlintTypescript(
@@ -53,17 +53,33 @@ export function oxlintTypescript(
 				Object.entries(typeAwareRules).filter(([rule]) => !runsInTsgolint(rule)),
 			) as Rules);
 
-	return createOxlintConfigs({
-		name: "isentinel/typescript",
-		...(excludeFiles ? { excludeFiles } : {}),
-		files,
-		overrides,
-		rules: {
-			...typescriptRecommendedOverrides(),
-			...typescriptStrictPresetRules(),
-			...typescriptRules({ stylistic }),
-			...gatedTypeAwareRules,
-			...(erasableOnly ? erasableSyntaxOnlyRules() : {}),
-		},
-	});
+	return [
+		...createOxlintConfigs({
+			name: "isentinel/typescript",
+			...(excludeFiles ? { excludeFiles } : {}),
+			files,
+			overrides,
+			rules: {
+				...typescriptRecommendedOverrides(),
+				...typescriptStrictPresetRules(),
+				...typescriptRules({ stylistic }),
+				...gatedTypeAwareRules,
+				...(erasableOnly ? erasableSyntaxOnlyRules() : {}),
+			},
+		}),
+		...(typeAware
+			? [
+					{
+						name: "isentinel/typescript/oxlint",
+						...(excludeFiles ? { excludeFiles } : {}),
+						files,
+						plugins: ["typescript"],
+						rules: {
+							"typescript/no-generated-empty-object-type": "error",
+							"typescript/no-unsafe-enum-assignment": "error",
+						} satisfies OxlintRules,
+					} satisfies TypedOxlintConfigItem,
+				]
+			: []),
+	];
 }

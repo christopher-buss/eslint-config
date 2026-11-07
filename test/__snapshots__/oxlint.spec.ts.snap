@@ -2099,6 +2099,16 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -5083,6 +5093,16 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "error",
           "[declare=true]",
         ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
@@ -9500,6 +9520,16 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -13619,6 +13649,16 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -16048,6 +16088,19 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           "[declare=true]",
         ],
+      },
+    },
+    {
+      "excludeFiles": [
+        "src/**",
+      ],
+      "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
