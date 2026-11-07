@@ -74,10 +74,14 @@ const REGEXP_SPECIAL = /[$()*+.?[\\\]^{|}]/g;
 const GLOB_TOKEN = /\*\*\/?|\{[^{}]*\}|[$()*+.?[\\\]^{|}]/g;
 
 /** An `.editorconfig` section turned into an oxfmt override. */
-export type EditorConfigOverride = {
+export interface EditorConfigOverride {
+	/**
+	 * Matches oxfmt's `OxfmtOverrideConfig`, so a section is a valid override.
+	 */
+	[key: string]: unknown;
 	files: Array<string>;
 	options: Record<string, unknown>;
-};
+}
 
 interface EditorConfigSection {
 	pattern: string;
@@ -498,6 +502,21 @@ function resolveEditorConfigOptions(cwd: string): PrettierOptions {
 }
 
 /**
+ * Read a numeric `.editorconfig` value. An absent or empty value sets nothing.
+ *
+ * @param value - The raw property value.
+ * @returns The finite number, or `undefined`.
+ */
+function editorConfigNumber(value: string | undefined): number | undefined {
+	if (value === undefined || value === "") {
+		return undefined;
+	}
+
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+/**
  * Map one `.editorconfig` section to oxfmt options, as the rule's config
  * loader does.
  *
@@ -521,16 +540,16 @@ function editorConfigToOxfmt(properties: Record<string, string>): Record<string,
 		options["singleQuote"] = quoteType === "single";
 	}
 
-	const indentSize = Number(properties["indent_size"]);
-	const tabWidth = Number(properties["tab_width"]);
-	if (options["useTabs"] === false && properties["indent_size"] && Number.isFinite(indentSize)) {
+	const indentSize = editorConfigNumber(properties["indent_size"]);
+	const tabWidth = editorConfigNumber(properties["tab_width"]);
+	if (indentSize !== undefined && options["useTabs"] === false) {
 		options["tabWidth"] = indentSize;
-	} else if (properties["tab_width"] && Number.isFinite(tabWidth)) {
+	} else if (tabWidth !== undefined) {
 		options["tabWidth"] = tabWidth;
 	}
 
-	const printWidth = Number(properties["max_line_length"]);
-	if (properties["max_line_length"] && Number.isFinite(printWidth)) {
+	const printWidth = editorConfigNumber(properties["max_line_length"]);
+	if (printWidth !== undefined) {
 		options["printWidth"] = printWidth;
 	}
 

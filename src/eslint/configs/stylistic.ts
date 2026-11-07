@@ -70,7 +70,9 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 /**
  * The preset's `style/jsx-*` rules only report on JSX, which a `.ts` or `.js`
  * file cannot contain, so they go to their own JSX/TSX-scoped block.
- * @param root0
+ *
+ * @param entry - A `[name, entry]` pair from the preset rules.
+ * @returns Whether the rule is a `style/jsx-*` rule.
  */
 function isJsxRule([name]: [string, unknown]): boolean {
 	return name.startsWith("style/jsx-");
