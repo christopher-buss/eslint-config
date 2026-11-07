@@ -1910,7 +1910,13 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "no-useless-constructor": "error",
         "no-var": "error",
         "no-with": "off",
-        "prefer-destructuring": "off",
+        "prefer-destructuring": [
+          "error",
+          {
+            "array": false,
+            "object": true,
+          },
+        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -2995,6 +3001,31 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
     "typeAware": true,
   },
   "overrides": [
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
     {
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
@@ -4285,7 +4316,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "error",
           "declaration",
         ],
-        "id-length": "off",
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -4597,23 +4627,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
             "allowKeywords": true,
           },
         ],
-        "eslint-js/id-length": [
-          "error",
-          {
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "eslint-js/no-dupe-args": "error",
         "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
@@ -4857,7 +4870,13 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "no-useless-constructor": "error",
         "no-var": "error",
         "no-with": "off",
-        "prefer-destructuring": "off",
+        "prefer-destructuring": [
+          "error",
+          {
+            "array": false,
+            "object": true,
+          },
+        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -7416,6 +7435,31 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "globals": {
         "AI": "readonly",
         "AICreateMonitor": "readonly",
@@ -8698,7 +8742,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "default-case-last": "error",
         "eqeqeq": "error",
         "for-direction": "error",
-        "id-length": "off",
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -9005,23 +9048,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
             "allowKeywords": true,
           },
         ],
-        "eslint-js/id-length": [
-          "error",
-          {
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "eslint-js/no-dupe-args": "error",
         "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
@@ -9259,7 +9285,13 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "no-useless-constructor": "error",
         "no-var": "error",
         "no-with": "off",
-        "prefer-destructuring": "off",
+        "prefer-destructuring": [
+          "error",
+          {
+            "array": false,
+            "object": true,
+          },
+        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -11522,6 +11554,31 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
       "globals": {
         "AI": "readonly",
         "AICreateMonitor": "readonly",
@@ -12804,7 +12861,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "default-case-last": "error",
         "eqeqeq": "error",
         "for-direction": "error",
-        "id-length": "off",
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -13111,23 +13167,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             "allowKeywords": true,
           },
         ],
-        "eslint-js/id-length": [
-          "error",
-          {
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "eslint-js/no-dupe-args": "error",
         "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
@@ -13365,7 +13404,13 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "no-useless-constructor": "error",
         "no-var": "error",
         "no-with": "off",
-        "prefer-destructuring": "off",
+        "prefer-destructuring": [
+          "error",
+          {
+            "array": false,
+            "object": true,
+          },
+        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -13920,6 +13965,34 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "small-rules/no-array-constructor-elements": "error",
         "small-rules/no-array-size-assignment": "error",
         "small-rules/no-recursive": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "src/**",
+      ],
+      "files": [
+        "**/*.{,c,m}[jt]s{,x}",
+      ],
+      "rules": {
+        "id-length": [
+          "error",
+          {
+            "checkGeneric": false,
+            "exceptions": [
+              "_",
+              "x",
+              "y",
+              "z",
+              "a",
+              "b",
+              "e",
+            ],
+            "max": 30,
+            "min": 2,
+            "properties": "never",
+          },
+        ],
       },
     },
     {
@@ -15215,7 +15288,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           "declaration",
         ],
-        "id-length": "off",
         "logical-assignment-operators": "error",
         "max-classes-per-file": "error",
         "max-depth": "error",
@@ -15530,23 +15602,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             "allowKeywords": true,
           },
         ],
-        "eslint-js/id-length": [
-          "error",
-          {
-            "exceptions": [
-              "_",
-              "x",
-              "y",
-              "z",
-              "a",
-              "b",
-              "e",
-            ],
-            "max": 30,
-            "min": 2,
-            "properties": "never",
-          },
-        ],
         "eslint-js/no-dupe-args": "error",
         "eslint-js/no-loop-func": "error",
         "eslint-js/no-octal": "error",
@@ -15777,7 +15832,13 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "no-useless-constructor": "error",
         "no-var": "error",
         "no-with": "off",
-        "prefer-destructuring": "off",
+        "prefer-destructuring": [
+          "error",
+          {
+            "array": false,
+            "object": true,
+          },
+        ],
         "prefer-promise-reject-errors": "off",
         "prefer-rest-params": "error",
         "prefer-spread": "error",

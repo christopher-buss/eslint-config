@@ -1,7 +1,7 @@
 import globals from "globals";
 
 import { GLOB_SRC } from "../../globs.ts";
-import { javascriptRules } from "../../rules/javascript.ts";
+import { ID_LENGTH_OPTIONS, javascriptRules } from "../../rules/javascript.ts";
 import type {
 	OptionsFiles,
 	OptionsHasRoblox,
@@ -9,7 +9,7 @@ import type {
 	OptionsOverrides,
 	OptionsStylistic,
 } from "../../types.ts";
-import type { TypedOxlintConfigItem } from "../types.ts";
+import type { OxlintRules, TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
 export function oxlintJavascript(
@@ -29,21 +29,35 @@ export function oxlintJavascript(
 
 	const files = options.files?.flat() ?? [GLOB_SRC];
 
-	return createOxlintConfigs({
-		name: "isentinel/javascript",
-		...(excludeFiles ? { excludeFiles } : {}),
-		files,
-		globals: {
-			...toGlobals(globals.browser),
-			...toGlobals(globals.es2021),
-			...toGlobals(globals.node),
-			document: "readonly",
-			navigator: "readonly",
-			window: "readonly",
-		},
-		overrides,
-		rules: javascriptRules({ isInEditor, roblox, stylistic }),
-	});
+	return [
+		...(stylistic !== false
+			? [
+					{
+						name: "isentinel/javascript/oxlint",
+						...(excludeFiles ? { excludeFiles } : {}),
+						files,
+						rules: {
+							"id-length": ["error", { ...ID_LENGTH_OPTIONS, checkGeneric: false }],
+						} satisfies OxlintRules,
+					},
+				]
+			: []),
+		...createOxlintConfigs({
+			name: "isentinel/javascript",
+			...(excludeFiles ? { excludeFiles } : {}),
+			files,
+			globals: {
+				...toGlobals(globals.browser),
+				...toGlobals(globals.es2021),
+				...toGlobals(globals.node),
+				document: "readonly",
+				navigator: "readonly",
+				window: "readonly",
+			},
+			overrides,
+			rules: javascriptRules({ isInEditor, roblox, stylistic }),
+		}),
+	];
 }
 
 function toGlobals(

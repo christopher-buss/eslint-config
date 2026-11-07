@@ -110,7 +110,6 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"sonar/no-redundant-optional",
 	"sonar/no-try-promise",
 	"sonar/prefer-immediate-return",
-	"ts/prefer-destructuring",
 	"unicorn/no-non-function-verb-prefix",
 ]);
 
@@ -186,6 +185,7 @@ export const TS_EXTENSION_TO_CORE: ReadonlySet<string> = new Set([
 	"no-unused-expressions",
 	"no-unused-private-class-members",
 	"no-useless-constructor",
+	"prefer-destructuring",
 ]);
 
 /**

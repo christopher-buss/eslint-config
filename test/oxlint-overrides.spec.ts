@@ -143,13 +143,13 @@ describe("oxlint overrides", () => {
 		expect.assertions(2);
 
 		const { config, warnings } = buildWithWarnings({
-			typescript: { overrides: { "ts/prefer-destructuring": "off" } },
+			typescript: { overrides: { "sonar/no-ignored-return": "off" } },
 		});
 
 		const effective = effectiveOxlintRules(config, SOURCE_FILE);
 
-		expect(warnings.join("\n")).toContain("ts/prefer-destructuring");
-		expect(effective.has("typescript/prefer-destructuring")).toBe(false);
+		expect(warnings.join("\n")).toContain("sonar/no-ignored-return");
+		expect(effective.has("sonar/no-ignored-return")).toBe(false);
 	});
 
 	it("should warn about an override native-only mode drops", ({ expect }) => {
@@ -167,7 +167,7 @@ describe("oxlint overrides", () => {
 		expect.assertions(1);
 
 		const { warnings } = buildWithWarnings({
-			typescript: { overrides: { "ts/prefer-destructuring": "off" } },
+			typescript: { overrides: { "sonar/no-ignored-return": "off" } },
 			warnDroppedOverrides: false,
 		});
 

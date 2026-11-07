@@ -1,7 +1,7 @@
 import globals from "globals";
 
 import { GLOB_SRC } from "../../globs.ts";
-import { javascriptRules } from "../../rules/javascript.ts";
+import { ID_LENGTH_OPTIONS, javascriptRules } from "../../rules/javascript.ts";
 import { interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
@@ -35,6 +35,8 @@ export async function javascript({
 	const pluginDeMorgan = lazyPlugin("eslint-plugin-de-morgan");
 	const pluginMaxParameters = lazyPlugin("eslint-plugin-better-max-params");
 	const pluginUnusedImports = await interopDefault(import("eslint-plugin-unused-imports"));
+	const idLengthRules: TypedFlatConfigItem["rules"] =
+		stylistic !== false ? { "id-length": ["error", ID_LENGTH_OPTIONS] } : {};
 
 	return [
 		{
@@ -73,6 +75,7 @@ export async function javascript({
 			},
 			rules: {
 				...javascriptRules({ isInEditor, roblox, stylistic }),
+				...idLengthRules,
 
 				...overrides,
 			},
@@ -85,6 +88,7 @@ export async function javascript({
 						ignores: complementIgnores,
 						rules: {
 							...javascriptRules({ isInEditor, roblox: false, stylistic }),
+							...idLengthRules,
 
 							...overrides,
 						},
