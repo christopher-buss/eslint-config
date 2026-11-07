@@ -131,7 +131,7 @@ export function registeredLazyPlugins(): ReadonlySet<string> {
 }
 
 /**
- * Load a plugin synchronously. `engines.node` is `>=24.12.0`, where
+ * Load a plugin synchronously. `engines.node` is `>=24.15.0`, where
  * `require(esm)` is stable, so the ESM-only plugins need no async fallback.
  *
  * @param specifier - The plugin package to load.

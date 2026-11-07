@@ -91,6 +91,13 @@ export const packageExtensions = [
 		},
 	},
 	{
+		name: "@es-joy/estraverse",
+		dependencies: {
+			"@types/estree": "^1",
+			"acorn": "^8",
+		},
+	},
+	{
 		name: "@es-joy/jsdoccomment",
 		peerDependencies: {
 			eslint: "*",
@@ -159,7 +166,7 @@ export const packageExtensions = [
 			"@eslint/core": "^1",
 			"@types/estree": "^1",
 			"@types/json-schema": "^7",
-			"jsdoc-type-pratt-parser": "^7",
+			"jsdoc-type-pratt-parser": "^9",
 		},
 		peerDependencies: {
 			"@typescript-eslint/types": "*",
@@ -220,15 +227,6 @@ export const packageExtensions = [
 		dependencies: {
 			"diff-match-patch-es": "^1",
 		},
-	},
-	{
-		name: "jsdoc-type-pratt-parser",
-		dependencies: {
-			"@types/estree": "^1",
-		},
-		// Test and build declarations ship inside the tarball but are not
-		// reachable from the package's entry points.
-		ignore: ["mocha", "tsup"],
 	},
 	{
 		name: "jsonc-eslint-parser",

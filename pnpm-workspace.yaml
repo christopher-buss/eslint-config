@@ -4,9 +4,11 @@ enableGlobalVirtualStore: true
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAgeExclude:
+  - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - eslint@10.10.0
   - eslint-plugin-flawless
+  - eslint-plugin-jsdoc@65.4.5
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -96,7 +98,7 @@ catalogs:
     eslint-plugin-flawless: 1.14.1
     eslint-plugin-format-lua: 2.0.0
     eslint-plugin-import-lite: 0.6.0
-    eslint-plugin-jsdoc: 63.2.2
+    eslint-plugin-jsdoc: 65.4.5
     eslint-plugin-jsonc: 3.3.0
     eslint-plugin-oxfmt: 0.18.0
     eslint-plugin-package-json: 1.7.0
@@ -148,6 +150,10 @@ packageExtensions:
         optional: true
       typescript:
         optional: true
+  "@es-joy/estraverse":
+    dependencies:
+      "@types/estree": ^1
+      acorn: ^8
   "@es-joy/jsdoccomment":
     peerDependencies:
       eslint: "*"
@@ -181,7 +187,7 @@ packageExtensions:
       "@eslint/core": ^1
       "@types/estree": ^1
       "@types/json-schema": ^7
-      jsdoc-type-pratt-parser: ^7
+      jsdoc-type-pratt-parser: ^9
     peerDependencies:
       "@typescript-eslint/types": "*"
     peerDependenciesMeta:
@@ -228,9 +234,6 @@ packageExtensions:
   generate-differences:
     dependencies:
       diff-match-patch-es: ^1
-  jsdoc-type-pratt-parser:
-    dependencies:
-      "@types/estree": ^1
   jsonc-eslint-parser:
     dependencies:
       "@types/estree": ^1
