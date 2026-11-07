@@ -10,7 +10,6 @@ import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
  * @returns The rule map.
  */
 export function stylisticRules({
-	jsx = true,
 	quotes = "double",
 }: StylisticConfig = {}): TypedFlatConfigItem["rules"] {
 	return {
@@ -19,10 +18,6 @@ export function stylisticRules({
 		"antfu/top-level-function": "error",
 
 		"curly": ["error", "all"],
-
-		...(jsx
-			? { "style/jsx-curly-brace-presence": ["error", { propElementValues: "always" }] }
-			: {}),
 
 		"style/lines-between-class-members": [
 			"error",
@@ -65,4 +60,20 @@ export function stylisticRules({
 		],
 		"style/spaced-comment": ["error", "always", { markers: ["!native", "!optimize"] }],
 	};
+}
+
+/**
+ * JSX-specific stylistic rules shared between the ESLint and oxlint factories.
+ * Scoped to JSX/TSX files: a `.ts` or `.js` file cannot contain JSX, so the
+ * rules would only cost a traversal there.
+ *
+ * @param options - Resolved stylistic options.
+ * @returns The rule map.
+ */
+export function stylisticJsxRules({
+	jsx = true,
+}: StylisticConfig = {}): TypedFlatConfigItem["rules"] {
+	return jsx
+		? { "style/jsx-curly-brace-presence": ["error", { propElementValues: "always" }] }
+		: {};
 }
