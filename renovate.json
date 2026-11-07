@@ -47,6 +47,16 @@
 			"enabled": false
 		},
 		{
+			"matchPackageNames": [
+				"@oxlint/**",
+				"oxlint",
+				"oxlint-plugin-eslint",
+				"oxlint-tsgolint"
+			],
+			"groupName": "oxlint monorepo",
+			"groupSlug": "oxlint-monorepo"
+		},
+		{
 			"matchPackageNames": ["hk", "jdx/hk"],
 			"groupName": "hk",
 			"groupSlug": "hk"
