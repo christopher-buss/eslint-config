@@ -117,7 +117,7 @@ catalogs:
     jsonc-eslint-parser: 3.1.0
     local-pkg: 1.2.1
     oxfmt: 0.72.0
-    oxlint-plugin-eslint: 1.78.0
+    oxlint-plugin-eslint: 1.91.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.6
     semver: 7.8.5
