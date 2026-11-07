@@ -29,7 +29,7 @@ export function oxlintJavascript(
 
 	const files = options.files?.flat() ?? [GLOB_SRC];
 
-	return createOxlintConfigs({
+	const configs = createOxlintConfigs({
 		name: "isentinel/javascript",
 		...(excludeFiles ? { excludeFiles } : {}),
 		files,
@@ -44,6 +44,18 @@ export function oxlintJavascript(
 		overrides,
 		rules: javascriptRules({ isInEditor, roblox, stylistic }),
 	});
+
+	for (const config of configs) {
+		const idLength = config.rules?.["id-length"];
+		if (Array.isArray(idLength)) {
+			config.rules = {
+				...config.rules,
+				"id-length": [idLength[0], { ...idLength[1], checkGeneric: false }],
+			};
+		}
+	}
+
+	return configs;
 }
 
 function toGlobals(

@@ -22,6 +22,13 @@ interface OptionsVariant {
 }
 
 /**
+ * Options only the native oxlint rule takes, set so it matches the ESLint rule.
+ */
+const OXLINT_ONLY_OPTIONS: Readonly<Record<string, ReadonlyArray<string>>> = {
+	"id-length": ["checkGeneric"],
+};
+
+/**
  * Split a rule entry into severity and options.
  *
  * @param value - The rule entry.
@@ -129,6 +136,22 @@ function effectiveOxlintOptions(
 }
 
 /**
+ * Drop the options that only the native oxlint rule takes.
+ *
+ * @param rule - The canonical ESLint rule name.
+ * @param option - One oxlint option value.
+ * @returns The option without the oxlint-only keys.
+ */
+function withoutOxlintOnlyOptions(rule: string, option: unknown): unknown {
+	const keys = OXLINT_ONLY_OPTIONS[rule];
+	if (keys === undefined || typeof option !== "object" || option === null) {
+		return option;
+	}
+
+	return Object.fromEntries(Object.entries(option).filter(([key]) => !keys.includes(key)));
+}
+
+/**
  * Rules both engines enable for a file but run with different options.
  *
  * @param filePath - The file path under comparison.
@@ -143,7 +166,9 @@ function findMismatchedOptions(
 ): Array<string> {
 	return [...eslintOptions].flatMap(([rule, options]) => {
 		const translated = translateRuleToOxlint(rule);
-		const oxlint = oxlintOptions.get(translated);
+		const oxlint = oxlintOptions.get(translated)?.map((option) => {
+			return withoutOxlintOnlyOptions(rule, option);
+		});
 		const isMismatched =
 			isOxlintCovered(rule) &&
 			oxlint !== undefined &&

@@ -135,7 +135,6 @@ const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
  * every family gets by default.
  */
 const JS_PLUGIN_PREFERRED_RULES: ReadonlySet<string> = new Set([
-	"id-length",
 	"no-loop-func",
 	"unicorn/no-lonely-if",
 ]);
