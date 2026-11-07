@@ -1,3 +1,4 @@
+import { HYBRID_STATUS_ENV } from "../../../hybrid-status.ts";
 import { QUIET_WARNINGS_ENV } from "../../../quiet-warnings.ts";
 import type {
 	ChildCommand,
@@ -113,6 +114,8 @@ export function composeEslintCommand(
 	// type-aware fixes).
 	const environment: Record<string, string | undefined> = {
 		ESLINT_TYPE_AWARE: context.typeAwareEnv,
+		// This child loads the config the run uses, so it may record its status.
+		[HYBRID_STATUS_ENV]: "1",
 	};
 
 	if (context.quietWarnings === true) {

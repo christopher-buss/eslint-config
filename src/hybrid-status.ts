@@ -5,9 +5,18 @@ import process from "node:process";
 import { readState, statePath, touchState, writeState } from "./lint-cli/lib/state.ts";
 
 /**
+ * Set by `isentinel-lint` in its ESLint children. Only those evaluations load
+ * the config the lint run uses, so only they may write the status: tests,
+ * scripts and generators that build other configs in the project root would
+ * otherwise overwrite it.
+ */
+export const HYBRID_STATUS_ENV = "ISENTINEL_WRITE_HYBRID_STATUS";
+
+/**
  * The persisted hybrid status: whether the resolved ESLint config enabled the
  * factory's `oxlint` option (hybrid mode). Written passively by the factory on
- * every config evaluation and read by the CLI to decide whether running both
+ * every config evaluation inside an `isentinel-lint` ESLint child, and read by
+ * the CLI to decide whether running both
  * engines would duplicate work.
  *
  * Lives here rather than under `src/lint-cli/` because it is genuinely shared:
@@ -45,12 +54,12 @@ export function readHybridStatus(cwd: string): HybridStatus | undefined {
 
 /**
  * Passively record whether the resolved ESLint config runs in hybrid mode.
- * Called from the factory on every config evaluation, so an unchanged status is
- * touched rather than rewritten: the file must not churn as editors and both
- * lint passes re-evaluate the config, yet its mtime must stay ahead of the
- * config's or the CLI re-runs its ~3s probe every lint. Every failure is
- * swallowed — config evaluation must never throw for this, and the CLI treats a
- * missing or stale file as "unknown" and re-probes.
+ * Called from the factory on every config evaluation in a lint child, so an
+ * unchanged status is touched rather than rewritten: the file must not churn
+ * as both lint passes re-evaluate the config, yet its mtime must stay ahead of
+ * the config's or the CLI re-runs its ~3s probe every lint. Every failure is
+ * swallowed — config evaluation must never throw for this, and the CLI treats
+ * a missing or stale file as "unknown" and re-probes.
  *
  * Skipped entirely when `node_modules` is absent (nothing installed, so no
  * cache home and no CLI to read it).
@@ -81,10 +90,15 @@ export function writeHybridStatus(cwd: string, oxlint: boolean): void {
 
 /**
  * Convenience wrapper defaulting the project root to `process.cwd()`, used by
- * the factory so the passive write stays a one-liner at the call site.
+ * the factory so the passive write stays a one-liner at the call site. Writes
+ * only inside an `isentinel-lint` ESLint child (see {@link HYBRID_STATUS_ENV}).
  *
  * @param oxlint - Whether the config enabled hybrid mode.
  */
 export function writeHybridStatusForCwd(oxlint: boolean): void {
+	if (process.env[HYBRID_STATUS_ENV] !== "1") {
+		return;
+	}
+
 	writeHybridStatus(process.cwd(), oxlint);
 }

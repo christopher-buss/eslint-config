@@ -194,10 +194,14 @@ describe("heap flag on composed children", () => {
 		expect(byLabel(commands, "fast").watchHeap).toBe(false);
 		expect(byLabel(commands, "typed").watchHeap).toBe(true);
 		expect(byLabel(commands, "oxc").env).toStrictEqual({});
-		expect(byLabel(commands, "fast").env).toStrictEqual({ ESLINT_TYPE_AWARE: "off" });
+		expect(byLabel(commands, "fast").env).toStrictEqual({
+			ESLINT_TYPE_AWARE: "off",
+			ISENTINEL_WRITE_HYBRID_STATUS: "1",
+		});
 		expect(byLabel(commands, "typed").env).toStrictEqual({
 			ESLINT_TYPE_AWARE: "only",
 			ISENTINEL_QUIET_CONFIG_WARNINGS: "1",
+			ISENTINEL_WRITE_HYBRID_STATUS: "1",
 			NODE_OPTIONS: "--max-old-space-size=49152",
 		});
 	});

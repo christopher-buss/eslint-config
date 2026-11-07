@@ -6,6 +6,7 @@ interface Edit {
 }
 
 /** Records the edit a fix makes, instead of making it. */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxfmt's fixes call only replaceTextRange
 const recordingFixer = {
 	replaceTextRange(range: [number, number], text: string): Edit {
 		return { range, text };
@@ -33,8 +34,8 @@ function editOf({ fix }: Rule.ReportDescriptor): Edit | undefined {
 		return undefined;
 	}
 
-	const edit = fix(recordingFixer) as unknown as Edit | null;
-	return edit ?? undefined;
+	const edit = fix(recordingFixer);
+	return edit !== null && "range" in edit ? edit : undefined;
 }
 
 /**
@@ -46,7 +47,7 @@ function editOf({ fix }: Rule.ReportDescriptor): Edit | undefined {
  */
 function mergeEdits(source: string, edits: ReadonlyArray<Edit>): Edit {
 	const sorted = edits.toSorted((first, second) => first.range[0] - second.range[0]);
-	const start = sorted[0]!.range[0];
+	const start = sorted[0]?.range[0] ?? 0;
 	let end = start;
 	let text = "";
 	for (const { range, text: insert } of sorted) {
@@ -73,6 +74,7 @@ function singleFixRule(rule: Rule.RuleModule): Rule.RuleModule {
 		...rule,
 		create(context) {
 			const reports: Array<Rule.ReportDescriptor> = [];
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create returns any; the proxy inherits every member from context
 			const proxy = Object.create(context, {
 				report: {
 					value: (descriptor: Rule.ReportDescriptor) => {
@@ -88,17 +90,15 @@ function singleFixRule(rule: Rule.RuleModule): Rule.RuleModule {
 					fixable.length > 0 ? mergeEdits(context.sourceCode.text, fixable) : undefined;
 				let fixAttached = false;
 				for (const [index, descriptor] of reports.entries()) {
-					const { fix: _fix, ...rest } = descriptor as Rule.ReportDescriptor & {
-						fix?: unknown;
-					};
+					const { fix: _fix, ...rest } = descriptor;
 					if (merged !== undefined && !fixAttached && edits[index] !== undefined) {
 						fixAttached = true;
 						context.report({
 							...rest,
 							fix: (fixer) => fixer.replaceTextRange(merged.range, merged.text),
-						} as Rule.ReportDescriptor);
+						});
 					} else {
-						context.report(rest as Rule.ReportDescriptor);
+						context.report(rest);
 					}
 				}
 
@@ -111,7 +111,10 @@ function singleFixRule(rule: Rule.RuleModule): Rule.RuleModule {
 					return [
 						selector,
 						(...args: Array<unknown>) => {
-							(listener as (...parameters: Array<unknown>) => void)(...args);
+							if (listener !== undefined) {
+								Reflect.apply(listener, undefined, args);
+							}
+
 							flush();
 						},
 					];

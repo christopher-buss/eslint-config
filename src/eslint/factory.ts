@@ -673,6 +673,8 @@ export async function isentinel(
 	// Passively record the hybrid status so `isentinel-lint` can tell, without
 	// re-running the config, whether oxlint would double-lint every mapped rule.
 	// Best-effort and swallowed; config evaluation must never throw for this.
+	// Only an isentinel-lint ESLint child writes, so other configs built in the
+	// same project root (tests, scripts) cannot overwrite it.
 	writeHybridStatusForCwd(oxlintMode !== "off");
 
 	// Stamp a marker observable from outside via `eslint --print-config`: the CLI

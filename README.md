@@ -349,11 +349,13 @@ engines would run (default mode or `--fix`), the runner checks whether the
 resolved config is hybrid; if it is not, it **runs ESLint only, skips oxlint,
 and prints one stderr warning** (enable hybrid mode, or pass `--oxlint` to run
 oxlint explicitly). The check is cheap: the factory records the hybrid status in
-`node_modules/.cache/isentinel-lint/` on every config evaluation, and the runner
-trusts that cache unless your ESLint config is newer, in which case it probes
-`eslint --print-config` once and caches the result. If the status cannot be
-determined it fails open and runs both engines as before. Explicit `--eslint` /
-`--oxlint` runs skip the check entirely.
+`node_modules/.cache/isentinel-lint/` whenever the runner's ESLint children
+evaluate the config (other evaluations, such as tests or scripts that build a
+different config, do not write it), and the runner trusts that cache unless your
+ESLint config is newer, in which case it probes `eslint --print-config` once and
+caches the result. If the status cannot be determined it fails open and runs
+both engines as before. Explicit `--eslint` / `--oxlint` runs skip the check
+entirely.
 
 Any trailing positional arguments are treated as paths to lint (default `.`).
 
