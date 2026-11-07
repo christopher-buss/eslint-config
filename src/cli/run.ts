@@ -53,6 +53,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 	if (argumentSkipPrompt !== true) {
 		const grouped: Record<string, unknown> = await group(
 			{
+				/* eslint-disable perfectionist/sort-objects -- `group` runs the prompts in key order, and the later prompts read `uncommittedConfirmed`. */
 				uncommittedConfirmed: async () => {
 					if (isGitClean()) {
 						return true;
@@ -65,7 +66,6 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 					});
 				},
 
-				// eslint-disable-next-line perfectionist/sort-objects -- `group` runs the prompts in key order, and `formatter` and `frameworks` read `uncommittedConfirmed`.
 				formatter: async ({ results }) => {
 					if (argumentFormatter !== undefined || results.uncommittedConfirmed !== true) {
 						return;
@@ -110,6 +110,7 @@ export async function run(options: CliRunOptions = {}): Promise<undefined> {
 						message: "Update .vscode/settings.json for better VS Code experience?",
 					});
 				},
+				/* eslint-enable perfectionist/sort-objects */
 			},
 			{
 				onCancel: () => {

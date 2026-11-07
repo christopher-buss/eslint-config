@@ -584,6 +584,7 @@ export const jsPluginRuleNames: ReadonlySet<string> = new Set([
 	"perfectionist/sort-array-includes",
 	"perfectionist/sort-arrays",
 	"perfectionist/sort-classes",
+	"perfectionist/sort-constructor-parameters",
 	"perfectionist/sort-decorators",
 	"perfectionist/sort-enums",
 	"perfectionist/sort-export-attributes",
