@@ -51,8 +51,10 @@ const TYPE_AWARE_BUILD_INFO = `tsbuildinfo-typeaware-${TEST_KEY}`;
 /** The full-config builder state-file prefix for the default variant. */
 const FULL_BUILD_INFO = `tsbuildinfo-full-${TEST_KEY}`;
 
+// Every fixture names its lib: the es2020 default pulls in the DOM types,
+// which TypeScript would parse again for every program a test builds.
 const TSCONFIG = JSON.stringify({
-	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
+	compilerOptions: { lib: ["es2020"], module: "commonjs", strict: true, target: "es2020" },
 	include: ["src"],
 });
 
@@ -116,7 +118,13 @@ function createFixture(
 const SOLUTION_FIXTURE = {
 	"app/b.ts": "import { a } from '../src/a';\nexport function b() { return a(); }\n",
 	"app/tsconfig.json": JSON.stringify({
-		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		compilerOptions: {
+			composite: true,
+			lib: ["es2020"],
+			module: "commonjs",
+			strict: true,
+			target: "es2020",
+		},
 		include: ["."],
 	}),
 	"nested-solution/tsconfig.json": JSON.stringify({
@@ -131,7 +139,13 @@ const SOLUTION_FIXTURE = {
 		references: [{ path: "./tsconfig.lib.json" }, { path: "./nested-solution" }],
 	}),
 	"tsconfig.lib.json": JSON.stringify({
-		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		compilerOptions: {
+			composite: true,
+			lib: ["es2020"],
+			module: "commonjs",
+			strict: true,
+			target: "es2020",
+		},
 		include: ["src"],
 	}),
 };
@@ -575,6 +589,7 @@ describe("dirtyCache.removeEntries", () => {
 const JSON_TSCONFIG = JSON.stringify({
 	compilerOptions: {
 		esModuleInterop: true,
+		lib: ["es2020"],
 		module: "commonjs",
 		resolveJsonModule: true,
 		strict: true,
@@ -1113,6 +1128,7 @@ describe("computeConfigHash discovery", () => {
 				"tsconfig.json": JSON.stringify({
 					compilerOptions: {
 						baseUrl: ".",
+						lib: ["es2020"],
 						module: "commonjs",
 						paths: { "@rules": ["./config/rules"] },
 						strict: true,
