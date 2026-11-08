@@ -74,7 +74,7 @@ describe("generated Oxlint routing", () => {
 		expect(translateRuleToOxlint("jest/unbound-method")).toBe("jest-js/unbound-method");
 	});
 
-	it.for(["jsdoc/require-param", "ts/no-shadow", "vitest/prefer-each"])(
+	it.for(["ts/no-shadow", "vitest/prefer-each"])(
 		"keeps %s in ESLint while its native port misreports",
 		(rule, { expect }) => {
 			expect.assertions(1);

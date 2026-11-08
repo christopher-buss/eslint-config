@@ -53,8 +53,6 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"format-lua/*": "Oxlint cannot lint Lua files",
 	"jest/* (type-aware)":
 		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
-	"jsdoc/require-param":
-		"Oxlint's native port reports nested functions inside an unexported documented function (https://github.com/oxc-project/oxc/issues/27470)",
 	"jsonc/yaml/toml/markdown/package-json/pnpm/sort-*":
 		"Oxlint only lints JS/TS files; JSON, YAML, TOML and Markdown stay in ESLint",
 	"react/* (type-aware)":
@@ -115,8 +113,6 @@ function isNonJsFlawlessName(name: string): boolean {
 }
 
 const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
-	"jsdoc/require-param":
-		"Oxlint applies an unexported outer function's JSDoc to a nested function (https://github.com/oxc-project/oxc/issues/27470).",
 	"style/jsx-function-call-newline": "Formatting-rule ownership remains with ESLint and oxfmt.",
 	"ts/no-shadow":
 		"Oxlint skips every member of a declare namespace or declare module in .d.ts files (https://github.com/oxc-project/oxc/issues/27469).",
