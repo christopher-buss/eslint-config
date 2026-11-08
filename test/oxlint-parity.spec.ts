@@ -672,8 +672,8 @@ describe("oxlint jsdoc parity", () => {
 		expect(new Set([...oxlint, ...Array.from(hybrid, translateRuleToOxlint)])).toStrictEqual(
 			eslint,
 		);
-		expect(oxlint.has("jsdoc/require-param")).toBe(false);
-		expect(hybrid).toStrictEqual(new Set(["jsdoc/require-param"]));
+		expect(oxlint.has("jsdoc/require-param")).toBe(true);
+		expect(hybrid).toStrictEqual(new Set());
 		expect(oxlint.has("jsdoc/require-returns")).toBe(true);
 		expect(oxlint.has("jsdoc-js/require-template")).toBe(true);
 	});

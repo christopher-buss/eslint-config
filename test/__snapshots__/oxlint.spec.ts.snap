@@ -2099,6 +2099,16 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -2140,12 +2150,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "unicorn/no-useless-collection-argument": "error",
         "unicorn/no-useless-promise-resolve-reject": "error",
         "unicorn/no-useless-spread": "off",
-        "unicorn/no-useless-undefined": [
-          "error",
-          {
-            "checkArguments": false,
-          },
-        ],
+        "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "error",
         "unicorn/prefer-default-parameters": "error",
         "unicorn/prefer-export-from": "error",
@@ -2247,6 +2252,12 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "unicorn-js/no-useless-logical-operand": "error",
         "unicorn-js/no-useless-re-export": "error",
         "unicorn-js/no-useless-recursion": "error",
+        "unicorn-js/no-useless-undefined": [
+          "error",
+          {
+            "checkArguments": false,
+          },
+        ],
         "unicorn-js/operator-assignment": "error",
         "unicorn-js/prefer-continue": "error",
         "unicorn-js/prefer-direct-iteration": "error",
@@ -5087,6 +5098,16 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -5130,12 +5151,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "unicorn/no-useless-iterator-to-array": "error",
         "unicorn/no-useless-promise-resolve-reject": "error",
         "unicorn/no-useless-spread": "off",
-        "unicorn/no-useless-undefined": [
-          "error",
-          {
-            "checkArguments": false,
-          },
-        ],
+        "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "error",
         "unicorn/prefer-array-flat-map": "error",
         "unicorn/prefer-default-parameters": "error",
@@ -5250,6 +5266,12 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "unicorn-js/no-useless-logical-operand": "error",
         "unicorn-js/no-useless-re-export": "error",
         "unicorn-js/no-useless-recursion": "error",
+        "unicorn-js/no-useless-undefined": [
+          "error",
+          {
+            "checkArguments": false,
+          },
+        ],
         "unicorn-js/no-xor-as-exponentiation": "error",
         "unicorn-js/operator-assignment": "error",
         "unicorn-js/prefer-abort-signal-any": "error",
@@ -5347,6 +5369,15 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "jsdoc/implements-on-classes": "warn",
         "jsdoc/no-blank-blocks": "warn",
         "jsdoc/no-defaults": "warn",
+        "jsdoc/require-param": [
+          "warn",
+          {
+            "checkDestructured": false,
+            "exemptedBy": [
+              "ignore",
+            ],
+          },
+        ],
         "jsdoc/require-param-description": "warn",
         "jsdoc/require-param-name": "warn",
         "jsdoc/require-property": "warn",
@@ -9500,6 +9531,16 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -9541,12 +9582,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "unicorn/no-useless-collection-argument": "error",
         "unicorn/no-useless-promise-resolve-reject": "error",
         "unicorn/no-useless-spread": "off",
-        "unicorn/no-useless-undefined": [
-          "error",
-          {
-            "checkArguments": false,
-          },
-        ],
+        "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "error",
         "unicorn/prefer-default-parameters": "error",
         "unicorn/prefer-export-from": "error",
@@ -9649,6 +9685,12 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "unicorn-js/no-useless-logical-operand": "error",
         "unicorn-js/no-useless-re-export": "error",
         "unicorn-js/no-useless-recursion": "error",
+        "unicorn-js/no-useless-undefined": [
+          "error",
+          {
+            "checkArguments": false,
+          },
+        ],
         "unicorn-js/operator-assignment": "error",
         "unicorn-js/prefer-block-statement-over-iife": "error",
         "unicorn-js/prefer-continue": "error",
@@ -13619,6 +13661,16 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
     },
     {
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -13660,12 +13712,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn/no-useless-collection-argument": "error",
         "unicorn/no-useless-promise-resolve-reject": "error",
         "unicorn/no-useless-spread": "off",
-        "unicorn/no-useless-undefined": [
-          "error",
-          {
-            "checkArguments": false,
-          },
-        ],
+        "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "error",
         "unicorn/prefer-default-parameters": "error",
         "unicorn/prefer-export-from": "error",
@@ -13768,6 +13815,12 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/no-useless-logical-operand": "error",
         "unicorn-js/no-useless-re-export": "error",
         "unicorn-js/no-useless-recursion": "error",
+        "unicorn-js/no-useless-undefined": [
+          "error",
+          {
+            "checkArguments": false,
+          },
+        ],
         "unicorn-js/operator-assignment": "error",
         "unicorn-js/prefer-block-statement-over-iife": "error",
         "unicorn-js/prefer-continue": "error",
@@ -16055,6 +16108,19 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "src/**",
       ],
       "files": [
+        "**/*.{,c,m}ts",
+        "**/*.{,c,m}tsx",
+      ],
+      "rules": {
+        "typescript/no-generated-empty-object-type": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
+      },
+    },
+    {
+      "excludeFiles": [
+        "src/**",
+      ],
+      "files": [
         "**/*.{,c,m}[jt]s{,x}",
       ],
       "rules": {
@@ -16098,12 +16164,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn/no-useless-iterator-to-array": "error",
         "unicorn/no-useless-promise-resolve-reject": "error",
         "unicorn/no-useless-spread": "off",
-        "unicorn/no-useless-undefined": [
-          "error",
-          {
-            "checkArguments": false,
-          },
-        ],
+        "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "error",
         "unicorn/prefer-array-flat-map": "error",
         "unicorn/prefer-default-parameters": "error",
@@ -16221,6 +16282,12 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "unicorn-js/no-useless-logical-operand": "error",
         "unicorn-js/no-useless-re-export": "error",
         "unicorn-js/no-useless-recursion": "error",
+        "unicorn-js/no-useless-undefined": [
+          "error",
+          {
+            "checkArguments": false,
+          },
+        ],
         "unicorn-js/no-xor-as-exponentiation": "error",
         "unicorn-js/operator-assignment": "error",
         "unicorn-js/prefer-abort-signal-any": "error",

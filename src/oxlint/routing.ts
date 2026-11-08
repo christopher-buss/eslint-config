@@ -53,8 +53,6 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"format-lua/*": "Oxlint cannot lint Lua files",
 	"jest/* (type-aware)":
 		"Four type-aware jest rules stay in ESLint (see typeAwareJsPluginRules); the rest run in oxlint via eslint-plugin-jest as a jsPlugin (renamed jest-js, since oxlint reserves the native jest prefix), which honors settings.jest.globalPackage = @rbxts/jest-globals (the NATIVE oxlint jest plugin does not, https://github.com/oxc-project/oxc/issues/23290)",
-	"jsdoc/require-param":
-		"Oxlint's native port reports nested functions inside an unexported documented function (https://github.com/oxc-project/oxc/issues/27470)",
 	"jsonc/yaml/toml/markdown/package-json/pnpm/sort-*":
 		"Oxlint only lints JS/TS files; JSON, YAML, TOML and Markdown stay in ESLint",
 	"react/* (type-aware)":
@@ -115,8 +113,6 @@ function isNonJsFlawlessName(name: string): boolean {
 }
 
 const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
-	"jsdoc/require-param":
-		"Oxlint applies an unexported outer function's JSDoc to a nested function (https://github.com/oxc-project/oxc/issues/27470).",
 	"style/jsx-function-call-newline": "Formatting-rule ownership remains with ESLint and oxfmt.",
 	"ts/no-shadow":
 		"Oxlint skips every member of a declare namespace or declare module in .d.ts files (https://github.com/oxc-project/oxc/issues/27469).",
@@ -131,12 +127,17 @@ const KNOWN_INCOMPATIBLE_RULES: Readonly<Record<string, string>> = {
 /**
  * Rules that take the ESLint plugin even though Oxlint ports them natively.
  * `unicorn/no-lonely-if` is here because its JS implementation currently has
- * better autofix parity. A native preference needs no entry — that is what
- * every family gets by default.
+ * better autofix parity. `unicorn/no-useless-undefined` is here because the
+ * native autofix breaks syntax and drops types and comments
+ * (https://github.com/oxc-project/oxc/issues/28978) and the native rule misses
+ * reports (https://github.com/oxc-project/oxc/issues/28979,
+ * https://github.com/oxc-project/oxc/issues/28988). A native preference needs
+ * no entry — that is what every family gets by default.
  */
 const JS_PLUGIN_PREFERRED_RULES: ReadonlySet<string> = new Set([
 	"no-loop-func",
 	"unicorn/no-lonely-if",
+	"unicorn/no-useless-undefined",
 ]);
 
 /**
