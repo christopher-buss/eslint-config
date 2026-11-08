@@ -1,4 +1,3 @@
-rounds: eslint 4, standalone 3
 === _tsconfig.lint.json ===
 {
 	"compilerOptions": {
