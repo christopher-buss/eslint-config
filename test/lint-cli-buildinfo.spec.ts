@@ -58,14 +58,16 @@ interface ChildResult {
 /** A fixture's file tree, keyed by project-relative path. */
 type Tree = Record<string, string>;
 
+// Every fixture names its lib: the es2020 default pulls in the DOM types,
+// which each child would parse again.
 const TSCONFIG = JSON.stringify({
-	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
+	compilerOptions: { lib: ["es2020"], module: "commonjs", strict: true, target: "es2020" },
 	include: ["src"],
 });
 
 /** The same config widened to a second root directory. */
 const WIDE_TSCONFIG = JSON.stringify({
-	compilerOptions: { module: "commonjs", strict: true, target: "es2020" },
+	compilerOptions: { lib: ["es2020"], module: "commonjs", strict: true, target: "es2020" },
 	include: ["src", "extra"],
 });
 
@@ -119,7 +121,13 @@ const ENCODED: Tree = {
 const SOLUTION: Tree = {
 	"app/b.ts": "import { a } from '../src/a';\nexport function b() { return a(); }\n",
 	"app/tsconfig.json": JSON.stringify({
-		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		compilerOptions: {
+			composite: true,
+			lib: ["es2020"],
+			module: "commonjs",
+			strict: true,
+			target: "es2020",
+		},
 		include: ["."],
 	}),
 	"package.json": JSON.stringify({ name: "fixture", version: "0.0.0" }),
@@ -130,7 +138,13 @@ const SOLUTION: Tree = {
 		references: [{ path: "./tsconfig.lib.json" }, { path: "./app" }],
 	}),
 	"tsconfig.lib.json": JSON.stringify({
-		compilerOptions: { composite: true, module: "commonjs", strict: true, target: "es2020" },
+		compilerOptions: {
+			composite: true,
+			lib: ["es2020"],
+			module: "commonjs",
+			strict: true,
+			target: "es2020",
+		},
 		include: ["src"],
 	}),
 };
@@ -750,6 +764,7 @@ describe.concurrent("buildinfo fast path unsupported shapes", () => {
 					"src/a.ts": ORIGINAL_A,
 					"tsconfig.json": JSON.stringify({
 						compilerOptions: {
+							lib: ["es2020"],
 							module: "system",
 							outFile: "./out.js",
 							strict: true,
