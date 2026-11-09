@@ -33,6 +33,7 @@ export function flawlessRules({
 	FlawlessRuleOptions &
 	OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/cognitive-complexity": ["warn", { threshold: 15 }],
 		"flawless/no-export-default-arrow": "error",
 		"flawless/no-floating-point-equality": "error",
 
@@ -94,10 +95,14 @@ export function flawlessTypeAwareJsxRules(): TypedFlatConfigItem["rules"] {
  */
 function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/max-comment-length": ["error", { maximumWords: 50 }],
 		"flawless/no-conditional-empty-object-spread": "error",
+		"flawless/no-em-dash": "error",
 		"flawless/no-known-value-widening": "error",
 		"flawless/no-object-parameters": "error",
 		"flawless/no-shape-in-symbol-names": "error",
+		"flawless/no-trivial-functions": "error",
+		"flawless/no-unknown-parameters": "error",
 		"flawless/no-unsafe-dictionary-type": "error",
 
 		...(roblox ? {} : { "flawless/no-reflect-get": "error" }),

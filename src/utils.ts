@@ -814,7 +814,7 @@ const JSON_LAYOUT_KEYS = ["bracketSpacing", "singleQuote", "tabWidth", "useTabs"
  * @returns Each such override's scope, in order.
  */
 export function jsonLayoutOverrides(overrides: ReadonlyArray<unknown>): Array<OverrideScope> {
-	return overrides.flatMap((override: unknown) => {
+	return overrides.flatMap((override) => {
 		if (
 			!isRecord(override) ||
 			!isRecord(override["options"]) ||

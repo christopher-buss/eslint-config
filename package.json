@@ -66,7 +66,7 @@
 		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
 		"gen": "node scripts/typegen.ts && node scripts/typegen-oxlint.ts && node scripts/typegen-defaults.ts && node scripts/typegen-defaults-oxlint.ts && node scripts/versiongen.ts && node scripts/stylistic-gen.ts && node scripts/type-aware-gen.ts && node scripts/roblox-allowed-words-gen.ts && node scripts/gen-package-extensions.ts",
 		"postgen": "echo 'Generation complete!'",
-		"lint": "isentinel-lint",
+		"lint": "isentinel-lint --eslint-args \"--max-warnings 0\" --oxlint-args --deny-warnings",
 		"oxlint": "oxlint",
 		"prepack": "nr build",
 		"release": "bumpp -r",

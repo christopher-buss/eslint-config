@@ -127,7 +127,7 @@ export const frameworkOptions: Array<PromItem<FrameworkOption>> = [
 	},
 ];
 
-export const frameworks: Array<FrameworkOption> = frameworkOptions.map(({ value }) => value);
+export const frameworks = frameworkOptions.map(({ value }) => value);
 
 export const dependenciesMap = {
 	react: [

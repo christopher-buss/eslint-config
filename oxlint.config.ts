@@ -52,9 +52,10 @@ export default isentinel(
 		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {
-			// `flawless/max-lines-per-function` and `sonar/cognitive-complexity`
-			// live in eslint.config.ts: native-only mode runs no jsPlugins, so
-			// oxlint would reject the unknown plugins.
+			// `flawless/max-lines-per-function` and
+			// `flawless/cognitive-complexity` live in eslint.config.ts:
+			// native-only mode runs no jsPlugins, so oxlint would reject the
+			// unknown plugins.
 			"max-lines": "off",
 			// This package deliberately exposes its public API through barrel
 			// index files.

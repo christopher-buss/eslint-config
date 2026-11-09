@@ -38,7 +38,7 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 			if (glob.type === "ignore") {
 				eslintIgnores.push(...glob.patterns);
 			} else {
-				eslintIgnores.push(...glob.patterns.map((pattern: string) => `!${pattern}`));
+				eslintIgnores.push(...glob.patterns.map((pattern) => `!${pattern}`));
 			}
 		}
 	}

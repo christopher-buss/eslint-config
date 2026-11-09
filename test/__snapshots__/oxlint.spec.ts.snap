@@ -1834,7 +1834,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       ],
       "rules": {
         "sonar/bool-param-default": "error",
-        "sonar/cognitive-complexity": "warn",
         "sonar/constructor-for-side-effects": "error",
         "sonar/destructuring-assignment-syntax": "error",
         "sonar/file-name-differ-from-class": "error",
@@ -1850,7 +1849,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "sonar/no-duplicated-branches": "error",
         "sonar/no-element-overwrite": "error",
         "sonar/no-empty-collection": "error",
-        "sonar/no-floating-point-equality": "error",
         "sonar/no-identical-conditions": "error",
         "sonar/no-identical-expressions": "error",
         "sonar/no-identical-functions": "error",
@@ -2531,6 +2529,12 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         },
       ],
       "rules": {
+        "flawless/cognitive-complexity": [
+          "warn",
+          {
+            "threshold": 15,
+          },
+        ],
         "flawless/no-export-default-arrow": "error",
         "flawless/no-floating-point-equality": "error",
       },
@@ -4803,7 +4807,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       ],
       "rules": {
         "sonar/bool-param-default": "error",
-        "sonar/cognitive-complexity": "warn",
         "sonar/constructor-for-side-effects": "error",
         "sonar/destructuring-assignment-syntax": "error",
         "sonar/file-name-differ-from-class": "error",
@@ -4820,7 +4823,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "sonar/no-duplicated-branches": "error",
         "sonar/no-element-overwrite": "error",
         "sonar/no-empty-collection": "error",
-        "sonar/no-floating-point-equality": "error",
         "sonar/no-identical-conditions": "error",
         "sonar/no-identical-expressions": "error",
         "sonar/no-identical-functions": "error",
@@ -6564,6 +6566,18 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
             },
           },
         ],
+        "flawless/cognitive-complexity": [
+          "warn",
+          {
+            "threshold": 15,
+          },
+        ],
+        "flawless/max-comment-length": [
+          "error",
+          {
+            "maximumWords": 50,
+          },
+        ],
         "flawless/max-lines-per-function": [
           "warn",
           {
@@ -6573,12 +6587,15 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           },
         ],
         "flawless/no-conditional-empty-object-spread": "error",
+        "flawless/no-em-dash": "error",
         "flawless/no-export-default-arrow": "error",
         "flawless/no-floating-point-equality": "error",
         "flawless/no-known-value-widening": "error",
         "flawless/no-object-parameters": "error",
         "flawless/no-reflect-get": "error",
         "flawless/no-shape-in-symbol-names": "error",
+        "flawless/no-trivial-functions": "error",
+        "flawless/no-unknown-parameters": "error",
         "flawless/no-unsafe-dictionary-type": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
@@ -9240,7 +9257,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       ],
       "rules": {
         "sonar/bool-param-default": "error",
-        "sonar/cognitive-complexity": "warn",
         "sonar/constructor-for-side-effects": "error",
         "sonar/destructuring-assignment-syntax": "error",
         "sonar/file-name-differ-from-class": "error",
@@ -9256,7 +9272,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "sonar/no-duplicated-branches": "error",
         "sonar/no-element-overwrite": "error",
         "sonar/no-empty-collection": "error",
-        "sonar/no-floating-point-equality": "error",
         "sonar/no-identical-conditions": "error",
         "sonar/no-identical-expressions": "error",
         "sonar/no-identical-functions": "error",
@@ -10695,6 +10710,12 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
             "useOxfmt": {
               "printWidth": 100,
             },
+          },
+        ],
+        "flawless/cognitive-complexity": [
+          "warn",
+          {
+            "threshold": 15,
           },
         ],
         "flawless/max-lines-per-function": [
@@ -13370,7 +13391,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       ],
       "rules": {
         "sonar/bool-param-default": "error",
-        "sonar/cognitive-complexity": "warn",
         "sonar/constructor-for-side-effects": "error",
         "sonar/destructuring-assignment-syntax": "error",
         "sonar/file-name-differ-from-class": "error",
@@ -13386,7 +13406,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "sonar/no-duplicated-branches": "error",
         "sonar/no-element-overwrite": "error",
         "sonar/no-empty-collection": "error",
-        "sonar/no-floating-point-equality": "error",
         "sonar/no-identical-conditions": "error",
         "sonar/no-identical-expressions": "error",
         "sonar/no-identical-functions": "error",
@@ -15804,7 +15823,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       ],
       "rules": {
         "sonar/bool-param-default": "error",
-        "sonar/cognitive-complexity": "warn",
         "sonar/constructor-for-side-effects": "error",
         "sonar/destructuring-assignment-syntax": "error",
         "sonar/file-name-differ-from-class": "error",
@@ -15821,7 +15839,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "sonar/no-duplicated-branches": "error",
         "sonar/no-element-overwrite": "error",
         "sonar/no-empty-collection": "error",
-        "sonar/no-floating-point-equality": "error",
         "sonar/no-identical-conditions": "error",
         "sonar/no-identical-expressions": "error",
         "sonar/no-identical-functions": "error",
@@ -17313,6 +17330,18 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             },
           },
         ],
+        "flawless/cognitive-complexity": [
+          "warn",
+          {
+            "threshold": 15,
+          },
+        ],
+        "flawless/max-comment-length": [
+          "error",
+          {
+            "maximumWords": 50,
+          },
+        ],
         "flawless/max-lines-per-function": [
           "warn",
           {
@@ -17322,11 +17351,14 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           },
         ],
         "flawless/no-conditional-empty-object-spread": "error",
+        "flawless/no-em-dash": "error",
         "flawless/no-export-default-arrow": "error",
         "flawless/no-floating-point-equality": "error",
         "flawless/no-known-value-widening": "error",
         "flawless/no-object-parameters": "error",
         "flawless/no-shape-in-symbol-names": "error",
+        "flawless/no-trivial-functions": "error",
+        "flawless/no-unknown-parameters": "error",
         "flawless/no-unsafe-dictionary-type": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },
@@ -17359,6 +17391,18 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
             },
           },
         ],
+        "flawless/cognitive-complexity": [
+          "warn",
+          {
+            "threshold": 15,
+          },
+        ],
+        "flawless/max-comment-length": [
+          "error",
+          {
+            "maximumWords": 50,
+          },
+        ],
         "flawless/max-lines-per-function": [
           "warn",
           {
@@ -17368,12 +17412,15 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           },
         ],
         "flawless/no-conditional-empty-object-spread": "error",
+        "flawless/no-em-dash": "error",
         "flawless/no-export-default-arrow": "error",
         "flawless/no-floating-point-equality": "error",
         "flawless/no-known-value-widening": "error",
         "flawless/no-object-parameters": "error",
         "flawless/no-reflect-get": "error",
         "flawless/no-shape-in-symbol-names": "error",
+        "flawless/no-trivial-functions": "error",
+        "flawless/no-unknown-parameters": "error",
         "flawless/no-unsafe-dictionary-type": "error",
         "flawless/prefer-parameter-destructuring": "warn",
       },

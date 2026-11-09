@@ -40,10 +40,12 @@ local build = new Step {
 // only double-lint. GIT_HOOK pins hook runs to the no-agent cache variant.
 // `depends` is load-bearing: hk runs steps concurrently by default, so without
 // it the build could still be writing `dist` as this step loads it.
+// Warnings fail the check, as in `pnpm lint`: outside an agent session the
+// config leaves them at `warn`, and both linters exit 0 on a warning.
 local lint = new Step {
     glob = List("*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.jsonc", "*.md", "*.toml", "*.yaml", "*.yml")
     depends = List("build")
-    check = "isentinel-lint {{files}}"
+    check = "isentinel-lint --eslint-args \"--max-warnings 0\" --oxlint-args --deny-warnings {{files}}"
     fix = "isentinel-lint --fix {{files}}"
     shell = bash
     env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
