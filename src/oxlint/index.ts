@@ -1,5 +1,4 @@
 import { buildOxlintRuleMapping } from "./routing.ts";
-import type { OxlintTarget } from "./routing.ts";
 
 export * from "./factory.ts";
 export { isentinel as default } from "./factory.ts";
@@ -18,7 +17,7 @@ export type { OxlintTarget } from "./routing.ts";
  * not pay for resolving every preset rule; only consumers of this entry point
  * do.
  */
-export const oxlintRuleMapping: Readonly<Record<string, OxlintTarget>> = buildOxlintRuleMapping();
+export const oxlintRuleMapping = buildOxlintRuleMapping();
 export type * from "./types.ts";
 // Registering a jsPlugin by bare specifier breaks under pnpm's isolated
 // node_modules, and a `{ name }` that does not match the rule prefix silently
