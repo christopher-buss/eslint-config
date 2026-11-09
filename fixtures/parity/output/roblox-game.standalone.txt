@@ -716,7 +716,7 @@ const displayName = `Hello ${jsxTitle}`;
 // Fixable: object-shorthand
 const jsxConfig = {
 	jsxTitle,
-	method() {
+	method(): number {
 		return 1;
 	},
 };

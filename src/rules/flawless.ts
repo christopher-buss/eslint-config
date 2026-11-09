@@ -65,7 +65,7 @@ export function flawlessTypeAwareRules({
 	roblox = true,
 }: FlawlessRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
-		"flawless/no-redundant-type-annotation": ["error", { allowExpressions: true }],
+		"flawless/no-redundant-type-annotation": "error",
 
 		...(antiSlop ? antiSlopTypeAwareRules({ roblox }) : {}),
 	};

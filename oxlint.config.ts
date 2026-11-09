@@ -25,6 +25,9 @@ export default isentinel(
 		name: "local/test-overrides",
 		files: ["test/**/*.ts"],
 		rules: {
+			// The preset turns `max-lines` off for test globs, but
+			// `*.parity.ts` matches none of them.
+			"max-lines": "off",
 			// The parity and snapshot suites iterate the whole rule mapping and
 			// accumulate problems, so branching and long assertion runs are
 			// inherent to their shape rather than a smell.
