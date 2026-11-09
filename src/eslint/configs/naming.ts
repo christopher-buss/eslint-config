@@ -438,8 +438,16 @@ function reactSelectors(): Array<Record<string, unknown>> {
 			types: REACT_COMPONENT_TYPES,
 		},
 		{
-			// Properties holding a component are named for the component, but
-			// camelCase stays legal so existing props do not have to move
+			// A component prop that holds a component is rendered as JSX, so it
+			// takes the component casing. Outranks the selector below.
+			componentProp: true,
+			format: ["StrictPascalCase"],
+			selector: "typeProperty",
+			types: REACT_COMPONENT_TYPES,
+		},
+		{
+			// Other properties holding a component are named for the component,
+			// but camelCase stays legal so existing props do not have to move
 			format: ["strictCamelCase", "StrictPascalCase"],
 			selector: ["classProperty", "typeProperty"],
 			types: REACT_COMPONENT_TYPES,

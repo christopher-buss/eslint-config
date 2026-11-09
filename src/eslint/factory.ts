@@ -646,6 +646,7 @@ export async function isentinel(
 		configs.push(
 			markdown({
 				...getOverrides(options, "markdown"),
+				antiSlop,
 				componentExts: componentExtensions,
 				type: projectType,
 			}),

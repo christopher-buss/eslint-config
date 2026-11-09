@@ -27,11 +27,11 @@ export default isentinel(
 		name: "local/src-overrides",
 		files: ["src/**/*.ts"],
 		rules: {
+			"flawless/cognitive-complexity": "off",
 			// Native-only hybrid keeps the jsPlugin rules here, so their
 			// project-level disables live here too (the native counterparts
 			// stay in oxlint.config.ts).
 			"flawless/max-lines-per-function": "off",
-			"sonar/cognitive-complexity": "off",
 		},
 	},
 	{

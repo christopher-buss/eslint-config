@@ -51,7 +51,7 @@ const displayName = `Hello ${  jsxTitle}`;
 // Fixable: object-shorthand
 const jsxConfig = {
 	jsxTitle: jsxTitle,
-	method: function(): number { return 1; },
+	method: function() { return 1; },
 };
 
 // Fixable: curly

@@ -47,7 +47,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"eslint-comments/*":
 		"Lints eslint-disable directives, which only exist in ESLint-linted code; oxlint-comments covers oxlint directives",
 	"flawless/naming-convention":
-		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, max-lines-per-function, no-conditional-in-test, no-export-default-arrow, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-expect-assertions-count, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) run in oxlint. flawless/no-redundant-tsconfig-options and every flawless/toml-* and flawless/yaml-* rule lint non-JS files and stay in ESLint",
+		"Type-aware custom rule; oxlint jsPlugins have no type information. The syntax-only flawless rules (arrow-return-style, cognitive-complexity, max-comment-length, max-lines-per-function, no-em-dash, no-trivial-functions, no-unknown-parameters, no-unnecessary-prop-alias, no-conditional-in-test, no-export-default-arrow, padding-after-expect-assertions, prefer-ending-with-an-expect, prefer-expect-assertions-count, prefer-parameter-destructuring, the react jsx-shorthand-*, purity, no-unnecessary-use-*, prefer-destructuring-assignment) run in oxlint. flawless/no-redundant-tsconfig-options and every flawless/toml-* and flawless/yaml-* rule lint non-JS files and stay in ESLint",
 	"flawless/prefer-read-only-props":
 		"Type-aware custom rule; oxlint jsPlugins have no type information",
 	"format-lua/*": "Oxlint cannot lint Lua files",
@@ -64,7 +64,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"ts/no-shadow":
 		"Oxlint's native port does not check members of declare namespace / declare module blocks in .d.ts files (https://github.com/oxc-project/oxc/issues/27469)",
 	"type-aware jsPlugin rules":
-		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): sonar/no-ignored-return, sonar/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
+		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): flawless/no-incompatible-assertion-types, sonar/no-ignored-return, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"unicorn/no-useless-coercion":

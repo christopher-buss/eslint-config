@@ -117,6 +117,7 @@ export function reactRules({
 	const restrictedDomImport = testing ? restrictedDomImportRule(domPackage) : undefined;
 
 	return {
+		"flawless/no-unnecessary-prop-alias": ["error", { reportConflicts: true }],
 		"flawless/no-unnecessary-use-callback": "error",
 
 		"flawless/no-unnecessary-use-memo": "error",

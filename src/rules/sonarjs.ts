@@ -12,7 +12,6 @@ export function sonarjsRules({
 }: OptionsHasRoblox & Required<OptionsIsInEditor>): TypedFlatConfigItem["rules"] {
 	return {
 		"sonar/bool-param-default": "error",
-		"sonar/cognitive-complexity": "warn",
 		"sonar/constructor-for-side-effects": "error",
 		"sonar/destructuring-assignment-syntax": "error",
 		"sonar/elseif-without-else": "off",
@@ -33,7 +32,6 @@ export function sonarjsRules({
 		"sonar/no-duplicated-branches": "error",
 		"sonar/no-element-overwrite": "error",
 		"sonar/no-empty-collection": "error",
-		"sonar/no-floating-point-equality": "error",
 		"sonar/no-gratuitous-expressions": "off",
 		"sonar/no-identical-conditions": "error",
 		"sonar/no-identical-expressions": "error",
@@ -90,7 +88,6 @@ export function sonarjsTestRules({
 	roblox = true,
 }: { jest?: boolean; roblox?: boolean } = {}): TypedFlatConfigItem["rules"] {
 	return {
-		"sonar/no-incompatible-assertion-types": "error",
 		...(jest
 			? {
 					"sonar/no-mixed-completion-style": "error",

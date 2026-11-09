@@ -4,6 +4,7 @@ import type { Linter } from "eslint";
 import { mergeProcessors, processorPassThrough } from "eslint-merge-processors";
 
 import { GLOB_MARKDOWN, GLOB_MARKDOWN_BLOCKS, GLOB_MARKDOWN_IN_MARKDOWN } from "../../globs.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
@@ -20,11 +21,13 @@ import type {
 export const MARKDOWN_PROCESSOR_NAME = "@eslint/markdown/markdown";
 
 export function markdown({
+	antiSlop = false,
 	componentExts: componentExtensions = [],
 	files = [GLOB_MARKDOWN],
 	overrides = {},
 	type = "game",
-}: OptionsComponentExtensions &
+}: FlawlessRuleOptions &
+	OptionsComponentExtensions &
 	OptionsFiles &
 	OptionsOverrides &
 	OptionsProjectType = {}): Array<TypedFlatConfigItem> {
@@ -96,6 +99,10 @@ export function markdown({
 				"style/indent": "off",
 
 				"unicorn/no-missing-local-resource": "error",
+
+				// The JS/TS half of this anti-slop rule lives in the flawless
+				// config; only ESLint lints Markdown prose.
+				...(antiSlop ? { "flawless/no-em-dash": "error" as const } : {}),
 
 				// Package-specific stricter rules
 				...(type === "package"
