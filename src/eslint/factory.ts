@@ -607,6 +607,7 @@ export async function isentinel(
 		configs.push(
 			yaml({
 				...getOverrides(options, "yaml"),
+				prettierOptions: widthSettings,
 				stylistic: stylisticOptions,
 			}),
 		);

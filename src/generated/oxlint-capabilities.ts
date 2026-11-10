@@ -3524,6 +3524,7 @@ export const enabledPresetRuleNames: ReadonlySet<string> = new Set([
 	"style/key-spacing",
 	"style/keyword-spacing",
 	"style/lines-between-class-members",
+	"style/max-len",
 	"style/max-statements-per-line",
 	"style/member-delimiter-style",
 	"style/multiline-comment-style",
