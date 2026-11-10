@@ -2,6 +2,7 @@ import { GLOB_YAML } from "../../globs.ts";
 import { interopDefault } from "../../utils.ts";
 import type {
 	OptionsFiles,
+	OptionsFormatters,
 	OptionsOverrides,
 	OptionsStylistic,
 	TypedFlatConfigItem,
@@ -10,8 +11,11 @@ import type {
 export async function yaml({
 	files = [GLOB_YAML, "**/github-actions-workflow"],
 	overrides = {},
+	prettierOptions = {},
 	stylistic = true,
-}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+}: OptionsFiles & OptionsFormatters & OptionsOverrides & OptionsStylistic = {}): Promise<
+	Array<TypedFlatConfigItem>
+> {
 	const [pluginYaml, parserYaml, eslintPluginFlawless] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
 		interopDefault(import("yaml-eslint-parser")),
@@ -45,6 +49,17 @@ export async function yaml({
 				...(stylistic !== false
 					? {
 							"flawless/yaml-block-key-blank-lines": "error",
+
+							"style/max-len": [
+								"error",
+								{
+									code: prettierOptions.printWidth ?? 100,
+									comments: Number(prettierOptions["jsdocPrintWidth"]) || 80,
+									ignorePattern: String.raw`^\s*(?:-\s+)?uses:\s`,
+									ignoreUrls: true,
+									tabWidth: 2,
+								},
+							],
 
 							"yaml/block-mapping": "error",
 							"yaml/block-mapping-colon-indicator-newline": "error",
