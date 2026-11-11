@@ -154,10 +154,10 @@ catalogs:
       version: 8.0.3
     '@isentinel/dict-rbxts':
       specifier: latest
-      version: 1.0.30
+      version: 1.0.31
     '@isentinel/dict-roblox':
       specifier: latest
-      version: 1.0.23
+      version: 1.0.24
     '@oxlint/plugins':
       specifier: 1.92.0
       version: 1.92.0
@@ -252,8 +252,8 @@ catalogs:
       specifier: 4.4.1
       version: 4.4.1
     eslint-plugin-yml:
-      specifier: 3.5.0
-      version: 3.5.0
+      specifier: 3.10.0
+      version: 3.10.0
     file-entry-cache:
       specifier: 11.1.5
       version: 11.1.5
@@ -338,10 +338,10 @@ importers:
         version: 8.0.3(supports-color@10.2.2)
       '@isentinel/dict-rbxts':
         specifier: catalog:prod
-        version: 1.0.30
+        version: 1.0.31
       '@isentinel/dict-roblox':
         specifier: catalog:prod
-        version: 1.0.23
+        version: 1.0.24
       '@oxlint/plugins':
         specifier: catalog:prod
         version: 1.92.0
@@ -437,7 +437,7 @@ importers:
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-yml:
         specifier: catalog:prod
-        version: 3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 3.10.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       file-entry-cache:
         specifier: catalog:prod
         version: 11.1.5
@@ -1063,12 +1063,12 @@ packages:
   '@isaacs/nonrecursive-glob-match@1.1.0':
     resolution: {integrity: sha512-GPm/Dbvk5RLmhRnxXIa7nTpK0xtl4E0wj0MslsuNiJ1FIROU+2+9lgUC/dgF7Ey4QCWhfEsgxilMRMCdHPfDfw==}
 
-  '@isentinel/dict-rbxts@1.0.30':
-    resolution: {integrity: sha512-8Y5QttWBdsSuqgnNRGUHUMHuKK8kiKD+o5MuADkeapvrGSJtXajIDR5ZH3cABGJuarP+BU86kN14OXdw/a4A3w==}
+  '@isentinel/dict-rbxts@1.0.31':
+    resolution: {integrity: sha512-IiliFEotzhgqXr8Ps1MvHZLYCcVivOM/qsY1NnqK9io6s+kvx6p9reihU4IJ789G84DZzx6kpbeO6qJ5xDqhYw==}
     engines: {node: '>=22'}
 
-  '@isentinel/dict-roblox@1.0.23':
-    resolution: {integrity: sha512-Qz0B8/91H7vTF6kNp8TfhACXhpOZtVca+YY+HRij+W1nzdeJEx7z8KMeGO27FUBW9ZWCcvTYFdCkTMKfDvPMbg==}
+  '@isentinel/dict-roblox@1.0.24':
+    resolution: {integrity: sha512-XikfdNx5F72xpv50QrFP4LpkbFFzdUqa0yTl2QFkaWctOlvM5v2RnbFrc4LBteaToqLzWS2icS/wQQ3sd423+w==}
     engines: {node: '>=20.18.0'}
 
   '@isentinel/tsconfig@3.0.0':
@@ -2931,8 +2931,8 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
 
-  eslint-plugin-yml@3.5.0:
-    resolution: {integrity: sha512-u2UkSIp/+th1wYCt0QWeCI6agf24dxX6PbFfCCN18gGQHmXh3Cn9D/U5OiP5RNYTEwjXCLusj1OJRK+zwdvFqQ==}
+  eslint-plugin-yml@3.10.0:
+    resolution: {integrity: sha512-9Qfg0JMZ0YUPa/m6FwWhzKFDwXf/oGnM+EvTzRkM72UccHuzCFk/L77R6qtABZ/As/UJVvx1lYYcbwgO+gcioA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
     peerDependencies:
       eslint: '>=9.38.0'
@@ -4881,9 +4881,9 @@ snapshots:
 
   '@isaacs/nonrecursive-glob-match@1.1.0': {}
 
-  '@isentinel/dict-rbxts@1.0.30': {}
+  '@isentinel/dict-rbxts@1.0.31': {}
 
-  '@isentinel/dict-roblox@1.0.23': {}
+  '@isentinel/dict-roblox@1.0.24': {}
 
   '@isentinel/tsconfig@3.0.0(typescript@6.0.3)':
     dependencies:
@@ -6424,10 +6424,10 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
 
-  eslint-plugin-yml@3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-yml@3.10.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint/core': 1.2.1
-      '@eslint/plugin-kit': 0.7.2
+      '@eslint/plugin-kit': 0.7.3
       '@ota-meshi/ast-token-store': 0.3.0
       diff-sequences: 29.6.3
       escape-string-regexp: 5.0.0
