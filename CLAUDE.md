@@ -11,7 +11,8 @@ Read the required versions from `package.json` rather than duplicating them
 here:
 
 - Node.js — the `engines.node` range
-- pnpm — the `packageManager` field (auto-managed by corepack)
+- pnpm — the `packageManager` field (installed by mise; keep the `pnpm` version
+  in `mise.toml` the same)
 
 ## Commands
 

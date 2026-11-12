@@ -7,5 +7,6 @@ lockfile = true
 
 [tools]
 hk = { version = "1.53.0", postinstall = 'if [ -z "$CI" ]; then hk install --mise; fi' }
-node = { version = "lts", postinstall = "corepack enable" }
+node = "lts"
 pkl = "latest"
+pnpm = "12.18.0"
