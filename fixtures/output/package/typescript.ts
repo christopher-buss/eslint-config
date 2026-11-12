@@ -92,7 +92,7 @@ function testLonelyIf(a: boolean, b: boolean): void {
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	item;
+	use(item);
 }
 
 // Fixable: unicorn/prefer-includes
@@ -143,7 +143,7 @@ interface ShouldBeInterface {
 // Fixable: ts/prefer-for-of
 const items = [1, 2, 3];
 for (const item of items) {
-	item;
+	use(item);
 }
 
 /**
@@ -289,7 +289,7 @@ function testSpread(): void {
  */
 function uselessReturn(): void {
 	const x = 1;
-	x;
+	use(x);
 	
 }
 
@@ -338,7 +338,7 @@ function noDestructure(point: { x: number; y: number }): number {
 }
 
 // Use all the things so they aren't unused
-[
+use(
 	neverReassigned, inferrable, names, greeting, isNull,
 	checkValue, objectLonghand, needsCurly, mapped, oldStyle,
 	undefinedInit, foo, value, logicalOr, testLonelyIf,
@@ -349,6 +349,10 @@ function noDestructure(point: { x: number; y: number }): number {
 	boundFunc, returnUndefined, testSpread, uselessReturn,
 	missingReturnType, emptyFunction, consistentDestructure,
 	preferTernary, unnecessaryTemplate, noDestructure,
-];
+);
 
 export type { UnsortedInterface, ShouldBeInterface, UnsortedUnion };
+
+function use(...values: ReadonlyArray<unknown>): number {
+	return values.length;
+}

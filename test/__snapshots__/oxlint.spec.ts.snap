@@ -1981,6 +1981,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
           },
         ],
         "typescript/no-for-in-array": "error",
+        "typescript/no-generated-empty-object-type": "error",
         "typescript/no-implied-eval": "error",
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-inferrable-types": "error",
@@ -2016,6 +2017,7 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "typescript/no-unsafe-assignment": "error",
         "typescript/no-unsafe-call": "error",
         "typescript/no-unsafe-declaration-merging": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
         "typescript/no-unsafe-enum-comparison": "error",
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
@@ -2093,16 +2095,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
           "error",
           "[declare=true]",
         ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "rules": {
-        "typescript/no-generated-empty-object-type": "error",
-        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
@@ -4982,6 +4974,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           },
         ],
         "typescript/no-for-in-array": "error",
+        "typescript/no-generated-empty-object-type": "error",
         "typescript/no-implied-eval": "error",
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-inferrable-types": "error",
@@ -5017,6 +5010,7 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "typescript/no-unsafe-assignment": "error",
         "typescript/no-unsafe-call": "error",
         "typescript/no-unsafe-declaration-merging": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
         "typescript/no-unsafe-enum-comparison": "error",
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
@@ -5096,16 +5090,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "error",
           "[declare=true]",
         ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "rules": {
-        "typescript/no-generated-empty-object-type": "error",
-        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
@@ -9430,6 +9414,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           },
         ],
         "typescript/no-for-in-array": "error",
+        "typescript/no-generated-empty-object-type": "error",
         "typescript/no-implied-eval": "error",
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-inferrable-types": "error",
@@ -9465,6 +9450,7 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "typescript/no-unsafe-assignment": "error",
         "typescript/no-unsafe-call": "error",
         "typescript/no-unsafe-declaration-merging": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
         "typescript/no-unsafe-enum-comparison": "error",
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
@@ -9542,16 +9528,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "error",
           "[declare=true]",
         ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "rules": {
-        "typescript/no-generated-empty-object-type": "error",
-        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
@@ -13564,6 +13540,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           },
         ],
         "typescript/no-for-in-array": "error",
+        "typescript/no-generated-empty-object-type": "error",
         "typescript/no-implied-eval": "error",
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-inferrable-types": "error",
@@ -13599,6 +13576,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "typescript/no-unsafe-assignment": "error",
         "typescript/no-unsafe-call": "error",
         "typescript/no-unsafe-declaration-merging": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
         "typescript/no-unsafe-enum-comparison": "error",
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
@@ -13676,16 +13654,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           "[declare=true]",
         ],
-      },
-    },
-    {
-      "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "rules": {
-        "typescript/no-generated-empty-object-type": "error",
-        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {
@@ -16001,6 +15969,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           },
         ],
         "typescript/no-for-in-array": "error",
+        "typescript/no-generated-empty-object-type": "error",
         "typescript/no-implied-eval": "error",
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-inferrable-types": "error",
@@ -16036,6 +16005,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "typescript/no-unsafe-assignment": "error",
         "typescript/no-unsafe-call": "error",
         "typescript/no-unsafe-declaration-merging": "error",
+        "typescript/no-unsafe-enum-assignment": "error",
         "typescript/no-unsafe-enum-comparison": "error",
         "typescript/no-unsafe-function-type": "error",
         "typescript/no-unsafe-member-access": "error",
@@ -16118,19 +16088,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "error",
           "[declare=true]",
         ],
-      },
-    },
-    {
-      "excludeFiles": [
-        "src/**",
-      ],
-      "files": [
-        "**/*.{,c,m}ts",
-        "**/*.{,c,m}tsx",
-      ],
-      "rules": {
-        "typescript/no-generated-empty-object-type": "error",
-        "typescript/no-unsafe-enum-assignment": "error",
       },
     },
     {

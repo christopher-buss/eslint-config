@@ -751,7 +751,7 @@ const doubled = [1, 2].map(function (n) {
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	item;
+	use(item);
 }
 
 // Fixable: ts/explicit-member-accessibility
@@ -869,7 +869,7 @@ function jsxMissingReturn() {
 }
 
 // Use values to avoid unused errors
-[
+use(
 	jsxTitle,
 	jsxCount,
 	jsxItems,
@@ -893,9 +893,13 @@ function jsxMissingReturn() {
 	jsxHex,
 	jsxLonely,
 	jsxMissingReturn,
-];
+);
 
 export type { ButtonProps, ButtonVariant };
+
+function use(...values: ReadonlyArray<unknown>): number {
+	return values.length;
+}
 
 === typescript.ts ===
 // Fixable: style/spaced-comment (no space after //)
@@ -999,7 +1003,7 @@ function testLonelyIf(a: boolean, b: boolean): void {
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	item;
+	use(item);
 }
 
 // Fixable: unicorn/prefer-includes
@@ -1050,7 +1054,7 @@ interface ShouldBeInterface {
 // Fixable: ts/prefer-for-of
 const items = [1, 2, 3];
 for (const item of items) {
-	item;
+	use(item);
 }
 
 /**
@@ -1197,7 +1201,7 @@ function testSpread(): void {
  */
 function uselessReturn(): void {
 	const x = 1;
-	x;
+	use(x);
 }
 
 /**
@@ -1245,7 +1249,7 @@ function noDestructure(point: { x: number; y: number }): number {
 }
 
 // Use all the things so they aren't unused
-[
+use(
 	neverReassigned,
 	inferrable,
 	names,
@@ -1289,9 +1293,13 @@ function noDestructure(point: { x: number; y: number }): number {
 	preferTernary,
 	unnecessaryTemplate,
 	noDestructure,
-];
+);
 
 export type { UnsortedInterface, ShouldBeInterface, UnsortedUnion };
+
+function use(...values: ReadonlyArray<unknown>): number {
+	return values.length;
+}
 
 === yaml.yml ===
 z-last: should be sorted last

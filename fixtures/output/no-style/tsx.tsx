@@ -64,7 +64,7 @@ const doubled = [1, 2].map((n) => { return n * 2; });
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	item;
+	use(item);
 }
 
 // Fixable: de-morgan/no-negated-conjunction
@@ -142,12 +142,16 @@ function jsxMissingReturn() {
 }
 
 // Use values to avoid unused errors
-[
+use(
 	jsxTitle, jsxCount, jsxItems, defaults, isActive,
 	getLabel, displayName, jsxConfig, jsxCheck, doubled,
 	jsxDeMorgan, MyButton, MyDiv, JsxComponent,
 	jsxDuplicates, jsxImmediate, jsxRedundant, jsxTooMany,
 	jsxBool, jsxComputed, jsxHex, jsxLonely, jsxMissingReturn,
-];
+);
 
 export type { ButtonProps, ButtonVariant };
+
+function use(...values: ReadonlyArray<unknown>): number {
+	return values.length;
+}
