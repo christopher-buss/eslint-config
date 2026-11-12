@@ -156,7 +156,7 @@ const variants: Array<ParityVariant> = [
 ];
 
 describe("oxlint per-file severity parity", () => {
-	describe.for(variants)("$name", (variant: ParityVariant) => {
+	describe.for(variants)("$name", (variant) => {
 		it("should agree with the ESLint-only config on effective severities", async ({
 			expect,
 		}) => {
@@ -232,7 +232,7 @@ const hybridVariants: Array<ParityVariant> = [
 ];
 
 describe("oxlint hybrid hand-off", () => {
-	describe.for(hybridVariants)("$name", (variant: ParityVariant) => {
+	describe.for(hybridVariants)("$name", (variant) => {
 		it("should never leave a rule enabled in both engines", async ({ expect }) => {
 			expect.assertions(1);
 

@@ -19,14 +19,10 @@ const DEFAULT_ENFORCE_EXISTENCE = [`{node-name}.spec.${EXTENSION_TOKEN}`];
 const ANY_FOLDER = "isentinelAnyFolder";
 
 /** The files the co-location check runs on, before `ignores`. */
-export const PROJECT_STRUCTURE_FILES: Array<string> = [GLOB_SRC];
+export const PROJECT_STRUCTURE_FILES = [GLOB_SRC];
 
 /** The files the co-location check skips. */
-export const PROJECT_STRUCTURE_IGNORES: Array<string> = [
-	...GLOB_TESTS,
-	GLOB_DTS,
-	...GLOB_BUILD_CONFIGS,
-];
+export const PROJECT_STRUCTURE_IGNORES = [...GLOB_TESTS, GLOB_DTS, ...GLOB_BUILD_CONFIGS];
 
 /** One node in the `folder-structure` tree. */
 interface StructureRule {

@@ -29,7 +29,7 @@ const configs: Array<FixtureConfig> = [
 	},
 ];
 
-describe.for(configs)("$name", (config: FixtureConfig) => {
+describe.for(configs)("$name", (config) => {
 	it(
 		"should produce expected lint output",
 		async ({ expect, onTestFinished }) => {

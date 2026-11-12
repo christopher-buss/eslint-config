@@ -214,7 +214,7 @@ const variants: Array<OptionsVariant> = [
 ];
 
 describe("oxlint per-file option parity", () => {
-	describe.for(variants)("$name", (variant: OptionsVariant) => {
+	describe.for(variants)("$name", (variant) => {
 		it("should run each shared rule with the same options as ESLint", async ({ expect }) => {
 			expect.assertions(1);
 

@@ -6,6 +6,24 @@ export interface ArrowStyleRuleOptions {
 	tabWidth?: number;
 }
 
+/**
+ * Luau globals whose functions only compute a value, for
+ * `flawless/no-ignored-return`. `table` also has functions that mutate, so
+ * only its pure members are listed.
+ */
+const ROBLOX_PURE_FUNCTIONS = [
+	"bit32",
+	"buffer",
+	"math",
+	"os",
+	"string",
+	"table.clone",
+	"table.create",
+	"table.isfrozen",
+	"utf8",
+	"vector",
+] as const;
+
 /** Options for the flawless rule maps. */
 export interface FlawlessRuleOptions extends OptionsHasRoblox {
 	/** Add the anti-slop rules. */
@@ -65,6 +83,9 @@ export function flawlessTypeAwareRules({
 	roblox = true,
 }: FlawlessRuleOptions = {}): TypedFlatConfigItem["rules"] {
 	return {
+		"flawless/no-ignored-return": roblox
+			? ["error", { pureFunctions: [...ROBLOX_PURE_FUNCTIONS] }]
+			: "error",
 		"flawless/no-redundant-type-annotation": "error",
 
 		...(antiSlop ? antiSlopTypeAwareRules({ roblox }) : {}),

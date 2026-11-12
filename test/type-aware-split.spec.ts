@@ -250,7 +250,7 @@ function enablesProjectService(config: TypedFlatConfigItem): boolean {
 }
 
 describe("type-aware split", () => {
-	describe.for(variants)("$name", (variant: SplitVariant) => {
+	describe.for(variants)("$name", (variant) => {
 		it("should partition effective severities exactly", async ({ expect }) => {
 			expect.assertions(1);
 

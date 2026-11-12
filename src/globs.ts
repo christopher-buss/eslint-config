@@ -58,7 +58,7 @@ export const GLOB_TS = "**/*.{,c,m}ts";
 export const GLOB_TSX = "**/*.{,c,m}tsx";
 export const GLOB_DTS = "**/*.d.{,c,m}ts";
 
-export const GLOB_BIN: Array<string> = ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`];
+export const GLOB_BIN = ["**/bin/**/*", `**/bin.${GLOB_SRC_EXT}`];
 
 export const GLOB_STYLE = "**/*.{c,le,sc}ss";
 export const GLOB_CSS = "**/*.css";
@@ -87,7 +87,7 @@ export const GLOB_MARKDOWN_BLOCKS: string = `${GLOB_MARKDOWN}/**/*.{${GLOB_SRC_E
 
 export const GLOB_YAML = "**/*.y{,a}ml";
 export const GLOB_TOML = "**/*.toml";
-export const GLOB_MISE: Array<string> = [
+export const GLOB_MISE = [
 	"**/mise.toml",
 	"**/mise.*.toml",
 	"**/.mise.toml",
@@ -109,7 +109,7 @@ export const GLOB_GRAPHQL = "**/*.{g,graph}ql";
  */
 export const GLOB_TYPE_TESTS = `**/*.{test,spec}-d.${GLOB_SRC_EXT}`;
 
-export const GLOB_TESTS: Array<string> = [
+export const GLOB_TESTS = [
 	`**/__tests__/**/*.${GLOB_SRC_EXT}`,
 	`**/*.spec.${GLOB_SRC_EXT}`,
 	`**/*.test.${GLOB_SRC_EXT}`,
@@ -118,7 +118,7 @@ export const GLOB_TESTS: Array<string> = [
 	`**/*.benchmark.${GLOB_SRC_EXT}`,
 ];
 
-export const GLOB_BUILD_CONFIGS: Array<string> = [
+export const GLOB_BUILD_CONFIGS = [
 	"**/.husky/**/*",
 	`**/config/${GLOB_SRC}`,
 	`**/*config.${GLOB_SRC_EXT}`,

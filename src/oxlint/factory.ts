@@ -242,7 +242,7 @@ export function isentinel(
 
 	const widthSettings = withOxfmtWidths(prettierSettings, oxfmtOptions);
 
-	const configs: Array<Array<TypedOxlintConfigItem>> = [
+	const configs = [
 		oxlintJavascript({
 			...getOverrides(options, "javascript"),
 			isInEditor,
