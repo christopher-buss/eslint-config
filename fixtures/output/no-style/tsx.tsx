@@ -64,7 +64,7 @@ const doubled = [1, 2].map((n) => { return n * 2; });
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	void item;
+	item;
 }
 
 // Fixable: de-morgan/no-negated-conjunction
@@ -142,7 +142,7 @@ function jsxMissingReturn() {
 }
 
 // Use values to avoid unused errors
-void [
+[
 	jsxTitle, jsxCount, jsxItems, defaults, isActive,
 	getLabel, displayName, jsxConfig, jsxCheck, doubled,
 	jsxDeMorgan, MyButton, MyDiv, JsxComponent,

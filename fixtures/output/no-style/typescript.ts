@@ -80,7 +80,7 @@ function testLonelyIf(a: boolean, b: boolean): void {
 
 // Fixable: unicorn/no-array-for-each
 for (const item of [1, 2, 3]) {
-	void item;
+	item;
 }
 
 // Fixable: unicorn/prefer-includes
@@ -127,7 +127,7 @@ type ShouldBeInterface = {
 // Fixable: ts/prefer-for-of
 const items = [1, 2, 3];
 for (const item of items) {
-	void item;
+	item;
 }
 
 // sonar/no-duplicate-string (repeated 4+ times)
@@ -242,7 +242,7 @@ function testSpread(): void {
 // Fixable: no-useless-return
 function uselessReturn(): void {
 	const x = 1;
-	void x;
+	x;
 	
 }
 
@@ -277,7 +277,7 @@ function noDestructure(point: { x: number; y: number }): number {
 }
 
 // Use all the things so they aren't unused
-void [
+[
 	neverReassigned, inferrable, names, greeting, isNull,
 	checkValue, objectLonghand, needsCurly, mapped, oldStyle,
 	undefinedInit, foo, value, logicalOr, testLonelyIf,
