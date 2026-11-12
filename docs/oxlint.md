@@ -146,7 +146,7 @@ keeps running in ESLint, notably:
 - **JSON / YAML / TOML / Markdown / package.json / pnpm rules** — oxlint only
   lints JS/TS files.
 - **Type-aware plugin rules** — any rule whose `meta.docs.requiresTypeChecking`
-  is true (`sonar/no-ignored-return`, `sonar/no-redundant-optional`,
+  is true (`flawless/no-ignored-return`, `sonar/no-redundant-optional`,
   `sonar/no-try-promise`, `unicorn/no-non-function-verb-prefix`,
   `eslint-plugin/no-property-in-node`, four `jest/*` rules). The oxlint factory
   refuses to emit them as jsPlugins because they crash or silently no-op without

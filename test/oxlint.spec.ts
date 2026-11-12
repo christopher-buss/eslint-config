@@ -197,7 +197,7 @@ const variants: Array<HybridVariant> = [
 ];
 
 describe("oxlint hybrid coverage", () => {
-	describe.for(variants)("$name", (variant: HybridVariant) => {
+	describe.for(variants)("$name", (variant) => {
 		it("should keep every dropped rule enabled in the oxlint config", async ({ expect }) => {
 			expect.assertions(5);
 

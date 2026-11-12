@@ -36,7 +36,6 @@ export function sonarjsRules({
 		"sonar/no-identical-conditions": "error",
 		"sonar/no-identical-expressions": "error",
 		"sonar/no-identical-functions": "error",
-		"sonar/no-ignored-return": "error",
 		"sonar/no-inverted-boolean-check": "error",
 		"sonar/no-nested-conditional": "error",
 		"sonar/no-nested-incdec": "error",

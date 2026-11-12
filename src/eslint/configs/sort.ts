@@ -3,7 +3,7 @@ import { interopDefault } from "../../utils.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
 /**
- * Sort GitHub Actions workflow files.
+ * Sort GitHub Actions workflow, composite action and label files.
  *
  * Requires `yaml` config.
  *
@@ -287,6 +287,17 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
 						pathPattern:
 							"^(?!^$|inputs\\.[^.]+$|outputs\\.[^.]+$|runs$|runs\\.steps\\[\\d+\\]$).*$",
 					},
+				],
+			},
+		},
+		{
+			// Label sync files: a root list of `{ name, color, description }`.
+			name: "isentinel/sort/github-labels",
+			files: [".github/labels.y{,a}ml"],
+			rules: {
+				"flawless/yaml-sort-sequence-by-key": [
+					"error",
+					{ key: "name", order: { natural: true, type: "asc" }, pathPattern: "^$" },
 				],
 			},
 		},
@@ -794,6 +805,15 @@ export function sortCspell(): Array<TypedFlatConfigItem> {
 				"**/.cspell.config.y{,a}ml",
 			],
 			rules: {
+				"flawless/yaml-sort-sequence-by-key": [
+					"error",
+					{
+						key: "name",
+						order: { natural: true, type: "asc" },
+						pathPattern:
+							"^((overrides|languageSettings)\\[\\d+\\]\\.)?dictionaryDefinitions$",
+					},
+				],
 				"yaml/sort-sequence-values": [
 					"error",
 					// Word, dictionary, and path lists (root or nested)

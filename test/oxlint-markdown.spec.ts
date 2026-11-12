@@ -58,7 +58,7 @@ function isFatalMessage(message: Linter.LintMessage): boolean {
 }
 
 describe("oxlint hybrid markdown linting", () => {
-	describe.for(variants)("$name", (variant: MarkdownVariant) => {
+	describe.for(variants)("$name", (variant) => {
 		it("should lint markdown files (and their fences) without fatal errors", async ({
 			expect,
 		}) => {

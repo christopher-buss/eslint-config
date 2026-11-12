@@ -96,6 +96,7 @@ export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
  */
 export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"eslint-plugin/no-property-in-node",
+	"flawless/no-ignored-return",
 	"flawless/no-incompatible-assertion-types",
 	"jest/no-error-equal",
 	"jest/no-unnecessary-assertion",
@@ -106,7 +107,6 @@ export const typeAwareJsPluginRules: ReadonlySet<string> = new Set([
 	"react/no-implicit-ref",
 	"react/no-leaked-conditional-rendering",
 	"react/no-unused-props",
-	"sonar/no-ignored-return",
 	"sonar/no-redundant-optional",
 	"sonar/no-try-promise",
 	"sonar/prefer-immediate-return",

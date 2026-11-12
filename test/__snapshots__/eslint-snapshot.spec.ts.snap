@@ -88,6 +88,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-ignored-return [{"pureFunctions":["bit32","buffer","math","os","string","table.clone","table.create","table.isfrozen","utf8","vector"]}]",
       "flawless/no-redundant-type-annotation",
     ],
   },
@@ -450,7 +451,6 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "sonar/no-identical-conditions",
       "sonar/no-identical-expressions",
       "sonar/no-identical-functions",
-      "sonar/no-ignored-return",
       "sonar/no-inverted-boolean-check",
       "sonar/no-nested-conditional",
       "sonar/no-nested-incdec",
@@ -1434,6 +1434,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-ignored-return",
       "flawless/no-materialized-filter-map [{"iteratorHelpers":true}]",
       "flawless/no-redundant-type-annotation",
       "flawless/no-reflect-set",
@@ -1819,7 +1820,6 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "sonar/no-identical-conditions",
       "sonar/no-identical-expressions",
       "sonar/no-identical-functions",
-      "sonar/no-ignored-return",
       "sonar/no-inverted-boolean-check",
       "sonar/no-nested-conditional",
       "sonar/no-nested-incdec",
@@ -2698,6 +2698,15 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
   },
   {
+    "files": [
+      ".github/labels.y{,a}ml",
+    ],
+    "name": "isentinel/sort/github-labels",
+    "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^$"}]",
+    ],
+  },
+  {
     "name": "isentinel/toml/setup",
     "plugins": [
       "toml",
@@ -2875,6 +2884,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/sort/cspell",
     "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?dictionaryDefinitions$"}]",
       "yaml/sort-sequence-values [{"order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?(words|userWords|ignoreWords|noSuggestWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$"}]",
     ],
   },
@@ -4072,6 +4082,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-ignored-return [{"pureFunctions":["bit32","buffer","math","os","string","table.clone","table.create","table.isfrozen","utf8","vector"]}]",
       "flawless/no-redundant-type-annotation",
     ],
   },
@@ -4447,7 +4458,6 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "sonar/no-identical-conditions",
       "sonar/no-identical-expressions",
       "sonar/no-identical-functions",
-      "sonar/no-ignored-return",
       "sonar/no-inverted-boolean-check",
       "sonar/no-nested-conditional",
       "sonar/no-nested-incdec",
@@ -5265,6 +5275,15 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
   },
   {
+    "files": [
+      ".github/labels.y{,a}ml",
+    ],
+    "name": "isentinel/sort/github-labels",
+    "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^$"}]",
+    ],
+  },
+  {
     "name": "isentinel/toml/setup",
     "plugins": [
       "toml",
@@ -5438,6 +5457,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/sort/cspell",
     "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?dictionaryDefinitions$"}]",
       "yaml/sort-sequence-values [{"order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?(words|userWords|ignoreWords|noSuggestWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$"}]",
     ],
   },
@@ -6671,6 +6691,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/flawless/rules-type-aware",
     "rules": [
+      "flawless/no-ignored-return [{"pureFunctions":["bit32","buffer","math","os","string","table.clone","table.create","table.isfrozen","utf8","vector"]}]",
       "flawless/no-materialized-filter-map [{"iteratorHelpers":false}]",
       "flawless/no-redundant-type-annotation",
       "flawless/no-unknown-returns",
@@ -6688,6 +6709,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/flawless/rules-type-aware/complement",
     "rules": [
+      "flawless/no-ignored-return",
       "flawless/no-materialized-filter-map [{"iteratorHelpers":true}]",
       "flawless/no-redundant-type-annotation",
       "flawless/no-reflect-set",
@@ -7203,7 +7225,6 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "sonar/no-identical-conditions",
       "sonar/no-identical-expressions",
       "sonar/no-identical-functions",
-      "sonar/no-ignored-return",
       "sonar/no-inverted-boolean-check",
       "sonar/no-nested-conditional",
       "sonar/no-nested-incdec",
@@ -7259,7 +7280,6 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "sonar/no-identical-conditions",
       "sonar/no-identical-expressions",
       "sonar/no-identical-functions",
-      "sonar/no-ignored-return",
       "sonar/no-inverted-boolean-check",
       "sonar/no-nested-conditional",
       "sonar/no-nested-incdec",
@@ -8358,6 +8378,15 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
   },
   {
+    "files": [
+      ".github/labels.y{,a}ml",
+    ],
+    "name": "isentinel/sort/github-labels",
+    "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^$"}]",
+    ],
+  },
+  {
     "name": "isentinel/toml/setup",
     "plugins": [
       "toml",
@@ -8532,6 +8561,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/sort/cspell",
     "rules": [
+      "flawless/yaml-sort-sequence-by-key [{"key":"name","order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?dictionaryDefinitions$"}]",
       "yaml/sort-sequence-values [{"order":{"natural":true,"type":"asc"},"pathPattern":"^((overrides|languageSettings)\\\\[\\\\d+\\\\]\\\\.)?(words|userWords|ignoreWords|noSuggestWords|flagWords|ignorePaths|dictionaries|enableFiletypes)$"}]",
     ],
   },
