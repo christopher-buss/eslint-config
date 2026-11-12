@@ -34,8 +34,12 @@ pnpm release    # Bump version and publish (uses bumpp; see Releasing)
 - **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, typecheck
   and tests
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
-- Do not create a new branch for every PR unless asked. Default to committing
-  directly to `main`.
+- **Stay on the branch you were started on.** Do not create or switch branches
+  unless asked.
+  - In a worktree or on a feature branch: commit and push to that branch without
+    asking (this overrides the default "commit only when asked"). Commit each
+    finished slice. Never push to `main` from there.
+  - In the `main` checkout: commit directly to `main`.
 
 ## Releasing
 
