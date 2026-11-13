@@ -1,6 +1,7 @@
 import { GLOB_ROOT, GLOB_SRC } from "../../globs.ts";
 import { unicornRootRules, unicornRules } from "../../rules/unicorn.ts";
-import { interopDefault, mergeGlobs, toSourceGlob } from "../../utils.ts";
+import { mergeGlobs, toSourceGlob } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsHasRoblox,
 	OptionsStylistic,
@@ -8,7 +9,7 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
-export async function unicorn({
+export function unicorn({
 	complementIgnores,
 	nameReplacements,
 	roblox = true,
@@ -24,8 +25,8 @@ export async function unicorn({
 		 */
 		complementIgnores?: Array<string>;
 		root?: Array<string>;
-	} = {}): Promise<Array<TypedFlatConfigItem>> {
-	const pluginUnicorn = await interopDefault(import("eslint-plugin-unicorn"));
+	} = {}): Array<TypedFlatConfigItem> {
+	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
 
 	const rootGlobs = mergeGlobs(GLOB_ROOT.map(toSourceGlob), customRootGlobs?.map(toSourceGlob));
 

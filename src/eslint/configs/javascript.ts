@@ -2,7 +2,6 @@ import globals from "globals";
 
 import { GLOB_SRC } from "../../globs.ts";
 import { ID_LENGTH_OPTIONS, javascriptRules } from "../../rules/javascript.ts";
-import { interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
@@ -13,7 +12,7 @@ import type {
 	TypedFlatConfigItem,
 } from "../types.ts";
 
-export async function javascript({
+export function javascript({
 	complementIgnores,
 	isInEditor = false,
 	overrides = {},
@@ -30,11 +29,11 @@ export async function javascript({
 		 * standard-TS/Node land.
 		 */
 		complementIgnores?: Array<string>;
-	} = {}): Promise<Array<TypedFlatConfigItem>> {
+	} = {}): Array<TypedFlatConfigItem> {
 	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
 	const pluginDeMorgan = lazyPlugin("eslint-plugin-de-morgan");
 	const pluginMaxParameters = lazyPlugin("eslint-plugin-better-max-params");
-	const pluginUnusedImports = await interopDefault(import("eslint-plugin-unused-imports"));
+	const pluginUnusedImports = lazyPlugin("eslint-plugin-unused-imports");
 	const idLengthRules: TypedFlatConfigItem["rules"] =
 		stylistic !== false ? { "id-length": ["error", ID_LENGTH_OPTIONS] } : {};
 

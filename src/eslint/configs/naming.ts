@@ -1,6 +1,7 @@
 import { ROBLOX_ALLOWED_WORDS } from "../../generated/roblox-allowed-words.ts";
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { getTsConfig, interopDefault } from "../../utils.ts";
+import { getTsConfig } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	NamingConfig,
 	OptionsTypeScriptParserOptions,
@@ -34,9 +35,9 @@ const REACT_ELEMENT_RETURN_TYPES = [
 	{ returns: { name: "ReactNode", from: RBXTS_REACT } },
 ];
 
-export async function naming(
+export function naming(
 	options: NamingConfig & OptionsTypeScriptParserOptions & OptionsTypeScriptWithTypes = {},
-): Promise<Array<TypedFlatConfigItem>> {
+): Array<TypedFlatConfigItem> {
 	const {
 		allowedWords = false,
 		overridesTypeAware = {},
@@ -46,7 +47,7 @@ export async function naming(
 		typeAware = true,
 	} = options;
 
-	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 
 	// One shared list rather than a copy on every selector: the rule reads
 	// `settings.flawless.namingConvention.allowedWords` for any selector that

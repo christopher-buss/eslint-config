@@ -1,9 +1,9 @@
 import { GLOB_SRC } from "../../globs.ts";
 import { sonarjsRules } from "../../rules/sonarjs.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsHasRoblox, OptionsIsInEditor, TypedFlatConfigItem } from "../types.ts";
 
-export async function sonarjs({
+export function sonarjs({
 	complementIgnores,
 	isInEditor,
 	roblox,
@@ -15,8 +15,8 @@ export async function sonarjs({
 		 * standard-TS/Node land.
 		 */
 		complementIgnores?: Array<string>;
-	}): Promise<Array<TypedFlatConfigItem>> {
-	const pluginSonar = await interopDefault(import("eslint-plugin-sonarjs"));
+	}): Array<TypedFlatConfigItem> {
+	const pluginSonar = lazyPlugin("eslint-plugin-sonarjs");
 
 	return [
 		{
