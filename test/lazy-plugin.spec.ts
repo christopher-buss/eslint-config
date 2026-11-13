@@ -14,6 +14,14 @@ import {
 import { isentinel } from "../src/index.ts";
 import { fatalMessages } from "./helpers.ts";
 
+/** The identity fields ESLint's `getObjectId` reads off a plugin. */
+interface IdentityProbe {
+	name?: unknown;
+	meta: { name?: string; version?: string };
+	rules?: unknown;
+	version?: unknown;
+}
+
 interface LazySetup {
 	/** The specifiers hydrated by composition alone. */
 	composed: Array<string>;
@@ -64,6 +72,18 @@ const OFF_ENTRY_SPECIFIERS = [
  * `style` prefix, cost nothing on a `stylistic: false` run.
  */
 const COMPOSITION_TIME_READS = ["@stylistic/eslint-plugin"];
+
+/**
+ * Plugins a `.ts` file always reaches, registered lazily so that a process
+ * linting only JSON, YAML or Markdown does not load them.
+ */
+const SOURCE_SPECIFIERS = ["eslint-plugin-sonarjs", "eslint-plugin-unicorn"];
+
+/**
+ * A plugin no config module registers lazily, so no other test hydrates it
+ * through `lazyPlugin`.
+ */
+const UNREGISTERED_SPECIFIER = "eslint-plugin-unused-imports";
 
 let pending: Promise<LazySetup> | undefined;
 
@@ -123,9 +143,11 @@ describe("lazy plugins", () => {
 		// `interopDefault(import(...))` never enters the hydration set, so the
 		// assertions below would pass while the plugin loaded eagerly.
 		const { registered } = await setup();
-		const eager = [...DEFERRED_SPECIFIERS, ...OFF_ENTRY_SPECIFIERS].filter((specifier) => {
-			return !registered.has(specifier);
-		});
+		const eager = [
+			...DEFERRED_SPECIFIERS,
+			...OFF_ENTRY_SPECIFIERS,
+			...SOURCE_SPECIFIERS,
+		].filter((specifier) => !registered.has(specifier));
 
 		expect(eager).toStrictEqual([]);
 	});
@@ -139,9 +161,14 @@ describe("lazy plugins", () => {
 
 		// A real project file, so the type-aware pass has a program for it.
 		const { eslint } = await setup();
-		const results = await eslint.lintFiles([path.resolve(PROJECT_ROOT, "src", "globs.ts")]);
+		const file = path.resolve(PROJECT_ROOT, "src", "globs.ts");
+		const results = await eslint.lintFiles([file]);
 
 		expect(fatalMessages(results)).toStrictEqual([]);
+
+		// `--cache` hashes the serialized config, which reads every plugin's
+		// identity. That must not hydrate the plugins the file never reaches.
+		JSON.stringify(await eslint.calculateConfigForFile(file));
 
 		const loaded = hydratedLazyPlugins();
 		const reached = [...DEFERRED_SPECIFIERS, ...OFF_ENTRY_SPECIFIERS].filter((specifier) => {
@@ -204,5 +231,31 @@ describe("lazyPlugin", () => {
 		const plugin = lazyPlugin<typeof PluginMarkdown>("@eslint/markdown");
 
 		expect(plugin.processors.markdown.meta.name).toBe(MARKDOWN_PROCESSOR_NAME);
+	});
+
+	it("should answer the plugin identity without loading it", ({ expect }) => {
+		expect.assertions(5);
+
+		const plugin = lazyPlugin<IdentityProbe>(UNREGISTERED_SPECIFIER);
+
+		expect(plugin.name).toBeUndefined();
+		expect(plugin.version).toBeUndefined();
+		expect(Object.keys(plugin.meta)).toStrictEqual(["name", "version"]);
+		expect(plugin.meta.name).toBe(UNREGISTERED_SPECIFIER);
+		expect(hydratedLazyPlugins().has(UNREGISTERED_SPECIFIER)).toBe(false);
+	});
+
+	it("should keep the plugin identity once loaded", ({ expect }) => {
+		expect.assertions(4);
+
+		// ESLint's cache hash reads this identity; if it moved on hydration,
+		// a file would miss the cache whenever its plugin happened to load.
+		const plugin = lazyPlugin<IdentityProbe>(UNREGISTERED_SPECIFIER);
+		const before = { ...plugin.meta };
+
+		expect(plugin.rules).toBeDefined();
+		expect(hydratedLazyPlugins().has(UNREGISTERED_SPECIFIER)).toBe(true);
+		expect(plugin.name).toBeUndefined();
+		expect({ name: plugin.meta.name, version: plugin.meta.version }).toStrictEqual(before);
 	});
 });

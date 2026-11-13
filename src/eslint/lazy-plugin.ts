@@ -1,8 +1,15 @@
+import { findPackageJSON } from "node:module";
+
 import { isRecord } from "../guards.ts";
 import { require } from "../utils.ts";
 import type { TypedFlatConfigItem } from "./types.ts";
 
 type Plugin = NonNullable<TypedFlatConfigItem["plugins"]>[string];
+
+interface PluginIdentity {
+	name: string;
+	version: string;
+}
 
 /**
  * Memoised per specifier: `eslint-flat-config-utils` compares plugin objects by
@@ -37,9 +44,15 @@ const hydrated = new Set<string>();
  * the resolved rule set, so coverage is unchanged and the cost simply moves to
  * the run that needs it.
  *
- * `name` and `meta` hydrate like any other property. `eslint --print-config`
- * serializes both (but not `rules`) and so materializes everything; that is a
- * separate short-lived process, and faking `meta` would change its output.
+ * Plugin identity never hydrates. With `--cache`, ESLint hashes each file's
+ * merged config, and `Config#toJSON()` reads every plugin's `name`, `version`
+ * and `meta` (`getObjectId`) — on warm runs too, where no rule runs. So `meta`
+ * answers `{ name, version }` from the package's `package.json`, and the
+ * top-level `name` and `version` answer `undefined`. Once the plugin is
+ * loaded, `meta` is the real one with the same `name` and `version` laid over
+ * it, so the cache hash is the same before and after hydration. The cost:
+ * `eslint --print-config` prints the package name and version, which differ
+ * from the plugin's own `meta` for a few plugins (`antfu`, `small-rules`).
  *
  * @template T - The plugin's shape. Registration-only call sites can leave this
  *   as the untyped default; where the module reads the object, `import type`
@@ -63,10 +76,26 @@ export function lazyPlugin<T = Plugin>(
 	}
 
 	let plugin: object | undefined;
+	let identity: PluginIdentity | undefined;
+	let loadedMeta: object | undefined;
 
 	function load(): object {
 		plugin ??= hydrate(specifier, transform);
 		return plugin;
+	}
+
+	function meta(): object {
+		identity ??= readIdentity(specifier);
+		if (plugin === undefined) {
+			return identity;
+		}
+
+		if (loadedMeta === undefined) {
+			const real: unknown = Reflect.get(plugin, "meta");
+			loadedMeta = { ...(isRecord(real) ? real : {}), ...identity };
+		}
+
+		return loadedMeta;
 	}
 
 	const proxy = new Proxy(
@@ -80,8 +109,15 @@ export function lazyPlugin<T = Plugin>(
 				// A plugin is never a thenable, and answering `then` without
 				// loading keeps an `await` or a `Promise.all` slot from
 				// hydrating it.
-				if (property === "then") {
+				// Identity reads come from ESLint's cache hash; see the doc
+				// comment. `meta` must win over the old-style top-level fields,
+				// so those stay `undefined` after hydration too.
+				if (property === "then" || property === "name" || property === "version") {
 					return;
+				}
+
+				if (property === "meta") {
+					return meta();
 				}
 
 				return Reflect.get(load(), property);
@@ -128,6 +164,28 @@ export function hydratedLazyPlugins(): ReadonlySet<string> {
  */
 export function registeredLazyPlugins(): ReadonlySet<string> {
 	return new Set(proxies.keys());
+}
+
+/**
+ * Read a plugin's identity from its `package.json`. `findPackageJSON` only
+ * resolves the specifier; it does not load the module.
+ *
+ * @param specifier - The plugin package.
+ * @returns The package name and version.
+ * @throws When no `package.json` with a string `name` and `version` is found.
+ */
+function readIdentity(specifier: string): PluginIdentity {
+	const manifestPath = findPackageJSON(specifier, import.meta.url);
+	const manifest: unknown = manifestPath === undefined ? undefined : require(manifestPath);
+	if (
+		!isRecord(manifest) ||
+		typeof manifest["name"] !== "string" ||
+		typeof manifest["version"] !== "string"
+	) {
+		throw new TypeError(`Plugin "${specifier}" has no package.json name and version`);
+	}
+
+	return { name: manifest["name"], version: manifest["version"] };
 }
 
 /**

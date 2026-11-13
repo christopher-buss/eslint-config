@@ -50,21 +50,15 @@ export async function react(
 
 	const pluginSmallRules = loadSmallRulesPlugin();
 	const pluginStylistic = lazyPlugin("@stylistic/eslint-plugin");
-	const [
-		pluginReactCore,
-		pluginReactJsx,
-		pluginFlawless,
-		pluginTs,
-		pluginUnicorn,
-		pluginUnusedImports,
-	] = await Promise.all([
-		interopDefault(import("eslint-plugin-react-x")),
-		interopDefault(import("eslint-plugin-react-jsx")),
-		interopDefault(import("eslint-plugin-flawless")),
-		interopDefault(import("@typescript-eslint/eslint-plugin")),
-		interopDefault(import("eslint-plugin-unicorn")),
-		interopDefault(import("eslint-plugin-unused-imports")),
-	] as const);
+	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
+	const [pluginReactCore, pluginReactJsx, pluginFlawless, pluginTs, pluginUnusedImports] =
+		await Promise.all([
+			interopDefault(import("eslint-plugin-react-x")),
+			interopDefault(import("eslint-plugin-react-jsx")),
+			interopDefault(import("eslint-plugin-flawless")),
+			interopDefault(import("@typescript-eslint/eslint-plugin")),
+			interopDefault(import("eslint-plugin-unused-imports")),
+		] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
