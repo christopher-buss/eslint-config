@@ -5,7 +5,8 @@ import {
 	flawlessTypeAwareRules,
 } from "../../rules/flawless.ts";
 import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
-import { getTsConfig, interopDefault } from "../../utils.ts";
+import { getTsConfig } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
@@ -15,7 +16,7 @@ import type {
 } from "../types.ts";
 import type { PrettierOptions } from "./oxfmt.ts";
 
-export async function flawless(
+export function flawless(
 	options: FlawlessRuleOptions &
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
@@ -29,7 +30,7 @@ export async function flawless(
 			complementIgnores?: Array<string>;
 		} = {},
 	prettierOptions: PrettierOptions = {},
-): Promise<Array<TypedFlatConfigItem>> {
+): Array<TypedFlatConfigItem> {
 	const {
 		antiSlop = false,
 		complementIgnores,
@@ -39,7 +40,7 @@ export async function flawless(
 		typeAware = true,
 	} = options;
 
-	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 
 	const filesTypeAware = [GLOB_TS, GLOB_TSX];
 	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`, GLOB_DTS];

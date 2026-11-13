@@ -1,5 +1,6 @@
 import { GLOB_YAML } from "../../globs.ts";
 import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsFiles,
 	OptionsFormatters,
@@ -16,10 +17,10 @@ export async function yaml({
 }: OptionsFiles & OptionsFormatters & OptionsOverrides & OptionsStylistic = {}): Promise<
 	Array<TypedFlatConfigItem>
 > {
-	const [pluginYaml, parserYaml, eslintPluginFlawless] = await Promise.all([
+	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
+	const [pluginYaml, parserYaml] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
 		interopDefault(import("yaml-eslint-parser")),
-		interopDefault(import("eslint-plugin-flawless")),
 	] as const);
 
 	return [

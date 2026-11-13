@@ -57,7 +57,7 @@ function findAllowedWords(configs: Array<TypedFlatConfigItem>): ReadonlyArray<st
  * @returns The names the rule rejected.
  */
 async function lint(code: string, options: NamingConfig): Promise<Array<string>> {
-	const composed = await naming(options);
+	const composed = naming(options);
 	const setup = composed.find((config) => config.name === SETUP);
 	const configs: Array<TypedFlatConfigItem> = [
 		...(setup ? [setup] : []),
@@ -87,13 +87,13 @@ describe("naming allowedWords", () => {
 	it("emits no settings by default", async ({ expect }) => {
 		expect.assertions(1);
 
-		expect(findAllowedWords(await naming())).toBeUndefined();
+		expect(findAllowedWords(naming())).toBeUndefined();
 	});
 
 	it("uses the generated Roblox list when enabled", async ({ expect }) => {
 		expect.assertions(1);
 
-		expect(findAllowedWords(await naming({ allowedWords: true }))).toStrictEqual(
+		expect(findAllowedWords(naming({ allowedWords: true }))).toStrictEqual(
 			ROBLOX_ALLOWED_WORDS,
 		);
 	});
@@ -101,9 +101,10 @@ describe("naming allowedWords", () => {
 	it("uses an explicit list verbatim", async ({ expect }) => {
 		expect.assertions(1);
 
-		expect(findAllowedWords(await naming({ allowedWords: ["CFrame", "MyAPI"] }))).toStrictEqual(
-			["CFrame", "MyAPI"],
-		);
+		expect(findAllowedWords(naming({ allowedWords: ["CFrame", "MyAPI"] }))).toStrictEqual([
+			"CFrame",
+			"MyAPI",
+		]);
 	});
 
 	it("treats an empty list as off", async ({ expect }) => {
@@ -111,7 +112,7 @@ describe("naming allowedWords", () => {
 
 		// Otherwise the config would ship a setting that says nothing, and a
 		// selector could no longer tell "inherited nothing" from "opted out".
-		expect(findAllowedWords(await naming({ allowedWords: [] }))).toBeUndefined();
+		expect(findAllowedWords(naming({ allowedWords: [] }))).toBeUndefined();
 	});
 
 	it("rejects a Roblox name by default", async ({ expect }) => {

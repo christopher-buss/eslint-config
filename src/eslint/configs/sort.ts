@@ -1,5 +1,5 @@
 import { GLOB_MISE, GLOB_YAML } from "../../globs.ts";
-import { interopDefault } from "../../utils.ts";
+import { lazyPlugin } from "../lazy-plugin.ts";
 import type { TypedFlatConfigItem } from "../types.ts";
 
 /**
@@ -312,8 +312,8 @@ export function sortGithubAction(): Array<TypedFlatConfigItem> {
  *
  * @returns A promise resolving to an array of flat configuration items.
  */
-export async function sortMiseToml(): Promise<Array<TypedFlatConfigItem>> {
-	const eslintPluginFlawless = await interopDefault(import("eslint-plugin-flawless"));
+export function sortMiseToml(): Array<TypedFlatConfigItem> {
+	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 
 	return [
 		{

@@ -51,14 +51,17 @@ export async function react(
 	const pluginSmallRules = loadSmallRulesPlugin();
 	const pluginStylistic = lazyPlugin("@stylistic/eslint-plugin");
 	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
-	const [pluginReactCore, pluginReactJsx, pluginFlawless, pluginTs, pluginUnusedImports] =
-		await Promise.all([
-			interopDefault(import("eslint-plugin-react-x")),
-			interopDefault(import("eslint-plugin-react-jsx")),
-			interopDefault(import("eslint-plugin-flawless")),
-			interopDefault(import("@typescript-eslint/eslint-plugin")),
-			interopDefault(import("eslint-plugin-unused-imports")),
-		] as const);
+	const pluginFlawless = lazyPlugin("eslint-plugin-flawless");
+	const pluginUnusedImports = lazyPlugin("eslint-plugin-unused-imports");
+	// Eager. `ts`: `typescript()` reads this plugin while composing, and a
+	// prefix registered twice has to be the same object. The react plugins
+	// export only an `import` condition, which `lazyPlugin`'s `require` cannot
+	// resolve.
+	const [pluginReactCore, pluginReactJsx, pluginTs] = await Promise.all([
+		interopDefault(import("eslint-plugin-react-x")),
+		interopDefault(import("eslint-plugin-react-jsx")),
+		interopDefault(import("@typescript-eslint/eslint-plugin")),
+	] as const);
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
@@ -107,9 +110,7 @@ export async function react(
 					{
 						name: "isentinel/react/setup/testing-library",
 						plugins: {
-							"testing-library": await interopDefault(
-								import("eslint-plugin-testing-library"),
-							),
+							"testing-library": lazyPlugin("eslint-plugin-testing-library"),
 						},
 					},
 				]

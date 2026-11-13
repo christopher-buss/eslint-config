@@ -17,7 +17,7 @@ import { fatalMessages } from "./helpers.ts";
 /** The identity fields ESLint's `getObjectId` reads off a plugin. */
 interface IdentityProbe {
 	name?: unknown;
-	meta: { name?: string; version?: string };
+	meta: Record<string, unknown>;
 	rules?: unknown;
 	version?: unknown;
 }
@@ -34,9 +34,10 @@ const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
 /**
  * Plugins whose rules a TypeScript file never reaches: they are alive only
- * inside Markdown fences, or only for a non-JS language. Loading one while
- * linting `.ts` means a config module regressed — a rule moved onto a source
- * glob, or a plugin object got read at composition time.
+ * inside Markdown fences, or only for a non-JS language, or (`unused-imports`)
+ * oxlint runs all their rules in this `oxlint: true` composition. Loading one
+ * while linting `.ts` means a config module regressed — a rule moved onto a
+ * source glob, or a plugin object got read at composition time.
  */
 const DEFERRED_SPECIFIERS = [
 	"@cspell/eslint-plugin",
@@ -51,6 +52,7 @@ const DEFERRED_SPECIFIERS = [
 	"eslint-plugin-package-json",
 	"eslint-plugin-perfectionist",
 	"eslint-plugin-toml",
+	"eslint-plugin-unused-imports",
 ];
 
 /**
@@ -77,13 +79,22 @@ const COMPOSITION_TIME_READS = ["@stylistic/eslint-plugin"];
  * Plugins a `.ts` file always reaches, registered lazily so that a process
  * linting only JSON, YAML or Markdown does not load them.
  */
-const SOURCE_SPECIFIERS = ["eslint-plugin-sonarjs", "eslint-plugin-unicorn"];
+const SOURCE_SPECIFIERS = [
+	"eslint-plugin-flawless",
+	"eslint-plugin-sonarjs",
+	"eslint-plugin-unicorn",
+];
+
+/** Every plugin the composed config must register lazily. */
+const LAZY_SPECIFIERS = [...DEFERRED_SPECIFIERS, ...OFF_ENTRY_SPECIFIERS, ...SOURCE_SPECIFIERS];
 
 /**
- * A plugin no config module registers lazily, so no other test hydrates it
- * through `lazyPlugin`.
+ * Local plugin packages, so the identity tests own their hydration state. Each
+ * entry is an absolute path that no config module registers.
  */
-const UNREGISTERED_SPECIFIER = "eslint-plugin-unused-imports";
+const FIXTURE_ROOT = path.resolve(PROJECT_ROOT, "fixtures", "lazy-plugin");
+const WITH_IDENTITY = path.join(FIXTURE_ROOT, "with-identity", "index.cjs");
+const WITHOUT_IDENTITY = path.join(FIXTURE_ROOT, "without-identity", "lib", "index.cjs");
 
 let pending: Promise<LazySetup> | undefined;
 
@@ -143,18 +154,14 @@ describe("lazy plugins", () => {
 		// `interopDefault(import(...))` never enters the hydration set, so the
 		// assertions below would pass while the plugin loaded eagerly.
 		const { registered } = await setup();
-		const eager = [
-			...DEFERRED_SPECIFIERS,
-			...OFF_ENTRY_SPECIFIERS,
-			...SOURCE_SPECIFIERS,
-		].filter((specifier) => !registered.has(specifier));
+		const eager = LAZY_SPECIFIERS.filter((specifier) => !registered.has(specifier));
 
 		expect(eager).toStrictEqual([]);
 	});
 
 	// Ordered: hydration is one-way and process-wide, so this has to run before
 	// anything lints Markdown.
-	it("should load only the off-entry plugins while linting a TypeScript file", async ({
+	it("should load only the off-entry and source plugins while linting a TypeScript file", async ({
 		expect,
 	}) => {
 		expect.assertions(2);
@@ -171,11 +178,9 @@ describe("lazy plugins", () => {
 		JSON.stringify(await eslint.calculateConfigForFile(file));
 
 		const loaded = hydratedLazyPlugins();
-		const reached = [...DEFERRED_SPECIFIERS, ...OFF_ENTRY_SPECIFIERS].filter((specifier) => {
-			return loaded.has(specifier);
-		});
+		const reached = LAZY_SPECIFIERS.filter((specifier) => loaded.has(specifier));
 
-		expect(reached).toStrictEqual(OFF_ENTRY_SPECIFIERS);
+		expect(reached).toStrictEqual([...OFF_ENTRY_SPECIFIERS, ...SOURCE_SPECIFIERS]);
 	});
 
 	it("should load the fence plugins when a Markdown file is linted", async ({ expect }) => {
@@ -233,29 +238,45 @@ describe("lazyPlugin", () => {
 		expect(plugin.processors.markdown.meta.name).toBe(MARKDOWN_PROCESSOR_NAME);
 	});
 
+	// Ordered: hydration is one-way and process-wide, so the first test has to
+	// read the fixture's identity before the second one loads it.
 	it("should answer the plugin identity without loading it", ({ expect }) => {
-		expect.assertions(5);
+		expect.assertions(4);
 
-		const plugin = lazyPlugin<IdentityProbe>(UNREGISTERED_SPECIFIER);
+		const plugin = lazyPlugin<IdentityProbe>(WITH_IDENTITY);
 
 		expect(plugin.name).toBeUndefined();
 		expect(plugin.version).toBeUndefined();
-		expect(Object.keys(plugin.meta)).toStrictEqual(["name", "version"]);
-		expect(plugin.meta.name).toBe(UNREGISTERED_SPECIFIER);
-		expect(hydratedLazyPlugins().has(UNREGISTERED_SPECIFIER)).toBe(false);
+		expect(plugin.meta).toStrictEqual({
+			name: "fixture-plugin-with-identity",
+			version: "1.2.3",
+		});
+		expect(hydratedLazyPlugins().has(WITH_IDENTITY)).toBe(false);
 	});
 
-	it("should keep the plugin identity once loaded", ({ expect }) => {
-		expect.assertions(4);
+	it("should lay the identity over the real meta once loaded", ({ expect }) => {
+		expect.assertions(3);
 
 		// ESLint's cache hash reads this identity; if it moved on hydration,
 		// a file would miss the cache whenever its plugin happened to load.
-		const plugin = lazyPlugin<IdentityProbe>(UNREGISTERED_SPECIFIER);
-		const before = { ...plugin.meta };
+		const plugin = lazyPlugin<IdentityProbe>(WITH_IDENTITY);
 
-		expect(plugin.rules).toBeDefined();
-		expect(hydratedLazyPlugins().has(UNREGISTERED_SPECIFIER)).toBe(true);
+		expect(plugin.rules).toStrictEqual({});
 		expect(plugin.name).toBeUndefined();
-		expect({ name: plugin.meta.name, version: plugin.meta.version }).toStrictEqual(before);
+		expect(plugin.meta).toStrictEqual({
+			name: "fixture-plugin-with-identity",
+			namespace: "fixture",
+			version: "1.2.3",
+		});
+	});
+
+	it("should fall back to the real meta when the package has no identity", ({ expect }) => {
+		expect.assertions(2);
+
+		// The entry's nearest `package.json` is a nested `{ "type": ... }` one.
+		const plugin = lazyPlugin<IdentityProbe>(WITHOUT_IDENTITY);
+
+		expect(plugin.meta).toStrictEqual({ name: "own-name", version: "0.0.0" });
+		expect(hydratedLazyPlugins().has(WITHOUT_IDENTITY)).toBe(true);
 	});
 });
