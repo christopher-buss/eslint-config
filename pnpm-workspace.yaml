@@ -31,7 +31,7 @@ overrides:
   "@typescript-eslint/types": 8.72.2
   "@typescript-eslint/utils": 8.72.2
   "@typescript-eslint/visitor-keys": 8.72.2
-  semver@6: 7.8.5
+  semver@6: 7.8.6
 
 patchedDependencies:
   eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
@@ -43,7 +43,7 @@ catalogs:
     "@eslint-react/shared": 5.17.3
     "@eslint/config-inspector": 3.1.0
     "@isentinel/tsconfig": 3.0.0
-    "@rbxts/types": 1.0.943
+    "@rbxts/types": 1.0.962
     "@stylistic/eslint-plugin-migrate": 4.4.1
     "@total-typescript/shoehorn": 0.1.2
     "@types/node": 24.1.0
@@ -51,24 +51,24 @@ catalogs:
     "@types/semver": 7.7.1
     "@types/yargs": 17.0.35
     bumpp: 12.0.0
-    eslint-typegen: 2.3.1
+    eslint-typegen: 2.3.2
     parse-gitignore-ts: 1.0.0
-    picomatch: 4.0.5
+    picomatch: 4.0.7
     pnpm-workspace-yaml: 1.7.0
-    publint: 0.3.23
+    publint: 0.3.25
     tsdown: 0.22.14
     typescript: 6.0.3
     unplugin-unused: 0.5.7
-    vitest: 4.1.10
+    vitest: 4.1.12
   peer:
-    "@vitest/eslint-plugin": 1.6.26
+    "@vitest/eslint-plugin": 1.6.28
     eslint: 10.10.0
     eslint-plugin-erasable-syntax-only: 0.4.2
     eslint-plugin-eslint-plugin: 7.5.0
     eslint-plugin-jest: 29.16.0
     eslint-plugin-jest-extended: 3.0.1
     eslint-plugin-n: 18.2.2
-    eslint-plugin-project-structure: 3.14.3
+    eslint-plugin-project-structure: 3.14.6
     eslint-plugin-react-jsx: 5.17.3
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
@@ -90,7 +90,7 @@ catalogs:
     "@typescript-eslint/eslint-plugin": 8.72.2
     "@typescript-eslint/parser": 8.72.2
     ansis: 4.3.1
-    concurrently: 10.0.6
+    concurrently: 10.0.7
     eslint-config-flat-gitignore: 2.3.0
     eslint-config-prettier: 10.1.8
     eslint-flat-config-utils: 3.2.0
@@ -111,7 +111,7 @@ catalogs:
     eslint-plugin-promise: 7.3.0
     eslint-plugin-roblox-ts: 1.4.1
     eslint-plugin-sentinel: 0.1.2
-    eslint-plugin-sonarjs: 4.2.0
+    eslint-plugin-sonarjs: 4.2.2
     eslint-plugin-toml: 1.4.0
     eslint-plugin-unicorn: 72.0.0
     eslint-plugin-unused-imports: 4.4.1
@@ -126,7 +126,7 @@ catalogs:
     oxlint-plugin-eslint: 1.92.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.6
-    semver: 7.8.5
+    semver: 7.8.6
     toml-eslint-parser: 1.0.3
     type-fest: 5.8.0
     yaml-eslint-parser: 2.1.0
