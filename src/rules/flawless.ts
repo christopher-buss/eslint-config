@@ -31,6 +31,18 @@ export interface FlawlessRuleOptions extends OptionsHasRoblox {
 }
 
 /**
+ * The anti-slop comment word limit. Shared with the YAML and TOML configs,
+ * which lint `#` comments with the same limit.
+ *
+ * @returns The rule map.
+ */
+export function maxCommentLengthRules(): TypedFlatConfigItem["rules"] {
+	return {
+		"flawless/max-comment-length": ["error", { maximumWords: 50 }],
+	};
+}
+
+/**
  * Base (non-React) flawless rules shared between the ESLint and oxlint
  * factories. The React flawless rules live in the react rule map; the
  * type-aware rules live in {@link flawlessTypeAwareRules} and
@@ -116,7 +128,7 @@ export function flawlessTypeAwareJsxRules(): TypedFlatConfigItem["rules"] {
  */
 function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
 	return {
-		"flawless/max-comment-length": ["error", { maximumWords: 50 }],
+		...maxCommentLengthRules(),
 		"flawless/no-conditional-empty-object-spread": "error",
 		"flawless/no-em-dash": "error",
 		"flawless/no-known-value-widening": "error",

@@ -1,4 +1,6 @@
 import { GLOB_YAML } from "../../globs.ts";
+import { maxCommentLengthRules } from "../../rules/flawless.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
@@ -10,13 +12,16 @@ import type {
 } from "../types.ts";
 
 export async function yaml({
+	antiSlop = false,
 	files = [GLOB_YAML, "**/github-actions-workflow"],
 	overrides = {},
 	prettierOptions = {},
 	stylistic = true,
-}: OptionsFiles & OptionsFormatters & OptionsOverrides & OptionsStylistic = {}): Promise<
-	Array<TypedFlatConfigItem>
-> {
+}: FlawlessRuleOptions &
+	OptionsFiles &
+	OptionsFormatters &
+	OptionsOverrides &
+	OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
 	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 	const [pluginYaml, parserYaml] = await Promise.all([
 		interopDefault(import("eslint-plugin-yml")),
@@ -94,6 +99,8 @@ export async function yaml({
 							"yaml/spaced-comment": "error",
 						}
 					: {}),
+
+				...(antiSlop ? maxCommentLengthRules() : {}),
 
 				...overrides,
 			},

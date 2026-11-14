@@ -607,6 +607,7 @@ export async function isentinel(
 		configs.push(
 			yaml({
 				...getOverrides(options, "yaml"),
+				antiSlop,
 				prettierOptions: widthSettings,
 				stylistic: stylisticOptions,
 			}),
@@ -634,6 +635,7 @@ export async function isentinel(
 		configs.push(
 			toml({
 				...getOverrides(options, "toml"),
+				antiSlop,
 				stylistic: stylisticOptions,
 			}),
 		);

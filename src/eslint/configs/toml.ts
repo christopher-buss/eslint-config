@@ -1,4 +1,6 @@
 import { GLOB_TOML } from "../../globs.ts";
+import { maxCommentLengthRules } from "../../rules/flawless.ts";
+import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { interopDefault, resolveWithDefaults } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
@@ -9,14 +11,18 @@ import type {
 } from "../types.ts";
 
 export async function toml({
+	antiSlop = false,
 	files = [GLOB_TOML],
 	overrides = {},
 	stylistic = true,
-}: OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<Array<TypedFlatConfigItem>> {
+}: FlawlessRuleOptions & OptionsFiles & OptionsOverrides & OptionsStylistic = {}): Promise<
+	Array<TypedFlatConfigItem>
+> {
 	const defaults = resolveWithDefaults(stylistic, {});
 	const { indent = 2 } = defaults === false ? {} : defaults;
 	const indentValue = typeof indent === "number" ? indent : 2;
 
+	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 	const pluginToml = lazyPlugin("eslint-plugin-toml");
 	const parserToml = await interopDefault(import("toml-eslint-parser"));
 
@@ -24,6 +30,7 @@ export async function toml({
 		{
 			name: "isentinel/toml/setup",
 			plugins: {
+				flawless: eslintPluginFlawless,
 				toml: pluginToml,
 			},
 		},
@@ -59,6 +66,8 @@ export async function toml({
 							"toml/table-bracket-spacing": "error",
 						}
 					: {}),
+
+				...(antiSlop ? maxCommentLengthRules() : {}),
 
 				...overrides,
 			},
