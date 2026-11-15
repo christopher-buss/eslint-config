@@ -11,17 +11,8 @@ const sharedOptions = {
 	shims: true,
 } satisfies UserConfig;
 
-// Bundled packages are devDependencies: they ship inside dist, so a consumer
-// never installs them. Every entry whose output reaches one must bundle it,
-// or the import is left pointing at a package the consumer cannot resolve.
-
 // https://github.com/antfu/eslint-config-flat-gitignore/issues/18
 const FLAT_GITIGNORE = "eslint-config-flat-gitignore";
-
-/**
- * Left external, any `.d.mts` that touches it imports the package index, which
- * loads all of type-fest (~210 files) into the consumer's TypeScript program.
- */
 const TYPE_FEST = "type-fest";
 
 /**
@@ -130,9 +121,7 @@ export default defineConfig([
 	{
 		...sharedOptions,
 		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
-		// both factories; keep it small and its runtime deps external. The
-		// exceptions are devDependencies its declarations reach, which a
-		// consumer cannot resolve; `tagged-tag` is a dependency of type-fest.
+		// both factories; keep it small and its runtime deps external.
 		deps: {
 			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST, "tagged-tag"],
 			neverBundle: true,
