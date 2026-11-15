@@ -302,7 +302,7 @@ const keptGeneratedPrefixes = keptPrefixes.filter((prefix) => !eslintRulePrefixe
 // `pluginsToRulesDTS`. Splitting this in two loaded and walked each generated
 // plugin twice.
 const extraPlugins: Record<string, { rules?: unknown }> = {};
-const keptRuleMetas = new Map<string, RuleMeta | undefined>();
+const keptRuleMeta = new Map<string, RuleMeta | undefined>();
 for (const prefix of keptPrefixes) {
 	const specifier = oxlintJsPlugins[prefix];
 	if (specifier === undefined) {
@@ -318,7 +318,7 @@ for (const prefix of keptPrefixes) {
 
 	for (const ruleName of Object.keys(rules).sort()) {
 		recordJsPluginRule(`${prefix}/${ruleName}`, rules[ruleName]);
-		keptRuleMetas.set(`${prefix}/${ruleName}`, ruleMetaOf(rules[ruleName]));
+		keptRuleMeta.set(`${prefix}/${ruleName}`, ruleMetaOf(rules[ruleName]));
 	}
 }
 
@@ -326,9 +326,7 @@ const keptEntries = [...eslintRuleKeys]
 	.filter((key) => keptMappedPrefixes.some((prefix) => key.startsWith(`${prefix}/`)))
 	.sort((a, b) => collator.compare(a, b))
 	.map((key) => {
-		return [...toJsdoc(keptRuleMetas.get(key)), `  '${key}'?: RuleOptions['${key}']`].join(
-			"\n",
-		);
+		return [...toJsdoc(keptRuleMeta.get(key)), `  '${key}'?: RuleOptions['${key}']`].join("\n");
 	});
 
 // `pluginsToRulesDTS` types plugins as `ESLint.Plugin`, but these are minimal
