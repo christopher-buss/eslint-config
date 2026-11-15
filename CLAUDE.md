@@ -101,16 +101,14 @@ files that have to sit next to the code they augment, and
 `src/cli/constants-generated.ts`). Nothing in `src/generated/` is hand-edited,
 and both root lint configs ignore it.
 
-`pnpm gen` runs nine generators in `scripts/`: `typegen.ts`
+`pnpm gen` runs seven generators in `scripts/`: `typegen.ts`
 (`src/typegen.d.ts` - ESLint rule types and config names), `typegen-oxlint.ts`
 (`src/oxlint/typegen.d.ts`, plus `src/generated/oxlint-native.ts` and
 `src/generated/oxlint-capabilities.ts` - the native and jsPlugin capability sets
-the oxlint resolver reads), the two `typegen-defaults*.ts` (default rule
-severities, used by the redundancy check), `versiongen.ts`
-(`src/cli/constants-generated.ts`), `stylistic-gen.ts`
-(`src/generated/stylistic.ts` - `@stylistic` rule names), `type-aware-gen.ts`
-(`src/generated/type-aware.ts` - the `requiresTypeChecking` snapshot the
-type-aware split reads), `roblox-allowed-words-gen.ts`
+the oxlint resolver reads), `versiongen.ts` (`src/cli/constants-generated.ts`),
+`stylistic-gen.ts` (`src/generated/stylistic.ts` - `@stylistic` rule names),
+`type-aware-gen.ts` (`src/generated/type-aware.ts` - the `requiresTypeChecking`
+snapshot the type-aware split reads), `roblox-allowed-words-gen.ts`
 (`src/generated/roblox-allowed-words.ts` - the Roblox names
 `naming: { allowedWords: true }` hands to `flawless/naming-convention`, scraped
 from `@rbxts/types`) and `gen-package-extensions.ts` (the `packageExtensions`

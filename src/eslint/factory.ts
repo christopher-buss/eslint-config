@@ -75,7 +75,6 @@ import { packageJson } from "./configs/package-json.ts";
 import { spelling } from "./configs/spelling.ts";
 import type { OxlintHybridMode } from "./oxlint-drop.ts";
 import { defaultPluginRenaming } from "./plugin-renaming.ts";
-import type { ValidateOptions, ValidateUserConfigs } from "./redundancy.ts";
 import { applyTypeAwareSplit } from "./type-aware-split.ts";
 import type { TypeAwareSplitMode } from "./type-aware-split.ts";
 import type {
@@ -83,88 +82,22 @@ import type {
 	ConfigNames,
 	FlatConfigComposer,
 	NamedFlatConfigItem,
-	NamedOptionsConfig,
 	OptionsConfig,
 	TypedFlatConfigItem,
 } from "./types.ts";
 
-/**
- * Keeps the named-configs contract on the catch-all overload: with
- * `namedConfigs: true`, every rest config item must carry a `name`.
- *
- * @template O - The literal options type.
- */
-type RequireNamedItems<O> = O extends { namedConfigs: true }
-	? Array<
-			Awaitable<
-				Array<NamedFlatConfigItem> | FlatConfigComposer<any, any> | NamedFlatConfigItem
-			>
-		>
-	: unknown;
+/** The options shape every overload accepts. */
+type Options = Omit<TypedFlatConfigItem, "ignores"> & OptionsConfig;
 
 /** A single accepted rest-argument shape. */
-type UserConfigElement = Awaitable<
+type UserConfig = Awaitable<
 	Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem
 >;
 
-/** The named-configs counterpart of {@linkcode UserConfigElement}. */
-type NamedUserConfigElement = Awaitable<
+/** The named-configs counterpart of {@linkcode UserConfig}. */
+type NamedUserConfig = Awaitable<
 	Array<NamedFlatConfigItem> | FlatConfigComposer<any, any> | NamedFlatConfigItem
 >;
-
-/**
- * The contextual anchor for a single rest argument.
- *
- * The anchor has to be a lone object type: a union (or a bare `C`) leaves rule
- * literals with nothing to hover, so array and composer arguments are widened
- * back to the permissive element type and only plain config objects — the case
- * that carries `rules` — get pinned to `Item`.
- *
- * @template T - The inferred type of this argument.
- * @template Element - The permissive fallback for non-object arguments.
- * @template Item - The concrete config-object type to anchor against.
- */
-type ContextualItem<T, Element, Item> =
-	T extends ReadonlyArray<unknown>
-		? { [J in keyof T]: Item }
-		: T extends FlatConfigComposer<any, any> | Promise<unknown>
-			? Element
-			: Item;
-
-/**
- * Restores editor intellisense on the rest arguments.
- *
- * A `const` type parameter suppresses contextual typing, so a bare `C`
- * parameter leaves rule literals with no declaration to hover — no JSDoc, no
- * `@see` link. Mapping over `keyof C` re-supplies a contextual anchor while
- * still inferring `C` literally, which the redundancy check depends on.
- *
- * @template C - The literal user-config tuple.
- * @template Element - The permissive fallback for non-object arguments.
- * @template Item - The concrete config-object type to anchor against.
- */
-type ContextualItems<C, Element, Item> = {
-	[I in keyof C]: ContextualItem<C[I], Element, Item>;
-};
-
-/** The options shape the catch-all overload accepts. */
-type CatchAllOptions = Omit<OptionsConfig, "namedConfigs"> &
-	TypedFlatConfigItem & { namedConfigs?: boolean };
-
-/**
- * The options argument, anchored to a concrete type so `rules` keeps its
- * intellisense under the `const O` inference.
- *
- * @template O - The literal options type.
- */
-type NamedOptionsArgument<O> = NamedOptionsConfig & O & ValidateOptions<O>;
-
-/**
- * The catch-all counterpart of {@linkcode NamedOptionsArgument}.
- *
- * @template O - The literal options type.
- */
-type CatchAllOptionsArgument<O> = CatchAllOptions & O & ValidateOptions<O>;
 
 const flatConfigProps: Array<keyof TypedFlatConfigItem> = [
 	"name",
@@ -184,69 +117,22 @@ export { defaultPluginRenaming } from "./plugin-renaming.ts";
  * Generates an array of user configuration items based on the provided options
  * and user configs.
  *
- * @template O - The literal options type, used by the redundant-override
- *   check.
- * @template C - The literal user-config tuple, used by the redundant-override
- *   check.
+ * With a literal `namedConfigs: true`, every rest config item must carry a
+ * `name`. A widened `boolean` adds no requirement.
+ *
+ * @template Named - The inferred `namedConfigs` value.
  * @param options - The options for generating the user configuration items.
  * @param userConfigs - Additional user configuration items.
  * @returns A promise that resolves to an array of user configuration items.
  * @rejects Will throw an error if configuration generation fails.
  */
-export function isentinel<const O extends NamedOptionsConfig>(
-	options: NamedOptionsArgument<O>,
-	...userConfigs: Array<Awaitable<FlatConfigComposer<any, any>>>
-): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-export function isentinel<
-	const O extends NamedOptionsConfig,
-	const C extends Array<Awaitable<Array<NamedFlatConfigItem>>>,
->(
-	options: NamedOptionsArgument<O>,
-	...userConfigs: C &
-		ContextualItems<C, NamedUserConfigElement, NamedFlatConfigItem> &
-		ValidateUserConfigs<C, O>
-): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-export function isentinel<
-	const O extends NamedOptionsConfig,
-	const C extends Array<Awaitable<NamedFlatConfigItem>>,
->(
-	options: NamedOptionsArgument<O>,
-	...userConfigs: C &
-		ContextualItems<C, NamedUserConfigElement, NamedFlatConfigItem> &
-		ValidateUserConfigs<C, O>
-): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
-/**
- * The catch-all overload stays last: when every overload fails, TypeScript
- * reports the final candidate, so this is the one whose failure carries the
- * RedundantRuleError message — for named-configs callers too, which is why it
- * accepts `namedConfigs: true` and re-imposes the named-item requirement via
- * the conditional rest constraint instead of rejecting named options outright.
- *
- * @template O - The literal options type, used by the redundant-override
- *   check.
- * @template C - The literal user-config tuple, used by the redundant-override
- *   check.
- * @param options - The options for generating the user configuration items.
- * @param userConfigs - Additional user configuration items.
- */
-export function isentinel<
-	const O extends Omit<OptionsConfig, "namedConfigs"> &
-		TypedFlatConfigItem & { namedConfigs?: boolean },
-	const C extends Array<
-		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
-	>,
->(
-	options: CatchAllOptionsArgument<O>,
-	...userConfigs: C &
-		ContextualItems<C, UserConfigElement, TypedFlatConfigItem> &
-		RequireNamedItems<O> &
-		ValidateUserConfigs<C, O>
+export function isentinel<Named extends boolean = false>(
+	options: Options & { namedConfigs?: Named },
+	...userConfigs: Array<[Named] extends [true] ? NamedUserConfig : UserConfig>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>>;
 export async function isentinel(
-	options: OptionsConfig & TypedFlatConfigItem & { namedConfigs?: boolean },
-	...userConfigs: Array<
-		Awaitable<Array<TypedFlatConfigItem> | FlatConfigComposer<any, any> | TypedFlatConfigItem>
-	>
+	options: Options,
+	...userConfigs: Array<UserConfig>
 ): Promise<FlatConfigComposer<TypedFlatConfigItem, ConfigNames>> {
 	const {
 		antiSlop = false,
