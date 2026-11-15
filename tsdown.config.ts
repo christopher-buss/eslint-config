@@ -11,6 +11,10 @@ const sharedOptions = {
 	shims: true,
 } satisfies UserConfig;
 
+// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
+const FLAT_GITIGNORE = "eslint-config-flat-gitignore";
+const TYPE_FEST = "type-fest";
+
 /**
  * Every shipped entry, in one place. The unused-dependency check builds all of
  * them together so a dependency used by any single entry counts as used.
@@ -31,23 +35,22 @@ export default defineConfig([
 		...sharedOptions,
 		deps: {
 			alwaysBundle: [
-				// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
-				"eslint-config-flat-gitignore",
+				FLAT_GITIGNORE,
 				// Bundled to ship patches/eslint-plugin-yml.patch
 				"eslint-plugin-yml",
+				TYPE_FEST,
 			],
 			neverBundle: [
 				/^@typescript-eslint\//,
 				/^@eslint-react\//,
 				/^@eslint-community\//,
 				"zod",
-				"type-fest",
 				"eslint-visitor-keys",
 				"eslint-plugin-erasable-syntax-only",
 				"cached-factory",
 			],
 			onlyBundle: [
-				"eslint-config-flat-gitignore",
+				FLAT_GITIGNORE,
 				"@eslint/compat",
 				// eslint-plugin-yml (see alwaysBundle) and its transitive tree
 				"eslint-plugin-yml",
@@ -61,6 +64,7 @@ export default defineConfig([
 				"natural-compare",
 				"prelude-ls",
 				"type-check",
+				TYPE_FEST,
 			],
 		},
 		entry: [entries.index],
@@ -100,12 +104,12 @@ export default defineConfig([
 	{
 		...sharedOptions,
 		deps: {
+			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST],
 			neverBundle: [
 				/^@typescript-eslint\//,
 				/^@eslint-react\//,
 				/^@eslint-community\//,
 				"zod",
-				"type-fest",
 				"eslint-visitor-keys",
 				"eslint-plugin-erasable-syntax-only",
 				"cached-factory",
@@ -118,7 +122,10 @@ export default defineConfig([
 		...sharedOptions,
 		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
 		// both factories; keep it small and its runtime deps external.
-		deps: { neverBundle: true },
+		deps: {
+			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST, "tagged-tag"],
+			neverBundle: true,
+		},
 		entry: { oxfmt: entries.oxfmt },
 	},
 	{

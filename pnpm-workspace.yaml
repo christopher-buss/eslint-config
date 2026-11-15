@@ -51,12 +51,15 @@ catalogs:
     "@types/semver": 7.7.1
     "@types/yargs": 17.0.35
     bumpp: 12.0.0
+    eslint-config-flat-gitignore: 2.3.0
+    eslint-plugin-yml: 3.5.0
     eslint-typegen: 2.3.1
     parse-gitignore-ts: 1.0.0
     picomatch: 4.0.5
     pnpm-workspace-yaml: 1.7.0
     publint: 0.3.23
     tsdown: 0.22.14
+    type-fest: 5.8.0
     typescript: 6.0.3
     unplugin-unused: 0.5.7
     vitest: 4.1.10
@@ -91,7 +94,6 @@ catalogs:
     "@typescript-eslint/parser": 8.72.2
     ansis: 4.3.1
     concurrently: 10.0.6
-    eslint-config-flat-gitignore: 2.3.0
     eslint-config-prettier: 10.1.8
     eslint-flat-config-utils: 3.2.0
     eslint-merge-processors: 2.0.0
@@ -115,7 +117,6 @@ catalogs:
     eslint-plugin-toml: 1.4.0
     eslint-plugin-unicorn: 72.0.0
     eslint-plugin-unused-imports: 4.4.1
-    eslint-plugin-yml: 3.5.0
     file-entry-cache: 11.1.5
     find-up-simple: 1.0.1
     globals: 17.7.0
@@ -128,7 +129,6 @@ catalogs:
     prettier: 3.9.6
     semver: 7.8.5
     toml-eslint-parser: 1.0.3
-    type-fest: 5.8.0
     yaml-eslint-parser: 2.1.0
     yargs: 18.0.0
 

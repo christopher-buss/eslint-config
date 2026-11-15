@@ -225,6 +225,12 @@ catalogs:
     bumpp:
       specifier: 12.0.0
       version: 12.0.0
+    eslint-config-flat-gitignore:
+      specifier: 2.3.0
+      version: 2.3.0
+    eslint-plugin-yml:
+      specifier: 3.5.0
+      version: 3.5.0
     eslint-typegen:
       specifier: 2.3.1
       version: 2.3.1
@@ -243,6 +249,9 @@ catalogs:
     tsdown:
       specifier: 0.22.14
       version: 0.22.14
+    type-fest:
+      specifier: 5.8.0
+      version: 5.8.0
     typescript:
       specifier: 6.0.3
       version: 6.0.3
@@ -341,9 +350,6 @@ catalogs:
     concurrently:
       specifier: 10.0.6
       version: 10.0.6
-    eslint-config-flat-gitignore:
-      specifier: 2.3.0
-      version: 2.3.0
     eslint-config-prettier:
       specifier: 10.1.8
       version: 10.1.8
@@ -413,9 +419,6 @@ catalogs:
     eslint-plugin-unused-imports:
       specifier: 4.4.1
       version: 4.4.1
-    eslint-plugin-yml:
-      specifier: 3.5.0
-      version: 3.5.0
     file-entry-cache:
       specifier: 11.1.5
       version: 11.1.5
@@ -452,9 +455,6 @@ catalogs:
     toml-eslint-parser:
       specifier: 1.0.3
       version: 1.0.3
-    type-fest:
-      specifier: 5.8.0
-      version: 5.8.0
     yaml-eslint-parser:
       specifier: 2.1.0
       version: 2.1.0
@@ -525,9 +525,6 @@ importers:
       concurrently:
         specifier: catalog:prod
         version: 10.0.6
-      eslint-config-flat-gitignore:
-        specifier: catalog:prod
-        version: 2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-config-prettier:
         specifier: catalog:prod
         version: 10.1.8(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -597,9 +594,6 @@ importers:
       eslint-plugin-unused-imports:
         specifier: catalog:prod
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-plugin-yml:
-        specifier: catalog:prod
-        version: 3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       file-entry-cache:
         specifier: catalog:prod
         version: 11.1.5
@@ -636,9 +630,6 @@ importers:
       toml-eslint-parser:
         specifier: catalog:prod
         version: 1.0.3(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
-      type-fest:
-        specifier: catalog:prod
-        version: 5.8.0
       yaml-eslint-parser:
         specifier: catalog:prod
         version: 2.1.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -691,6 +682,9 @@ importers:
       eslint:
         specifier: catalog:peer
         version: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
+      eslint-config-flat-gitignore:
+        specifier: catalog:dev
+        version: 2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-erasable-syntax-only:
         specifier: catalog:peer
         version: 0.4.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -721,6 +715,9 @@ importers:
       eslint-plugin-testing-library:
         specifier: catalog:peer
         version: 7.16.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+      eslint-plugin-yml:
+        specifier: catalog:dev
+        version: 3.5.0(patch_hash=a0c23f5bc2638aedacbb693b99b4bc77d33a7f52fd066d636cf2f8e212b72db7)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-typegen:
         specifier: catalog:dev
         version: 2.3.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -745,6 +742,9 @@ importers:
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(oxc-resolver@11.24.2)(publint@0.3.23)(typescript@6.0.3)(unplugin-unused@0.5.7(rolldown@1.2.0)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0)))
+      type-fest:
+        specifier: catalog:dev
+        version: 5.8.0
       typescript:
         specifier: catalog:dev
         version: 6.0.3
