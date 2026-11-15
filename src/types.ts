@@ -60,7 +60,7 @@ export type TypedFlatConfigItem = Omit<Linter.Config, "plugins" | "rules" | "set
 	 * specified, these rule configurations are only available to the matching
 	 * files.
 	 */
-	rules?: Rules;
+	rules?: Partial<Linter.RulesRecord> & Rules;
 
 	/** Shared settings consumed by configured plugins and presets. */
 	settings?: ConfigSettings;
