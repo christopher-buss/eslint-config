@@ -287,8 +287,9 @@ for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
 }
 
 // JsPlugin prefixes that keep their ESLint-side names. Prefixes present in the
-// ESLint-side RuleOptions are picked up by a mapped type (which preserves the
-// plugin doc hovers); the rest get their types generated from the plugin.
+// ESLint-side RuleOptions reference those types key by key; the rest get their
+// types generated from the plugin. A mapped type over RuleOptions costs each
+// consumer program ~150k type instantiations.
 const renamedOxlintPrefixes = new Set(Object.values(oxlintJsPluginPrefixRenames));
 const keptPrefixes = Object.keys(oxlintJsPlugins)
 	.filter((prefix) => !renamedOxlintPrefixes.has(prefix))
@@ -301,6 +302,7 @@ const keptGeneratedPrefixes = keptPrefixes.filter((prefix) => !eslintRulePrefixe
 // `pluginsToRulesDTS`. Splitting this in two loaded and walked each generated
 // plugin twice.
 const extraPlugins: Record<string, { rules?: unknown }> = {};
+const keptRuleMetas = new Map<string, RuleMeta | undefined>();
 for (const prefix of keptPrefixes) {
 	const specifier = oxlintJsPlugins[prefix];
 	if (specifier === undefined) {
@@ -316,8 +318,18 @@ for (const prefix of keptPrefixes) {
 
 	for (const ruleName of Object.keys(rules).sort()) {
 		recordJsPluginRule(`${prefix}/${ruleName}`, rules[ruleName]);
+		keptRuleMetas.set(`${prefix}/${ruleName}`, ruleMetaOf(rules[ruleName]));
 	}
 }
+
+const keptEntries = [...eslintRuleKeys]
+	.filter((key) => keptMappedPrefixes.some((prefix) => key.startsWith(`${prefix}/`)))
+	.sort((a, b) => collator.compare(a, b))
+	.map((key) => {
+		return [...toJsdoc(keptRuleMetas.get(key)), `  '${key}'?: RuleOptions['${key}']`].join(
+			"\n",
+		);
+	});
 
 // `pluginsToRulesDTS` types plugins as `ESLint.Plugin`, but these are minimal
 // `{ rules }` shapes loaded from untyped oxlint jsPlugins; only `rules` is read.
@@ -359,12 +371,9 @@ ${renamedEntries.join("\n")}
 
 ${extraDts}
 
-/** JsPlugin prefixes whose rules keep their ESLint-side names in oxlint configs. */
-type OxlintKeptJsPluginPrefix = ${keptMappedPrefixes.map((prefix) => `'${prefix}'`).join(" | ")}
-
 /** JsPlugin rules whose oxlint names match the ESLint-side names. */
-type OxlintKeptJsPluginRuleOptions = {
-  [K in keyof RuleOptions as K extends \`\${OxlintKeptJsPluginPrefix}/\${string}\` ? K : never]: RuleOptions[K]
+interface OxlintKeptJsPluginRuleOptions {
+${keptEntries.join("\n")}
 }
 
 /** All rules known to the oxlint factory, keyed by canonical oxlint rule name. */
