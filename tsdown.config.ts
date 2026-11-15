@@ -48,6 +48,7 @@ export default defineConfig([
 				"eslint-visitor-keys",
 				"eslint-plugin-erasable-syntax-only",
 				"cached-factory",
+				"oxlint",
 			],
 			onlyBundle: [
 				FLAT_GITIGNORE,
@@ -67,7 +68,8 @@ export default defineConfig([
 				TYPE_FEST,
 			],
 		},
-		entry: [entries.index],
+		entry: { index: entries.index, oxlint: entries.oxlint },
+		outputOptions: { codeSplitting: true },
 	},
 	{
 		...sharedOptions,
@@ -100,23 +102,6 @@ export default defineConfig([
 		// Shipped at dist/lint-ignored.mjs; the lint runner spawns this exact
 		// path to ask the consumer's ESLint which targets it ignores.
 		entry: { "lint-ignored": entries["lint-ignored"] },
-	},
-	{
-		...sharedOptions,
-		deps: {
-			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST],
-			neverBundle: [
-				/^@typescript-eslint\//,
-				/^@eslint-react\//,
-				/^@eslint-community\//,
-				"zod",
-				"eslint-visitor-keys",
-				"eslint-plugin-erasable-syntax-only",
-				"cached-factory",
-				"oxlint",
-			],
-		},
-		entry: { oxlint: entries.oxlint },
 	},
 	{
 		...sharedOptions,
