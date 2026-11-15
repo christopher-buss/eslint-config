@@ -36,10 +36,7 @@ export type ConfigSettings = NonNullable<Linter.Config["settings"]> & {
  * for `rules` and relaxes type limitations for `plugins` and `rules`, because
  * many plugins still lack proper type definitions.
  */
-export type TypedFlatConfigItem = Omit<
-	Linter.Config<Linter.RulesRecord & Rules>,
-	"plugins" | "settings"
-> & {
+export type TypedFlatConfigItem = Omit<Linter.Config, "plugins" | "rules" | "settings"> & {
 	/**
 	 * The base directory that `files` and `ignores` patterns in this config
 	 * object are resolved against. Defaults to the location ESLint derives the
@@ -63,7 +60,7 @@ export type TypedFlatConfigItem = Omit<
 	 * specified, these rule configurations are only available to the matching
 	 * files.
 	 */
-	rules?: Rules;
+	rules?: Partial<Linter.RulesRecord> & Rules;
 
 	/** Shared settings consumed by configured plugins and presets. */
 	settings?: ConfigSettings;
