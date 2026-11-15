@@ -287,9 +287,9 @@ for (const [eslintPrefix, oxlintPrefix] of renamedPrefixPairs) {
 }
 
 // JsPlugin prefixes that keep their ESLint-side names. Prefixes present in the
-// ESLint-side RuleOptions reference those types key by key; the rest get their
-// types generated from the plugin. A mapped type over RuleOptions costs each
-// consumer program ~150k type instantiations.
+// ESLint-side RuleOptions are picked from it by an explicit key list; the rest
+// get their types generated from the plugin. A mapped type that filters
+// RuleOptions keys costs each consumer program ~150k type instantiations.
 const renamedOxlintPrefixes = new Set(Object.values(oxlintJsPluginPrefixRenames));
 const keptPrefixes = Object.keys(oxlintJsPlugins)
 	.filter((prefix) => !renamedOxlintPrefixes.has(prefix))
@@ -302,7 +302,6 @@ const keptGeneratedPrefixes = keptPrefixes.filter((prefix) => !eslintRulePrefixe
 // `pluginsToRulesDTS`. Splitting this in two loaded and walked each generated
 // plugin twice.
 const extraPlugins: Record<string, { rules?: unknown }> = {};
-const keptRuleMeta = new Map<string, RuleMeta | undefined>();
 for (const prefix of keptPrefixes) {
 	const specifier = oxlintJsPlugins[prefix];
 	if (specifier === undefined) {
@@ -318,16 +317,13 @@ for (const prefix of keptPrefixes) {
 
 	for (const ruleName of Object.keys(rules).sort()) {
 		recordJsPluginRule(`${prefix}/${ruleName}`, rules[ruleName]);
-		keptRuleMeta.set(`${prefix}/${ruleName}`, ruleMetaOf(rules[ruleName]));
 	}
 }
 
-const keptEntries = [...eslintRuleKeys]
+const keptKeys = [...eslintRuleKeys]
 	.filter((key) => keptMappedPrefixes.some((prefix) => key.startsWith(`${prefix}/`)))
 	.sort((a, b) => collator.compare(a, b))
-	.map((key) => {
-		return [...toJsdoc(keptRuleMeta.get(key)), `  '${key}'?: RuleOptions['${key}']`].join("\n");
-	});
+	.map((key) => `  | '${key}'`);
 
 // `pluginsToRulesDTS` types plugins as `ESLint.Plugin`, but these are minimal
 // `{ rules }` shapes loaded from untyped oxlint jsPlugins; only `rules` is read.
@@ -370,9 +366,10 @@ ${renamedEntries.join("\n")}
 ${extraDts}
 
 /** JsPlugin rules whose oxlint names match the ESLint-side names. */
-interface OxlintKeptJsPluginRuleOptions {
-${keptEntries.join("\n")}
-}
+type OxlintKeptJsPluginRuleOptions = Pick<
+  RuleOptions,
+${keptKeys.join("\n")}
+>
 
 /** All rules known to the oxlint factory, keyed by canonical oxlint rule name. */
 export type OxlintRuleOptions = OxlintKeptJsPluginRuleOptions &
