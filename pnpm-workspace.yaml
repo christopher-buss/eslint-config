@@ -19,6 +19,10 @@ savePrefix: ""
 shellEmulator: true
 strictPeerDependencies: false
 trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - tsrs@0.25.0-ts7.1.0-beta
+
 trustPolicyIgnoreAfter: 10080
 
 packages:
@@ -78,6 +82,7 @@ catalogs:
     eslint-plugin-testing-library: 7.16.2
     oxlint: 1.92.0
     oxlint-tsgolint: 7.0.2006
+    tsrs: 0.25.0-ts7.1.0-beta
   prod:
     "@antfu/install-pkg": 2.0.1
     "@clack/prompts": 1.7.0

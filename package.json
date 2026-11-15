@@ -168,6 +168,7 @@
 		"pnpm-workspace-yaml": "catalog:dev",
 		"publint": "catalog:dev",
 		"tsdown": "catalog:dev",
+		"tsrs": "catalog:peer",
 		"type-fest": "catalog:dev",
 		"typescript": "catalog:dev",
 		"unplugin-unused": "catalog:dev",
@@ -186,7 +187,8 @@
 		"eslint-plugin-react-x": "^5.10.0",
 		"eslint-plugin-testing-library": "^7.16.2",
 		"oxlint": ">=1.92.0",
-		"oxlint-tsgolint": ">=7.0.2005"
+		"oxlint-tsgolint": ">=7.0.2005",
+		"tsrs": ">=0.25.0-0"
 	},
 	"peerDependenciesMeta": {
 		"@vitest/eslint-plugin": {
@@ -223,6 +225,9 @@
 			"optional": true
 		},
 		"oxlint-tsgolint": {
+			"optional": true
+		},
+		"tsrs": {
 			"optional": true
 		}
 	},

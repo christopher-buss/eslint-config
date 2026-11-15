@@ -1,7 +1,7 @@
 import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
-import { findOxfmtConfig } from "../../utils.ts";
+import { findOxfmtConfig, hasTypeAwareBackend } from "../../utils.ts";
 import { readFileList } from "./cli/file-list.ts";
 import { parseArguments } from "./cli/options.ts";
 import type { ChildCommand, LintCliOptions } from "./cli/types.ts";
@@ -81,19 +81,19 @@ export async function runLint(
 		return 0;
 	}
 
-	// Only require oxlint-tsgolint when an oxlint child that actually carries
-	// `--type-aware` survived composition. The hybrid gate may have dropped
-	// oxlint (non-hybrid config), in which case the run degrades to ESLint-only
-	// rather than hard-erroring; `--print` returned above and never errors.
-	// Explicit `--oxlint` bypasses the gate but still composes the child, so the
-	// check still applies to it.
-	const needsTsgolint = commands.some(
+	// Only require a type-aware backend (tsrs or oxlint-tsgolint) when an oxlint
+	// child that actually carries `--type-aware` survived composition. The
+	// hybrid gate may have dropped oxlint (non-hybrid config), in which case the
+	// run degrades to ESLint-only rather than hard-erroring; `--print` returned
+	// above and never errors. Explicit `--oxlint` bypasses the gate but still
+	// composes the child, so the check still applies to it.
+	const needsTypeAwareBackend = commands.some(
 		(command) => command.bin === "oxlint" && command.args.includes("--type-aware"),
 	);
-	if (needsTsgolint && !isPackageExists("oxlint-tsgolint", { paths: [cwd] })) {
+	if (needsTypeAwareBackend && !hasTypeAwareBackend([cwd])) {
 		throw new CliError(
-			"oxlint-tsgolint is not installed, so oxlint cannot run type-aware rules. " +
-				"Install oxlint-tsgolint, or pass --no-oxlint-type-aware to skip type-aware linting.",
+			"No type-aware oxlint backend is installed, so oxlint cannot run type-aware rules. " +
+				"Install tsrs or oxlint-tsgolint, or pass --no-oxlint-type-aware to skip type-aware linting.",
 		);
 	}
 

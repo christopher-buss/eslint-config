@@ -6,15 +6,17 @@ linter, in three consumption modes:
 
 1. **ESLint only** (default) — nothing changes for existing consumers.
 2. **Hybrid** — oxlint runs the rules it covers (natively, via
-   [oxlint-tsgolint](https://github.com/oxc-project/tsgolint) for type-aware
-   rules, or by running the original ESLint plugins inside oxlint as jsPlugins);
-   ESLint runs the rest.
+   [oxlint-tsgolint](https://github.com/oxc-project/tsgolint) or
+   [tsrs](https://github.com/oxc-project/tsrs) for type-aware rules, or by
+   running the original ESLint plugins inside oxlint as jsPlugins); ESLint runs
+   the rest.
 3. **Oxlint standalone** — an oxlint-only config via the
    `@isentinel/eslint-config/oxlint` export.
 
 ## Installation
 
-Oxlint support requires the optional peer dependencies:
+Oxlint support requires the optional peer dependencies: `oxlint` and a
+type-aware backend, `oxlint-tsgolint` or `tsrs` (oxlint 1.93+):
 
 ```bash
 pnpm i -D oxlint oxlint-tsgolint
@@ -64,21 +66,21 @@ Then run both linters:
 }
 ```
 
-> [!IMPORTANT] The type-aware `ts/*` rules are executed by oxlint-tsgolint. The
-> factory enables `options.typeAware` in the generated config by default (when
-> `oxlint-tsgolint` is resolvable), so no `--type-aware` CLI flag is needed. If
-> `oxlint-tsgolint` is not installed, the ESLint factory keeps these rules in
-> ESLint instead of dropping them (and warns at config-build time), so they run
-> in exactly one engine either way.
+> [!IMPORTANT] The type-aware `ts/*` rules are executed by oxlint's type-aware
+> backend, `tsrs` or `oxlint-tsgolint`. The factory enables `options.typeAware`
+> in the generated config by default (when either is resolvable), so no
+> `--type-aware` CLI flag is needed. If neither is installed, the ESLint factory
+> keeps these rules in ESLint instead of dropping them (and warns at
+> config-build time), so they run in exactly one engine either way.
 >
-> Residual edge: if you have `oxlint-tsgolint` installed but explicitly set
+> Residual edge: if you have a type-aware backend installed but explicitly set
 > `options: { typeAware: false }` in your oxlint config, those rules run in
 > neither engine — the ESLint factory cannot see your oxlint config, so it still
 > drops them. Disabling `typeAware` in hybrid mode is on you. Likewise, when
 > ESLint and oxlint run from different working directories (per-package monorepo
-> linting), their two `oxlint-tsgolint` resolutions can disagree; keep the peer
-> resolvable from every lint cwd (or set `options.typeAware` explicitly) to
-> avoid double-reporting or one-sided coverage.
+> linting), their two backend resolutions can disagree; keep the peer resolvable
+> from every lint cwd (or set `options.typeAware` explicitly) to avoid
+> double-reporting or one-sided coverage.
 
 ### How rules are split
 
@@ -87,12 +89,12 @@ jsPlugin capability metadata. `oxlintRuleMapping`, exported from
 `@isentinel/eslint-config/oxlint`, remains as a generated compatibility and
 audit view:
 
-| Target          | Meaning                                                     |
-| --------------- | ----------------------------------------------------------- |
-| `native`        | Implemented natively in oxlint (Rust)                       |
-| `tsgolint`      | Type-aware rule executed by oxlint-tsgolint (`typeAware`)   |
-| `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin |
-| stays in ESLint | Not in the mapping; documented in `staysInEslint`           |
+| Target          | Meaning                                                      |
+| --------------- | ------------------------------------------------------------ |
+| `native`        | Implemented natively in oxlint (Rust)                        |
+| `tsgolint`      | Type-aware rule run by tsrs or oxlint-tsgolint (`typeAware`) |
+| `js-plugin`     | The original ESLint plugin runs inside oxlint as a jsPlugin  |
+| stays in ESLint | Not in the mapping; documented in `staysInEslint`            |
 
 A rule you name in `options.rules` is resolved in this order: an alternate
 native equivalent, an explicit ESLint-only exception, an implementation
@@ -399,9 +401,9 @@ export default isentinel({
 - **`options`** — top-level linter options (`typeAware`, `typeCheck`,
   `maxWarnings`, `denyWarnings`, `reportUnusedDisableDirectives`,
   `respectEslintDisableDirectives`). The factory emits `typeAware: true` by
-  default whenever `oxlint-tsgolint` is resolvable (oxlint errors when
-  `typeAware` is enabled without it), so type-aware rules run without any CLI
-  flag; user-provided values win. CLI flags take precedence over config
+  default whenever `tsrs` or `oxlint-tsgolint` is resolvable (oxlint errors when
+  `typeAware` is enabled without a backend), so type-aware rules run without any
+  CLI flag; user-provided values win. CLI flags take precedence over config
   `options` when both are set.
 - **`env`** — enables or disables predefined environment globals (`browser`,
   `node`, `es2021`...). Emitted at the top level.

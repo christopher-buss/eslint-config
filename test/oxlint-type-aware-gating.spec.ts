@@ -74,7 +74,7 @@ describe("oxlint tsgolint gating", () => {
 });
 
 describe("hybrid tsgolint drop gating", () => {
-	it("should keep tsgolint rules in ESLint when oxlint-tsgolint is absent", ({ expect }) => {
+	it("should keep tsgolint rules in ESLint without a type-aware backend", ({ expect }) => {
 		expect.assertions(2);
 
 		const configs = [typeAwareRulesConfig()];
@@ -84,7 +84,7 @@ describe("hybrid tsgolint drop gating", () => {
 		expect(configs[0]!.rules!["no-console"]).toBeUndefined();
 	});
 
-	it("should drop tsgolint rules from ESLint when oxlint-tsgolint is present", ({ expect }) => {
+	it("should drop tsgolint rules from ESLint with a type-aware backend", ({ expect }) => {
 		expect.assertions(1);
 
 		const configs = [typeAwareRulesConfig()];
