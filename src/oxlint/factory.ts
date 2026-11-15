@@ -51,7 +51,6 @@ import { oxlintTest } from "./configs/test.ts";
 import { oxlintTypescript } from "./configs/typescript.ts";
 import { oxlintUnicorn } from "./configs/unicorn.ts";
 import { takeOverrideDiagnostics, warnDroppedOverrides } from "./override-diagnostics.ts";
-import type { ValidateOxlintOptions } from "./redundancy.ts";
 import type {
 	OxlintFactoryOptions,
 	OxlintPlugin,
@@ -99,22 +98,6 @@ const NATIVE_ONLY_JS_PLUGINS: ReadonlySet<string> = new Set(["oxlint-comments"])
  * The returned value is a plain oxlint config object suitable for
  * `oxlint.config.ts` (via `defineConfig`) or serialization to
  * `.oxlintrc.json`.
- *
- * @template O - The literal options type, used by the redundant-override
- *   check. Rest-argument fragments are not validated — they always carry
- *   `files` globs, which the type-level check cannot reason about.
- * @param factoryOptions - The options for generating the oxlint configuration.
- * @param userConfigs - Additional oxlint config fragments (merged as
- *   overrides).
- * @returns The oxlint configuration.
- */
-export function isentinel<const O extends OxlintFactoryOptions>(
-	factoryOptions?: O & ValidateOxlintOptions<O>,
-	...userConfigs: Array<TypedOxlintConfigItem>
-): OxlintConfig;
-/**
- * Implementation signature; the public overload above carries the
- * redundant-override validation generics.
  *
  * @param factoryOptions - The options for generating the oxlint configuration.
  * @param userConfigs - Additional oxlint config fragments (merged as
