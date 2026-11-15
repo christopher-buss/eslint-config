@@ -11,10 +11,16 @@ const sharedOptions = {
 	shims: true,
 } satisfies UserConfig;
 
+// Bundled packages are devDependencies: they ship inside dist, so a consumer
+// never installs them. Every entry whose output reaches one must bundle it,
+// or the import is left pointing at a package the consumer cannot resolve.
+
+// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
+const FLAT_GITIGNORE = "eslint-config-flat-gitignore";
+
 /**
- * Bundled into every entry's declarations. Left external, any `.d.mts` that
- * touches it imports the package index, which loads all of type-fest (~210
- * files) into the consumer's TypeScript program.
+ * Left external, any `.d.mts` that touches it imports the package index, which
+ * loads all of type-fest (~210 files) into the consumer's TypeScript program.
  */
 const TYPE_FEST = "type-fest";
 
@@ -38,8 +44,7 @@ export default defineConfig([
 		...sharedOptions,
 		deps: {
 			alwaysBundle: [
-				// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
-				"eslint-config-flat-gitignore",
+				FLAT_GITIGNORE,
 				// Bundled to ship patches/eslint-plugin-yml.patch
 				"eslint-plugin-yml",
 				TYPE_FEST,
@@ -54,7 +59,7 @@ export default defineConfig([
 				"cached-factory",
 			],
 			onlyBundle: [
-				"eslint-config-flat-gitignore",
+				FLAT_GITIGNORE,
 				"@eslint/compat",
 				// eslint-plugin-yml (see alwaysBundle) and its transitive tree
 				"eslint-plugin-yml",
@@ -108,7 +113,7 @@ export default defineConfig([
 	{
 		...sharedOptions,
 		deps: {
-			alwaysBundle: [TYPE_FEST],
+			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST],
 			neverBundle: [
 				/^@typescript-eslint\//,
 				/^@eslint-react\//,
@@ -125,8 +130,13 @@ export default defineConfig([
 	{
 		...sharedOptions,
 		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
-		// both factories; keep it small and its runtime deps external.
-		deps: { alwaysBundle: [TYPE_FEST], neverBundle: true },
+		// both factories; keep it small and its runtime deps external. The
+		// exceptions are devDependencies its declarations reach, which a
+		// consumer cannot resolve; `tagged-tag` is a dependency of type-fest.
+		deps: {
+			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST, "tagged-tag"],
+			neverBundle: true,
+		},
 		entry: { oxfmt: entries.oxfmt },
 	},
 	{
