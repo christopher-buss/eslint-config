@@ -239,7 +239,7 @@ function toJsdoc(meta: RuleMeta | undefined): Array<string> {
 	return lines;
 }
 
-const collator = new Intl.Collator();
+const collator = new Intl.Collator("en");
 
 const renamedEntries: Array<string> = [];
 let renamedFallbacks = 0;
