@@ -259,8 +259,8 @@ catalogs:
       specifier: 7.5.0
       version: 7.5.0
     eslint-plugin-jest:
-      specifier: 29.16.0
-      version: 29.16.0
+      specifier: 29.17.0
+      version: 29.17.0
     eslint-plugin-jest-extended:
       specifier: 3.0.1
       version: 3.0.1
@@ -686,7 +686,7 @@ importers:
         version: 7.5.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-jest:
         specifier: catalog:peer
-        version: 29.16.0(@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+        version: 29.17.0(@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-jest-extended:
         specifier: catalog:peer
         version: 3.0.1(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -2996,8 +2996,8 @@ packages:
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
 
-  eslint-plugin-jest@29.16.0:
-    resolution: {integrity: sha512-0WFBxDHlT2ratGQfnFQEVIsgQJ5cfd+0IV8Kc6U3X2onB8ATLG23voD2Ch5G9fCkEpCPmCMuzW0tbS0kYb8biw==}
+  eslint-plugin-jest@29.17.0:
+    resolution: {integrity: sha512-6jtpU6MhYKbagkES02TupWAUUooJpZtKg94Ax0b8HhUorv3InSTBU8RRtlSBe0LocOcShXOpyec3PHzPDkJCSg==}
     engines: {node: ^20.12.0 || ^22.0.0 || >=24.0.0}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ^8.0.0
@@ -6498,7 +6498,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jest@29.16.0(@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
+  eslint-plugin-jest@29.17.0(@typescript-eslint/eslint-plugin@8.72.2(@typescript-eslint/parser@8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/utils': 8.72.2(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
