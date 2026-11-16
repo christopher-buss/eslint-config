@@ -108,8 +108,9 @@ let jsPluginCount = 0;
 let invalid = 0;
 
 for (const rule of configRules) {
-	const prefix = rule.split("/", 1)[0];
-	if (prefix !== undefined && jsPluginPrefixes.has(prefix)) {
+	const slashIndex = rule.indexOf("/");
+	const prefix = slashIndex === -1 ? rule : rule.slice(0, slashIndex);
+	if (jsPluginPrefixes.has(prefix)) {
 		jsPluginCount += 1;
 		continue;
 	}

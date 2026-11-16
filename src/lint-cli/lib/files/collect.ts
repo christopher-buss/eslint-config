@@ -166,7 +166,10 @@ export function oxlintTargets(cwd: string, targets: Array<string>): Array<string
 		}
 
 		try {
-			return fs.statSync(path.resolve(cwd, target)).isDirectory();
+			return (
+				fs.statSync(path.resolve(cwd, target), { throwIfNoEntry: false })?.isDirectory() ===
+				true
+			);
 		} catch {
 			return false;
 		}
@@ -361,10 +364,14 @@ function walkFallback(cwd: string, targets: Array<string>): Array<string> {
 	const files: Array<string> = [];
 	for (const target of targets) {
 		const absolute = path.resolve(cwd, target);
-		let stat: fs.Stats;
+		let stat: fs.Stats | undefined;
 		try {
-			stat = fs.statSync(absolute);
+			stat = fs.statSync(absolute, { throwIfNoEntry: false });
 		} catch {
+			continue;
+		}
+
+		if (stat === undefined) {
 			continue;
 		}
 

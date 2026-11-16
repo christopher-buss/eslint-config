@@ -77,7 +77,7 @@ export function resolveDependency(
 	for (const candidate of candidates) {
 		try {
 			const real = realpathSync(candidate);
-			if (statSync(real).isDirectory()) {
+			if (statSync(real, { throwIfNoEntry: false })?.isDirectory() === true) {
 				return real;
 			}
 		} catch {
