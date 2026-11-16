@@ -21,10 +21,10 @@ import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/
 import {
 	FAST_WORKER_MEMORY_MB,
 	OXLINT_THREAD_MEMORY_MB,
+	PROGRAM_WORKER_MEMORY_MB,
 	resolveOxlintThreads,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
-import type { HeapBudget, PassHeap } from "../src/lint-cli/lib/plan/heap.ts";
-import { planPassHeap } from "../src/lint-cli/lib/plan/heap.ts";
+import type { PassHeap } from "../src/lint-cli/lib/plan/heap.ts";
 
 const MIB = 1024 * 1024;
 
@@ -162,7 +162,7 @@ describe("applyGrant", () => {
 			env: {},
 			label: "oxc",
 			watchHeap: false,
-			workers: demand({ flag: "--threads", pass: "oxlint" }),
+			workers: demand({ flag: "--threads", pass: undefined }),
 		};
 
 		expect(applyGrant(oxlint, 2).args).toStrictEqual([
@@ -201,6 +201,24 @@ describe("createRunBudget", () => {
 				minWorkers: 1,
 			},
 		]);
+	});
+
+	// oxlint's memory does not grow with its threads: most of it is the
+	// type-aware backend. A cost learned per thread would scale a whole run's
+	// peak by the thread count on the next lease.
+	it("leases a child with no cost pass without a cost or a report", async ({ expect }) => {
+		expect.assertions(3);
+
+		const { backend, record } = fakeBackend();
+		const lease = await createRunBudget(backend, "app").lease(
+			eslintChild(demand({ flag: "--threads", pass: undefined })),
+		);
+		lease.watch(4242);
+		lease.release();
+
+		expect(record.requests[0]).not.toHaveProperty("cost");
+		expect(record.watched).toStrictEqual([]);
+		expect(record.releases).toStrictEqual([undefined]);
 	});
 
 	it("starts the child with the workers the budget granted", async ({ expect }) => {
@@ -394,13 +412,13 @@ describe("worker demands on composed children", () => {
 	it("counts a program-building worker at its heap", ({ expect }) => {
 		expect.assertions(2);
 
-		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true, workerMb: 6144 };
+		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
 		const command = composeEslintCommand(
 			options(),
 			baseContext({ concurrency: 2, eslintLabel: "typed", heap, typeAwareEnv: "only" }),
 		);
 
-		expect(command.workers!.memoryPerWorkerMb).toBe(6144);
+		expect(command.workers!.memoryPerWorkerMb).toBe(PROGRAM_WORKER_MEMORY_MB);
 		expect(command.workers!.pass).toBe("eslint-typed");
 	});
 
@@ -417,7 +435,7 @@ describe("worker demands on composed children", () => {
 			flag: "--threads",
 			maxWorkers: 4,
 			memoryPerWorkerMb: OXLINT_THREAD_MEMORY_MB,
-			pass: "oxlint",
+			pass: undefined,
 		});
 	});
 
@@ -453,41 +471,5 @@ describe("resolveOxlintThreads", () => {
 		expect(
 			resolveOxlintThreads(options({ oxlintArgs: ["--threads=2"] }), 16, false),
 		).toBeUndefined();
-	});
-});
-
-describe("expected memory of a program-building worker", () => {
-	function heapBudget(setting: HeapBudget["setting"]): HeapBudget {
-		return {
-			memory: { availableMb: 131_072, defaultHeapMb: 4096 },
-			nodeOptions: undefined,
-			setting,
-		};
-	}
-
-	// The `auto` heap of one worker is half the machine: a ceiling, not what
-	// the worker uses. Counting it would hold a lease back until the whole
-	// machine is free.
-	it("counts an auto worker at Node's default heap", ({ expect }) => {
-		expect.assertions(2);
-
-		const heap = planPassHeap("typed", heapBudget({ kind: "auto" }), {
-			concurrency: "off",
-			dirtyCount: 10,
-		});
-
-		expect(heap.nodeOptions).toBe("--max-old-space-size=65536");
-		expect(heap.workerMb).toBe(4096);
-	});
-
-	it("counts a worker at the size set in LINT_TYPED_HEAP_MB", ({ expect }) => {
-		expect.assertions(1);
-
-		const heap = planPassHeap("typed", heapBudget({ kind: "fixed", mb: 6000 }), {
-			concurrency: 2,
-			dirtyCount: 10,
-		});
-
-		expect(heap.workerMb).toBe(6000);
 	});
 });

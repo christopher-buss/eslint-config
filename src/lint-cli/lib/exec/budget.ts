@@ -122,7 +122,7 @@ export function createRunBudget(
 			let lease: Lease;
 			try {
 				lease = await backend.budget.leaseAsync({
-					cost: { pass: demand.pass, project },
+					...(demand.pass === undefined ? {} : { cost: { pass: demand.pass, project } }),
 					maxWorkers: demand.maxWorkers,
 					memoryPerWorker: demand.memoryPerWorkerMb * BYTES_PER_MB,
 					minWorkers: 1,
@@ -183,7 +183,8 @@ function withoutLease(command: ChildCommand): ChildLease {
  * The release reports only the tree's total peak. ESLint and oxlint run their
  * workers as threads of one process, so the biggest process of the tree is the
  * whole child, not one worker; the budget divides the total by the workers
- * instead.
+ * instead. A child with no cost pass is not measured: its release teaches the
+ * budget nothing.
  *
  * @param planned - The planned child.
  * @param lease - The granted lease.
@@ -196,6 +197,7 @@ function leased(
 	watchTree: (pid: number) => TreeWatch,
 ): ChildLease {
 	const unit = planned.workers?.flag === "--threads" ? "threads" : "workers";
+	const isLearned = planned.workers?.pass !== undefined;
 	let tree: TreeWatch | undefined;
 	let released = false;
 
@@ -212,7 +214,7 @@ function leased(
 			lease.release(peakMemory === undefined ? undefined : { peakMemory });
 		},
 		watch: (pid) => {
-			if (pid !== undefined && !released) {
+			if (isLearned && pid !== undefined && !released) {
 				tree = watchTree(pid);
 			}
 		},

@@ -8,7 +8,11 @@ import type {
 	ToolLabel,
 	WorkerDemand,
 } from "../cli/types.ts";
-import { FAST_WORKER_MEMORY_MB, OXLINT_THREAD_MEMORY_MB } from "./concurrency.ts";
+import {
+	FAST_WORKER_MEMORY_MB,
+	OXLINT_THREAD_MEMORY_MB,
+	PROGRAM_WORKER_MEMORY_MB,
+} from "./concurrency.ts";
 
 /**
  * The pass each ESLint child's cost is learned under. The full config and the
@@ -58,12 +62,15 @@ export function composeOxlintCommand(
 	const command: ChildCommand = { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
 	if (context.threads !== undefined) {
 		// The granted count is added as `--threads` at lease time, so a
-		// `--print` run shows the command without it.
+		// `--print` run shows the command without it. No cost is learned:
+		// oxlint's memory does not grow with its threads (most of it is the
+		// type-aware backend), so a peak divided by the threads would be
+		// multiplied back by the thread count on the next lease.
 		command.workers = {
 			flag: "--threads",
 			maxWorkers: context.threads,
 			memoryPerWorkerMb: OXLINT_THREAD_MEMORY_MB,
-			pass: "oxlint",
+			pass: undefined,
 		};
 	}
 
@@ -179,8 +186,8 @@ function pathArguments(paths: Array<string>): Array<string> {
 
 /**
  * What an ESLint child asks the machine budget for: the planned concurrency as
- * its most workers (`off` is one, on the main thread), each counted at the heap
- * it may grow to.
+ * its most workers (`off` is one, on the main thread), each counted at what a
+ * worker of its kind is expected to use.
  *
  * @param context - The resolved composition context.
  * @returns The child's worker demand.
@@ -189,7 +196,8 @@ function eslintDemand(context: ComposeContext): WorkerDemand {
 	return {
 		flag: "--concurrency",
 		maxWorkers: context.concurrency === "off" ? 1 : context.concurrency,
-		memoryPerWorkerMb: context.heap?.workerMb ?? FAST_WORKER_MEMORY_MB,
+		memoryPerWorkerMb:
+			context.heap === undefined ? FAST_WORKER_MEMORY_MB : PROGRAM_WORKER_MEMORY_MB,
 		pass: ESLINT_COST_PASS[context.eslintLabel] ?? `eslint-${context.eslintLabel}`,
 	};
 }

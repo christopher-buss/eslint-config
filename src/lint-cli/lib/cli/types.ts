@@ -90,8 +90,12 @@ export interface WorkerDemand {
 	 * What one worker is expected to use, in MB, until the budget learns it.
 	 */
 	memoryPerWorkerMb: number;
-	/** The pass the budget learns the cost under, such as `eslint-typed`. */
-	pass: string;
+	/**
+	 * The pass the budget learns the cost under, such as `eslint-typed`.
+	 * `undefined` learns nothing: the lease always counts
+	 * {@link WorkerDemand.memoryPerWorkerMb}, and its release reports no peak.
+	 */
+	pass: string | undefined;
 }
 
 /** A single linter child process, described independently of the shell. */

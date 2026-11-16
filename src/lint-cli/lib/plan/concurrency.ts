@@ -6,13 +6,24 @@ import type { LintCliOptions } from "../cli/types.ts";
  * use, in MB, until the machine budget learns its real cost: a syntactic ESLint
  * worker holds the loaded config and one file's AST at a time.
  */
-export const FAST_WORKER_MEMORY_MB = 512;
+export const FAST_WORKER_MEMORY_MB = 1024;
 
 /**
- * What one oxlint thread is expected to use, in MB, until the machine budget
- * learns its real cost.
+ * What one worker of a pass that builds a TypeScript program is expected to
+ * use, in MB, until the machine budget learns its real cost. Not the worker's
+ * heap limit: under `auto` that is a ceiling split from half the machine, and
+ * a lease that size waits until the machine is nearly empty. At 2 GB, one
+ * worker still fits the budget's small-job lane, so a small type-aware lint
+ * does not wait behind a full main lane.
  */
-export const OXLINT_THREAD_MEMORY_MB = 256;
+export const PROGRAM_WORKER_MEMORY_MB = 2048;
+
+/**
+ * What one oxlint thread counts for in the machine budget. Oxlint's lease
+ * learns no cost (see `composeOxlintCommand`), so this value is used on every
+ * run.
+ */
+export const OXLINT_THREAD_MEMORY_MB = 614;
 
 const OXLINT_THREADS_FLAG = /^--threads(?:=|$)/;
 

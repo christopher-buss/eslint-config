@@ -275,10 +275,11 @@ Other behaviours:
   oxlint or an ESLint pass, the runner leases the planned workers (one at least)
   and starts the child with the workers it got: ESLint's `--concurrency`, or
   oxlint's `--threads`. When other runs hold the machine, the lease waits and
-  prints why on stderr. When the child exits, the runner gives the lease back
-  with the child's peak memory, so the budget learns what one worker of each
-  pass costs. `MACHINE_BUDGET=off` and CI grant every lease in full at once. A
-  `--threads` in `--oxlint-args` is left alone.
+  prints why on stderr. When an ESLint child exits, the runner gives the lease
+  back with the child's peak memory, so the budget learns what one worker of
+  each pass costs. oxlint's lease learns nothing, because its memory does not
+  grow with its threads. `MACHINE_BUDGET=off` and CI grant every lease in full
+  at once. A `--threads` in `--oxlint-args` is left alone.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
   `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
   (type-aware pass), and `.eslintcache-<key>` (the full config, used by CI,
