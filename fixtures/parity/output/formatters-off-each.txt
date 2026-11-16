@@ -209,20 +209,7 @@ export const moduleValue = 1;
 export type Pair<T> = [T, T];
 
 === package.json ===
-{
-	"name": "parity-corpus",
-	"version": "1.0.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "tsdown",
-		"test": "vitest"
-	},
-	"devDependencies": {
-		"a": "1.0.0",
-		"b": "1.0.0"
-	} 
-}
+{ "name": "parity-corpus","version": "1.0.0","private": true,"type": "module","scripts": { "build": "tsdown","test": "vitest" },"devDependencies": { "a": "1.0.0","b": "1.0.0" } }
 
 === page.htm ===
 <!DOCTYPE html>

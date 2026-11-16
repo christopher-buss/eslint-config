@@ -380,8 +380,8 @@ catalogs:
       specifier: 0.18.0
       version: 0.18.0
     eslint-plugin-package-json:
-      specifier: 1.7.0
-      version: 1.7.0
+      specifier: 1.14.0
+      version: 1.14.0
     eslint-plugin-perfectionist:
       specifier: 5.13.0
       version: 5.13.0
@@ -559,7 +559,7 @@ importers:
         version: 0.18.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.72.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
-        version: 1.7.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 1.14.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-perfectionist:
         specifier: catalog:prod
         version: 5.13.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -3058,8 +3058,8 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-package-json@1.7.0:
-    resolution: {integrity: sha512-6kc/2obmBs1JZ2/m65iZjDWFxC4n0OVDKTEhsnWCE6syL5qAJb0rzQtYFNaSmFe9hUWqhaTpr2+OnHQlU1X5kQ==}
+  eslint-plugin-package-json@1.14.0:
+    resolution: {integrity: sha512-EF4oCRtyhJz+SQCKOiCfdbButYIraXd19W7/pEVrDCGzRDWv91Kgd7eTbWywhbPd4zOsThbDLOQHe9B1oSjOZA==}
     engines: {node: ^22.22.2 || >=24.15.0}
     peerDependencies:
       '@eslint/json': '>=1.0.0'
@@ -6412,11 +6412,11 @@ snapshots:
     dependencies:
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
 
-  eslint-fix-utils@0.4.3(@types/estree@1.0.9)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-fix-utils@0.4.3(@types/estree@1.0.10)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
     optionalDependencies:
-      '@types/estree': 1.0.9
+      '@types/estree': 1.0.10
 
   eslint-flat-config-utils@3.2.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
@@ -6612,15 +6612,15 @@ snapshots:
       picomatch: 4.0.5
       synckit: 0.11.13
 
-  eslint-plugin-package-json@1.7.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-package-json@1.14.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@altano/repository-tools': 2.1.2
-      '@types/estree': 1.0.9
+      '@types/estree': 1.0.10
       change-case: 5.4.4
       detect-indent: 7.0.2
       detect-newline: 4.0.1
       eslint: 10.10.0(jiti@2.7.0)(supports-color@10.2.2)
-      eslint-fix-utils: 0.4.3(@types/estree@1.0.9)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-fix-utils: 0.4.3(@types/estree@1.0.10)(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-json-compat-utils: 0.2.3(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.1.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)))
       jsonc-eslint-parser: 3.1.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))
       package-json-validator: 1.6.0

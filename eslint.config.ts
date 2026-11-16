@@ -8,6 +8,7 @@ export default isentinel(
 		ignores: ["fixtures", "_fixtures", "src/generated", "**/*-generated.ts"],
 		namedConfigs: true,
 		oxlint: "native",
+		packageJson: { scope: "@isentinel" },
 		pnpm: true,
 		roblox: false,
 		test: {

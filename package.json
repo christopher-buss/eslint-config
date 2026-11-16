@@ -63,7 +63,7 @@
 		"check:published": "node scripts/check-published-extensions.ts",
 		"check:roblox-words": "node scripts/roblox-allowed-words-gen.ts --check",
 		"check:type-aware": "node scripts/type-aware-gen.ts --check",
-		"dev": "npx @eslint/config-inspector --config eslint-inspector.config.ts",
+		"dev": "eslint-config-inspector --config eslint-inspector.config.ts",
 		"gen": "node scripts/typegen.ts && node scripts/typegen-oxlint.ts && node scripts/versiongen.ts && node scripts/stylistic-gen.ts && node scripts/type-aware-gen.ts && node scripts/roblox-allowed-words-gen.ts && node scripts/gen-package-extensions.ts",
 		"postgen": "echo 'Generation complete!'",
 		"lint": "isentinel-lint --eslint-args \"--max-warnings 0\" --oxlint-args --deny-warnings",
@@ -232,9 +232,14 @@
 			"optional": true
 		}
 	},
-	"packageManager": "pnpm@12.20.0+sha512.6ccc74997ccef4e67999788e18dbfbfa583e2a849668668db4707b6a8306662f47156e650232a985bd3ec24cf9364c1aa154d37e51ed7aac62c1cd1e3afc80c3",
 	"engines": {
 		"node": ">=24.15.0"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "12.20.0"
+		}
 	},
 	"publishConfig": {
 		"access": "public"

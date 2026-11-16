@@ -145,6 +145,22 @@ export interface OptionsOverrides extends OptionsFiles {
 	overrides?: NonNullable<TypedFlatConfigItem["rules"]>;
 }
 
+export interface OptionsPackageJson {
+	/**
+	 * Other scopes package names may use, each starting with `@`. Enables
+	 * `package-json/prefer-scoped-name`. Without `scope`, unscoped names are
+	 * also accepted.
+	 */
+	allowedScopes?: Array<string>;
+
+	/**
+	 * The scope every package name must use, for example `"@isentinel"`.
+	 * Enables `package-json/prefer-scoped-name`, which renames private packages
+	 * on `--fix` and only suggests a rename for public ones.
+	 */
+	scope?: string;
+}
+
 export interface OptionsPnpm {
 	/** Requires catalogs usage. */
 	catalogs?: boolean;

@@ -3,16 +3,19 @@ import { findWorkspaceRoot, interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsHasRoblox,
+	OptionsPackageJson,
 	OptionsProjectType,
 	OptionsStylistic,
 	TypedFlatConfigItem,
 } from "../types.ts";
 
 export async function packageJson({
+	allowedScopes,
 	roblox = true,
+	scope,
 	stylistic = true,
 	type = "game",
-}: OptionsHasRoblox & OptionsProjectType & OptionsStylistic = {}): Promise<
+}: OptionsHasRoblox & OptionsPackageJson & OptionsProjectType & OptionsStylistic = {}): Promise<
 	Array<TypedFlatConfigItem>
 > {
 	const pluginPackageJson = lazyPlugin("eslint-plugin-package-json");
@@ -28,7 +31,7 @@ export async function packageJson({
 			parser: jsoncEslintParser,
 		},
 		rules: {
-			"package-json/require-packageManager": ["error", { ignorePrivate: false }],
+			"package-json/require-devEngines": ["error", { ignorePrivate: false }],
 		},
 	};
 
@@ -46,10 +49,16 @@ export async function packageJson({
 				parser: jsoncEslintParser,
 			},
 			rules: {
+				"package-json/consistent-package-manager-declaration": [
+					"error",
+					{ prefer: "devEngines" },
+				],
+				"package-json/consistent-property-aliases": "error",
 				"package-json/no-empty-fields": "error",
 				"package-json/no-local-dependencies": ["error", { ignorePrivate: false }],
 				"package-json/no-redundant-files": "error",
 				"package-json/no-redundant-publishConfig": "error",
+				"package-json/prefer-rolling-workspace-spec": "error",
 				"package-json/repository-shorthand": "error",
 				"package-json/require-type": "error",
 				"package-json/restrict-private-properties": "error",
@@ -177,6 +186,7 @@ export async function packageJson({
 							"package-json/require-keywords": ["error", { ignorePrivate: true }],
 							"package-json/require-license": ["error", { ignorePrivate: true }],
 							"package-json/require-name": "error",
+							"package-json/require-package-json-export": "error",
 							"package-json/require-repository": ["error", { ignorePrivate: true }],
 							"package-json/require-types": ["error", { ignorePrivate: true }],
 							"package-json/require-version": "error",
@@ -187,6 +197,20 @@ export async function packageJson({
 					? {
 							"package-json/require-engines": "error",
 							"package-json/require-sideEffects": ["error", { ignorePrivate: true }],
+						}
+					: {}),
+
+				...(scope !== undefined || allowedScopes !== undefined
+					? {
+							"package-json/prefer-scoped-name": [
+								"error",
+								{
+									...(allowedScopes !== undefined
+										? { allowed: allowedScopes }
+										: {}),
+									...(scope !== undefined ? { preferred: scope } : {}),
+								},
+							],
 						}
 					: {}),
 			},
