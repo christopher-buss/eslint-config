@@ -127,7 +127,7 @@ catalogs:
     find-up-simple: 1.0.1
     globals: 17.7.0
     jiti: 2.7.0
-    jsonc-eslint-parser: 3.1.0
+    jsonc-eslint-parser: 3.3.0
     local-pkg: 1.2.1
     oxfmt: 0.72.0
     oxlint-plugin-eslint: 1.92.0
