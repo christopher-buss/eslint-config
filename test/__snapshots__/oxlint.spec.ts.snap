@@ -1687,7 +1687,6 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
         "eslint-js/no-restricted-syntax": [
           "error",
           "TSEnumDeclaration[const=true]",
-          "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
         "unused-imports/no-unused-imports": "error",
@@ -4650,7 +4649,6 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "eslint-js/no-restricted-syntax": [
           "error",
           "TSEnumDeclaration[const=true]",
-          "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
         "unused-imports/no-unused-imports": "error",
@@ -9112,7 +9110,6 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
         "eslint-js/no-restricted-syntax": [
           "error",
           "TSEnumDeclaration[const=true]",
-          "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
         "unused-imports/no-unused-imports": "error",
@@ -13247,7 +13244,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "eslint-js/no-restricted-syntax": [
           "error",
           "TSEnumDeclaration[const=true]",
-          "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
         "unused-imports/no-unused-imports": "error",
@@ -15686,7 +15682,6 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "eslint-js/no-restricted-syntax": [
           "error",
           "TSEnumDeclaration[const=true]",
-          "TSExportAssignment",
         ],
         "eslint-js/no-undef-init": "error",
         "unused-imports/no-unused-imports": "error",
