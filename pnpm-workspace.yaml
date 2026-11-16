@@ -64,7 +64,7 @@ catalogs:
     pnpm-workspace-yaml: 1.9.1
     publint: 0.3.23
     tsdown: 0.23.7
-    type-fest: 5.8.0
+    type-fest: 5.10.0
     typescript: 6.0.3
     unplugin-unused: 0.6.0
     vitest: 4.1.10
