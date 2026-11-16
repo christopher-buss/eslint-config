@@ -6,6 +6,7 @@ import type { TestContext } from "vitest";
 import { describe, it } from "vitest";
 
 import { isRecord } from "../src/guards.ts";
+import type { OptionsConfig } from "../src/index.ts";
 import { isentinel } from "../src/index.ts";
 
 /** One type-aware rule from each type-aware config block. */
@@ -41,13 +42,14 @@ async function prepareProject(onTestFinished: TestContext["onTestFinished"]): Pr
 async function createEslint(
 	projectDirectory: string,
 	ignoresTypeAware: Array<string>,
+	naming: NonNullable<OptionsConfig["naming"]> = true,
 ): Promise<ESLint> {
 	const composer = await isentinel({
 		name: "test/ignores-type-aware",
 		gitignore: false,
 		isAgent: false,
 		isInEditor: false,
-		naming: true,
+		naming,
 		pnpm: false,
 		spellCheck: false,
 		typescript: {
@@ -119,5 +121,25 @@ describe("typescript.ignoresTypeAware", () => {
 
 		expect(declaration.rules).not.toContain("flawless/naming-convention");
 		expect(source.rules).toContain("flawless/naming-convention");
+	});
+
+	it("should let naming.ignoresTypeAware replace the shared globs", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		const projectDirectory = await prepareProject(onTestFinished);
+		const eslint = await createEslint(projectDirectory, [], {
+			ignoresTypeAware: ["**/*.config.ts"],
+		});
+
+		const ignored = await resolveFile(
+			eslint,
+			path.join(projectDirectory, "src", "foo.config.ts"),
+		);
+
+		expect(ignored.rules).not.toContain("flawless/naming-convention");
+		expect(ignored.rules).toContain("ts/no-floating-promises");
 	});
 });

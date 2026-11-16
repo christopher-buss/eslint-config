@@ -69,6 +69,12 @@ export interface NamingConfig extends OptionsOverridesTypeAware {
 	allowedWords?: Array<string> | boolean;
 
 	/**
+	 * Globs of files to exclude from type-aware naming rules. Replaces
+	 * `typescript.ignoresTypeAware` for this config.
+	 */
+	ignoresTypeAware?: Array<string>;
+
+	/**
 	 * Whether the project targets Roblox. Enables `@rbxts/react`
 	 * type-reference matchers in the TSX config so React components and
 	 * contexts may use PascalCase without inline disables.
@@ -254,6 +260,12 @@ export interface ReactSettings {
 
 export type ReactConfig = OptionsOverridesTypeAware &
 	ReactSettings & {
+		/**
+		 * Globs of files to exclude from type-aware React rules. Replaces
+		 * `typescript.ignoresTypeAware` for this config.
+		 */
+		ignoresTypeAware?: Array<string>;
+
 		/**
 		 * Whether to enable the React Compiler rules.
 		 *
