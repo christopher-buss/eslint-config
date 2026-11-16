@@ -24,6 +24,8 @@ const ESLINT_COST_PASS: Partial<Record<ToolLabel, string>> = {
 	typed: "eslint-typed",
 };
 
+const ESLINT_CONCURRENCY_FLAG = /^--concurrency(?:=|$)/;
+
 /**
  * Compose the oxlint child command.
  *
@@ -35,7 +37,9 @@ export function composeOxlintCommand(
 	options: LintCliOptions,
 	context: OxlintComposeContext,
 ): ChildCommand {
-	const args: Array<string> = [];
+	// The planned count is in the arguments, so a child that runs without a
+	// lease (the budget failed) still gets it; a granted lease rewrites it.
+	const args = context.threads === undefined ? [] : ["--threads", String(context.threads)];
 	if (options.agents) {
 		args.push("--format", "agent");
 	}
@@ -61,8 +65,7 @@ export function composeOxlintCommand(
 	);
 	const command: ChildCommand = { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
 	if (context.threads !== undefined) {
-		// The granted count is added as `--threads` at lease time, so a
-		// `--print` run shows the command without it. No cost is learned:
+		// No cost is learned:
 		// oxlint's memory does not grow with its threads (most of it is the
 		// type-aware backend), so a peak divided by the threads would be
 		// multiplied back by the thread count on the next lease.
@@ -166,7 +169,11 @@ export function composeEslintCommand(
 		env: environment,
 		label: context.eslintLabel,
 		watchHeap: context.heap?.watch ?? false,
-		workers: eslintDemand(context),
+		// A `--concurrency` in `--eslint-args` comes after the planned one, so
+		// ESLint runs with it and no grant could change it: lease nothing.
+		...(options.eslintArgs.some((argument) => ESLINT_CONCURRENCY_FLAG.test(argument))
+			? {}
+			: { workers: eslintDemand(context) }),
 	};
 }
 

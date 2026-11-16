@@ -69,7 +69,7 @@ export const UNBUDGETED = createRunBudget(undefined, ".");
 /**
  * Start a child with the workers the budget granted: rewrite the engine flag
  * its demand names. ESLint runs one worker on the main thread (`off`). A flag
- * the planner did not compose (oxlint's `--threads`) is put in front.
+ * the planner did not compose is put in front.
  *
  * @param command - The planned child.
  * @param workers - The granted workers.
@@ -109,8 +109,10 @@ export function createRunBudget(
 	project: string,
 	log: BudgetLog = doNothing,
 ): RunBudget {
+	let isClosed = false;
 	return {
 		close: () => {
+			isClosed = true;
 			backend?.budget.close();
 		},
 		lease: async (command) => {
@@ -128,7 +130,14 @@ export function createRunBudget(
 					minWorkers: 1,
 				});
 			} catch (err) {
-				log(`machine budget failed to lease (${errorMessage(err)}); running unbudgeted`);
+				// A wait that a cancel gave up ends when the run closes the
+				// budget; that is no failure to report.
+				if (!isClosed) {
+					log(
+						`machine budget failed to lease (${errorMessage(err)}); running unbudgeted`,
+					);
+				}
+
 				return withoutLease(command);
 			}
 

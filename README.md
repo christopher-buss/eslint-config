@@ -279,7 +279,10 @@ Other behaviours:
   back with the child's peak memory, so the budget learns what one worker of
   each pass costs. oxlint's lease learns nothing, because its memory does not
   grow with its threads. `MACHINE_BUDGET=off` and CI grant every lease in full
-  at once. A `--threads` in `--oxlint-args` is left alone.
+  at once. A `--threads` in `--oxlint-args`, or a `--concurrency` in
+  `--eslint-args`, is left alone and that child leases nothing. Each child
+  starts as soon as it has its lease, before the next child asks for one, and
+  Ctrl+C stops a lease that is still waiting.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
   `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
   (type-aware pass), and `.eslintcache-<key>` (the full config, used by CI,

@@ -1,8 +1,11 @@
 import type { Lease, LeaseReport, LeaseRequest, TreePeaks } from "@isentinel/machine-budget";
 
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { describe, it } from "vitest";
+import type { TestContext } from "vitest";
+import { describe, it, vi } from "vitest";
 
 import type {
 	ChildCommand,
@@ -10,13 +13,14 @@ import type {
 	LintCliOptions,
 	WorkerDemand,
 } from "../src/lint-cli/lib/cli/types.ts";
-import type { BudgetBackend } from "../src/lint-cli/lib/exec/budget.ts";
+import type { BudgetBackend, ChildLease, RunBudget } from "../src/lint-cli/lib/exec/budget.ts";
 import {
 	applyGrant,
 	createRunBudget,
 	openRunBudget,
 	UNBUDGETED,
 } from "../src/lint-cli/lib/exec/budget.ts";
+import { execute, resetCancellation } from "../src/lint-cli/lib/exec/execute.ts";
 import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/plan/command.ts";
 import {
 	FAST_WORKER_MEMORY_MB,
@@ -299,6 +303,27 @@ describe("createRunBudget", () => {
 		]);
 	});
 
+	it("reports no failure for a lease that ends after the budget closed", async ({ expect }) => {
+		expect.assertions(2);
+
+		const lines: Array<string> = [];
+		const failed = Promise.withResolvers<Lease>();
+		const { backend } = fakeBackend();
+		backend.budget.leaseAsync = async () => failed.promise;
+
+		const budget = createRunBudget(backend, ".", (line) => {
+			lines.push(line);
+		});
+
+		const pending = budget.lease(eslintChild());
+		budget.close();
+		failed.reject(new Error("database is not open"));
+		const lease = await pending;
+
+		expect(lease.grant).toBeUndefined();
+		expect(lines).toStrictEqual([]);
+	});
+
 	it("closes the budget", ({ expect }) => {
 		expect.assertions(1);
 
@@ -439,6 +464,39 @@ describe("worker demands on composed children", () => {
 		});
 	});
 
+	it("passes oxlint its planned threads, which a grant rewrites", ({ expect }) => {
+		expect.assertions(2);
+
+		const command = composeOxlintCommand(options(), {
+			oxlintTypeAware: false,
+			paths: ["."],
+			threads: 4,
+		});
+
+		// A child that runs without a lease keeps the planned count.
+		expect(command.args.slice(0, 2)).toStrictEqual(["--threads", "4"]);
+		expect(applyGrant(command, 2).args).toStrictEqual([
+			"--threads",
+			"2",
+			"--no-error-on-unmatched-pattern",
+			".",
+		]);
+	});
+
+	it.for([["--concurrency", "8"], ["--concurrency=8"]])(
+		"leases nothing for ESLint when the user forwards %s",
+		(eslintArgs, { expect }) => {
+			expect.assertions(1);
+
+			const command = composeEslintCommand(
+				options({ eslintArgs }),
+				baseContext({ concurrency: 4, eslintLabel: "fast" }),
+			);
+
+			expect(command.workers).toBeUndefined();
+		},
+	);
+
 	it("leases nothing for oxlint without a thread count", ({ expect }) => {
 		expect.assertions(1);
 
@@ -472,4 +530,109 @@ describe("resolveOxlintThreads", () => {
 			resolveOxlintThreads(options({ oxlintArgs: ["--threads=2"] }), 16, false),
 		).toBeUndefined();
 	});
+});
+
+describe("leasing in execute", () => {
+	function eslintFixture(onTestFinished: TestContext["onTestFinished"]): string {
+		const directory = fs.realpathSync(
+			fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-budget-")),
+		);
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+
+		const packageDirectory = path.join(directory, "node_modules", "eslint");
+		fs.mkdirSync(packageDirectory, { recursive: true });
+		fs.writeFileSync(
+			path.join(packageDirectory, "package.json"),
+			JSON.stringify({ name: "eslint", bin: { eslint: "bin.js" }, version: "0.0.0" }),
+		);
+		fs.writeFileSync(path.join(packageDirectory, "bin.js"), "");
+		return directory;
+	}
+
+	/**
+	 * Record each spawn line, and keep the rest of stderr out of the report.
+	 *
+	 * @param onTestFinished - Restores stderr after the test.
+	 * @param events - Where each spawn is recorded.
+	 */
+	function captureSpawns(
+		onTestFinished: TestContext["onTestFinished"],
+		events: Array<string>,
+	): void {
+		const spy = vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
+			const match = /\[(\w+)\]\S* spawned/.exec(String(chunk));
+			if (match !== null) {
+				events.push(`spawn ${match[1]!}`);
+			}
+
+			return true;
+		});
+		onTestFinished(() => {
+			spy.mockRestore();
+		});
+	}
+
+	function child(label: ChildCommand["label"]): ChildCommand {
+		return { args: [], bin: "eslint", env: {}, label, watchHeap: false, workers: demand() };
+	}
+
+	function heldLease(command: ChildCommand, onRelease: () => void): ChildLease {
+		return { command, grant: undefined, release: onRelease, watch: () => {} };
+	}
+
+	it("spawns each child before it leases the next", async ({ expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		const directory = eslintFixture(onTestFinished);
+		const events: Array<string> = [];
+		captureSpawns(onTestFinished, events);
+		const budget: RunBudget = {
+			close: () => {},
+			lease: async (command) => {
+				events.push(`lease ${command.label}`);
+				return heldLease(command, () => {});
+			},
+		};
+
+		const code = await execute([child("fast"), child("typed")], directory, false, budget);
+
+		expect(code).toBe(0);
+		expect(events).toStrictEqual(["lease fast", "spawn fast", "lease typed", "spawn typed"]);
+	}, 15_000);
+
+	it.for([true, false])(
+		"gives up a pending lease on cancel and returns a late grant (sequential: %s)",
+		{ timeout: 15_000 },
+		async (sequential, { expect, onTestFinished }) => {
+			expect.assertions(2);
+
+			const directory = eslintFixture(onTestFinished);
+			const events: Array<string> = [];
+			captureSpawns(onTestFinished, events);
+			onTestFinished(resetCancellation);
+			const asked = Promise.withResolvers<ChildCommand>();
+			const granted = Promise.withResolvers<ChildLease>();
+			const released = Promise.withResolvers<void>();
+			const budget: RunBudget = {
+				close: () => {},
+				lease: async (command) => {
+					asked.resolve(command);
+					return granted.promise;
+				},
+			};
+
+			const run = execute([child("typed")], directory, sequential, budget);
+			// The run listens for a cancel before it asks for the lease.
+			const command = await asked.promise;
+			process.emit("SIGINT", "SIGINT");
+			const code = await run;
+			granted.resolve(heldLease(command, released.resolve));
+			await released.promise;
+
+			expect(code).toBe(128 + os.constants.signals.SIGINT);
+			expect(events).toStrictEqual([]);
+		},
+	);
 });
