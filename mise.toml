@@ -9,4 +9,4 @@ lockfile = true
 hk = { version = "1.53.0", postinstall = 'if [ -z "$CI" ]; then hk install --mise; fi' }
 node = "lts"
 pkl = "latest"
-pnpm = "12.18.0"
+pnpm = "12.20.0"
