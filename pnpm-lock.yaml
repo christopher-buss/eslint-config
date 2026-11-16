@@ -425,8 +425,8 @@ catalogs:
       specifier: 3.3.0
       version: 3.3.0
     local-pkg:
-      specifier: 1.2.1
-      version: 1.2.1
+      specifier: 2.0.0
+      version: 2.0.0
     oxfmt:
       specifier: 0.78.0
       version: 0.78.0
@@ -604,7 +604,7 @@ importers:
         version: 3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       local-pkg:
         specifier: catalog:prod
-        version: 1.2.1(typescript@6.0.3)
+        version: 2.0.0(typescript@6.0.3)
       oxfmt:
         specifier: catalog:prod
         version: 0.78.0
@@ -3643,9 +3643,9 @@ packages:
     peerDependencies:
       oxfmt: '>=0.63.0'
 
-  local-pkg@1.2.1:
-    resolution: {integrity: sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==}
-    engines: {node: '>=14'}
+  local-pkg@2.0.0:
+    resolution: {integrity: sha512-xvTNwM27EpU+fkLSpo33Pq/nm8m5zNf0aU/hF4W4ZM9RHQjVZa5KTmmXIzEzVsdI09NOUqj0djHhTv96sUowSQ==}
+    engines: {node: '>=20.19.0'}
 
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
@@ -4049,9 +4049,6 @@ packages:
   qified@0.10.1:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
     engines: {node: '>=20'}
-
-  quansync@0.2.11:
-    resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
@@ -7249,11 +7246,11 @@ snapshots:
       jsonc-parser: 3.3.1
       oxfmt: 0.78.0
 
-  local-pkg@1.2.1(typescript@6.0.3):
+  local-pkg@2.0.0(typescript@6.0.3):
     dependencies:
       mlly: 1.8.2(typescript@6.0.3)
       pkg-types: 2.3.1(typescript@6.0.3)
-      quansync: 0.2.11
+      quansync: 1.0.0
     transitivePeerDependencies:
       - typescript
 
@@ -7908,8 +7905,6 @@ snapshots:
   qified@0.10.1:
     dependencies:
       hookified: 2.2.0
-
-  quansync@0.2.11: {}
 
   quansync@1.0.0: {}
 
