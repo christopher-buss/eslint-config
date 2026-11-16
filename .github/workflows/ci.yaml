@@ -16,13 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - name: Set node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Node and pnpm at the versions pinned in mise.lock. hk and pkl are only
+      # needed for the local pre-commit hook.
+      - name: Install node and pnpm
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
-          node-version: lts/*
+          install_args: node pnpm
 
       - name: Setup
         run: npm i -g @antfu/ni
@@ -38,13 +37,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - name: Set node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Node and pnpm at the versions pinned in mise.lock. hk and pkl are only
+      # needed for the local pre-commit hook.
+      - name: Install node and pnpm
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
-          node-version: lts/*
+          install_args: node pnpm
 
       - name: Setup
         run: npm i -g @antfu/ni
@@ -107,13 +105,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - name: Set node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Node and pnpm at the versions pinned in mise.lock. hk and pkl are only
+      # needed for the local pre-commit hook.
+      - name: Install node and pnpm
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
-          node-version: lts/*
+          install_args: node pnpm
 
       - name: Setup
         run: npm i -g @antfu/ni
@@ -137,13 +134,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-
-      - name: Set node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Node and pnpm at the versions pinned in mise.lock. hk and pkl are only
+      # needed for the local pre-commit hook.
+      - name: Install node and pnpm
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
-          node-version: lts/*
+          install_args: node pnpm
 
       - name: Setup
         run: npm i -g @antfu/ni
