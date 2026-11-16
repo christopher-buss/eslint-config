@@ -210,8 +210,8 @@ catalogs:
       specifier: 12.3.0
       version: 12.3.0
     eslint-config-flat-gitignore:
-      specifier: 2.3.0
-      version: 2.3.0
+      specifier: 2.4.0
+      version: 2.4.0
     eslint-plugin-yml:
       specifier: 3.5.0
       version: 3.5.0
@@ -677,7 +677,7 @@ importers:
         version: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-config-flat-gitignore:
         specifier: catalog:dev
-        version: 2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 2.4.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-erasable-syntax-only:
         specifier: catalog:peer
         version: 0.4.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -2872,8 +2872,8 @@ packages:
     peerDependencies:
       eslint: '>=6.0.0'
 
-  eslint-config-flat-gitignore@2.3.0:
-    resolution: {integrity: sha512-bg4ZLGgoARg1naWfsINUUb/52Ksw/K22K+T16D38Y8v+/sGwwIYrGvH/JBjOin+RQtxxC9tzNNiy4shnGtGyyQ==}
+  eslint-config-flat-gitignore@2.4.0:
+    resolution: {integrity: sha512-JhYC+V7qEDiCDsbJcVP8fxNc62fk4+i91YLP/YvmVHlkaQ8Xo99olYN8MO5COdxl7onGlsrfZVONe5NYsZP1UA==}
     peerDependencies:
       eslint: ^9.5.0 || ^10.0.0
 
@@ -6430,7 +6430,7 @@ snapshots:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       semver: 7.8.5
 
-  eslint-config-flat-gitignore@2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-config-flat-gitignore@2.4.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       '@eslint/compat': 2.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
