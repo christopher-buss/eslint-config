@@ -49,8 +49,8 @@ import { resolveCacheKey } from "../src/lint-cli/lib/context.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import { execute, executeStaged } from "../src/lint-cli/lib/exec/execute.ts";
 import { formatCommandLine } from "../src/lint-cli/lib/exec/shell.ts";
-import { collectRepoFiles, oxlintTargets } from "../src/lint-cli/lib/files/collect.ts";
-import type { RepoFiles } from "../src/lint-cli/lib/files/collect.ts";
+import { collectRepositoryFiles, oxlintTargets } from "../src/lint-cli/lib/files/collect.ts";
+import type { RepositoryFiles } from "../src/lint-cli/lib/files/collect.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/lib/files/workspace.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
@@ -751,7 +751,7 @@ describe("cache helpers", () => {
 	});
 });
 
-describe("collectRepoFiles lintable set", () => {
+describe("collectRepositoryFiles lintable set", () => {
 	it("collects the TS/JS family plus JSONC, YAML, TOML, Markdown and Lua", ({
 		expect,
 		onTestFinished,
@@ -777,7 +777,7 @@ describe("collectRepoFiles lintable set", () => {
 			fs.writeFileSync(path.join(directory, name), "");
 		}
 
-		const files = collectRepoFiles(directory, ["."]).lintable;
+		const files = collectRepositoryFiles(directory, ["."]).lintable;
 		const collected = files.map((file) => path.basename(file));
 
 		expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
@@ -1654,7 +1654,7 @@ describe("executeStaged", () => {
 	}, 15_000);
 });
 
-function repoFiles(overrides: Partial<RepoFiles> = {}): RepoFiles {
+function repositoryFiles(overrides: Partial<RepositoryFiles> = {}): RepositoryFiles {
 	return {
 		bustFiles: [],
 		configFiles: [],
@@ -1724,7 +1724,10 @@ describe("collectFixTargets", () => {
 			collectFixTargets(
 				passes,
 				runContext(directory),
-				repoFiles({ lintable: [readme, service, clean], typeAware: [service, clean] }),
+				repositoryFiles({
+					lintable: [readme, service, clean],
+					typeAware: [service, clean],
+				}),
 			),
 		).toStrictEqual([readme, service]);
 	});
@@ -1740,7 +1743,7 @@ describe("collectFixTargets", () => {
 			collectFixTargets(
 				passes,
 				runContext(directory),
-				repoFiles({ lintable: [service], typeAware: [service] }),
+				repositoryFiles({ lintable: [service], typeAware: [service] }),
 			),
 		).toStrictEqual([]);
 	});
@@ -1755,7 +1758,7 @@ describe("collectFixTargets", () => {
 	function fixInputs(overrides: Partial<FixInputs> = {}): FixInputs {
 		return {
 			agentsFormatterPath: "",
-			files: repoFiles(),
+			files: repositoryFiles(),
 			heap: resolveHeapBudget({}, TEST_MEMORY),
 			limits: {
 				explicitMaxWorkers: false,
@@ -1795,7 +1798,7 @@ describe("collectFixTargets", () => {
 		const child = planFixChild(
 			passes,
 			runContext(directory),
-			fixInputs({ files: repoFiles({ outsideCwdTargets: ["../sibling"] }) }),
+			fixInputs({ files: repositoryFiles({ outsideCwdTargets: ["../sibling"] }) }),
 		);
 
 		expect(child!.args.at(-1)).toBe("../sibling");
@@ -1813,7 +1816,7 @@ describe("collectFixTargets", () => {
 			passes,
 			runContext(directory),
 			fixInputs({
-				files: repoFiles({
+				files: repositoryFiles({
 					lintable: [dirty, clean],
 					outsideCwdTargets: ["../sibling"],
 				}),
@@ -1838,7 +1841,7 @@ describe("collectFixTargets", () => {
 		const child = planFixChild(
 			passes,
 			runContext(directory),
-			fixInputs({ files: repoFiles({ outsideCwdTargets: ["../sibling"] }) }),
+			fixInputs({ files: repositoryFiles({ outsideCwdTargets: ["../sibling"] }) }),
 		);
 
 		expect(child!.args).not.toContain("--cache");
@@ -1862,7 +1865,7 @@ describe("collectFixTargets", () => {
 		planFixChild(
 			passes,
 			runContext(directory),
-			fixInputs({ files: repoFiles({ lintable: [dirty] }) }),
+			fixInputs({ files: repositoryFiles({ lintable: [dirty] }) }),
 		);
 
 		expect(openCache(fullCache, false)!.getUpdatedFiles([dirty])).toStrictEqual([dirty]);
@@ -1882,7 +1885,7 @@ describe("collectFixTargets", () => {
 			collectFixTargets(
 				[{ ...skipped, shouldRun: false }],
 				runContext(directory),
-				repoFiles({ lintable: [service], typeAware: [service] }),
+				repositoryFiles({ lintable: [service], typeAware: [service] }),
 			),
 		).toStrictEqual([service]);
 	});
@@ -2036,7 +2039,7 @@ describe("resolveOxlintRun", () => {
 
 		const decision = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
-			{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			{ files: repositoryFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
 			probe,
 		);
 
@@ -2063,7 +2066,7 @@ describe("resolveOxlintRun", () => {
 
 		const decision = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
-			{ files: repoFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			{ files: repositoryFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
 			probe,
 		);
 
@@ -2094,7 +2097,7 @@ describe("resolveOxlintRun", () => {
 		const decision = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
 			{
-				files: repoFiles({
+				files: repositoryFiles({
 					configFiles: [config],
 					typeAware: [path.join(directory, "a.ts")],
 				}),
@@ -2118,7 +2121,7 @@ describe("resolveOxlintRun", () => {
 		const decision = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
 			{
-				files: repoFiles({ typeAware: [path.join(directory, "a.ts")] }),
+				files: repositoryFiles({ typeAware: [path.join(directory, "a.ts")] }),
 				runEslint: true,
 				runOxlint: true,
 			},
@@ -2141,12 +2144,12 @@ describe("resolveOxlintRun", () => {
 		// --oxlint leaves runEslint false; --eslint leaves runOxlint false.
 		const oxlintOnly = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
-			{ files: repoFiles(), runEslint: false, runOxlint: true },
+			{ files: repositoryFiles(), runEslint: false, runOxlint: true },
 			probe,
 		);
 		const eslintOnly = resolveOxlintRun(
 			runContext(directory, { mutate: true }),
-			{ files: repoFiles(), runEslint: true, runOxlint: false },
+			{ files: repositoryFiles(), runEslint: true, runOxlint: false },
 			probe,
 		);
 
@@ -2173,7 +2176,7 @@ describe("resolveOxlintRun", () => {
 		const decision = resolveOxlintRun(
 			runContext(directory, { mutate: false }),
 			{
-				files: repoFiles({
+				files: repositoryFiles({
 					configFiles: [config],
 					typeAware: [path.join(directory, "a.ts")],
 				}),
@@ -2438,7 +2441,7 @@ describe("target normalization", () => {
 		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
 		fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
 
-		const files = collectRepoFiles(directory, [path.join(directory, "src")]);
+		const files = collectRepositoryFiles(directory, [path.join(directory, "src")]);
 
 		expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
 		expect(files.outsideCwdTargets).toStrictEqual([]);
@@ -2450,7 +2453,7 @@ describe("target normalization", () => {
 		const directory = temporaryDirectory(onTestFinished);
 		fs.writeFileSync(path.join(directory, "a.ts"), "export const a = 1;\n");
 
-		const files = collectRepoFiles(directory, ["../sibling"]);
+		const files = collectRepositoryFiles(directory, ["../sibling"]);
 
 		expect(files.outsideCwdTargets).toStrictEqual(["../sibling"]);
 	});
@@ -2461,7 +2464,7 @@ describe("target normalization", () => {
 		const directory = temporaryDirectory(onTestFinished);
 		const outside = temporaryDirectory(onTestFinished);
 
-		const files = collectRepoFiles(directory, [outside]);
+		const files = collectRepositoryFiles(directory, [outside]);
 
 		expect(files.outsideCwdTargets).toStrictEqual([outside]);
 	});
@@ -2476,8 +2479,8 @@ describe("target normalization", () => {
 		fs.mkdirSync(path.join(directory, "src"));
 		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
 
-		const dot = collectRepoFiles(directory, ["./"]);
-		const trailing = collectRepoFiles(directory, ["src/"]);
+		const dot = collectRepositoryFiles(directory, ["./"]);
+		const trailing = collectRepositoryFiles(directory, ["src/"]);
 
 		expect(dot.lintable).toHaveLength(1);
 		expect(dot.outsideCwdTargets).toStrictEqual([]);
@@ -2517,7 +2520,7 @@ describe("ancestor cache-bust collection", () => {
 		fs.mkdirSync(app, { recursive: true });
 		fs.writeFileSync(path.join(app, "a.ts"), "export const a = 1;\n");
 
-		const files = collectRepoFiles(app, ["."]);
+		const files = collectRepositoryFiles(app, ["."]);
 
 		expect(files.bustFiles).toContain(path.join(root, "pnpm-lock.yaml"));
 		expect(files.bustFiles).toContain(path.join(root, "tsconfig.json"));
@@ -2536,7 +2539,7 @@ describe("ancestor cache-bust collection", () => {
 		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
 		fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
 
-		const files = collectRepoFiles(root, ["."]);
+		const files = collectRepositoryFiles(root, ["."]);
 
 		// The root lockfile comes from the in-cwd scan, not doubled by the
 		// ancestor walk.

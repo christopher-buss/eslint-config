@@ -7,12 +7,8 @@ minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
-  - "@oxlint/plugins@1.92.0"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
-  - oxlint@1.92.0
-  - oxlint-plugin-eslint@1.92.0
-  - oxlint-tsgolint@7.0.2006
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -121,7 +117,7 @@ catalogs:
     eslint-plugin-sentinel: 0.1.2
     eslint-plugin-sonarjs: 4.2.0
     eslint-plugin-toml: 1.5.0
-    eslint-plugin-unicorn: 72.0.0
+    eslint-plugin-unicorn: 79.0.0
     eslint-plugin-unused-imports: 4.4.1
     file-entry-cache: 11.1.5
     find-up-simple: 1.0.1

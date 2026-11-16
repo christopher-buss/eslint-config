@@ -38,10 +38,7 @@ function isActive(value: number | null): boolean {
 
 // Fixable: no-else-return
 function getLabel(type: string): string {
-	if (type === "submit") {
-		return "Submit";
-	} 
-		return "Cancel";
+	return type === "submit" ? "Submit" : "Cancel";
 	
 }
 

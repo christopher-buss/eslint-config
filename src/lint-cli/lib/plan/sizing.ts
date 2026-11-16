@@ -6,7 +6,7 @@ import { isCacheStale, normalizePath, openCache } from "../cache/entries.ts";
 import { applyTypeAwareInvalidation } from "../cache/invalidation.ts";
 import type { LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
-import type { RepoFiles } from "../files/collect.ts";
+import type { RepositoryFiles } from "../files/collect.ts";
 import { hasBuilderState } from "../typescript/affected.ts";
 import type { WorkerLimits } from "./concurrency.ts";
 import { computeWorkerCount } from "./concurrency.ts";
@@ -54,7 +54,7 @@ export interface SizingInputs {
 	 */
 	clearedCaches: ReadonlySet<string>;
 	/** The lint-target lists, already filtered of ESLint-ignored files. */
-	files: RepoFiles;
+	files: RepositoryFiles;
 	/** The heap budget the program-building passes are sized against. */
 	heap: HeapBudget;
 	/** The resolved worker limits. */

@@ -193,10 +193,12 @@ async function collectOutput(temporaryDirectory: string): Promise<Map<string, st
 		const filePath = path.join(temporaryDirectory, file);
 		const stat = await fs.stat(filePath);
 
-		if (stat.isFile()) {
-			const content = await fs.readFile(filePath, "utf8");
-			output.set(file, content);
+		if (!stat.isFile()) {
+			continue;
 		}
+
+		const content = await fs.readFile(filePath, "utf8");
+		output.set(file, content);
 	}
 
 	return output;
