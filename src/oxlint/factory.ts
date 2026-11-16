@@ -7,7 +7,7 @@ import type {
 } from "oxlint";
 import { defineConfig } from "oxlint";
 
-import { GLOB_EXCLUDE, GLOB_ROOT, GLOB_SRC } from "../globs.ts";
+import { GLOB_EXCLUDE, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
 import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
@@ -19,10 +19,10 @@ import {
 	hasTypeAwareBackend,
 	isInAgentSession,
 	isInEditorEnvironment,
-	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
 	resolveOxfmtConfigOptionsSync,
+	resolveRootGlobs,
 	resolveSubOptions,
 	warnStandaloneOptions,
 } from "../utils.ts";
@@ -135,7 +135,7 @@ export function isentinel(
 		warnDroppedOverrides: enableDroppedOverrideWarning = true,
 	} = options;
 
-	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
+	const { excludes: rootExcludes, files: rootGlobs } = resolveRootGlobs(customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 	const reactOptions = resolveSubOptions(options, "react");
 	const testingLibrarySettings = options.settings?.["testing-library"];
@@ -246,7 +246,8 @@ export function isentinel(
 		oxlintUnicorn({
 			...resolveSubOptions(options, "unicorn"),
 			roblox: enableRoblox,
-			root: customRootGlobs,
+			root: rootGlobs,
+			rootExcludes,
 			stylistic: stylisticOptions,
 		}),
 	];
@@ -421,6 +422,7 @@ export function isentinel(
 		oxlintDisables({
 			configDirectory: options.configDirectory,
 			root: rootGlobs,
+			rootExcludes,
 			workspaceRoot: findWorkspaceRootSync(),
 		}),
 	);

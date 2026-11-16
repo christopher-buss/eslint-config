@@ -11,12 +11,14 @@ export function oxlintUnicorn({
 	nameReplacements,
 	roblox = true,
 	root: customRootGlobs,
+	rootExcludes = GLOB_ROOT_EXCLUDE,
 	stylistic = true,
 }: OptionsHasRoblox &
 	OptionsStylistic & {
 		excludeFiles?: Array<string>;
 		nameReplacements?: UnicornNameReplacements;
 		root?: Array<string>;
+		rootExcludes?: Array<string>;
 	} = {}): Array<TypedOxlintConfigItem> {
 	const rootGlobs = (customRootGlobs ?? GLOB_ROOT).map(toSourceGlob);
 
@@ -29,7 +31,7 @@ export function oxlintUnicorn({
 		}),
 		...createOxlintConfigs({
 			name: "isentinel/unicorn/root",
-			excludeFiles: [...GLOB_ROOT_EXCLUDE, ...(excludeFiles ?? [])],
+			excludeFiles: [...rootExcludes, ...(excludeFiles ?? [])],
 			files: rootGlobs,
 			rules: unicornRootRules({ nameReplacements, roblox }),
 		}),

@@ -285,6 +285,26 @@ describe("typescript.typeAwareRoot", () => {
 		expect(untyped.rules.filter((rule) => TYPE_AWARE_RULES.includes(rule))).toStrictEqual([]);
 	});
 
+	it("should keep type information for a file excluded from root", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(3);
+
+		const projectDirectory = await prepareProject(onTestFinished);
+		const eslint = await createEslint(projectDirectory, {
+			root: ["!lint.ts"],
+			typeAwareRoot: false,
+		});
+
+		const excluded = await resolveFile(eslint, path.join(projectDirectory, "lint.ts"));
+		const untyped = await resolveFile(eslint, path.join(projectDirectory, "vitest.config.ts"));
+
+		expect(excluded.projectService).toBeTruthy();
+		expect(excluded.rules).toContain("ts/no-floating-promises");
+		expect(untyped.projectService).toBeFalsy();
+	});
+
 	it("should not change root files when true", async ({ expect, onTestFinished }) => {
 		expect.assertions(2);
 

@@ -201,8 +201,8 @@ export interface OptionsTypeScriptTypeAwareRoot {
 	 * TypeScript program. In a monorepo each project's root config files form
 	 * a program of their own, and building one per project is slow.
 	 *
-	 * A `!` pattern in `root` removes a glob from both the root rules and this
-	 * set, and files under `GLOB_ROOT_EXCLUDE` stay type aware.
+	 * Files that `root` excludes (`GLOB_ROOT_EXCLUDE` and `!` patterns) stay
+	 * type aware.
 	 *
 	 * @default true
 	 */
@@ -632,8 +632,10 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	/**
 	 * Customize root-level glob patterns.
 	 *
-	 * These patterns are merged with the default `GLOB_ROOT`. Use "!" prefix to
-	 * remove a default pattern.
+	 * These patterns are merged with the default `GLOB_ROOT`. A "!" pattern
+	 * equal to a default pattern removes it; any other "!" pattern excludes the
+	 * files it matches, such as `!lint.ts` or `!scripts/**`. Like the other
+	 * root globs, it resolves relative to the config file.
 	 *
 	 * Files directly inside a `src`, `test` or `tests` folder of a project
 	 * under `packages`, `apps` or `libs` never count as root files

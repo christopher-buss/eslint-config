@@ -2,7 +2,7 @@ import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-confi
 import type { ResolvableFlatConfig } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
 
-import { GLOB_MARKDOWN, GLOB_ROOT, GLOB_ROOT_EXCLUDE } from "../globs.ts";
+import { GLOB_MARKDOWN } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import {
 	editorConfigOverrides,
@@ -22,10 +22,10 @@ import {
 	isInAgentSession,
 	isInEditorEnvironment,
 	jsonLayoutOverrides,
-	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
 	resolveOxfmtConfig,
+	resolveRootGlobs,
 	resolveSubOptions,
 	shouldEnableFeature,
 	toSourceGlob,
@@ -158,7 +158,7 @@ export async function isentinel(
 		yaml: enableYaml = true,
 	} = options;
 
-	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
+	const { excludes: rootExcludes, files: rootGlobs } = resolveRootGlobs(customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 	const reactOptions = resolveSubOptions(options, "react");
 	const restrictedDomPackage =
@@ -216,10 +216,7 @@ export async function isentinel(
 		"ignoresTypeAware" in typescriptOptions ? typescriptOptions.ignoresTypeAware : undefined;
 	const rootIgnoresTypeAware =
 		"typeAwareRoot" in typescriptOptions && typescriptOptions.typeAwareRoot === false
-			? [
-					...rootGlobs.map(toSourceGlob),
-					...GLOB_ROOT_EXCLUDE.map((glob) => toSourceGlob(`!${glob}`)),
-				]
+			? [...rootGlobs.map(toSourceGlob), ...rootExcludes.map((glob) => `!${glob}`)]
 			: [];
 
 	function typeAwareIgnores(own?: Array<string>): { ignoresTypeAware?: Array<string> } {
@@ -375,6 +372,7 @@ export async function isentinel(
 			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			roblox: enableRoblox,
 			root: rootGlobs,
+			rootExcludes,
 			stylistic: stylisticOptions,
 		}),
 	);
@@ -608,7 +606,9 @@ export async function isentinel(
 		]);
 	}
 
-	configs.push(disables({ root: rootGlobs, workspaceRoot: findWorkspaceRootSync() }));
+	configs.push(
+		disables({ root: rootGlobs, rootExcludes, workspaceRoot: findWorkspaceRootSync() }),
+	);
 
 	// As with spelling above, composed in "only" mode so `oxfmt/oxfmt` resolves
 	// in disable comments; the split strips the rule itself.
