@@ -9,7 +9,6 @@ import { isRecord, isStringArray } from "../src/guards.ts";
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
-import { withoutGitEnvironment } from "./without-git.ts";
 
 /** One engine child as a recording fake bin saw it. */
 interface RecordedChild {
@@ -116,9 +115,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(2);
 
 		const { directory, log } = oxfmtFixture(onTestFinished);
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--no-oxlint-type-aware"], directory, {});
 
 		expect(code).toBe(0);
 		expect(readRecorded(log).filter((child) => child.bin === "oxfmt")).toStrictEqual([
@@ -139,9 +136,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(1);
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmtExitCode: 1 });
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--no-oxlint-type-aware"], directory, {});
 
 		expect(code).toBe(1);
 	});
@@ -150,9 +145,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(2);
 
 		const { directory, log } = oxfmtFixture(onTestFinished);
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 
 		expect(code).toBe(0);
 		expect(readRecorded(log).at(-1)).toStrictEqual({
@@ -171,9 +164,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(1);
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmtExitCode: 2 });
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 
 		expect(code).not.toBe(0);
 	});
@@ -186,7 +177,7 @@ describe("runLint oxfmt pass", () => {
 		onTestFinished(() => {
 			write.mockRestore();
 		});
-		await withoutGitEnvironment(async () => runLint(["--print"], directory, {}));
+		await runLint(["--print"], directory, {});
 		const printed = write.mock.calls.map((call) => String(call[0])).join("");
 
 		expect(printed).toContain("oxfmt --check --config");
@@ -201,11 +192,9 @@ describe("runLint oxfmt pass", () => {
 		const bare = oxfmtFixture(onTestFinished, { config: false });
 		const disabled = oxfmtFixture(onTestFinished);
 		const single = oxfmtFixture(onTestFinished);
-		await withoutGitEnvironment(async () => {
-			await runLint(["--no-oxlint-type-aware"], bare.directory, {});
-			await runLint(["--no-oxlint-type-aware", "--no-oxfmt"], disabled.directory, {});
-			await runLint(["--eslint"], single.directory, {});
-		});
+		await runLint(["--no-oxlint-type-aware"], bare.directory, {});
+		await runLint(["--no-oxlint-type-aware", "--no-oxfmt"], disabled.directory, {});
+		await runLint(["--eslint"], single.directory, {});
 
 		const ranOxfmt = [bare, disabled, single].map(({ log }) => {
 			return readRecorded(log).some((child) => child.bin === "oxfmt");
@@ -219,8 +208,8 @@ describe("runLint oxfmt pass", () => {
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmt: false });
 
-		await expect(
-			withoutGitEnvironment(async () => runLint(["--no-oxlint-type-aware"], directory, {})),
-		).rejects.toThrow(/oxfmt is not installed/);
+		await expect(runLint(["--no-oxlint-type-aware"], directory, {})).rejects.toThrow(
+			/oxfmt is not installed/,
+		);
 	});
 });

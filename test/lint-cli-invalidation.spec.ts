@@ -28,7 +28,6 @@ import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { stateDirectory } from "../src/lint-cli/lib/state.ts";
 import { computeAffectedFiles, hasBuilderState } from "../src/lint-cli/lib/typescript/affected.ts";
 import { allPasses, composeInDirectory, runContext } from "./lint-cli-helpers.ts";
-import { withoutGitEnvironment } from "./without-git.ts";
 
 /**
  * The config-variant key every fixture here runs under. All of these drive the
@@ -736,9 +735,7 @@ describe("plan mutation", () => {
 		const fileA = path.join(directory, "src/a.ts");
 		seedCache(cacheFile, [fileA]);
 
-		const runPlan = withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory));
-		});
+		const runPlan = plan(parseArguments([], {}), runContext(directory));
 
 		expect(allPasses(runPlan).map((pass) => pass.descriptor.label)).toStrictEqual([
 			"fast",
@@ -750,9 +747,7 @@ describe("plan mutation", () => {
 
 		// The mutating plan, by contrast, runs the builder — once its deferred
 		// stage is resolved, which is where a staged run moved it to.
-		withoutGitEnvironment(() => {
-			return allPasses(plan(parseArguments([], {}), runContext(directory, { mutate: true })));
-		});
+		allPasses(plan(parseArguments([], {}), runContext(directory, { mutate: true })));
 
 		expect(builderStateFiles(directory, TYPE_AWARE_BUILD_INFO)).toHaveLength(1);
 	});
@@ -776,9 +771,7 @@ describe("plan mutation", () => {
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
 
-		const runPlan = withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-		});
+		const runPlan = plan(parseArguments([], {}), runContext(directory, { mutate: true }));
 		const typed = allPasses(runPlan).find((pass) => pass.descriptor.label === "typed");
 
 		expect(typed!.shouldRun).toBe(false);
@@ -813,17 +806,15 @@ describe("per-variant cache isolation", () => {
 		const humanCache = seedVariant(directory, {});
 		const agentCache = seedVariant(directory, AGENT_ENVIRONMENT);
 
-		withoutGitEnvironment(() => {
-			plan(
-				parseArguments([], {}),
-				runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
-			);
-			plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-			plan(
-				parseArguments([], {}),
-				runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
-			);
-		});
+		plan(
+			parseArguments([], {}),
+			runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+		);
+		plan(parseArguments([], {}), runContext(directory, { mutate: true }));
+		plan(
+			parseArguments([], {}),
+			runContext(directory, { environment: AGENT_ENVIRONMENT, mutate: true }),
+		);
 
 		// Before the split, each run rewrote the single cache with its own
 		// resolved config, so the other variant re-linted everything.
@@ -843,9 +834,7 @@ describe("per-variant cache isolation", () => {
 		fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 		fs.utimesSync(humanCache, configSeconds + 60, configSeconds + 60);
 
-		withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory, { mutate: true }));
-		});
+		plan(parseArguments([], {}), runContext(directory, { mutate: true }));
 
 		expect(fs.existsSync(agentCache)).toBe(false);
 		expect(fs.existsSync(humanCache)).toBe(true);
@@ -859,7 +848,7 @@ describe("per-variant cache isolation", () => {
 		const configSeconds = Date.now() / 1000 + 60;
 		fs.utimesSync(path.join(directory, "eslint.config.ts"), configSeconds, configSeconds);
 
-		withoutGitEnvironment(() => plan(parseArguments([], {}), runContext(directory)));
+		plan(parseArguments([], {}), runContext(directory));
 
 		expect(fs.existsSync(agentCache)).toBe(true);
 	});
@@ -1211,7 +1200,7 @@ describe("config drift sizing", () => {
 		const args = parseArguments(["src"], {});
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
-		withoutGitEnvironment(() => plan(args, runContext(directory, { mutate: true })));
+		plan(args, runContext(directory, { mutate: true }));
 		const before = builderStateContents(directory, TYPE_AWARE_BUILD_INFO);
 
 		expect(before).toHaveLength(1);
@@ -1223,9 +1212,7 @@ describe("config drift sizing", () => {
 		touch(fileA);
 		editRules(directory);
 
-		const drifted = withoutGitEnvironment(() => {
-			return plan(args, runContext(directory, { mutate: true }));
-		});
+		const drifted = plan(args, runContext(directory, { mutate: true }));
 
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 		// The bust already deleted this pass's cache, so every file is dirty and
@@ -1248,9 +1235,7 @@ describe("config drift sizing", () => {
 		seedAllCaches(directory, TEST_KEY);
 		editRules(directory);
 
-		const drifted = withoutGitEnvironment(() => {
-			return plan(args, runContext(directory, { mutate: true }));
-		});
+		const drifted = plan(args, runContext(directory, { mutate: true }));
 
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 		// Skipping the builder here would leave the *next* run with no prior
@@ -1275,9 +1260,7 @@ describe("config drift sizing", () => {
 		const args = parseArguments(["src"], {});
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
-		const warm = withoutGitEnvironment(() => {
-			return plan(args, runContext(directory, { mutate: true }));
-		});
+		const warm = plan(args, runContext(directory, { mutate: true }));
 
 		expect(typedPass(warm)!.shouldRun).toBe(false);
 
@@ -1285,9 +1268,7 @@ describe("config drift sizing", () => {
 		// hashOfConfig) shifts, so the drift bust must delete the caches and
 		// the typed pass must run at full size.
 		editRules(directory);
-		const drifted = withoutGitEnvironment(() => {
-			return plan(args, runContext(directory, { mutate: true }));
-		});
+		const drifted = plan(args, runContext(directory, { mutate: true }));
 
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 	});

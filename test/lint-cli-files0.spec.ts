@@ -17,7 +17,6 @@ import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
 import { CliError } from "../src/lint-cli/lib/cli/types.ts";
 import { executeStaged } from "../src/lint-cli/lib/exec/execute.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
-import { withoutGitEnvironment } from "./without-git.ts";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CLI_ENTRY = path.join(REPO_ROOT, "src", "lint-cli", "index.ts");
@@ -180,7 +179,7 @@ async function runQuietly(
 	stdin: Readable = Readable.from([]),
 	environment: NodeJS.ProcessEnv = {},
 ): Promise<number> {
-	return withoutGitEnvironment(async () => runLint(argv, directory, environment, stdin));
+	return runLint(argv, directory, environment, stdin);
 }
 
 describe("--files0-from parsing", () => {
