@@ -207,12 +207,18 @@ function overlappingOxlintRules(
 	ranges: Array<Range>,
 	diagnostics: Array<string>,
 ): Array<string> {
+	// Once the preset enables a candidate, oxlint runs it too, as
+	// `unicorn(<rule>)` natively or `unicorn-js(<rule>)` through the jsPlugin.
+	const ruleName = candidateRule(file).slice("unicorn/".length);
+	const candidateCodes = new Set([`unicorn(${ruleName})`, `unicorn-js(${ruleName})`]);
+
 	const rules: Array<string> = [];
 	for (const diagnostic of diagnostics) {
 		const groups = /^(?<name>[^:]+):(?<line>\d+) (?<code>.*)$/.exec(diagnostic)?.groups;
 		if (
 			groups !== undefined &&
 			path.basename(groups["name"] ?? "") === file &&
+			!candidateCodes.has(groups["code"] ?? "") &&
 			overlaps(ranges, Number(groups["line"]))
 		) {
 			rules.push(`oxlint:${groups["code"]}`);

@@ -107,11 +107,11 @@ export function isBuildInfoUnchanged({
 }: BuildInfoCheck): boolean {
 	try {
 		const hashFromText = resolveHashFromText(ts);
-		if (hashFromText === undefined) {
-			return false;
-		}
-
-		if (gateValue === undefined || readState<string>(gatePath) !== gateValue) {
+		if (
+			hashFromText === undefined ||
+			gateValue === undefined ||
+			readState<string>(gatePath) !== gateValue
+		) {
 			return false;
 		}
 
@@ -183,15 +183,13 @@ function isNonEmpty(value: unknown): boolean {
  * @returns The file names and file infos, or `undefined` when unusable.
  */
 function readShape(info: IncrementalBuildInfo, ts: typeof TypeScript): BuildInfoShape | undefined {
-	if (info.version !== ts.version) {
-		return undefined;
-	}
-
-	if (isNonEmpty(info.changeFileSet) || isNonEmpty(info.affectedFilesPendingEmit)) {
-		return undefined;
-	}
-
-	if (info.pendingEmit !== undefined || info.checkPending !== undefined) {
+	if (
+		info.version !== ts.version ||
+		isNonEmpty(info.changeFileSet) ||
+		isNonEmpty(info.affectedFilesPendingEmit) ||
+		info.pendingEmit !== undefined ||
+		info.checkPending !== undefined
+	) {
 		return undefined;
 	}
 
@@ -210,15 +208,13 @@ function readShape(info: IncrementalBuildInfo, ts: typeof TypeScript): BuildInfo
 	}
 
 	const { fileInfos, fileNames } = info;
-	if (!Array.isArray(fileNames) || !Array.isArray(fileInfos) || !Array.isArray(info.root)) {
-		return undefined;
-	}
-
-	if (fileNames.length !== fileInfos.length) {
-		return undefined;
-	}
-
-	if (fileNames.some((name) => typeof name !== "string")) {
+	if (
+		!Array.isArray(fileNames) ||
+		!Array.isArray(fileInfos) ||
+		!Array.isArray(info.root) ||
+		fileNames.length !== fileInfos.length ||
+		fileNames.some((name) => typeof name !== "string")
+	) {
 		return undefined;
 	}
 
@@ -371,11 +367,7 @@ function versionsMatch(
 		// such file mismatch forever — a silent, permanent fallthrough that
 		// nothing else would report.
 		const text = ts.sys.readFile(path.resolve(directory, name));
-		if (text === undefined) {
-			return false;
-		}
-
-		if (hashFromText(ts.sys, text) !== version) {
+		if (text === undefined || hashFromText(ts.sys, text) !== version) {
 			return false;
 		}
 	}

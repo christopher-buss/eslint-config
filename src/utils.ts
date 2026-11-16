@@ -488,11 +488,7 @@ export function isInEditorEnvironment(environment: NodeJS.ProcessEnv = process.e
 		return explicitValue === "true" || explicitValue === "1";
 	}
 
-	if (isCi(environment)) {
-		return false;
-	}
-
-	if (isInGitHooksOrLintStaged(environment)) {
+	if (isCi(environment) || isInGitHooksOrLintStaged(environment)) {
 		return false;
 	}
 
