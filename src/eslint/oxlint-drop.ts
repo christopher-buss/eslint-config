@@ -79,15 +79,16 @@ export function warnDeadMappedRules(
 }
 
 /**
- * Warn that hybrid mode is enabled without oxlint-tsgolint, so the type-aware
- * rules stay in ESLint instead of running in oxlint.
+ * Warn that hybrid mode is enabled without a type-aware Oxlint backend (tsrs or
+ * oxlint-tsgolint), so the type-aware rules stay in ESLint instead of running
+ * in oxlint.
  */
-export function warnMissingTsgolint(): void {
+export function warnMissingTypeAwareBackend(): void {
 	// oxlint-disable-next-line no-console -- Info for plugin
 	console.warn(
-		"[@isentinel/eslint-config] Hybrid mode is enabled but oxlint-tsgolint " +
-			"is not installed. Type-aware rules stay in ESLint instead of running " +
-			"in oxlint; install oxlint-tsgolint for the full hand-off.",
+		"[@isentinel/eslint-config] Hybrid mode is enabled but no type-aware " +
+			"oxlint backend is installed. Type-aware rules stay in ESLint instead " +
+			"of running in oxlint; install tsrs or oxlint-tsgolint for the full hand-off.",
 	);
 }
 
@@ -108,7 +109,8 @@ export function warnMissingTsgolint(): void {
  * up. See {@link targetsJsOrTs}.
  *
  * @param configs - The resolved flat config items (mutated in place).
- * @param typeAware - Whether oxlint runs type-aware (oxlint-tsgolint present).
+ * @param typeAware - Whether oxlint runs type-aware (tsrs or oxlint-tsgolint
+ *   present).
  *   When `false`, tsgolint rules are kept in ESLint so they do not vanish from
  *   both engines.
  * @param mode - The hybrid mode; `native` keeps jsPlugin rules in ESLint.
@@ -369,8 +371,9 @@ function findDeadMappedRules(
  * the resolver, so this side must too or the two disagree.
  *
  * @param route - The rule's resolved route.
- * @param typeAware - Whether oxlint-tsgolint is present to run type-aware
- *   rules. When absent they stay in ESLint rather than vanishing from both.
+ * @param typeAware - Whether a type-aware backend (tsrs or oxlint-tsgolint) is
+ *   present to run type-aware rules. When absent they stay in ESLint rather
+ *   than vanishing from both.
  * @param mode - The hybrid mode.
  * @returns Whether oxlint runs the rule.
  */

@@ -394,7 +394,7 @@ or `--`.
 | `--fix`                        | Check as usual, then fix only the files the checks reported (one child).                                                           |
 | `--agents`, `--no-agents`      | Force agent-friendly output from both linters on or off (default: on in an agent session).                                         |
 | `--type-aware=off\|only\|full` | Force a single ESLint pass: `off` fast-only, `only` type-aware-only, `full` the whole config in one pass. Cannot mix with `--fix`. |
-| `--no-oxlint-type-aware`       | Skip oxlint's type-aware rules (no `oxlint-tsgolint` needed).                                                                      |
+| `--no-oxlint-type-aware`       | Skip oxlint's type-aware rules (no `tsrs` or `oxlint-tsgolint` needed).                                                            |
 | `--no-cache`                   | Disable ESLint's on-disk cache.                                                                                                    |
 | `--concurrency <n\|off>`       | Override the concurrency heuristic with a fixed worker count.                                                                      |
 | `--eslint-args "<args>"`       | Extra arguments forwarded verbatim to ESLint.                                                                                      |
@@ -417,15 +417,19 @@ or `--`.
 | `ESLINT_TYPE_AWARE`     | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
 | `CI`                    | When set, the runner uses the single full pass with `--cache-strategy content` (see below).                          |
 
-### Type-aware oxlint and tsgolint
+### Type-aware oxlint backends
 
-By default the runner passes `--type-aware` to oxlint, which needs
-[`oxlint-tsgolint`](https://www.npmjs.com/package/oxlint-tsgolint). If it is not
-installed the runner errors out rather than silently skipping type-aware rules.
-Install it, or pass `--no-oxlint-type-aware` to run oxlint without them:
+By default the runner passes `--type-aware` to oxlint, which needs a type-aware
+backend: [`tsrs`](https://www.npmjs.com/package/tsrs) (oxlint 1.93+) or
+[`oxlint-tsgolint`](https://www.npmjs.com/package/oxlint-tsgolint). Oxlint tries
+`tsrs` first. If neither is installed the runner errors out rather than silently
+skipping type-aware rules. Install one, or pass `--no-oxlint-type-aware` to run
+oxlint without them:
 
 ```bash
 pnpm i -D oxlint oxlint-tsgolint
+# or
+pnpm i -D oxlint tsrs
 ```
 
 `--type-aware=off` also drops oxlint's type-aware pass, since the fast mode
@@ -912,7 +916,8 @@ export default isentinel({
 });
 ```
 
-Requires the optional peer dependencies:
+Requires the optional peer dependencies: `oxlint` and a type-aware backend,
+`oxlint-tsgolint` or `tsrs`:
 
 ```bash
 pnpm i -D oxlint oxlint-tsgolint

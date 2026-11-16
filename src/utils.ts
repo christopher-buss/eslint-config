@@ -177,6 +177,24 @@ export function createTsParser({
 	};
 }
 
+/**
+ * Packages that give Oxlint a type-aware backend, in the order Oxlint tries
+ * them.
+ */
+export const TYPE_AWARE_BACKENDS = ["tsrs", "oxlint-tsgolint"] as const;
+
+/**
+ * Whether a type-aware Oxlint backend is installed: `tsrs` (its `tsrs-lint`
+ * binary) or `oxlint-tsgolint`.
+ *
+ * @param paths - Directories to resolve from. Defaults to the process cwd.
+ * @returns Whether either backend is resolvable.
+ */
+export function hasTypeAwareBackend(paths?: Array<string>): boolean {
+	const options = paths === undefined ? undefined : { paths };
+	return TYPE_AWARE_BACKENDS.some((name) => isPackageExists(name, options));
+}
+
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
 	if (isCi() || !process.stdout.isTTY) {
 		return;

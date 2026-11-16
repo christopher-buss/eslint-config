@@ -2231,12 +2231,12 @@ function writeFakeToolBin(directory: string, name: string, body: string): void {
 }
 
 // A no-op eslint bin so a degraded (oxlint-dropped) run completes instead of
-// failing to resolve the real binary. oxlint-tsgolint is never installed in
-// these temp dirs, so the tsgolint check sees it absent.
+// failing to resolve the real binary. Neither tsrs nor oxlint-tsgolint is
+// installed in these temp dirs, so the backend check sees none.
 const NOOP_ESLINT_BIN = "process.exit(0);";
 
-describe("runLint tsgolint check ordering", () => {
-	it("does not error without oxlint-tsgolint when the hybrid gate drops oxlint", async ({
+describe("runLint type-aware backend check ordering", () => {
+	it("does not error without a type-aware backend when the hybrid gate drops oxlint", async ({
 		expect,
 		onTestFinished,
 	}) => {
@@ -2257,7 +2257,7 @@ describe("runLint tsgolint check ordering", () => {
 		expect(code).toBe(0);
 	});
 
-	it("still errors for an explicit --oxlint run without oxlint-tsgolint", async ({
+	it("still errors for an explicit --oxlint run without a type-aware backend", async ({
 		expect,
 		onTestFinished,
 	}) => {
@@ -2270,10 +2270,10 @@ describe("runLint tsgolint check ordering", () => {
 
 		await expect(
 			withoutGitEnvironment(async () => runLint(["--oxlint"], directory, {})),
-		).rejects.toThrow(/oxlint-tsgolint is not installed/);
+		).rejects.toThrow(/No type-aware oxlint backend is installed/);
 	});
 
-	it("prints without erroring when oxlint-tsgolint is absent", async ({
+	it("prints without erroring when no type-aware backend is installed", async ({
 		expect,
 		onTestFinished,
 	}) => {

@@ -22,7 +22,7 @@ Flags:
   --type-aware=off|only|full
                            Force a single ESLint pass. Default runs the fast and
                            type-aware passes concurrently; full is the escape hatch.
-  --no-oxlint-type-aware   Skip oxlint's type-aware rules (no tsgolint needed).
+  --no-oxlint-type-aware   Skip oxlint's type-aware rules (no tsrs or tsgolint needed).
   --no-cache               Disable ESLint's cache.
   --concurrency <n|off>    Override the concurrency heuristic.
   --eslint-args "<args>"   Extra arguments for ESLint.

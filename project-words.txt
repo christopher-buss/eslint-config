@@ -52,6 +52,7 @@ textnodes
 thenables
 tsdoc
 tsgolint
+tsrs
 typecheck
 unjs
 unthrown

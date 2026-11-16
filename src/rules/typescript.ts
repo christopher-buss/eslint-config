@@ -99,7 +99,7 @@ export function typescriptRules({
 /**
  * Type-aware TypeScript rules shared between the ESLint and oxlint factories.
  *
- * In hybrid mode these are executed by oxlint-tsgolint (`oxlint
+ * In hybrid mode these are executed by tsrs or oxlint-tsgolint (`oxlint
  * --type-aware`).
  *
  * @param options - Shared rule options.

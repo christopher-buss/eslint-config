@@ -1,4 +1,3 @@
-import { isPackageExists } from "local-pkg";
 import type {
 	DummyRuleMap,
 	ExternalPluginEntry,
@@ -17,6 +16,7 @@ import type { Rules } from "../types.ts";
 import {
 	findWorkspaceRootSync,
 	getOverrides,
+	hasTypeAwareBackend,
 	isInAgentSession,
 	isInEditorEnvironment,
 	mergeGlobs,
@@ -161,7 +161,7 @@ export function isentinel(
 	const hasComplement = !enableRoblox || robloxScopedFiles !== undefined;
 	const needsComplementOverlay = enableRoblox && robloxScopedFiles !== undefined;
 
-	const typeAware = linterOptions?.typeAware ?? isPackageExists("oxlint-tsgolint");
+	const typeAware = linterOptions?.typeAware ?? hasTypeAwareBackend();
 
 	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;

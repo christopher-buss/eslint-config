@@ -123,9 +123,9 @@ export type OxlintFactoryOptions = {
 	 * Top-level linter options emitted into the generated config
 	 * (`typeAware`, `typeCheck`, `maxWarnings`, ...).
 	 *
-	 * `typeAware` defaults to `true` when `oxlint-tsgolint` is resolvable,
-	 * so type-aware rules run without passing `--type-aware` on the CLI.
-	 * CLI flags take precedence over these values.
+	 * `typeAware` defaults to `true` when `tsrs` or `oxlint-tsgolint` is
+	 * resolvable, so type-aware rules run without passing `--type-aware` on the
+	 * CLI. CLI flags take precedence over these values.
 	 */
 	options?: OxlintLinterOptions;
 

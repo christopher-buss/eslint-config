@@ -1,7 +1,6 @@
 import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-config-utils";
 import type { ResolvableFlatConfig } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
-import { isPackageExists } from "local-pkg";
 
 import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
@@ -18,6 +17,7 @@ import type { RuleOptions } from "../typegen.d.ts";
 import {
 	findWorkspaceRootSync,
 	getOverrides,
+	hasTypeAwareBackend,
 	isAgentAutofixDisabled,
 	isInAgentSession,
 	isInEditorEnvironment,
@@ -676,23 +676,24 @@ export async function isentinel(
 		// generated Oxlint capability data, which nothing reads when hybrid mode
 		// is off (the default). Keeping it off the static graph saves every
 		// plain ESLint run from parsing it.
-		const { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTsgolint } =
+		const { dropOxlintCoveredRules, warnDeadMappedRules, warnMissingTypeAwareBackend } =
 			await import("./oxlint-drop.ts");
 
-		const tsgolintAvailable = isPackageExists("oxlint-tsgolint");
-		if (!tsgolintAvailable) {
-			warnMissingTsgolint();
+		const typeAwareAvailable = hasTypeAwareBackend();
+		if (!typeAwareAvailable) {
+			warnMissingTypeAwareBackend();
 		}
 
 		// Hybrid mode: Oxlint owns every rule the resolver routes to it, so drop
 		// them from the ESLint configs. Type-aware rules are kept in ESLint when
-		// oxlint-tsgolint is absent so they do not vanish entirely.
+		// no type-aware backend (tsrs or oxlint-tsgolint) is installed so they do
+		// not vanish entirely.
 		composer = composer.onResolved((resolved) => {
 			if (options.oxlintWarnDeadRules !== false) {
 				warnDeadMappedRules(resolved, oxlintMode);
 			}
 
-			dropOxlintCoveredRules(resolved, tsgolintAvailable, oxlintMode);
+			dropOxlintCoveredRules(resolved, typeAwareAvailable, oxlintMode);
 		});
 	}
 
