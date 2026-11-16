@@ -6,6 +6,20 @@ import { defineConfig } from "vitest/config";
 // tests expect a temp directory to resolve no packages.
 delete process.env["NODE_PATH"];
 
+// A git hook run from a linked worktree exports these, which would point the
+// git commands that tests run in temp repos at this repository instead.
+for (const key of [
+	"GIT_ALTERNATE_OBJECT_DIRECTORIES",
+	"GIT_COMMON_DIR",
+	"GIT_DIR",
+	"GIT_INDEX_FILE",
+	"GIT_OBJECT_DIRECTORY",
+	"GIT_PREFIX",
+	"GIT_WORK_TREE",
+]) {
+	delete process.env[key];
+}
+
 export default defineConfig({
 	test: {
 		// The lint CLI tests start real runs. Keep them off the machine budget

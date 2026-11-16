@@ -192,9 +192,28 @@ export interface OptionsTypeScriptWithTypes {
 	typeAware?: boolean;
 }
 
-export type OptionsTypescript =
+export interface OptionsTypeScriptTypeAwareRoot {
+	/**
+	 * Lint root files (the resolved `root` globs, by convention config files)
+	 * with type information. Set to `false` to add the root source globs to the
+	 * type-aware ignores of every type-aware config (typescript, roblox,
+	 * flawless, naming, react), so root files get no type-aware rules and no
+	 * TypeScript program. In a monorepo each project's root config files form
+	 * a program of their own, and building one per project is slow.
+	 *
+	 * Files that `root` excludes (`GLOB_ROOT_EXCLUDE` and `!` patterns) stay
+	 * type aware.
+	 *
+	 * @default true
+	 */
+	typeAwareRoot?: boolean;
+}
+
+export type OptionsTypescript = (
 	| (OptionsOverridesTypeAware & OptionsTypeScriptErasableOnly & OptionsTypeScriptParserOptions)
-	| (OptionsOverridesTypeAware & OptionsTypeScriptErasableOnly & OptionsTypeScriptWithTypes);
+	| (OptionsOverridesTypeAware & OptionsTypeScriptErasableOnly & OptionsTypeScriptWithTypes)
+) &
+	OptionsTypeScriptTypeAwareRoot;
 
 export interface PerfectionistConfig {
 	customClassGroups?: Array<string>;
@@ -613,8 +632,10 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	/**
 	 * Customize root-level glob patterns.
 	 *
-	 * These patterns are merged with the default `GLOB_ROOT`. Use "!" prefix to
-	 * remove a default pattern.
+	 * These patterns are merged with the default `GLOB_ROOT`. A "!" pattern
+	 * equal to a default pattern removes it; any other "!" pattern excludes the
+	 * files it matches, such as `!lint.ts` or `!scripts/**`. Like the other
+	 * root globs, it resolves relative to the config file.
 	 *
 	 * Files directly inside a `src`, `test` or `tests` folder of a project
 	 * under `packages`, `apps` or `libs` never count as root files

@@ -8,6 +8,7 @@ import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import { oxlintDisables } from "../src/oxlint/configs/disables.ts";
 import { oxlintUnicorn } from "../src/oxlint/configs/unicorn.ts";
+import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 
 interface RootRules {
 	defaultExportOff: boolean;
@@ -53,6 +54,12 @@ async function rootRulesFor(files: Array<string>, root?: Array<string>): Promise
 	}
 }
 
+function rootOverrides<T extends { files: Array<string> }>(overrides: Array<T> = []): Array<T> {
+	return overrides.filter((override) => {
+		return override.files.some((glob) => glob === "./*" || glob.startsWith("./*."));
+	});
+}
+
 const ROOT = { defaultExportOff: true, filenamesUnchecked: true };
 const NOT_ROOT = { defaultExportOff: false, filenamesUnchecked: false };
 
@@ -81,6 +88,35 @@ describe("root globs", () => {
 				["places/**", "!packages/*/*"],
 			),
 		).resolves.toStrictEqual([ROOT, NOT_ROOT, NOT_ROOT]);
+	});
+
+	it("excludes files matched by a non-default negated root glob", async ({ expect }) => {
+		expect.assertions(1);
+
+		await expect(
+			rootRulesFor(
+				["lint.ts", "vitest.config.ts", "packages/a/lint.ts"],
+				["!lint.ts", "!packages/*/lint.ts"],
+			),
+		).resolves.toStrictEqual([NOT_ROOT, ROOT, NOT_ROOT]);
+	});
+
+	it("excludes negated root globs from the oxlint root blocks", ({ expect }) => {
+		expect.assertions(2);
+
+		const config = oxlintIsentinel({
+			name: "test/root-globs-oxlint",
+			gitignore: false,
+			isAgent: false,
+			isInEditor: false,
+			root: ["!lint.ts"],
+		});
+		const rootBlocks = rootOverrides(config.overrides);
+
+		expect(rootBlocks.length).toBeGreaterThanOrEqual(2);
+		expect(rootBlocks.map((override) => override.excludeFiles)).toStrictEqual(
+			rootBlocks.map(() => ["{packages,apps,libs}/*/{src,test,tests}/*", "./lint.ts"]),
+		);
 	});
 
 	it("excludes source folders from the oxlint root blocks", ({ expect }) => {

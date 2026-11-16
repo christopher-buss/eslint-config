@@ -15,7 +15,7 @@ import { minVersion } from "semver";
 
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
-import { GLOB_SRC_EXT } from "./globs.ts";
+import { GLOB_ROOT, GLOB_ROOT_EXCLUDE, GLOB_SRC_EXT } from "./globs.ts";
 import { isRecord, isStringArray } from "./guards.ts";
 import { editorConfigOverrides } from "./prettier-config.ts";
 import type { EditorConfigOverride } from "./prettier-config.ts";
@@ -430,6 +430,13 @@ const AGENT_CHECKS: Array<AgentCheck> = [
 	environmentMatcher("TERM_PROGRAM", /kiro/, { noTty: true }),
 ];
 
+export interface RootGlobs {
+	/** Globs of files that never count as root files. */
+	excludes: Array<string>;
+	/** Globs of root files. */
+	files: Array<string>;
+}
+
 /**
  * Whether the process runs inside an AI coding agent session.
  *
@@ -529,42 +536,33 @@ export function typeAwareSplitFromEnvironment(): TypeAwareSplitMode | undefined 
 }
 
 /**
- * Merge custom glob patterns.
+ * Resolve the `root` option against `GLOB_ROOT`.
  *
- * - Patterns starting with "!" are used to remove matching patterns
- * - Other patterns are added to the result.
+ * A `!` pattern that equals an entry already in the list removes that entry.
+ * Any other `!` pattern becomes an exclusion, added to `GLOB_ROOT_EXCLUDE`.
  *
- * @example
- *
- * ```ts
- * const result = mergeGlobs(GLOB_ROOT, ["places/**", "!apps/**"]);
- * // Returns: ["*", "packages/**", "libs/**", "places/**"]
- * ```
- *
- * @param globs - The default root glob patterns.
- * @param additionalPatterns - Custom root patterns to merge (optional).
- * @returns The merged array of glob patterns.
+ * @param customGlobs - The user's `root` patterns (optional).
+ * @returns The root globs and the exclusions to apply beside them.
  */
-export function mergeGlobs(
-	globs: Array<string>,
-	additionalPatterns?: Array<string>,
-): Array<string> {
-	if (!additionalPatterns || additionalPatterns.length === 0) {
-		return [...globs];
-	}
+export function resolveRootGlobs(customGlobs: Array<string> = []): RootGlobs {
+	let files = [...GLOB_ROOT];
+	const excludes = [...GLOB_ROOT_EXCLUDE];
 
-	let result = [...globs];
+	for (const pattern of customGlobs) {
+		if (!pattern.startsWith("!")) {
+			files.push(pattern);
+			continue;
+		}
 
-	for (const pattern of additionalPatterns) {
-		if (pattern.startsWith("!")) {
-			const patternToRemove = pattern.slice(1);
-			result = result.filter((item) => item !== patternToRemove);
+		const glob = pattern.slice(1);
+		if (files.includes(glob)) {
+			files = files.filter((item) => item !== glob);
 		} else {
-			result.push(pattern);
+			excludes.push(glob);
 		}
 	}
 
-	return result;
+	return { excludes, files };
 }
 
 /**

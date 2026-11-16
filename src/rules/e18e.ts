@@ -18,7 +18,8 @@ const NODE_GET_OR_INSERT = 26;
 /**
  * The e18e source rules shared between the ESLint and oxlint factories. Mirrors
  * the `modernization` and `performanceImprovements` presets of
- * `@e18e/eslint-plugin`; all rules are syntax-only (no type information).
+ * `@e18e/eslint-plugin`, plus opt-in rules that no other enabled rule covers;
+ * all rules are syntax-only (no type information).
  *
  * The `moduleReplacements` preset is not included here: its only rule,
  * `ban-dependencies`, has JSON-only visitors and so is applied separately
@@ -60,10 +61,16 @@ export function e18eRules({
 					"e18e/prefer-date-now": "error",
 					"e18e/prefer-includes-over-regex-test": "error",
 					"e18e/prefer-regex-test": "error",
+					"e18e/prefer-slice-over-split-index": "error",
 					"e18e/prefer-static-collator": "error",
 					"e18e/prefer-static-regex": "error",
 					"e18e/prefer-string-fromcharcode": "error",
+					"e18e/prefer-throw-if-no-entry": "error",
 					"e18e/prefer-timer-args": "error",
+
+					// Its fix rewrites `split(sep)[0]` to `split(sep, 1)[0]`,
+					// which `prefer-slice-over-split-index` then reports.
+					"unicorn/prefer-split-limit": "off",
 				}
 			: {}),
 	};

@@ -80,7 +80,6 @@ import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
 import { composeInDirectory, runContext, TEST_MEMORY } from "./lint-cli-helpers.ts";
-import { withoutGitEnvironment } from "./without-git.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 	return {
@@ -778,7 +777,7 @@ describe("collectRepoFiles lintable set", () => {
 			fs.writeFileSync(path.join(directory, name), "");
 		}
 
-		const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["."]).lintable);
+		const files = collectRepoFiles(directory, ["."]).lintable;
 		const collected = files.map((file) => path.basename(file));
 
 		expect(collected.toSorted()).toStrictEqual(lintable.toSorted());
@@ -815,31 +814,25 @@ describe("oxlintTargets", () => {
 		expect.assertions(1);
 
 		const directory = temporaryDirectory(onTestFinished);
-		withoutGitEnvironment(() => execFileSync("git", ["init", "-q"], { cwd: directory }));
+		execFileSync("git", ["init", "-q"], { cwd: directory });
 		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
 		// The only oxlint-eligible target is the one git ignores, so the set
 		// collapses to empty rather than handing oxlint an all-ignored run it
 		// exits non-zero on.
-		expect(
-			withoutGitEnvironment(() => {
-				return oxlintTargets(directory, ["pnpm-lock.yaml", "src/typegen.d.ts"]);
-			}),
-		).toStrictEqual([]);
+		expect(oxlintTargets(directory, ["pnpm-lock.yaml", "src/typegen.d.ts"])).toStrictEqual([]);
 	});
 
 	it("keeps non-ignored targets alongside an ignored one", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
 		const directory = temporaryDirectory(onTestFinished);
-		withoutGitEnvironment(() => execFileSync("git", ["init", "-q"], { cwd: directory }));
+		execFileSync("git", ["init", "-q"], { cwd: directory });
 		fs.writeFileSync(path.join(directory, ".gitignore"), "src/typegen.d.ts\n");
 
-		expect(
-			withoutGitEnvironment(() => {
-				return oxlintTargets(directory, ["src/typegen.d.ts", "src/index.ts"]);
-			}),
-		).toStrictEqual(["src/index.ts"]);
+		expect(oxlintTargets(directory, ["src/typegen.d.ts", "src/index.ts"])).toStrictEqual([
+			"src/index.ts",
+		]);
 	});
 
 	it("filters nothing outside a git repository", ({ expect, onTestFinished }) => {
@@ -847,9 +840,7 @@ describe("oxlintTargets", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 
-		expect(
-			withoutGitEnvironment(() => oxlintTargets(directory, ["a.ts", "b.ts"])),
-		).toStrictEqual(["a.ts", "b.ts"]);
+		expect(oxlintTargets(directory, ["a.ts", "b.ts"])).toStrictEqual(["a.ts", "b.ts"]);
 	});
 });
 
@@ -1169,9 +1160,7 @@ describe("plan", () => {
 		expect.assertions(5);
 
 		const directory = temporaryDirectory(onTestFinished);
-		const staged = withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory));
-		});
+		const staged = plan(parseArguments([], {}), runContext(directory));
 
 		expect(staged.eager.oxlint).toBe(true);
 		expect(staged.eager.oxlintTypeAware).toBe(true);
@@ -1189,9 +1178,7 @@ describe("plan", () => {
 		expect.assertions(3);
 
 		const directory = temporaryDirectory(onTestFinished);
-		const staged = withoutGitEnvironment(() => {
-			return plan(parseArguments(["--oxlint"], {}), runContext(directory));
-		});
+		const staged = plan(parseArguments(["--oxlint"], {}), runContext(directory));
 
 		expect(staged.eager.oxlint).toBe(true);
 		expect(staged.eager.passes).toStrictEqual([]);
@@ -1202,15 +1189,11 @@ describe("plan", () => {
 		expect.assertions(2);
 
 		const directory = temporaryDirectory(onTestFinished);
-		const fast = withoutGitEnvironment(() => {
-			return plan(parseArguments(["--type-aware=off"], {}), runContext(directory));
-		});
-		const full = withoutGitEnvironment(() => {
-			return plan(
-				parseArguments([], {}),
-				runContext(directory, { environment: { CI: "true" } }),
-			);
-		});
+		const fast = plan(parseArguments(["--type-aware=off"], {}), runContext(directory));
+		const full = plan(
+			parseArguments([], {}),
+			runContext(directory, { environment: { CI: "true" } }),
+		);
 
 		expect(fast.eager.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["fast"]);
 		expect(full.eager.passes.map((pass) => pass.descriptor.label)).toStrictEqual(["eslint"]);
@@ -1223,12 +1206,10 @@ describe("plan staging", () => {
 		directory: string,
 		environment: NodeJS.ProcessEnv = {},
 	): { deferred: Array<string>; eager: Array<string> } {
-		const staged = withoutGitEnvironment(() => {
-			return plan(
-				parseArguments(argv, environment),
-				runContext(directory, { environment, mutate: true }),
-			);
-		});
+		const staged = plan(
+			parseArguments(argv, environment),
+			runContext(directory, { environment, mutate: true }),
+		);
 
 		return {
 			deferred: (staged.resolveDeferred?.() ?? []).map((pass) => pass.descriptor.label),
@@ -1278,9 +1259,7 @@ describe("plan staging", () => {
 		expect.assertions(1);
 
 		const directory = hybridDirectory(onTestFinished);
-		const printed = withoutGitEnvironment(() => {
-			return plan(parseArguments([], {}), runContext(directory));
-		});
+		const printed = plan(parseArguments([], {}), runContext(directory));
 
 		expect(printed.resolveDeferred).toBeUndefined();
 	});
@@ -2263,7 +2242,7 @@ describe("runLint type-aware backend check ordering", () => {
 		// --type-aware and the check must not fire.
 		writeHybridStatus(directory, false);
 
-		const code = await withoutGitEnvironment(async () => runLint([], directory, {}));
+		const code = await runLint([], directory, {});
 
 		expect(code).toBe(0);
 	});
@@ -2279,9 +2258,9 @@ describe("runLint type-aware backend check ordering", () => {
 			fs.rmSync(directory, { force: true, recursive: true });
 		});
 
-		await expect(
-			withoutGitEnvironment(async () => runLint(["--oxlint"], directory, {})),
-		).rejects.toThrow(/No type-aware oxlint backend is installed/);
+		await expect(runLint(["--oxlint"], directory, {})).rejects.toThrow(
+			/No type-aware oxlint backend is installed/,
+		);
 	});
 
 	it("prints without erroring when no type-aware backend is installed", async ({
@@ -2296,7 +2275,7 @@ describe("runLint type-aware backend check ordering", () => {
 			spy.mockRestore();
 			fs.rmSync(directory, { force: true, recursive: true });
 		});
-		const code = await withoutGitEnvironment(async () => runLint(["--print"], directory, {}));
+		const code = await runLint(["--print"], directory, {});
 
 		expect(code).toBe(0);
 
@@ -2388,9 +2367,7 @@ describe("runLint --fix", () => {
 		expect.assertions(2);
 
 		const { argvLog, directory } = fixFixture([], onTestFinished);
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 
 		// The budget is off in tests, so oxlint gets every thread it asked for.
 		const threads = resolveOxlintThreads(options(), os.availableParallelism(), false);
@@ -2408,9 +2385,7 @@ describe("runLint --fix", () => {
 		expect.assertions(2);
 
 		const { argvLog, directory } = fixFixture(["dirty.ts"], onTestFinished);
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 		const fixChild = spawnedArgv(argvLog).at(-1);
 
 		expect(code).toBe(0);
@@ -2437,9 +2412,7 @@ describe("runLint --fix", () => {
 		writeFakeToolBin(directory, "oxlint", loggingBin(logPath, "oxlint"));
 		writeFakeToolBin(directory, "eslint", loggingBin(logPath, "eslint"));
 
-		const code = await withoutGitEnvironment(async () => {
-			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
-		});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 		const lines = fs.readFileSync(logPath, "utf8").trim().split("\n");
 
 		expect(code).toBe(0);
@@ -2465,9 +2438,7 @@ describe("target normalization", () => {
 		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
 		fs.writeFileSync(path.join(directory, "b.ts"), "export const b = 2;\n");
 
-		const files = withoutGitEnvironment(() => {
-			return collectRepoFiles(directory, [path.join(directory, "src")]);
-		});
+		const files = collectRepoFiles(directory, [path.join(directory, "src")]);
 
 		expect(files.lintable.map((file) => path.basename(file))).toStrictEqual(["a.ts"]);
 		expect(files.outsideCwdTargets).toStrictEqual([]);
@@ -2479,7 +2450,7 @@ describe("target normalization", () => {
 		const directory = temporaryDirectory(onTestFinished);
 		fs.writeFileSync(path.join(directory, "a.ts"), "export const a = 1;\n");
 
-		const files = withoutGitEnvironment(() => collectRepoFiles(directory, ["../sibling"]));
+		const files = collectRepoFiles(directory, ["../sibling"]);
 
 		expect(files.outsideCwdTargets).toStrictEqual(["../sibling"]);
 	});
@@ -2490,7 +2461,7 @@ describe("target normalization", () => {
 		const directory = temporaryDirectory(onTestFinished);
 		const outside = temporaryDirectory(onTestFinished);
 
-		const files = withoutGitEnvironment(() => collectRepoFiles(directory, [outside]));
+		const files = collectRepoFiles(directory, [outside]);
 
 		expect(files.outsideCwdTargets).toStrictEqual([outside]);
 	});
@@ -2505,8 +2476,8 @@ describe("target normalization", () => {
 		fs.mkdirSync(path.join(directory, "src"));
 		fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
 
-		const dot = withoutGitEnvironment(() => collectRepoFiles(directory, ["./"]));
-		const trailing = withoutGitEnvironment(() => collectRepoFiles(directory, ["src/"]));
+		const dot = collectRepoFiles(directory, ["./"]);
+		const trailing = collectRepoFiles(directory, ["src/"]);
 
 		expect(dot.lintable).toHaveLength(1);
 		expect(dot.outsideCwdTargets).toStrictEqual([]);
@@ -2546,7 +2517,7 @@ describe("ancestor cache-bust collection", () => {
 		fs.mkdirSync(app, { recursive: true });
 		fs.writeFileSync(path.join(app, "a.ts"), "export const a = 1;\n");
 
-		const files = withoutGitEnvironment(() => collectRepoFiles(app, ["."]));
+		const files = collectRepoFiles(app, ["."]);
 
 		expect(files.bustFiles).toContain(path.join(root, "pnpm-lock.yaml"));
 		expect(files.bustFiles).toContain(path.join(root, "tsconfig.json"));
@@ -2565,7 +2536,7 @@ describe("ancestor cache-bust collection", () => {
 		fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
 		fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
 
-		const files = withoutGitEnvironment(() => collectRepoFiles(root, ["."]));
+		const files = collectRepoFiles(root, ["."]);
 
 		// The root lockfile comes from the in-cwd scan, not doubled by the
 		// ancestor walk.

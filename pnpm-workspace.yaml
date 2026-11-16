@@ -8,7 +8,6 @@ minimumReleaseAgeExclude:
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
   - "@oxlint/plugins@1.92.0"
-  - eslint@10.10.0
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
   - oxlint@1.92.0
@@ -55,7 +54,7 @@ catalogs:
     "@types/picomatch": 4.0.3
     "@types/semver": 7.8.0
     "@types/yargs": 17.0.35
-    bumpp: 12.0.0
+    bumpp: 12.3.0
     eslint-config-flat-gitignore: 2.3.0
     eslint-plugin-yml: 3.5.0
     eslint-typegen: 2.3.1
@@ -81,25 +80,25 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.92.0
-    oxlint-tsgolint: 7.0.2006
+    oxlint: 1.93.0
+    oxlint-tsgolint: 7.0.2007
     tsrs: 0.25.0-ts7.1.0-beta
   prod:
     "@antfu/install-pkg": 2.0.1
     "@clack/prompts": 1.7.0
     "@cspell/eslint-plugin": 10.0.1
-    "@e18e/eslint-plugin": 0.5.1
+    "@e18e/eslint-plugin": 0.8.1
     "@eslint-community/eslint-plugin-eslint-comments": 4.7.2
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
     "@isentinel/machine-budget": 0.2.0
-    "@oxlint/plugins": 1.92.0
-    "@pobammer-ts/small-rules": 3.11.0
+    "@oxlint/plugins": 1.93.0
+    "@pobammer-ts/small-rules": 3.12.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.72.2
     "@typescript-eslint/parser": 8.72.2
-    ansis: 4.3.1
+    ansis: 4.5.0
     concurrently: 10.0.6
     eslint-config-prettier: 10.1.8
     eslint-flat-config-utils: 3.2.0
@@ -128,16 +127,16 @@ catalogs:
     find-up-simple: 1.0.1
     globals: 17.7.0
     jiti: 2.7.0
-    jsonc-eslint-parser: 3.1.0
+    jsonc-eslint-parser: 3.3.0
     local-pkg: 1.2.1
-    oxfmt: 0.72.0
-    oxlint-plugin-eslint: 1.92.0
+    oxfmt: 0.78.0
+    oxlint-plugin-eslint: 1.93.0
     oxlint-plugin-oxlint-comments: 0.1.0
-    prettier: 3.9.6
+    prettier: 3.10.1
     semver: 7.8.5
     toml-eslint-parser: 1.0.3
     yaml-eslint-parser: 2.1.0
-    yargs: 18.0.0
+    yargs: 18.2.0
 
 allowBuilds:
   esbuild: true

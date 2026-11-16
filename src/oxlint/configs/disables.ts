@@ -26,10 +26,12 @@ import { createOxlintConfigs, resolveJsPluginSpecifier } from "../utils.ts";
 export function oxlintDisables({
 	configDirectory,
 	root,
+	rootExcludes = GLOB_ROOT_EXCLUDE,
 	workspaceRoot,
 }: {
 	configDirectory?: string;
 	root: Array<string>;
+	rootExcludes?: Array<string>;
 	workspaceRoot: string;
 }): Array<TypedOxlintConfigItem> {
 	const relativeConfigDirectory =
@@ -139,7 +141,7 @@ export function oxlintDisables({
 			}),
 			...createOxlintConfigs({
 				name: "isentinel/disables/root",
-				excludeFiles: GLOB_ROOT_EXCLUDE,
+				excludeFiles: rootExcludes,
 				files: [...root],
 				rules: {
 					"import/no-default-export": "off",

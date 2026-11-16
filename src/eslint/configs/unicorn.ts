@@ -14,6 +14,7 @@ export function unicorn({
 	nameReplacements,
 	roblox = true,
 	root: customRootGlobs,
+	rootExcludes = GLOB_ROOT_EXCLUDE,
 	stylistic = true,
 }: OptionsHasRoblox &
 	OptionsStylistic &
@@ -25,6 +26,7 @@ export function unicorn({
 		 */
 		complementIgnores?: Array<string>;
 		root?: Array<string>;
+		rootExcludes?: Array<string>;
 	} = {}): Array<TypedFlatConfigItem> {
 	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
 
@@ -45,7 +47,7 @@ export function unicorn({
 		{
 			name: "isentinel/unicorn/root",
 			files: rootGlobs,
-			ignores: GLOB_ROOT_EXCLUDE,
+			ignores: rootExcludes,
 			rules: unicornRootRules({ nameReplacements, roblox }),
 		},
 		// The complement re-applies the non-roblox rules last, so it wins for
@@ -62,7 +64,7 @@ export function unicorn({
 					{
 						name: "isentinel/unicorn/complement/root",
 						files: rootGlobs,
-						ignores: [...GLOB_ROOT_EXCLUDE, ...complementIgnores],
+						ignores: [...rootExcludes, ...complementIgnores],
 						rules: unicornRootRules({ nameReplacements, roblox: false }),
 					},
 				]

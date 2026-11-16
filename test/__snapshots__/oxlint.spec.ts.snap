@@ -5469,6 +5469,10 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "name": "e18e",
           "specifier": "<pkg>:@e18e/eslint-plugin",
         },
+        {
+          "name": "unicorn-js",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
+        },
       ],
       "rules": {
         "e18e/no-spread-in-reduce": "error",
@@ -5482,11 +5486,14 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
         "e18e/prefer-nullish-coalescing": "error",
         "e18e/prefer-object-has-own": "error",
         "e18e/prefer-regex-test": "error",
+        "e18e/prefer-slice-over-split-index": "error",
         "e18e/prefer-static-collator": "error",
         "e18e/prefer-static-regex": "error",
         "e18e/prefer-string-fromcharcode": "error",
+        "e18e/prefer-throw-if-no-entry": "error",
         "e18e/prefer-timer-args": "error",
         "e18e/prefer-url-canparse": "error",
+        "unicorn-js/prefer-split-limit": "off",
       },
     },
     {
@@ -16394,6 +16401,10 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "name": "e18e",
           "specifier": "<pkg>:@e18e/eslint-plugin",
         },
+        {
+          "name": "unicorn-js",
+          "specifier": "<pkg>:eslint-plugin-unicorn",
+        },
       ],
       "rules": {
         "e18e/no-spread-in-reduce": "error",
@@ -16407,11 +16418,14 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
         "e18e/prefer-nullish-coalescing": "error",
         "e18e/prefer-object-has-own": "error",
         "e18e/prefer-regex-test": "error",
+        "e18e/prefer-slice-over-split-index": "error",
         "e18e/prefer-static-collator": "error",
         "e18e/prefer-static-regex": "error",
         "e18e/prefer-string-fromcharcode": "error",
+        "e18e/prefer-throw-if-no-entry": "error",
         "e18e/prefer-timer-args": "error",
         "e18e/prefer-url-canparse": "error",
+        "unicorn-js/prefer-split-limit": "off",
       },
     },
     {

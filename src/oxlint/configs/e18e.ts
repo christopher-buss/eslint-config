@@ -30,6 +30,10 @@ export function oxlintE18e({
 			name: "isentinel/e18e",
 			...(excludeFiles ? { excludeFiles } : {}),
 			files: files.flat(),
+			// Keep the `unicorn/prefer-split-limit` disable: the rule is a
+			// jsPlugin enabled by the unicorn config, and would otherwise be
+			// dropped.
+			keepUnmappedOff: true,
 			overrides,
 			rules: e18eRules({ modernization, nodeMajor, performanceImprovements }),
 		}),
