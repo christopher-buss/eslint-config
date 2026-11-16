@@ -1,6 +1,6 @@
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../../globs.ts";
 import { reactRules } from "../../rules/react.ts";
-import { ensurePackages, getTsConfig, interopDefault } from "../../utils.ts";
+import { ensurePackages, getTsConfig, interopDefault, mergeTypeAwareIgnores } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	ConfigSettings,
@@ -27,7 +27,7 @@ export async function react(
 		filenameCase = "kebabCase",
 		files = [GLOB_JSX, GLOB_TSX],
 		filesTypeAware = [GLOB_TSX],
-		ignoresTypeAware = [`${GLOB_MARKDOWN}/**`],
+		ignoresTypeAware: userIgnoresTypeAware,
 		importSource,
 		overrides = {},
 		overridesTypeAware,
@@ -37,6 +37,7 @@ export async function react(
 		typeAware = true,
 	} = options;
 	const domPackage = options.settings?.["testing-library"]?.domPackage;
+	const ignoresTypeAware = mergeTypeAwareIgnores([`${GLOB_MARKDOWN}/**`], userIgnoresTypeAware);
 
 	await ensurePackages(["eslint-plugin-react-x", "eslint-plugin-react-jsx"]);
 

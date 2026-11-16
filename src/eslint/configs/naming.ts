@@ -1,6 +1,6 @@
 import { ROBLOX_ALLOWED_WORDS } from "../../generated/roblox-allowed-words.ts";
 import { GLOB_DTS, GLOB_MARKDOWN, GLOB_TS, GLOB_TSX } from "../../globs.ts";
-import { getTsConfig } from "../../utils.ts";
+import { getTsConfig, mergeTypeAwareIgnores } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	NamingConfig,
@@ -59,7 +59,10 @@ export function naming(
 
 	const tsFilesTypeAware = [GLOB_TS];
 	const tsxFilesTypeAware = [GLOB_TSX];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`, GLOB_DTS];
+	const ignoresTypeAware = mergeTypeAwareIgnores(
+		[`${GLOB_MARKDOWN}/**`, GLOB_DTS],
+		options.ignoresTypeAware,
+	);
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 

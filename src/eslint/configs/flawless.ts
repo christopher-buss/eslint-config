@@ -5,7 +5,7 @@ import {
 	flawlessTypeAwareRules,
 } from "../../rules/flawless.ts";
 import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
-import { getTsConfig } from "../../utils.ts";
+import { getTsConfig, mergeTypeAwareIgnores } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsOverridesTypeAware,
@@ -43,7 +43,10 @@ export function flawless(
 	const eslintPluginFlawless = lazyPlugin("eslint-plugin-flawless");
 
 	const filesTypeAware = [GLOB_TS, GLOB_TSX];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`, GLOB_DTS];
+	const ignoresTypeAware = mergeTypeAwareIgnores(
+		[`${GLOB_MARKDOWN}/**`, GLOB_DTS],
+		options.ignoresTypeAware,
+	);
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 

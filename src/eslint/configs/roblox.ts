@@ -1,6 +1,12 @@
 import { GLOB_LUA, GLOB_MARKDOWN } from "../../globs.ts";
 import { robloxRules } from "../../rules/roblox.ts";
-import { createTsParser, getTsConfig, interopDefault, parserPlain } from "../../utils.ts";
+import {
+	createTsParser,
+	getTsConfig,
+	interopDefault,
+	mergeTypeAwareIgnores,
+	parserPlain,
+} from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsComponentExtensions,
@@ -48,7 +54,10 @@ export async function roblox(
 	];
 
 	const filesTypeAware = options.filesTypeAware ?? ["**/*/*.{,c,m}ts", "**/*/*.{,c,m}tsx"];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
+	const ignoresTypeAware = mergeTypeAwareIgnores(
+		[`${GLOB_MARKDOWN}/**`],
+		options.ignoresTypeAware,
+	);
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 
