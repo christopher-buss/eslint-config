@@ -270,6 +270,7 @@ export function typescriptStrictPresetRules(): TypedFlatConfigItem["rules"] {
 export function erasableSyntaxOnlyRules(): TypedFlatConfigItem["rules"] {
 	return {
 		"erasable-syntax-only/enums": "error",
+		"erasable-syntax-only/export-aliases": "error",
 		"erasable-syntax-only/import-aliases": "error",
 		"erasable-syntax-only/namespaces": "error",
 		"erasable-syntax-only/parameter-properties": "error",

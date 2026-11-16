@@ -156,7 +156,7 @@ export function javascriptRules({
 				property: "__lookupSetter__",
 			},
 		],
-		"no-restricted-syntax": ["error", "TSEnumDeclaration[const=true]", "TSExportAssignment"],
+		"no-restricted-syntax": ["error", "TSEnumDeclaration[const=true]"],
 		"no-return-assign": ["error", "always"],
 		"no-self-assign": ["error", { props: true }],
 		"no-self-compare": "error",
