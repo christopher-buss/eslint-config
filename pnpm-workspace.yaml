@@ -80,8 +80,8 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.92.0
-    oxlint-tsgolint: 7.0.2006
+    oxlint: 1.93.0
+    oxlint-tsgolint: 7.0.2007
     tsrs: 0.25.0-ts7.1.0-beta
   prod:
     "@antfu/install-pkg": 2.0.1
@@ -93,7 +93,7 @@ catalogs:
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
     "@isentinel/machine-budget": 0.2.0
-    "@oxlint/plugins": 1.92.0
+    "@oxlint/plugins": 1.93.0
     "@pobammer-ts/small-rules": 3.12.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.72.2
@@ -130,7 +130,7 @@ catalogs:
     jsonc-eslint-parser: 3.3.0
     local-pkg: 1.2.1
     oxfmt: 0.72.0
-    oxlint-plugin-eslint: 1.92.0
+    oxlint-plugin-eslint: 1.93.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.9.6
     semver: 7.8.5
