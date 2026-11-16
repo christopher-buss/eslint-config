@@ -1,6 +1,6 @@
-import { GLOB_ROOT, GLOB_SRC } from "../../globs.ts";
+import { GLOB_ROOT, GLOB_ROOT_EXCLUDE, GLOB_SRC } from "../../globs.ts";
 import { unicornRootRules, unicornRules } from "../../rules/unicorn.ts";
-import { mergeGlobs, toSourceGlob } from "../../utils.ts";
+import { toSourceGlob } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsHasRoblox,
@@ -28,7 +28,7 @@ export function unicorn({
 	} = {}): Array<TypedFlatConfigItem> {
 	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
 
-	const rootGlobs = mergeGlobs(GLOB_ROOT.map(toSourceGlob), customRootGlobs?.map(toSourceGlob));
+	const rootGlobs = (customRootGlobs ?? GLOB_ROOT).map(toSourceGlob);
 
 	return [
 		{
@@ -45,6 +45,7 @@ export function unicorn({
 		{
 			name: "isentinel/unicorn/root",
 			files: rootGlobs,
+			ignores: GLOB_ROOT_EXCLUDE,
 			rules: unicornRootRules({ nameReplacements, roblox }),
 		},
 		// The complement re-applies the non-roblox rules last, so it wins for
@@ -61,7 +62,7 @@ export function unicorn({
 					{
 						name: "isentinel/unicorn/complement/root",
 						files: rootGlobs,
-						ignores: complementIgnores,
+						ignores: [...GLOB_ROOT_EXCLUDE, ...complementIgnores],
 						rules: unicornRootRules({ nameReplacements, roblox: false }),
 					},
 				]

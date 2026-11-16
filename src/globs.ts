@@ -9,6 +9,8 @@ export const GLOB_ROOT = [
 	"libs/*/*/*",
 ];
 
+export const GLOB_ROOT_EXCLUDE = ["{packages,apps,libs}/*/{src,test,tests}/*"];
+
 export const GLOB_ROOT_SRC = [
 	"packages/*/*.{,c,m}[jt]s{,x}",
 	"apps/*/*.{,c,m}[jt]s{,x}",

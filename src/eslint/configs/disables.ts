@@ -3,6 +3,7 @@ import {
 	GLOB_BUILD_CONFIGS,
 	GLOB_DTS,
 	GLOB_JSX,
+	GLOB_ROOT_EXCLUDE,
 	GLOB_SRC,
 	GLOB_SRC_EXT,
 	GLOB_TESTS,
@@ -132,6 +133,7 @@ export function disables({
 		{
 			name: "isentinel/disables/root",
 			files: [...root, `*.md/${GLOB_SRC}`],
+			ignores: GLOB_ROOT_EXCLUDE,
 			rules: {
 				"import/no-default-export": "off",
 				"small-rules/require-async-suffix": "off",

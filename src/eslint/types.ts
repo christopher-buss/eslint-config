@@ -610,13 +610,19 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * Customize root-level glob patterns.
 	 *
 	 * These patterns are merged with the default `GLOB_ROOT`. Use "!" prefix to
-	 * exclude patterns.
+	 * remove a default pattern.
+	 *
+	 * Files directly inside a `src`, `test` or `tests` folder of a project
+	 * under `packages`, `apps` or `libs` never count as root files
+	 * (`GLOB_ROOT_EXCLUDE`). Other source folders, such as `lib`, still match
+	 * the three-level defaults for grouped projects; remove those with "!" if
+	 * they hold source files.
 	 *
 	 * @example
 	 *
 	 * ```ts
-	 * root: ["places/**", "!apps/**"];
-	 * // Results in: ["*", "packages/**", "libs/**", "places/**"]
+	 * root: ["places/**", "!*"];
+	 * // Adds `places/**` and stops matching files at the repository root.
 	 * ```
 	 *
 	 * @default undefined
