@@ -422,8 +422,8 @@ catalogs:
       specifier: 2.7.0
       version: 2.7.0
     jsonc-eslint-parser:
-      specifier: 3.1.0
-      version: 3.1.0
+      specifier: 3.3.0
+      version: 3.3.0
     local-pkg:
       specifier: 1.2.1
       version: 1.2.1
@@ -601,7 +601,7 @@ importers:
         version: 2.7.0
       jsonc-eslint-parser:
         specifier: catalog:prod
-        version: 3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       local-pkg:
         specifier: catalog:prod
         version: 1.2.1(typescript@6.0.3)
@@ -3538,15 +3538,6 @@ packages:
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
-  jsonc-eslint-parser@3.1.0:
-    resolution: {integrity: sha512-75EA7EWZExL/j+MDKQrRbdzcRI2HOkRlmUw8fZJc1ioqFEOvBsq7Rt+A6yCxOt9w/TYNpkt52gC6nm/g5tFIng==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-    peerDependencies:
-      eslint: '*'
-    peerDependenciesMeta:
-      eslint:
-        optional: true
-
   jsonc-eslint-parser@3.3.0:
     resolution: {integrity: sha512-hYTGkHGNRZnXOFZ1urhINADoqDrGfpy53cjw+dxk84QE0pUDujQzeUeamNs6Mz44/TKD49z2x6/GVSu4ZrtA+Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
@@ -6469,12 +6460,6 @@ snapshots:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       prettier-linter-helpers: 1.0.1
 
-  eslint-json-compat-utils@0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))):
-    dependencies:
-      eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
-      esquery: 1.7.0
-      jsonc-eslint-parser: 3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
-
   eslint-json-compat-utils@0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))):
     dependencies:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -6539,7 +6524,7 @@ snapshots:
       '@typescript-eslint/scope-manager': 8.72.2(typescript@6.0.3)
       '@typescript-eslint/utils': 8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
-      jsonc-eslint-parser: 3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+      jsonc-eslint-parser: 3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       natural-compare: 1.4.0
       synckit: 0.11.13
       toml-eslint-parser: 1.0.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -6618,8 +6603,8 @@ snapshots:
       '@types/estree': 1.0.9
       diff-sequences: 29.6.3
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
-      eslint-json-compat-utils: 0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)))
-      jsonc-eslint-parser: 3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-json-compat-utils: 0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)))
+      jsonc-eslint-parser: 3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       natural-compare: 1.4.0
       synckit: 0.11.13
     transitivePeerDependencies:
@@ -6660,8 +6645,8 @@ snapshots:
       detect-newline: 4.0.1
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-fix-utils: 0.4.3(@types/estree@1.0.10)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-json-compat-utils: 0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)))
-      jsonc-eslint-parser: 3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-json-compat-utils: 0.2.3(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jsonc-eslint-parser@3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)))
+      jsonc-eslint-parser: 3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       package-json-validator: 1.6.0
       semver: 7.8.5
       sort-object-keys: 2.1.0
@@ -7155,15 +7140,6 @@ snapshots:
   json-schema-traverse@0.4.1: {}
 
   json-stable-stringify-without-jsonify@1.0.1: {}
-
-  jsonc-eslint-parser@3.1.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
-    dependencies:
-      '@types/estree': 1.0.9
-      acorn: 8.17.0
-      eslint-visitor-keys: 5.0.1
-      semver: 7.8.5
-    optionalDependencies:
-      eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
 
   jsonc-eslint-parser@3.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
