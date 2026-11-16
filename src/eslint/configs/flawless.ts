@@ -5,7 +5,7 @@ import {
 	flawlessTypeAwareRules,
 } from "../../rules/flawless.ts";
 import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
-import { getTsConfig, mergeTypeAwareIgnores } from "../../utils.ts";
+import { getTsConfig, mergeTypeAwareIgnores, typeAwareComplement } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
 	OptionsOverridesTypeAware,
@@ -116,17 +116,18 @@ export function flawless(
 		// Type-aware counterpart of the complement above. `overridesTypeAware`
 		// is re-spread so user overrides still beat it.
 		...(isTypeAware && complementIgnores
-			? [
+			? typeAwareComplement(
 					{
 						name: "isentinel/flawless/rules-type-aware/complement",
 						files: filesTypeAware,
-						ignores: [...ignoresTypeAware, ...complementIgnores],
+						ignores: complementIgnores,
 						rules: {
 							...flawlessTypeAwareRules({ antiSlop, roblox: false }),
 							...overridesTypeAware,
 						},
 					},
-				]
+					ignoresTypeAware,
+				)
 			: []),
 	];
 }

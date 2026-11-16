@@ -43,6 +43,7 @@ async function createEslint(
 	projectDirectory: string,
 	ignoresTypeAware: Array<string>,
 	naming: NonNullable<OptionsConfig["naming"]> = true,
+	roblox: OptionsConfig["roblox"] = true,
 ): Promise<ESLint> {
 	const composer = await isentinel({
 		name: "test/ignores-type-aware",
@@ -51,6 +52,7 @@ async function createEslint(
 		isInEditor: false,
 		naming,
 		pnpm: false,
+		roblox,
 		spellCheck: false,
 		typescript: {
 			ignoresTypeAware,
@@ -141,5 +143,53 @@ describe("typescript.ignoresTypeAware", () => {
 
 		expect(ignored.rules).not.toContain("flawless/naming-convention");
 		expect(ignored.rules).toContain("ts/no-floating-promises");
+	});
+
+	it("should not let a roblox.files negation re-include an ignored file", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(4);
+
+		const projectDirectory = await prepareProject(onTestFinished);
+		const eslint = await createEslint(projectDirectory, ["**/*.config.ts"], true, {
+			files: [["src/**/*.ts", "!**/*.config.ts"]],
+		});
+
+		const ignored = await resolveFile(
+			eslint,
+			path.join(projectDirectory, "src", "foo.config.ts"),
+		);
+		const source = await resolveFile(eslint, path.join(projectDirectory, "src", "foo.ts"));
+
+		expect(ignored.projectService).toBeFalsy();
+		expect(ignored.rules.filter((rule) => TYPE_AWARE_RULES.includes(rule))).toStrictEqual([]);
+		expect(source.projectService).toBeTruthy();
+		expect(source.rules).toStrictEqual(expect.arrayContaining(TYPE_AWARE_RULES));
+	});
+
+	it("should keep complement rules on files outside the roblox scope", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(3);
+
+		const projectDirectory = await prepareProject(onTestFinished);
+		const eslint = await createEslint(projectDirectory, ["**/*.config.ts"], true, {
+			files: ["src/client/**/*.ts"],
+		});
+
+		const ignored = await resolveFile(
+			eslint,
+			path.join(projectDirectory, "src", "node", "foo.config.ts"),
+		);
+		const complement = await resolveFile(
+			eslint,
+			path.join(projectDirectory, "src", "node", "foo.ts"),
+		);
+
+		expect(ignored.rules.filter((rule) => TYPE_AWARE_RULES.includes(rule))).toStrictEqual([]);
+		expect(complement.projectService).toBeTruthy();
+		expect(complement.rules).toContain("ts/no-floating-promises");
 	});
 });

@@ -11,6 +11,7 @@ import {
 	interopDefault,
 	mergeTypeAwareIgnores,
 	renameRules,
+	typeAwareComplement,
 } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
@@ -161,17 +162,18 @@ export async function typescript(
 		// wins for files outside the roblox scope. `overridesTypeAware` is
 		// re-spread so user overrides still beat it.
 		...(isTypeAware && complementIgnores
-			? [
+			? typeAwareComplement(
 					{
 						name: "isentinel/typescript/rules-type-aware/complement",
 						files: filesTypeAware,
-						ignores: [...ignoresTypeAware, ...complementIgnores],
+						ignores: complementIgnores,
 						rules: {
 							...typescriptTypeAwareRules({ roblox: false }),
 							...overridesTypeAware,
 						},
 					},
-				]
+					ignoresTypeAware,
+				)
 			: []),
 
 		...(erasableOnly
