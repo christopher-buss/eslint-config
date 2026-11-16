@@ -29,15 +29,18 @@ import type { TypedFlatConfigItem } from "../types.ts";
  *
  * @param options - The resolved factory options.
  * @param options.root - Globs identifying root-level files.
+ * @param options.rootExcludes - Globs of files that are never root files.
  * @param options.workspaceRoot - Absolute workspace root, used as the base path
  *   for ancestor-anchored blocks.
  * @returns The disables configs.
  */
 export function disables({
 	root,
+	rootExcludes = GLOB_ROOT_EXCLUDE,
 	workspaceRoot,
 }: {
 	root: Array<string>;
+	rootExcludes?: Array<string>;
 	workspaceRoot: string;
 }): Array<TypedFlatConfigItem> {
 	return [
@@ -133,7 +136,7 @@ export function disables({
 		{
 			name: "isentinel/disables/root",
 			files: [...root, `*.md/${GLOB_SRC}`],
-			ignores: GLOB_ROOT_EXCLUDE,
+			ignores: rootExcludes,
 			rules: {
 				"import/no-default-export": "off",
 				"small-rules/require-async-suffix": "off",

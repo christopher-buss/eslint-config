@@ -2,7 +2,7 @@ import { FlatConfigComposer as FlatConfigComposerClass } from "eslint-flat-confi
 import type { ResolvableFlatConfig } from "eslint-flat-config-utils";
 import { findUpSync } from "find-up-simple";
 
-import { GLOB_MARKDOWN, GLOB_ROOT } from "../globs.ts";
+import { GLOB_MARKDOWN } from "../globs.ts";
 import { writeHybridStatusForCwd } from "../hybrid-status.ts";
 import {
 	editorConfigOverrides,
@@ -22,12 +22,13 @@ import {
 	isInAgentSession,
 	isInEditorEnvironment,
 	jsonLayoutOverrides,
-	mergeGlobs,
 	overrideRuleSeverity,
 	resolveNodeMajor,
 	resolveOxfmtConfig,
+	resolveRootGlobs,
 	resolveSubOptions,
 	shouldEnableFeature,
+	toSourceGlob,
 	typeAwareSplitFromEnvironment,
 	warnScriptWidthOverrides,
 	warnStandaloneOptions,
@@ -157,7 +158,7 @@ export async function isentinel(
 		yaml: enableYaml = true,
 	} = options;
 
-	const rootGlobs = mergeGlobs(GLOB_ROOT, customRootGlobs);
+	const { excludes: rootExcludes, files: rootGlobs } = resolveRootGlobs(customRootGlobs);
 	const enableRoblox = options.roblox !== false;
 	const reactOptions = resolveSubOptions(options, "react");
 	const restrictedDomPackage =
@@ -211,10 +212,21 @@ export async function isentinel(
 		);
 	}
 
-	const sharedTypeAwareIgnores =
-		"ignoresTypeAware" in typescriptOptions
-			? { ignoresTypeAware: typescriptOptions.ignoresTypeAware }
-			: {};
+	const sharedIgnoresTypeAware =
+		"ignoresTypeAware" in typescriptOptions ? typescriptOptions.ignoresTypeAware : undefined;
+	const rootIgnoresTypeAware =
+		"typeAwareRoot" in typescriptOptions && typescriptOptions.typeAwareRoot === false
+			? [...rootGlobs.map(toSourceGlob), ...rootExcludes.map((glob) => `!${glob}`)]
+			: [];
+
+	function typeAwareIgnores(own?: Array<string>): { ignoresTypeAware?: Array<string> } {
+		const resolved = own ?? sharedIgnoresTypeAware;
+		if (rootIgnoresTypeAware.length === 0) {
+			return resolved === undefined ? {} : { ignoresTypeAware: resolved };
+		}
+
+		return { ignoresTypeAware: [...rootIgnoresTypeAware, ...(resolved ?? [])] };
+	}
 
 	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
@@ -312,7 +324,7 @@ export async function isentinel(
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
-				...sharedTypeAwareIgnores,
+				...typeAwareIgnores(),
 				...("tsconfigPath" in typescriptOptions
 					? { tsconfigPath: typescriptOptions.tsconfigPath }
 					: {}),
@@ -349,6 +361,7 @@ export async function isentinel(
 		typescript({
 			...resolveSubOptions(options, "typescript"),
 			...getOverrides(options, "typescript"),
+			...typeAwareIgnores(),
 			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			componentExts: componentExtensions,
 			roblox: enableRoblox,
@@ -359,6 +372,7 @@ export async function isentinel(
 			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
 			roblox: enableRoblox,
 			root: rootGlobs,
+			rootExcludes,
 			stylistic: stylisticOptions,
 		}),
 	);
@@ -367,9 +381,9 @@ export async function isentinel(
 		configs.push(
 			naming({
 				roblox: enableRoblox,
-				...sharedTypeAwareIgnores,
 				...getOverrides(options, "naming"),
 				...resolveSubOptions(options, "naming"),
+				...typeAwareIgnores(getOverrides(options, "naming").ignoresTypeAware),
 			}),
 		);
 	}
@@ -422,6 +436,7 @@ export async function isentinel(
 				{
 					...resolveSubOptions(options, "typescript"),
 					...getOverrides(options, "roblox"),
+					...typeAwareIgnores(getOverrides(options, "roblox").ignoresTypeAware),
 					componentExts: componentExtensions,
 					stylistic: stylisticOptions,
 				},
@@ -465,9 +480,9 @@ export async function isentinel(
 	if (enableReact !== false) {
 		configs.push(
 			react({
-				...sharedTypeAwareIgnores,
 				...resolveSubOptions(options, "react"),
 				...getOverrides(options, "react"),
+				...typeAwareIgnores(getOverrides(options, "react").ignoresTypeAware),
 				settings: options.settings,
 			}),
 		);
@@ -591,7 +606,9 @@ export async function isentinel(
 		]);
 	}
 
-	configs.push(disables({ root: rootGlobs, workspaceRoot: findWorkspaceRootSync() }));
+	configs.push(
+		disables({ root: rootGlobs, rootExcludes, workspaceRoot: findWorkspaceRootSync() }),
+	);
 
 	// As with spelling above, composed in "only" mode so `oxfmt/oxfmt` resolves
 	// in disable comments; the split strips the rule itself.
