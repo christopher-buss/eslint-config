@@ -32,7 +32,7 @@ pnpm release    # Bump version and publish (uses bumpp; see Releasing)
 
 - **After modifying configs**: Always run `pnpm gen` to update type definitions
 - **Pre-commit hooks** (via hk, see `hk.pkl`): Runs guards, eslint, typecheck
-  and tests
+  and tests. Run `hk install --mise` once after `mise install` to activate them
 - **Conventional commits**: Use `feat:`, `fix:`, `chore:`, etc.
 - **Stay on the branch you were started on.** Do not create or switch branches
   unless asked.

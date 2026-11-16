@@ -2,10 +2,9 @@ amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.
 
 import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
-local bash: String = "bash -c"
-
-// No `shell` override: these builtins are `hk util` subcommands, so they need
-// no shell, and the structured form is what lets hk auto-batch `{{files}}`.
+// No step sets `shell`: on Windows a bare `bash` resolves to the WSL launcher in
+// System32 first, so every step would depend on WSL. The commands need no shell
+// syntax, and the structured form is what lets hk auto-batch `{{files}}`.
 // Under a shell hk sizes batches from ARG_MAX (128KB fallback on Windows), so
 // a whole-repo run renders one ~15KB command that Windows rejects with "The
 // command line is too long."
@@ -32,7 +31,6 @@ local sharedGuards = new Mapping<String, Step> {
 // from being observable, not the omitted `--clean` flag.
 local build = new Step {
     check = "pnpm exec tsdown"
-    shell = bash
 }
 
 // The hybrid CLI sequences oxlint then ESLint itself, dropping the
@@ -47,14 +45,12 @@ local lint = new Step {
     depends = List("build")
     check = "isentinel-lint --eslint-args \"--max-warnings 0\" --oxlint-args --deny-warnings {{files}}"
     fix = "isentinel-lint --fix {{files}}"
-    shell = bash
     env = new Mapping<String, String> { ["GIT_HOOK"] = "1" }
 }
 
 local typecheck = new Step {
     glob = List("*.ts", "*.tsx")
     check = "tsc --noEmit"
-    shell = bash
 }
 
 // Runs `vitest` directly rather than the `test` script, which prefixes `nr
@@ -62,13 +58,11 @@ local typecheck = new Step {
 local test = new Step {
     glob = List("*.ts", "*.tsx")
     check = "pnpm exec vitest run"
-    shell = bash
 }
 
 local renovateConfig = new Step {
     glob = List("renovate.json")
     check = "pnpm dlx --package renovate renovate-config-validator --strict"
-    shell = bash
 }
 
 hooks {
@@ -97,12 +91,10 @@ hooks {
             ["install-deps"] {
                 glob = List("pnpm-lock.yaml")
                 check = "pnpm install"
-                shell = bash
             }
             ["mise-install"] {
                 glob = List("mise.toml")
                 check = "mise install"
-                shell = bash
             }
         }
     }
