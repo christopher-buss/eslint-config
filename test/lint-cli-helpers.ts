@@ -7,7 +7,6 @@ import type { MemoryFacts } from "../src/lint-cli/lib/plan/heap.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { StagedPlan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
-import { withoutGitEnvironment } from "./without-git.ts";
 
 /** How a fixture run differs from the defaults. */
 export interface ComposeInDirectoryOptions {
@@ -74,23 +73,21 @@ export function composeInDirectory(
 	directory: string,
 	{ environment = {}, memory = TEST_MEMORY, mutate = false }: ComposeInDirectoryOptions = {},
 ): CommandPlan {
-	return withoutGitEnvironment(() => {
-		const options = parseArguments(argv, environment);
-		const staged = plan(options, runContext(directory, { environment, mutate }), memory);
-		const eager = compose(staged.eager, options);
-		if (staged.resolveDeferred === undefined) {
-			return eager;
-		}
+	const options = parseArguments(argv, environment);
+	const staged = plan(options, runContext(directory, { environment, mutate }), memory);
+	const eager = compose(staged.eager, options);
+	if (staged.resolveDeferred === undefined) {
+		return eager;
+	}
 
-		// A staged run composes its type-aware pass separately, after the eager
-		// children would have spawned. Tests assert on the whole run, so flatten
-		// the two stages back into one plan the way the terminal sees them.
-		const deferred = composePasses(staged.resolveDeferred(), staged.eager, options);
-		return {
-			commands: [...eager.commands, ...deferred.commands],
-			notice: joinNotices(eager.notice, deferred.notice),
-		};
-	});
+	// A staged run composes its type-aware pass separately, after the eager
+	// children would have spawned. Tests assert on the whole run, so flatten
+	// the two stages back into one plan the way the terminal sees them.
+	const deferred = composePasses(staged.resolveDeferred(), staged.eager, options);
+	return {
+		commands: [...eager.commands, ...deferred.commands],
+		notice: joinNotices(eager.notice, deferred.notice),
+	};
 }
 
 function joinNotices(...notices: Array<string | undefined>): string | undefined {
