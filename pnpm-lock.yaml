@@ -240,8 +240,8 @@ catalogs:
       specifier: 6.0.3
       version: 6.0.3
     unplugin-unused:
-      specifier: 0.5.7
-      version: 0.5.7
+      specifier: 0.6.0
+      version: 0.6.0
     vitest:
       specifier: 4.1.10
       version: 4.1.10
@@ -734,7 +734,7 @@ importers:
         version: 0.3.23
       tsdown:
         specifier: catalog:dev
-        version: 0.23.7(oxc-resolver@11.24.2)(publint@0.3.23)(tsrs@0.25.0-ts7.1.0-beta)(typescript@6.0.3)(unplugin-unused@0.5.7(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0)))
+        version: 0.23.7(oxc-resolver@11.24.2)(publint@0.3.23)(tsrs@0.25.0-ts7.1.0-beta)(typescript@6.0.3)(unplugin-unused@0.6.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0)))
       tsrs:
         specifier: catalog:peer
         version: 0.25.0-ts7.1.0-beta
@@ -746,7 +746,7 @@ importers:
         version: 6.0.3
       unplugin-unused:
         specifier: catalog:dev
-        version: 0.5.7(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
+        version: 0.6.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
       vitest:
         specifier: catalog:dev
         version: 4.1.10(@types/node@24.1.0)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
@@ -4377,9 +4377,9 @@ packages:
   unist-util-visit@5.1.0:
     resolution: {integrity: sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==}
 
-  unplugin-unused@0.5.7:
-    resolution: {integrity: sha512-quvqrHs6mPhk1hjbGwMoypXfagveue+/22dtgDrEzc2K9485ZAsnVfq7iYIgv7FwooiRa6+HDaLWgK2IavN+2g==}
-    engines: {node: '>=20.19.0'}
+  unplugin-unused@0.6.0:
+    resolution: {integrity: sha512-ov+8yoEs5lyCjK7AqSUmpLuyEhtHwKtNtc1PrpwJVCNQjv+Dins4+7e1+ej57yo8lfiW/zOr9FAEmNmjgU+hFQ==}
+    engines: {node: ^22.18.0 || ^24.11.0 || >=26.0.0}
 
   unplugin@3.3.0:
     resolution: {integrity: sha512-qa66K+crbfyE6JK10GjvbJeRrOsuC/JpbnHctfyp/i4oBTxWOzJfRZyDiOk1PtErMFRu8JhsU/wPvOdBNWe5Rg==}
@@ -5275,14 +5275,21 @@ snapshots:
   '@koromix/koffi-win32-x64@3.3.3':
     optional: true
 
-  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
+  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
+    dependencies:
+      '@emnapi/core': 1.11.2
+      '@emnapi/runtime': 1.11.2
+      '@tybys/wasm-util': 0.10.3
+    optional: true
+
+  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
+  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:
       '@emnapi/core': 1.11.2
       '@emnapi/runtime': 1.11.2
@@ -5352,7 +5359,7 @@ snapshots:
 
   '@oxc-parser/binding-wasm32-wasi@0.112.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -5675,7 +5682,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@rolldown/binding-wasm32-wasi@1.3.2':
@@ -8087,7 +8094,7 @@ snapshots:
 
   ts-pattern@5.9.0: {}
 
-  tsdown@0.23.7(oxc-resolver@11.24.2)(publint@0.3.23)(tsrs@0.25.0-ts7.1.0-beta)(typescript@6.0.3)(unplugin-unused@0.5.7(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))):
+  tsdown@0.23.7(oxc-resolver@11.24.2)(publint@0.3.23)(tsrs@0.25.0-ts7.1.0-beta)(typescript@6.0.3)(unplugin-unused@0.6.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))):
     dependencies:
       cac: 7.1.0
       defu: 6.1.7
@@ -8106,7 +8113,7 @@ snapshots:
     optionalDependencies:
       publint: 0.3.23
       typescript: 6.0.3
-      unplugin-unused: 0.5.7(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
+      unplugin-unused: 0.6.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@volar/typescript'
       - '@vue/language-core'
@@ -8185,9 +8192,9 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  unplugin-unused@0.5.7(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0)):
+  unplugin-unused@0.6.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0)):
     dependencies:
-      empathic: 2.0.1
+      empathic: 2.1.0
       escape-string-regexp: 5.0.0
       js-tokens: 10.0.0
       unplugin: 3.3.0(rolldown@1.3.2)(vite@8.1.4(@types/node@24.1.0)(jiti@2.7.0)(yaml@2.9.0))
