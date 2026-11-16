@@ -16,6 +16,8 @@ import { Writable } from "node:stream";
 
 import type { ChildCommand, ToolLabel } from "../cli/types.ts";
 import { HEAP_ENV } from "../plan/heap.ts";
+import type { ChildLease, RunBudget } from "./budget.ts";
+import { UNBUDGETED } from "./budget.ts";
 import { resolveBootstrap, resolveLocalBin } from "./resolve.ts";
 
 /** An engine child ready to spawn: its command and resolved launch target. */
@@ -97,17 +99,24 @@ export function outOfMemoryHint(label: ToolLabel): string {
  * lint failure in one no longer kills its siblings, so the user keeps every
  * result. The returned code is non-zero when any child exited non-zero.
  *
+ * Each child leases its workers from `budget` just before it spawns, and gives
+ * them back when it exits.
+ *
  * @param commands - The child commands to run.
  * @param cwd - The working directory.
  * @param sequential - Whether to run the children one at a time.
+ * @param budget - The run's machine budget.
  * @returns The aggregated exit code.
  */
 export async function execute(
 	commands: Array<ChildCommand>,
 	cwd: string,
 	sequential: boolean,
+	budget: RunBudget = UNBUDGETED,
 ): Promise<number> {
-	const code = await (sequential ? runSequential(commands, cwd) : startGroup(commands, cwd));
+	const code = await (sequential
+		? runSequential(commands, cwd, budget)
+		: startGroup(commands, cwd, budget));
 	return cancelledCode() ?? code;
 }
 
@@ -131,14 +140,18 @@ export async function execute(
  * @param cwd - The working directory.
  * @param resolveDeferred - Plans the remaining children; called once, after the
  *   eager ones have spawned. May return an empty list.
+ * @param budget - The run's machine budget.
  * @returns The aggregated exit code.
  */
 export async function executeStaged(
 	commands: Array<ChildCommand>,
 	cwd: string,
 	resolveDeferred: () => Array<ChildCommand>,
+	budget: RunBudget = UNBUDGETED,
 ): Promise<number> {
-	const eager = startGroup(commands, cwd);
+	// Leased up front: the eager group must be spawned before the builder
+	// behind `resolveDeferred` blocks the event loop.
+	const eager = runGroup(await leaseAll(commands, budget), cwd);
 	const deferred = resolveDeferred();
 
 	// The builder behind `resolveDeferred` blocks the event loop, so a Ctrl+C
@@ -155,13 +168,38 @@ export async function executeStaged(
 	}
 
 	const held = createHeldOutput();
-	const later = startGroup(deferred, cwd, held.stream);
+	const later = startGroup(deferred, cwd, budget, held.stream);
 
 	const eagerCode = await eager;
 	held.release();
 	const deferredCode = await later;
 
 	return cancelledCode() ?? (eagerCode === 0 ? deferredCode : eagerCode);
+}
+
+/**
+ * Lease every child of a group, in run order, before any of them spawns:
+ * `concurrently` starts a whole group at once. Stops leasing once the run is
+ * cancelled.
+ *
+ * @param commands - The group's children.
+ * @param budget - The run's machine budget.
+ * @returns The children's leases.
+ */
+async function leaseAll(
+	commands: Array<ChildCommand>,
+	budget: RunBudget,
+): Promise<Array<ChildLease>> {
+	const leases: Array<ChildLease> = [];
+	for (const command of commands) {
+		if (cancelledBy !== undefined) {
+			break;
+		}
+
+		leases.push(await budget.lease(command));
+	}
+
+	return leases;
 }
 
 /**
@@ -172,10 +210,25 @@ export async function executeStaged(
  * piped report.
  *
  * @param command - The child that was spawned.
+ * @param grant - What the machine budget granted it, when it holds a lease.
  */
-function announce(command: ChildCommand): void {
+function announce(command: ChildCommand, grant: string | undefined): void {
 	const prefix = ansis[PREFIX_COLOR[command.label]](`[${command.label}]`);
-	process.stderr.write(`${prefix} spawned ${command.bin}\n`);
+	const granted = grant === undefined ? "" : ` (${grant})`;
+	process.stderr.write(`${prefix} spawned ${command.bin}${granted}\n`);
+}
+
+/**
+ * Tie a lease to the child it was taken for: measure the child from its spawn,
+ * and give the lease back when it exits or fails to start.
+ *
+ * @param child - The spawned child.
+ * @param lease - Its lease.
+ */
+function holdLease(child: ChildProcess, lease: ChildLease): void {
+	lease.watch(child.pid);
+	child.once("error", lease.release);
+	child.once("close", lease.release);
 }
 
 /**
@@ -324,7 +377,8 @@ function watchOutOfMemory(child: ChildProcess, onExhausted: () => void): void {
 }
 
 /**
- * Start every command as one `concurrently` group and announce the children.
+ * Start every leased command as one `concurrently` group and announce the
+ * children.
  * Unlike the previous `killOthersOn: ["failure"]` behaviour, an ordinary lint
  * failure in one child no longer kills its siblings — each runs to the end so
  * the user keeps every result. The resolved code is non-zero when any child
@@ -339,20 +393,30 @@ function watchOutOfMemory(child: ChildProcess, onExhausted: () => void): void {
  * the options this runner always used — output and error logging, exit lines,
  * signal forwarding and the broken-output-pipe guard — and nothing else.
  *
- * @param commands - The child commands to run.
+ * Every lease is given back by the time the group settles, including those
+ * of children that never spawned.
+ *
+ * @param leases - The leased child commands to run.
  * @param cwd - The working directory.
  * @param outputStream - Where the group writes its child output; defaults to
  *   stdout. A staged run passes a held stream (see {@link createHeldOutput}).
  * @returns The aggregated exit code.
  */
-async function startGroup(
-	commands: Array<ChildCommand>,
+async function runGroup(
+	leases: Array<ChildLease>,
 	cwd: string,
 	outputStream: Writable = process.stdout,
 ): Promise<number> {
-	if (cancelledBy !== undefined || commands.length === 0) {
+	if (cancelledBy !== undefined || leases.length === 0) {
+		for (const lease of leases) {
+			lease.release();
+		}
+
 		return 0;
 	}
+
+	const commands = leases.map((lease) => lease.command);
+	const leaseOf = new Map(leases.map((lease) => [lease.command, lease]));
 
 	// Resolve every bin before anything spawns, so a missing engine is a
 	// CliError up front rather than a failure inside the group.
@@ -395,6 +459,11 @@ async function startGroup(
 				}
 
 				const child = launchEngine(launch, options);
+				const lease = leaseOf.get(launch.command);
+				if (lease !== undefined) {
+					holdLease(child, lease);
+				}
+
 				if (launch.command.watchHeap) {
 					watchOutOfMemory(child, () => {
 						exhausted.add(launch.command.label);
@@ -410,8 +479,8 @@ async function startGroup(
 	// `maxProcesses` cap), so these lines report real spawns rather than intent.
 	// Everything above runs before this function's first `await`, which is what
 	// lets a staged caller keep working while the group it just started lints.
-	for (const command of commands) {
-		announce(command);
+	for (const lease of leases) {
+		announce(lease.command, lease.grant);
 	}
 
 	try {
@@ -423,10 +492,32 @@ async function startGroup(
 		return 1;
 	} finally {
 		stopTracking();
+		for (const lease of leases) {
+			lease.release();
+		}
+
 		for (const label of exhausted) {
 			process.stderr.write(outOfMemoryHint(label));
 		}
 	}
+}
+
+/**
+ * Lease every command, then start them as one group (see {@link runGroup}).
+ *
+ * @param commands - The child commands to run.
+ * @param cwd - The working directory.
+ * @param budget - The run's machine budget.
+ * @param outputStream - Where the group writes its child output.
+ * @returns The aggregated exit code.
+ */
+async function startGroup(
+	commands: Array<ChildCommand>,
+	cwd: string,
+	budget: RunBudget,
+	outputStream: Writable = process.stdout,
+): Promise<number> {
+	return runGroup(await leaseAll(commands, budget), cwd, outputStream);
 }
 
 function signalExitCode(signal: NodeJS.Signals): number {
@@ -443,8 +534,10 @@ function cancelledCode(): number | undefined {
 	return cancelledBy === undefined ? undefined : signalExitCode(cancelledBy);
 }
 
-async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
-	const bin = resolveLocalBin(command.bin, cwd);
+async function spawnChild(planned: ChildCommand, cwd: string, budget: RunBudget): Promise<number> {
+	const bin = resolveLocalBin(planned.bin, cwd);
+	const lease = await budget.lease(planned);
+	const { command } = lease;
 	// A watched child's stderr is piped so it can be read, and forwarded as is.
 	const watched = command.watchHeap;
 	let exhausted = false;
@@ -466,7 +559,8 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 			});
 		}
 
-		announce(command);
+		holdLease(child, lease);
+		announce(command, lease.grant);
 		const stopTracking = trackCancellation((signal) => {
 			child.kill(signal);
 		});
@@ -485,14 +579,18 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 	});
 }
 
-async function runSequential(commands: Array<ChildCommand>, cwd: string): Promise<number> {
+async function runSequential(
+	commands: Array<ChildCommand>,
+	cwd: string,
+	budget: RunBudget,
+): Promise<number> {
 	let exitCode = 0;
 	for (const command of commands) {
 		if (cancelledBy !== undefined) {
 			break;
 		}
 
-		const code = await spawnChild(command, cwd);
+		const code = await spawnChild(command, cwd, budget);
 		if (code !== 0) {
 			exitCode = code;
 		}

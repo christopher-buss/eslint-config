@@ -8,6 +8,9 @@ delete process.env["NODE_PATH"];
 
 export default defineConfig({
 	test: {
+		// The lint CLI tests start real runs. Keep them off the machine budget
+		// that other tools on this machine share, so no test waits for a lease.
+		env: { MACHINE_BUDGET: "off" },
 		include: ["test/**/*.spec.ts"],
 		testTimeout: 120_000,
 		typecheck: {

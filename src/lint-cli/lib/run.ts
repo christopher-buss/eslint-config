@@ -7,6 +7,8 @@ import { parseArguments } from "./cli/options.ts";
 import type { ChildCommand, LintCliOptions } from "./cli/types.ts";
 import { CliError } from "./cli/types.ts";
 import { resolveRunContext } from "./context.ts";
+import type { RunBudget } from "./exec/budget.ts";
+import { openRunBudget } from "./exec/budget.ts";
 import { execute, executeStaged, resetCancellation } from "./exec/execute.ts";
 import { formatCommandLine } from "./exec/shell.ts";
 import { composeOxfmtCommand } from "./plan/command.ts";
@@ -14,6 +16,22 @@ import { compose, composePasses } from "./plan/compose.ts";
 import { plan } from "./plan/plan.ts";
 import type { StagedPlan } from "./plan/plan.ts";
 import type { PassPlan } from "./plan/sizing.ts";
+
+/** Everything the stages of a run share once it is planned. */
+interface RunStages {
+	/** The machine budget every child leases its workers from. */
+	budget: RunBudget;
+	/** The composed lint children. */
+	commands: Array<ChildCommand>;
+	/** The working directory. */
+	cwd: string;
+	/** The oxfmt child, when the run formats. */
+	formatCommand: ChildCommand | undefined;
+	/** The parsed CLI options. */
+	options: LintCliOptions;
+	/** The staged plan the commands came from. */
+	staged: StagedPlan;
+}
 
 /** A finished check stage: its exit code and the passes it planned. */
 interface CheckOutcome {
@@ -108,13 +126,77 @@ export async function runLint(
 		process.stderr.write(notice);
 	}
 
+	// One budget for the whole run: every child leases from it just before it
+	// spawns, so a run on a busy machine waits for room rather than piling on.
+	const budget = await openRunBudget(cwd, (line) => {
+		process.stderr.write(`isentinel-lint: ${line}\n`);
+	});
+	try {
+		return await runStages({ budget, commands, cwd, formatCommand, options, staged });
+	} finally {
+		budget.close();
+	}
+}
+
+/**
+ * Run a run's ESLint check children and report which passes they covered.
+ *
+ * A staged run is concurrent by construction (the planner only stages when at
+ * least one other child is already linting). Its type-aware pass is planned —
+ * TypeScript builder and all — only once the children above are running, and
+ * its notice is emitted as soon as it is known rather than held to the end of
+ * the run.
+ *
+ * @param commands - The composed check children.
+ * @param stages - The planned run and its budget.
+ * @returns The aggregated exit code and every pass that was planned.
+ */
+async function runChecks(
+	commands: Array<ChildCommand>,
+	{ budget, cwd, options, staged }: RunStages,
+): Promise<CheckOutcome> {
+	const passes = [...staged.eager.passes];
+	const { resolveDeferred } = staged;
+	if (resolveDeferred === undefined) {
+		return { code: await execute(commands, cwd, commands.length <= 1, budget), passes };
+	}
+
+	const code = await executeStaged(
+		commands,
+		cwd,
+		() => {
+			const deferred = resolveDeferred();
+			passes.push(...deferred);
+
+			const later = composePasses(deferred, staged.eager, options);
+			if (later.notice !== undefined) {
+				process.stderr.write(later.notice);
+			}
+
+			return later.commands;
+		},
+		budget,
+	);
+
+	return { code, passes };
+}
+
+/**
+ * Run a planned run's children: the checks, then for `--fix` the fix child and
+ * the formatter.
+ *
+ * @param stages - The planned run and its budget.
+ * @returns The process exit code.
+ */
+async function runStages(stages: RunStages): Promise<number> {
+	const { budget, commands, cwd, formatCommand, staged } = stages;
 	const { resolveFixChild } = staged;
 	if (resolveFixChild === undefined) {
 		// The format check reads files nothing else writes, so it runs
 		// alongside the lint checks. A fix run writes instead, after the lint
 		// fixes (below).
 		const checkCommands = formatCommand === undefined ? commands : [...commands, formatCommand];
-		const checkOnly = await runChecks(checkCommands, cwd, staged, options);
+		const checkOnly = await runChecks(checkCommands, stages);
 		return checkOnly.code;
 	}
 
@@ -122,8 +204,8 @@ export async function runLint(
 	// alone; the checks then lint what it left behind, exactly as they would in
 	// a check run.
 	const byBin = Object.groupBy(commands, (command) => command.bin);
-	const oxlintCode = await execute(byBin.oxlint ?? [], cwd, true);
-	const checks = await runChecks(byBin.eslint ?? [], cwd, staged, options);
+	const oxlintCode = await execute(byBin.oxlint ?? [], cwd, true, budget);
+	const checks = await runChecks(byBin.eslint ?? [], stages);
 
 	const fixChild = resolveFixChild(checks.passes);
 	// The fix child re-lints every file the checks reported, under a config that
@@ -135,14 +217,14 @@ export async function runLint(
 	const lintCode =
 		fixChild === undefined
 			? oxlintCode || checks.code
-			: oxlintCode || (await execute([fixChild], cwd, true));
+			: oxlintCode || (await execute([fixChild], cwd, true, budget));
 
 	// Formatting goes last, so it settles whatever the lint fixes wrote.
 	if (formatCommand === undefined) {
 		return lintCode;
 	}
 
-	const formatCode = await execute([formatCommand], cwd, true);
+	const formatCode = await execute([formatCommand], cwd, true, budget);
 	return lintCode || formatCode;
 }
 
@@ -170,46 +252,4 @@ function findOxfmtModule(options: LintCliOptions, cwd: string): string | undefin
 	}
 
 	return config?.isModule === true ? config.path : undefined;
-}
-
-/**
- * Run a run's ESLint check children and report which passes they covered.
- *
- * A staged run is concurrent by construction (the planner only stages when at
- * least one other child is already linting). Its type-aware pass is planned —
- * TypeScript builder and all — only once the children above are running, and
- * its notice is emitted as soon as it is known rather than held to the end of
- * the run.
- *
- * @param commands - The composed check children.
- * @param cwd - The working directory.
- * @param staged - The staged plan the commands came from.
- * @param options - The parsed CLI options.
- * @returns The aggregated exit code and every pass that was planned.
- */
-async function runChecks(
-	commands: Array<ChildCommand>,
-	cwd: string,
-	staged: StagedPlan,
-	options: LintCliOptions,
-): Promise<CheckOutcome> {
-	const passes = [...staged.eager.passes];
-	const { resolveDeferred } = staged;
-	if (resolveDeferred === undefined) {
-		return { code: await execute(commands, cwd, commands.length <= 1), passes };
-	}
-
-	const code = await executeStaged(commands, cwd, () => {
-		const deferred = resolveDeferred();
-		passes.push(...deferred);
-
-		const later = composePasses(deferred, staged.eager, options);
-		if (later.notice !== undefined) {
-			process.stderr.write(later.notice);
-		}
-
-		return later.commands;
-	});
-
-	return { code, passes };
 }

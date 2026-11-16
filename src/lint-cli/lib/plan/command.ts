@@ -5,7 +5,20 @@ import type {
 	ComposeContext,
 	LintCliOptions,
 	OxlintComposeContext,
+	ToolLabel,
+	WorkerDemand,
 } from "../cli/types.ts";
+import { FAST_WORKER_MEMORY_MB, OXLINT_THREAD_MEMORY_MB } from "./concurrency.ts";
+
+/**
+ * The pass each ESLint child's cost is learned under. The full config and the
+ * fix child share one: both lint with every rule.
+ */
+const ESLINT_COST_PASS: Partial<Record<ToolLabel, string>> = {
+	eslint: "eslint-full",
+	fast: "eslint-fast",
+	typed: "eslint-typed",
+};
 
 /**
  * Compose the oxlint child command.
@@ -42,7 +55,19 @@ export function composeOxlintCommand(
 		...options.oxlintArgs,
 		...pathArguments(context.paths),
 	);
-	return { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
+	const command: ChildCommand = { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
+	if (context.threads !== undefined) {
+		// The granted count is added as `--threads` at lease time, so a
+		// `--print` run shows the command without it.
+		command.workers = {
+			flag: "--threads",
+			maxWorkers: context.threads,
+			memoryPerWorkerMb: OXLINT_THREAD_MEMORY_MB,
+			pass: "oxlint",
+		};
+	}
+
+	return command;
 }
 
 /**
@@ -134,6 +159,7 @@ export function composeEslintCommand(
 		env: environment,
 		label: context.eslintLabel,
 		watchHeap: context.heap?.watch ?? false,
+		workers: eslintDemand(context),
 	};
 }
 
@@ -149,4 +175,21 @@ export function composeEslintCommand(
  */
 function pathArguments(paths: Array<string>): Array<string> {
 	return paths.map((target) => (target.startsWith("-") ? `./${target}` : target));
+}
+
+/**
+ * What an ESLint child asks the machine budget for: the planned concurrency as
+ * its most workers (`off` is one, on the main thread), each counted at the heap
+ * it may grow to.
+ *
+ * @param context - The resolved composition context.
+ * @returns The child's worker demand.
+ */
+function eslintDemand(context: ComposeContext): WorkerDemand {
+	return {
+		flag: "--concurrency",
+		maxWorkers: context.concurrency === "off" ? 1 : context.concurrency,
+		memoryPerWorkerMb: context.heap?.workerMb ?? FAST_WORKER_MEMORY_MB,
+		pass: ESLINT_COST_PASS[context.eslintLabel] ?? `eslint-${context.eslintLabel}`,
+	};
 }

@@ -84,6 +84,13 @@ export interface PassHeap {
 	 * unmanaged one: its stderr stays inherited when it runs alone.
 	 */
 	watch: boolean;
+	/**
+	 * What one worker is expected to use, in MB: what the machine budget
+	 * counts it at until it learns the real cost. The size set in {@link
+	 * HEAP_ENV}, else Node's default heap. Never the `auto` heap: that is a
+	 * ceiling split from half the machine, not what a worker uses.
+	 */
+	workerMb: number;
 }
 
 /** Everything sizing needs to give a program-building pass its heap. */
@@ -236,6 +243,7 @@ export function planPassHeap(label: ToolLabel, budget: HeapBudget, sizing: HeapS
 		nodeOptions: heapNodeOptions(budget, heapMb),
 		note: describeHeapPlan(label, budget, sizing, heapMb),
 		watch: budget.setting.kind !== "off",
+		workerMb: budget.setting.kind === "fixed" ? budget.setting.mb : budget.memory.defaultHeapMb,
 	};
 }
 

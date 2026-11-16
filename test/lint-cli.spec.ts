@@ -62,6 +62,7 @@ import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/
 import {
 	computeWorkerCount,
 	resolveFastFilesPerWorker,
+	resolveOxlintThreads,
 	resolveWorkerLimits,
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
@@ -2381,9 +2382,12 @@ describe("runLint --fix", () => {
 			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 		});
 
+		// The budget is off in tests, so oxlint gets every thread it asked for.
+		const threads = resolveOxlintThreads(options(), os.availableParallelism(), false);
+
 		expect(code).toBe(0);
 		expect(spawnedArgv(argvLog).filter((line) => line.includes("--fix"))).toStrictEqual([
-			"--fix --no-error-on-unmatched-pattern .",
+			`--threads ${String(threads)} --fix --no-error-on-unmatched-pattern .`,
 		]);
 	});
 

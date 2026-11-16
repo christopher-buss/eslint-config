@@ -1,4 +1,20 @@
 import { parseBoundedInteger } from "../cli/parse.ts";
+import type { LintCliOptions } from "../cli/types.ts";
+
+/**
+ * What one worker of a pass that builds no TypeScript program is expected to
+ * use, in MB, until the machine budget learns its real cost: a syntactic ESLint
+ * worker holds the loaded config and one file's AST at a time.
+ */
+export const FAST_WORKER_MEMORY_MB = 512;
+
+/**
+ * What one oxlint thread is expected to use, in MB, until the machine budget
+ * learns its real cost.
+ */
+export const OXLINT_THREAD_MEMORY_MB = 256;
+
+const OXLINT_THREADS_FLAG = /^--threads(?:=|$)/;
 
 /** Default number of files a single ESLint worker should handle. */
 export const DEFAULT_FILES_PER_WORKER = 300;
@@ -131,6 +147,30 @@ export function computeWorkerCount({
 	}
 
 	return workers;
+}
+
+/**
+ * The threads the oxlint child asks the machine budget for. Locally that is
+ * the same quarter of the CPUs each ESLint pass may take, since the three run
+ * side by side; in CI, where the budget is off and nothing else runs, it is
+ * every CPU, which is what oxlint takes by default.
+ *
+ * @param options - The parsed CLI options; a `--threads` in `--oxlint-args`
+ *   is the user's own choice and is left alone.
+ * @param availableParallelism - The number of available CPUs.
+ * @param ci - Whether the run is in CI.
+ * @returns The thread count, or `undefined` to lease nothing for oxlint.
+ */
+export function resolveOxlintThreads(
+	options: LintCliOptions,
+	availableParallelism: number,
+	ci: boolean,
+): number | undefined {
+	if (options.oxlintArgs.some((argument) => OXLINT_THREADS_FLAG.test(argument))) {
+		return undefined;
+	}
+
+	return ci ? availableParallelism : Math.max(1, Math.floor(availableParallelism / 4));
 }
 
 function parsePositiveInteger(value: string | undefined): number | undefined {

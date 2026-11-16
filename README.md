@@ -269,6 +269,16 @@ Other behaviours:
   `LINT_MAX_WORKERS` or `--concurrency` is never reduced. A
   `--max-old-space-size` already in `NODE_OPTIONS` wins over all of this: the
   runner adds nothing and keeps the worker count.
+- Takes its workers from the machine budget
+  ([`@isentinel/machine-budget`](https://www.npmjs.com/package/@isentinel/machine-budget)),
+  which every tool that uses it on the machine shares. Just before it starts
+  oxlint or an ESLint pass, the runner leases the planned workers (one at least)
+  and starts the child with the workers it got: ESLint's `--concurrency`, or
+  oxlint's `--threads`. When other runs hold the machine, the lease waits and
+  prints why on stderr. When the child exits, the runner gives the lease back
+  with the child's peak memory, so the budget learns what one worker of each
+  pass costs. `MACHINE_BUDGET=off` and CI grant every lease in full at once. A
+  `--threads` in `--oxlint-args` is left alone.
 - Keeps a separate ESLint cache per pass so they never invalidate one another:
   `.eslintcache-fast-<key>` (fast pass), `.eslintcache-typeaware-<key>`
   (type-aware pass), and `.eslintcache-<key>` (the full config, used by CI,
@@ -416,6 +426,7 @@ or `--`.
 | `LINT_TYPED_HEAP_MB`    | Heap per worker for the program-building ESLint children: `auto` (default), a size in MB, or `off` (Node's default). |
 | `ESLINT_TYPE_AWARE`     | `off` or `only`; the type-aware mode `--type-aware` sets for the ESLint child (`false` is a legacy alias for `off`). |
 | `CI`                    | When set, the runner uses the single full pass with `--cache-strategy content` (see below).                          |
+| `MACHINE_BUDGET`        | `off` starts every child with its planned workers, without waiting for the machine budget.                           |
 
 ### Type-aware oxlint backends
 
