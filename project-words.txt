@@ -38,6 +38,7 @@ oxlint
 oxlintrc
 pico
 pnpmfile
+pnpr
 pobammer
 rbxts
 redactions
