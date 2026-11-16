@@ -27,8 +27,8 @@ export interface OptionsFilesTypeAware extends OptionsFiles {
 	filesTypeAware?: Array<Array<string> | string>;
 
 	/**
-	 * Override the `ignoresTypeAware` option to provide custom globs for type
-	 * aware files.
+	 * Globs of files to exclude from type-aware linting, added before the
+	 * config's defaults.
 	 */
 	ignoresTypeAware?: Array<string>;
 }
@@ -67,6 +67,12 @@ export interface NamingConfig extends OptionsOverridesTypeAware {
 	 * @default false
 	 */
 	allowedWords?: Array<string> | boolean;
+
+	/**
+	 * Globs of files to exclude from type-aware naming rules. Replaces
+	 * `typescript.ignoresTypeAware` for this config.
+	 */
+	ignoresTypeAware?: Array<string>;
 
 	/**
 	 * Whether the project targets Roblox. Enables `@rbxts/react`
@@ -139,11 +145,14 @@ export interface OptionsTypeScriptParserOptions {
 	filesTypeAware?: Array<Array<string> | string>;
 
 	/**
-	 * Glob patterns for files that should not be type aware. Used to exclude
-	 * virtual files created by processors (e.g., markdown TypeScript code
-	 * blocks).
+	 * Glob patterns for files that should not be type aware. Set on
+	 * `typescript`, they apply to every type-aware config (typescript, roblox,
+	 * flawless, naming, react); a config's own `ignoresTypeAware` takes
+	 * precedence.
 	 *
-	 * @default ["**\/*.md\/**"]
+	 * The globs are added before each config's defaults (`**\/*.md\/**`, and
+	 * `**\/*.d.{,c,m}ts` for flawless and naming), so a negation such as
+	 * `!**\/src/**` cannot re-include a file the defaults exclude.
 	 */
 	ignoresTypeAware?: Array<string>;
 
@@ -251,6 +260,12 @@ export interface ReactSettings {
 
 export type ReactConfig = OptionsOverridesTypeAware &
 	ReactSettings & {
+		/**
+		 * Globs of files to exclude from type-aware React rules. Replaces
+		 * `typescript.ignoresTypeAware` for this config.
+		 */
+		ignoresTypeAware?: Array<string>;
+
 		/**
 		 * Whether to enable the React Compiler rules.
 		 *

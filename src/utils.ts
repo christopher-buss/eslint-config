@@ -344,9 +344,11 @@ export function getOverrides(
 	};
 
 	return {
-		files: shape.files,
-		filesTypeAware: shape.filesTypeAware,
-		ignoresTypeAware: shape.ignoresTypeAware,
+		...(shape.files === undefined ? {} : { files: shape.files }),
+		...(shape.filesTypeAware === undefined ? {} : { filesTypeAware: shape.filesTypeAware }),
+		...(shape.ignoresTypeAware === undefined
+			? {}
+			: { ignoresTypeAware: shape.ignoresTypeAware }),
 		overrides: { ...shape.overrides },
 		overridesTypeAware: { ...shape.overridesTypeAware },
 	};
@@ -1047,6 +1049,23 @@ export function shouldEnableFeature<T extends Record<string, any>>(
 	}
 
 	return options[key] !== false;
+}
+
+/**
+ * Merge user type-aware ignores with a config's defaults.
+ *
+ * The defaults go last, so a user negation such as `!**\/src/**` cannot
+ * re-include a file the defaults exclude.
+ *
+ * @param defaults - The config's own type-aware ignores.
+ * @param ignores - The user's type-aware ignores (optional).
+ * @returns The merged ignore globs.
+ */
+export function mergeTypeAwareIgnores(
+	defaults: Array<string>,
+	ignores: Array<string> = [],
+): Array<string> {
+	return [...ignores, ...defaults];
 }
 
 /**

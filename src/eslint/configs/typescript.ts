@@ -9,6 +9,7 @@ import {
 	ensurePackages,
 	getTsConfig,
 	interopDefault,
+	mergeTypeAwareIgnores,
 	renameRules,
 } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
@@ -63,7 +64,10 @@ export async function typescript(
 	];
 
 	const filesTypeAware = options.filesTypeAware ?? [GLOB_TS, GLOB_TSX];
-	const ignoresTypeAware = options.ignoresTypeAware ?? [`${GLOB_MARKDOWN}/**`];
+	const ignoresTypeAware = mergeTypeAwareIgnores(
+		[`${GLOB_MARKDOWN}/**`],
+		options.ignoresTypeAware,
+	);
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 

@@ -211,6 +211,11 @@ export async function isentinel(
 		);
 	}
 
+	const sharedTypeAwareIgnores =
+		"ignoresTypeAware" in typescriptOptions
+			? { ignoresTypeAware: typescriptOptions.ignoresTypeAware }
+			: {};
+
 	const inAgentSession = options.isAgent ?? isInAgentSession();
 	let { defaultSeverity, isInEditor } = options;
 	if (defaultSeverity === undefined && inAgentSession) {
@@ -307,6 +312,7 @@ export async function isentinel(
 		flawless(
 			{
 				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
+				...sharedTypeAwareIgnores,
 				...("tsconfigPath" in typescriptOptions
 					? { tsconfigPath: typescriptOptions.tsconfigPath }
 					: {}),
@@ -356,6 +362,7 @@ export async function isentinel(
 		configs.push(
 			naming({
 				roblox: enableRoblox,
+				...sharedTypeAwareIgnores,
 				...getOverrides(options, "naming"),
 				...resolveSubOptions(options, "naming"),
 			}),
@@ -453,6 +460,7 @@ export async function isentinel(
 	if (enableReact !== false) {
 		configs.push(
 			react({
+				...sharedTypeAwareIgnores,
 				...resolveSubOptions(options, "react"),
 				...getOverrides(options, "react"),
 				settings: options.settings,
