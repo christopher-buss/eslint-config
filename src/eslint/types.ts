@@ -10,6 +10,7 @@ import type {
 	OptionsFiles,
 	OptionsFormatters,
 	OptionsOverrides,
+	OptionsPackageJson,
 	OptionsPnpm,
 	OptionsProjectType,
 	OptionsTestFramework,
@@ -544,6 +545,9 @@ export interface OptionsConfig extends OptionsComponentExtensions, OptionsProjec
 	 * @default true
 	 */
 	oxlintWarnDeadRules?: boolean;
+
+	/** Supply custom options for eslint-plugin-package-json. */
+	packageJson?: OptionsPackageJson;
 
 	/** Supply custom options for eslint-plugin-perfectionist. */
 	perfectionist?: PerfectionistConfig;

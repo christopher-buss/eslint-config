@@ -327,7 +327,12 @@ export async function isentinel(
 		),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
-		packageJson({ roblox: enableRoblox, stylistic: stylisticOptions, type: projectType }),
+		packageJson({
+			...options.packageJson,
+			roblox: enableRoblox,
+			stylistic: stylisticOptions,
+			type: projectType,
+		}),
 		javascript({
 			...getOverrides(options, "javascript"),
 			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
