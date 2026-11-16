@@ -314,7 +314,8 @@ export function resolveSubOptions<K extends keyof OptionsConfig>(
 }
 
 export function toSourceGlob(glob: string): string {
-	return glob.startsWith("!") ? `!${glob.slice(1)}.${GLOB_SRC_EXT}` : `${glob}.${GLOB_SRC_EXT}`;
+	const suffix = glob.endsWith("**") ? `/*.${GLOB_SRC_EXT}` : `.${GLOB_SRC_EXT}`;
+	return `${glob}${suffix}`;
 }
 
 export function getOverrides(

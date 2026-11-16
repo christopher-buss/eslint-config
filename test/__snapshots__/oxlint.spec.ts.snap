@@ -2263,6 +2263,9 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
@@ -2795,6 +2798,9 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -2811,6 +2817,9 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -5290,6 +5299,9 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
@@ -6909,6 +6921,9 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -6925,6 +6940,9 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -9698,6 +9716,9 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
@@ -11032,6 +11053,9 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -11048,6 +11072,9 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -13824,6 +13851,9 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*.{,c,m}[jt]s{,x}",
         "packages/*/*.{,c,m}[jt]s{,x}",
@@ -16295,6 +16325,7 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
     },
     {
       "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
         "src/**",
       ],
       "files": [
@@ -17707,6 +17738,9 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
@@ -17723,6 +17757,9 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
       },
     },
     {
+      "excludeFiles": [
+        "{packages,apps,libs}/*/{src,test,tests}/*",
+      ],
       "files": [
         "./*",
         "packages/*/*",
