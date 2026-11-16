@@ -323,8 +323,8 @@ catalogs:
       specifier: 1.92.0
       version: 1.92.0
     '@pobammer-ts/small-rules':
-      specifier: 3.11.0
-      version: 3.11.0
+      specifier: 3.12.0
+      version: 3.12.0
     '@stylistic/eslint-plugin':
       specifier: 5.10.0
       version: 5.10.0
@@ -502,7 +502,7 @@ importers:
         version: 1.92.0
       '@pobammer-ts/small-rules':
         specifier: catalog:prod
-        version: 3.11.0(typescript@6.0.3)
+        version: 3.12.0(typescript@6.0.3)
       '@stylistic/eslint-plugin':
         specifier: catalog:prod
         version: 5.10.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(typescript@6.0.3)
@@ -1949,8 +1949,8 @@ packages:
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  '@pobammer-ts/small-rules@3.11.0':
-    resolution: {integrity: sha512-nMnLMcbnI22/forw359KUm+EZCyAihAsiuTSfgjPvgG378ewO+4QiCX6N8Bc90dRvOk4dti+szC7Scx2T/d1lA==}
+  '@pobammer-ts/small-rules@3.12.0':
+    resolution: {integrity: sha512-bagTur9XjsKxESWLmsntZ+Q8uPafcCojjiw/beMYPQf0FYYHrMPBO/wypyMHAR6advv4XehW9OGBsNSYpbAeEA==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       typescript: '>=5 <8'
@@ -2822,8 +2822,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  effect@4.1.0:
-    resolution: {integrity: sha512-lGx2MJJyrXA8RZb2UpQ/0Nkb5Utaimby7oD92+18noBxLPE85IFOvptdzau8dvcxAOwfwHo9iqapbKeFzqQM/Q==}
+  effect@4.1.2:
+    resolution: {integrity: sha512-d3Oah1WyKxFLFh19yWheS5IXIVaITzxZ71JkE1rkUozq/6EcJSU5nPk5bF2QrSygZ3SQoiNQB8TsxFriyMeMaQ==}
 
   electron-to-chromium@1.5.383:
     resolution: {integrity: sha512-I2484/KkAvl8lm9VyjH2JnbOIV0d/UCqT7gbzs6l+o6Vmn9wgB66uVcKX+Vk6HrXtY6fbWTOEXuv8waDTuFNCw==}
@@ -3824,9 +3824,9 @@ packages:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
 
-  minimatch@11.0.3:
-    resolution: {integrity: sha512-iny/40PEGkNJQ5/Pv6z3nm6FbRAby32GeZRjCUJk2WnNDbgPSTcdI+DDvLqsgBdD4cD5sMtMheqPPnehCCa8Nw==}
-    engines: {node: 18 || 20 || >=22}
+  minimatch@11.0.5:
+    resolution: {integrity: sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==}
+    engines: {node: 20 || >=22}
 
   mlly@1.8.2:
     resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
@@ -5637,12 +5637,12 @@ snapshots:
 
   '@pkgr/core@0.3.6': {}
 
-  '@pobammer-ts/small-rules@3.11.0(typescript@6.0.3)':
+  '@pobammer-ts/small-rules@3.12.0(typescript@6.0.3)':
     dependencies:
       arktype: 2.2.9
-      effect: 4.1.0
+      effect: 4.1.2
       ignore: 7.0.14
-      minimatch: 11.0.3
+      minimatch: 11.0.5
       oxc-resolver: 11.24.2
       oxlint-plugin-utilities: 1.1.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -6396,7 +6396,7 @@ snapshots:
       minimatch: 10.2.6
       semver: 7.8.5
 
-  effect@4.1.0: {}
+  effect@4.1.2: {}
 
   electron-to-chromium@1.5.383: {}
 
@@ -7644,7 +7644,7 @@ snapshots:
     dependencies:
       brace-expansion: 5.0.12
 
-  minimatch@11.0.3:
+  minimatch@11.0.5:
     dependencies:
       '@isaacs/nonrecursive-glob-match': 1.1.0
       brace-expansion: 5.0.12
