@@ -253,8 +253,8 @@ catalogs:
       specifier: 10.14.0
       version: 10.14.0
     eslint-plugin-erasable-syntax-only:
-      specifier: 0.4.2
-      version: 0.4.2
+      specifier: 0.7.2
+      version: 0.7.2
     eslint-plugin-eslint-plugin:
       specifier: 7.5.0
       version: 7.5.0
@@ -680,7 +680,7 @@ importers:
         version: 2.3.0(patch_hash=c0af6384f070a0837fdab77e0920cd119c0824908f00c07ca1f27736ff81189b)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-erasable-syntax-only:
         specifier: catalog:peer
-        version: 0.4.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+        version: 0.7.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-plugin-eslint-plugin:
         specifier: catalog:peer
         version: 7.5.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -2958,8 +2958,8 @@ packages:
       eslint:
         optional: true
 
-  eslint-plugin-erasable-syntax-only@0.4.2:
-    resolution: {integrity: sha512-eLeg6CgNVY6LYPiPZnDn2JLh1HQVGoqjq1OD2GKGo70EcwbTwpWcqgi1zJJ/PJIKRO87cejCp9lwv5psrdxuKA==}
+  eslint-plugin-erasable-syntax-only@0.7.2:
+    resolution: {integrity: sha512-kRVdC8J08K+10AAtL0SMNUbiMaKeEEFlpVJ7CAAixgOTfpfKlz1Y59b9E5emCaDBGu7qXOGOfowGHUaFzwzToA==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       '@typescript-eslint/parser': '>=8'
@@ -6509,7 +6509,7 @@ snapshots:
     optionalDependencies:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
 
-  eslint-plugin-erasable-syntax-only@0.4.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
+  eslint-plugin-erasable-syntax-only@0.7.2(@typescript-eslint/parser@8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/parser': 8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       '@typescript-eslint/utils': 8.72.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)

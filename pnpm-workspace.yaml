@@ -71,7 +71,7 @@ catalogs:
   peer:
     "@vitest/eslint-plugin": 1.6.26
     eslint: 10.14.0
-    eslint-plugin-erasable-syntax-only: 0.4.2
+    eslint-plugin-erasable-syntax-only: 0.7.2
     eslint-plugin-eslint-plugin: 7.5.0
     eslint-plugin-jest: 29.17.0
     eslint-plugin-jest-extended: 3.0.1
