@@ -188,15 +188,13 @@ function readShape(info: IncrementalBuildInfo, ts: typeof TypeScript): BuildInfo
 		isNonEmpty(info.changeFileSet) ||
 		isNonEmpty(info.affectedFilesPendingEmit) ||
 		info.pendingEmit !== undefined ||
-		info.checkPending !== undefined
+		info.checkPending !== undefined ||
+		// A root whose path differs from its resolved path (a symlink) is
+		// stored under the resolved one, so `root` no longer lines up with the
+		// config's file names and the membership comparison below would be
+		// meaningless.
+		info.resolvedRoot !== undefined
 	) {
-		return undefined;
-	}
-
-	// A root whose path differs from its resolved path (a symlink) is stored
-	// under the resolved one, so `root` no longer lines up with the config's file
-	// names and the membership comparison below would be meaningless.
-	if (info.resolvedRoot !== undefined) {
 		return undefined;
 	}
 
