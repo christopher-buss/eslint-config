@@ -124,7 +124,6 @@ export function disables({
 				"ts/require-await": "off",
 				"ts/unbound-method": "off",
 				"unicorn/consistent-function-scoping": "off",
-				"unicorn/no-unnecessary-parameters": "off",
 			},
 		},
 		{

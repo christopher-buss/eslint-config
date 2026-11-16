@@ -146,8 +146,18 @@ function lintWithCache(cwd: string, cacheFile: string): void {
 	}
 }
 
-function workerCount(dirty: number, perWorker: number, max: number): "off" | number {
-	return computeWorkerCount({ dirtyCount: dirty, filesPerWorker: perWorker, maxWorkers: max });
+/**
+ * The files-per-worker ratio the `computeWorkerCount` cases are written
+ * against.
+ */
+const FILES_PER_WORKER = 350;
+
+function workerCount(dirty: number, max: number): "off" | number {
+	return computeWorkerCount({
+		dirtyCount: dirty,
+		filesPerWorker: FILES_PER_WORKER,
+		maxWorkers: max,
+	});
 }
 
 /**
@@ -290,27 +300,27 @@ describe("computeWorkerCount", () => {
 	it("returns off for zero or single-worker workloads", ({ expect }) => {
 		expect.assertions(2);
 
-		expect(workerCount(0, 350, 8)).toBe("off");
-		expect(workerCount(350, 350, 8)).toBe("off");
+		expect(workerCount(0, 8)).toBe("off");
+		expect(workerCount(350, 8)).toBe("off");
 	});
 
 	it("scales with the dirty count", ({ expect }) => {
 		expect.assertions(2);
 
-		expect(workerCount(400, 350, 8)).toBe(2);
-		expect(workerCount(1400, 350, 8)).toBe(4);
+		expect(workerCount(400, 8)).toBe(2);
+		expect(workerCount(1400, 8)).toBe(4);
 	});
 
 	it("caps at maxWorkers", ({ expect }) => {
 		expect.assertions(1);
 
-		expect(workerCount(100_000, 350, 3)).toBe(3);
+		expect(workerCount(100_000, 3)).toBe(3);
 	});
 
 	it("returns off when the cap is below two", ({ expect }) => {
 		expect.assertions(1);
 
-		expect(workerCount(100_000, 350, 1)).toBe("off");
+		expect(workerCount(100_000, 1)).toBe("off");
 	});
 });
 

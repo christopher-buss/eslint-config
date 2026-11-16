@@ -49,15 +49,17 @@ function temporaryDirectory(onTestFinished: TestContext["onTestFinished"]): stri
 	return fs.realpathSync(directory);
 }
 
+/** How many source files {@link writeSources} writes. */
+const SOURCE_COUNT = 8;
+
 /**
- * A fixture of `count` TypeScript files, so a one-file-per-worker run asks for
- * `count` type-aware workers.
+ * A fixture of {@link SOURCE_COUNT} TypeScript files, so a one-file-per-worker
+ * run asks for that many type-aware workers.
  *
  * @param directory - The fixture root.
- * @param count - How many files to write.
  */
-function writeSources(directory: string, count: number): void {
-	for (let index = 0; index < count; index += 1) {
+function writeSources(directory: string): void {
+	for (let index = 0; index < SOURCE_COUNT; index += 1) {
 		fs.writeFileSync(path.join(directory, `file${String(index)}.ts`), "export const x = 1;\n");
 	}
 }
@@ -264,7 +266,7 @@ describe("heap flag on composed children", () => {
 		expect.assertions(2);
 
 		const directory = temporaryDirectory(onTestFinished);
-		writeSources(directory, 8);
+		writeSources(directory);
 		const { commands } = composeInDirectory(["--type-aware=only"], directory, {
 			environment: { FILES_PER_WORKER: "1" },
 			memory: { availableMb: 8192, defaultHeapMb: 4096 },
@@ -280,7 +282,7 @@ describe("heap flag on composed children", () => {
 		expect.assertions(3);
 
 		const directory = temporaryDirectory(onTestFinished);
-		writeSources(directory, 8);
+		writeSources(directory);
 		const environment = { FILES_PER_WORKER: "1", LINT_TYPED_HEAP_MB: "off" };
 		const { commands } = composeInDirectory(["--type-aware=only"], directory, {
 			environment,

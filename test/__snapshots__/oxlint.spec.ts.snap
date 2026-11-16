@@ -2786,16 +2786,11 @@ exports[`oxlint config snapshots > 'minimal' > should match the config snapshot 
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
-        {
-          "name": "unicorn-js",
-          "specifier": "<pkg>:eslint-plugin-unicorn",
-        },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
         "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
-        "unicorn-js/no-unnecessary-parameters": "off",
       },
     },
     {
@@ -6946,16 +6941,11 @@ exports[`oxlint config snapshots > 'package' > should match the config snapshot 
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
-        {
-          "name": "unicorn-js",
-          "specifier": "<pkg>:eslint-plugin-unicorn",
-        },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
         "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
-        "unicorn-js/no-unnecessary-parameters": "off",
       },
     },
     {
@@ -11088,16 +11078,11 @@ exports[`oxlint config snapshots > 'roblox-game' > should match the config snaps
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
-        {
-          "name": "unicorn-js",
-          "specifier": "<pkg>:eslint-plugin-unicorn",
-        },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
         "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
-        "unicorn-js/no-unnecessary-parameters": "off",
       },
     },
     {
@@ -17815,16 +17800,11 @@ exports[`oxlint config snapshots > 'scoped-roblox' > should match the config sna
           "name": "sonar",
           "specifier": "<pkg>:eslint-plugin-sonarjs",
         },
-        {
-          "name": "unicorn-js",
-          "specifier": "<pkg>:eslint-plugin-unicorn",
-        },
       ],
       "rules": {
         "antfu/no-top-level-await": "off",
         "flawless/max-lines-per-function": "off",
         "sonar/no-duplicate-string": "off",
-        "unicorn-js/no-unnecessary-parameters": "off",
       },
     },
     {
