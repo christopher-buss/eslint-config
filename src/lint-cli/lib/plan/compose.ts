@@ -96,6 +96,7 @@ export function compose(runPlan: RunPlan, options: LintCliOptions): CommandPlan 
 			composeOxlintCommand(options, {
 				oxlintTypeAware: runPlan.oxlintTypeAware,
 				paths: runPlan.oxlintPaths,
+				threads: runPlan.oxlintThreads,
 			}),
 		);
 	}

@@ -11,7 +11,7 @@ import { resolveAgentsFormatter } from "../exec/resolve.ts";
 import { collectRepoFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
 import { resolveIgnoredFiles } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
-import { resolveWorkerLimits } from "./concurrency.ts";
+import { resolveOxlintThreads, resolveWorkerLimits } from "./concurrency.ts";
 import { planFixChild } from "./fix.ts";
 import type { MemoryFacts } from "./heap.ts";
 import { probeMemory, resolveHeapBudget } from "./heap.ts";
@@ -42,6 +42,11 @@ export interface RunPlan {
 	 * undeterminable hybrid status), or `undefined`.
 	 */
 	oxlintReason: string | undefined;
+	/**
+	 * The threads the oxlint child asks the machine budget for, or `undefined`
+	 * when `--oxlint-args` sets them itself.
+	 */
+	oxlintThreads: number | undefined;
 	/** Whether oxlint receives `--type-aware`. */
 	oxlintTypeAware: boolean;
 	/** The ESLint passes, in run order (empty for oxlint-only runs). */
@@ -144,6 +149,7 @@ export function plan(
 	// default target `.` always survives.
 	const oxlintPaths = oxlintTargets(cwd, options.paths);
 	const runOxlint = !options.eslint && oxlintPaths.length > 0;
+	const oxlintThreads = resolveOxlintThreads(options, availableParallelism(), ci);
 
 	if (!runEslint) {
 		return {
@@ -153,6 +159,7 @@ export function plan(
 				oxlint: runOxlint,
 				oxlintPaths,
 				oxlintReason: undefined,
+				oxlintThreads,
 				oxlintTypeAware,
 				passes: [],
 				targetsOutsideCwd: false,
@@ -252,6 +259,7 @@ export function plan(
 			oxlint: oxlintDecision.run,
 			oxlintPaths,
 			oxlintReason: oxlintDecision.reason,
+			oxlintThreads,
 			oxlintTypeAware,
 			passes: sizePasses(staged.eager, run, inputs),
 			targetsOutsideCwd,

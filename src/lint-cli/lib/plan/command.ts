@@ -5,7 +5,26 @@ import type {
 	ComposeContext,
 	LintCliOptions,
 	OxlintComposeContext,
+	ToolLabel,
+	WorkerDemand,
 } from "../cli/types.ts";
+import {
+	FAST_WORKER_MEMORY_MB,
+	OXLINT_THREAD_MEMORY_MB,
+	PROGRAM_WORKER_MEMORY_MB,
+} from "./concurrency.ts";
+
+/**
+ * The pass each ESLint child's cost is learned under. The full config and the
+ * fix child share one: both lint with every rule.
+ */
+const ESLINT_COST_PASS: Partial<Record<ToolLabel, string>> = {
+	eslint: "eslint-full",
+	fast: "eslint-fast",
+	typed: "eslint-typed",
+};
+
+const ESLINT_CONCURRENCY_FLAG = /^--concurrency(?:=|$)/;
 
 /**
  * Compose the oxlint child command.
@@ -18,7 +37,9 @@ export function composeOxlintCommand(
 	options: LintCliOptions,
 	context: OxlintComposeContext,
 ): ChildCommand {
-	const args: Array<string> = [];
+	// The planned count is in the arguments, so a child that runs without a
+	// lease (the budget failed) still gets it; a granted lease rewrites it.
+	const args = context.threads === undefined ? [] : ["--threads", String(context.threads)];
 	if (options.agents) {
 		args.push("--format", "agent");
 	}
@@ -42,7 +63,21 @@ export function composeOxlintCommand(
 		...options.oxlintArgs,
 		...pathArguments(context.paths),
 	);
-	return { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
+	const command: ChildCommand = { args, bin: "oxlint", env: {}, label: "oxc", watchHeap: false };
+	if (context.threads !== undefined) {
+		// No cost is learned:
+		// oxlint's memory does not grow with its threads (most of it is the
+		// type-aware backend), so a peak divided by the threads would be
+		// multiplied back by the thread count on the next lease.
+		command.workers = {
+			flag: "--threads",
+			maxWorkers: context.threads,
+			memoryPerWorkerMb: OXLINT_THREAD_MEMORY_MB,
+			pass: undefined,
+		};
+	}
+
+	return command;
 }
 
 /**
@@ -134,6 +169,11 @@ export function composeEslintCommand(
 		env: environment,
 		label: context.eslintLabel,
 		watchHeap: context.heap?.watch ?? false,
+		// A `--concurrency` in `--eslint-args` comes after the planned one, so
+		// ESLint runs with it and no grant could change it: lease nothing.
+		...(options.eslintArgs.some((argument) => ESLINT_CONCURRENCY_FLAG.test(argument))
+			? {}
+			: { workers: eslintDemand(context) }),
 	};
 }
 
@@ -149,4 +189,22 @@ export function composeEslintCommand(
  */
 function pathArguments(paths: Array<string>): Array<string> {
 	return paths.map((target) => (target.startsWith("-") ? `./${target}` : target));
+}
+
+/**
+ * What an ESLint child asks the machine budget for: the planned concurrency as
+ * its most workers (`off` is one, on the main thread), each counted at what a
+ * worker of its kind is expected to use.
+ *
+ * @param context - The resolved composition context.
+ * @returns The child's worker demand.
+ */
+function eslintDemand(context: ComposeContext): WorkerDemand {
+	return {
+		flag: "--concurrency",
+		maxWorkers: context.concurrency === "off" ? 1 : context.concurrency,
+		memoryPerWorkerMb:
+			context.heap === undefined ? FAST_WORKER_MEMORY_MB : PROGRAM_WORKER_MEMORY_MB,
+		pass: ESLINT_COST_PASS[context.eslintLabel] ?? `eslint-${context.eslintLabel}`,
+	};
 }

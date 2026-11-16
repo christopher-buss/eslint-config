@@ -1,4 +1,31 @@
 import { parseBoundedInteger } from "../cli/parse.ts";
+import type { LintCliOptions } from "../cli/types.ts";
+
+/**
+ * What one worker of a pass that builds no TypeScript program is expected to
+ * use, in MB, until the machine budget learns its real cost: a syntactic ESLint
+ * worker holds the loaded config and one file's AST at a time.
+ */
+export const FAST_WORKER_MEMORY_MB = 1024;
+
+/**
+ * What one worker of a pass that builds a TypeScript program is expected to
+ * use, in MB, until the machine budget learns its real cost. Not the worker's
+ * heap limit: under `auto` that is a ceiling split from half the machine, and
+ * a lease that size waits until the machine is nearly empty. At 2 GB, one
+ * worker still fits the budget's small-job lane, so a small type-aware lint
+ * does not wait behind a full main lane.
+ */
+export const PROGRAM_WORKER_MEMORY_MB = 2048;
+
+/**
+ * What one oxlint thread counts for in the machine budget. Oxlint's lease
+ * learns no cost (see `composeOxlintCommand`), so this value is used on every
+ * run.
+ */
+export const OXLINT_THREAD_MEMORY_MB = 614;
+
+const OXLINT_THREADS_FLAG = /^--threads(?:=|$)/;
 
 /** Default number of files a single ESLint worker should handle. */
 export const DEFAULT_FILES_PER_WORKER = 300;
@@ -131,6 +158,30 @@ export function computeWorkerCount({
 	}
 
 	return workers;
+}
+
+/**
+ * The threads the oxlint child asks the machine budget for. Locally that is
+ * the same quarter of the CPUs each ESLint pass may take, since the three run
+ * side by side; in CI, where the budget is off and nothing else runs, it is
+ * every CPU, which is what oxlint takes by default.
+ *
+ * @param options - The parsed CLI options; a `--threads` in `--oxlint-args`
+ *   is the user's own choice and is left alone.
+ * @param availableParallelism - The number of available CPUs.
+ * @param ci - Whether the run is in CI.
+ * @returns The thread count, or `undefined` to lease nothing for oxlint.
+ */
+export function resolveOxlintThreads(
+	options: LintCliOptions,
+	availableParallelism: number,
+	ci: boolean,
+): number | undefined {
+	if (options.oxlintArgs.some((argument) => OXLINT_THREADS_FLAG.test(argument))) {
+		return undefined;
+	}
+
+	return ci ? availableParallelism : Math.max(1, Math.floor(availableParallelism / 4));
 }
 
 function parsePositiveInteger(value: string | undefined): number | undefined {

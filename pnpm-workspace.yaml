@@ -6,6 +6,7 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
+  - "@isentinel/machine-budget@0.2.0"
   - "@oxlint/plugins@1.92.0"
   - eslint@10.10.0
   - eslint-plugin-flawless
@@ -92,6 +93,7 @@ catalogs:
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
+    "@isentinel/machine-budget": 0.2.0
     "@oxlint/plugins": 1.92.0
     "@pobammer-ts/small-rules": 3.11.0
     "@stylistic/eslint-plugin": 5.10.0
@@ -139,6 +141,8 @@ catalogs:
 
 allowBuilds:
   esbuild: true
+  # Its binaries come prebuilt in per-platform packages; no install step needed.
+  koffi: false
 
 packageExtensions:
   "@cspell/eslint-plugin":

@@ -87,6 +87,7 @@
 		"@eslint/markdown": "catalog:prod",
 		"@isentinel/dict-rbxts": "catalog:prod",
 		"@isentinel/dict-roblox": "catalog:prod",
+		"@isentinel/machine-budget": "catalog:prod",
 		"@oxlint/plugins": "catalog:prod",
 		"@pobammer-ts/small-rules": "catalog:prod",
 		"@stylistic/eslint-plugin": "catalog:prod",

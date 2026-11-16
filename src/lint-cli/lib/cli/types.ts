@@ -74,6 +74,30 @@ export interface LintCliOptions {
 	typeAware: TypeAwareOption | undefined;
 }
 
+/**
+ * The workers one child asks the machine budget for, and the flag that tells
+ * the engine how many it got.
+ */
+export interface WorkerDemand {
+	/**
+	 * The engine flag that carries the granted count: ESLint's
+	 * `--concurrency`, or oxlint's `--threads`.
+	 */
+	flag: "--concurrency" | "--threads";
+	/** The most workers the child can use: the planned count. */
+	maxWorkers: number;
+	/**
+	 * What one worker is expected to use, in MB, until the budget learns it.
+	 */
+	memoryPerWorkerMb: number;
+	/**
+	 * The pass the budget learns the cost under, such as `eslint-typed`.
+	 * `undefined` learns nothing: the lease always counts
+	 * {@link WorkerDemand.memoryPerWorkerMb}, and its release reports no peak.
+	 */
+	pass: string | undefined;
+}
+
 /** A single linter child process, described independently of the shell. */
 export interface ChildCommand {
 	/** Logical arguments (paths and flags), excluding the binary itself. */
@@ -94,6 +118,12 @@ export interface ChildCommand {
 	 * and adds a hint that names the heap setting (see `PassHeap.watch`).
 	 */
 	watchHeap: boolean;
+	/**
+	 * What the child asks the machine budget for. The runner leases it just
+	 * before the spawn and starts the child with the workers it was granted.
+	 * `undefined` for a child that is not leased.
+	 */
+	workers?: WorkerDemand;
 }
 
 /**
@@ -144,6 +174,11 @@ export interface OxlintComposeContext {
 	oxlintTypeAware: boolean;
 	/** Target paths to lint. */
 	paths: Array<string>;
+	/**
+	 * The threads oxlint asks the machine budget for. `undefined` leases
+	 * nothing and leaves oxlint's thread count alone.
+	 */
+	threads?: number;
 }
 
 /**

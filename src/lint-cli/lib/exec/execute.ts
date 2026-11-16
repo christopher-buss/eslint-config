@@ -16,6 +16,8 @@ import { Writable } from "node:stream";
 
 import type { ChildCommand, ToolLabel } from "../cli/types.ts";
 import { HEAP_ENV } from "../plan/heap.ts";
+import type { ChildLease, RunBudget } from "./budget.ts";
+import { UNBUDGETED } from "./budget.ts";
 import { resolveBootstrap, resolveLocalBin } from "./resolve.ts";
 
 /** An engine child ready to spawn: its command and resolved launch target. */
@@ -46,6 +48,17 @@ const CANCEL_SIGNALS = ["SIGHUP", "SIGINT", "SIGTERM"] as const;
  */
 let cancelledBy: NodeJS.Signals | undefined;
 
+/** Called once, when the run is cancelled: each gives up a pending lease. */
+const onCancel = new Set<() => void>();
+
+/** A group of children, each spawned as soon as its lease is granted. */
+interface LaunchedGroup {
+	/** Settles with the group's exit code once every child has exited. */
+	done: Promise<number>;
+	/** Settles once every child has spawned, or the run was cancelled. */
+	spawned: Promise<void>;
+}
+
 /**
  * Forget any cancellation recorded by an earlier run in this process. Called
  * as a run starts, so a second `runLint` in the same process is not refused
@@ -53,6 +66,7 @@ let cancelledBy: NodeJS.Signals | undefined;
  */
 export function resetCancellation(): void {
 	cancelledBy = undefined;
+	onCancel.clear();
 }
 
 /** Prefix colour per child label for `concurrently`; kept visually distinct. */
@@ -90,24 +104,32 @@ export function outOfMemoryHint(label: ToolLabel): string {
  * Run the composed children and aggregate their exit codes.
  *
  * Sequential when the caller asks for it: a lone child gains nothing from the
- * concurrently harness, and the writers of a `--fix` run (the oxlint child, and
- * later the one ESLint child that fixes) are each spawned on their own so
- * nothing is reading a file while one of them rewrites it. Otherwise every
- * child runs at once. Either way all of them run to completion: an ordinary
- * lint failure in one no longer kills its siblings, so the user keeps every
- * result. The returned code is non-zero when any child exited non-zero.
+ * concurrently harness, and the writers of a `--fix` run (the oxlint child,
+ * and later the one ESLint child that fixes) are each spawned on their own so
+ * nothing is reading a file while one of them rewrites it. Otherwise the
+ * children run side by side (see {@link launchGroup}). Either way all of them
+ * run to completion: an ordinary lint failure in one no longer kills its
+ * siblings, so the user keeps every result. The returned code is non-zero when
+ * any child exited non-zero.
+ *
+ * Each child leases its workers from `budget` just before it spawns, and gives
+ * them back when it exits.
  *
  * @param commands - The child commands to run.
  * @param cwd - The working directory.
  * @param sequential - Whether to run the children one at a time.
+ * @param budget - The run's machine budget.
  * @returns The aggregated exit code.
  */
 export async function execute(
 	commands: Array<ChildCommand>,
 	cwd: string,
 	sequential: boolean,
+	budget: RunBudget = UNBUDGETED,
 ): Promise<number> {
-	const code = await (sequential ? runSequential(commands, cwd) : startGroup(commands, cwd));
+	const code = await (sequential
+		? runSequential(commands, cwd, budget)
+		: launchGroup(commands, cwd, budget).done);
 	return cancelledCode() ?? code;
 }
 
@@ -131,14 +153,19 @@ export async function execute(
  * @param cwd - The working directory.
  * @param resolveDeferred - Plans the remaining children; called once, after the
  *   eager ones have spawned. May return an empty list.
+ * @param budget - The run's machine budget.
  * @returns The aggregated exit code.
  */
 export async function executeStaged(
 	commands: Array<ChildCommand>,
 	cwd: string,
 	resolveDeferred: () => Array<ChildCommand>,
+	budget: RunBudget = UNBUDGETED,
 ): Promise<number> {
-	const eager = startGroup(commands, cwd);
+	// The eager children must be spawned before the builder behind
+	// `resolveDeferred` blocks the event loop.
+	const eager = launchGroup(commands, cwd, budget);
+	await eager.spawned;
 	const deferred = resolveDeferred();
 
 	// The builder behind `resolveDeferred` blocks the event loop, so a Ctrl+C
@@ -150,18 +177,102 @@ export async function executeStaged(
 	if (cancelledBy !== undefined || deferred.length === 0) {
 		// Awaited before the check: `KillOnSignal` reports a SIGINT-killed group
 		// as a success, so only the recorded signal can make the run fail.
-		const eagerCode = await eager;
+		const eagerCode = await eager.done;
 		return cancelledCode() ?? eagerCode;
 	}
 
 	const held = createHeldOutput();
-	const later = startGroup(deferred, cwd, held.stream);
+	const later = launchGroup(deferred, cwd, budget, held.stream);
 
-	const eagerCode = await eager;
+	const eagerCode = await eager.done;
 	held.release();
-	const deferredCode = await later;
+	const deferredCode = await later.done;
 
 	return cancelledCode() ?? (eagerCode === 0 ? deferredCode : eagerCode);
+}
+
+/**
+ * Record a cancelling signal for as long as children are running, and hand it
+ * to `onSignal`. Listening at all replaces Node's default of exiting on the
+ * signal, which is what lets the children be stopped and reaped first rather
+ * than orphaned.
+ *
+ * @param onSignal - Forwards the signal to the running children; omitted when
+ *   something else (`concurrently`'s `KillOnSignal`) already does.
+ * @returns Removes the listeners.
+ */
+function trackCancellation(onSignal?: (signal: NodeJS.Signals) => void): () => void {
+	function listener(signal: NodeJS.Signals): void {
+		cancelledBy ??= signal;
+		for (const giveUp of onCancel) {
+			giveUp();
+		}
+
+		onCancel.clear();
+		onSignal?.(signal);
+	}
+
+	for (const signal of CANCEL_SIGNALS) {
+		process.on(signal, listener);
+	}
+
+	return () => {
+		for (const signal of CANCEL_SIGNALS) {
+			process.off(signal, listener);
+		}
+	};
+}
+
+/**
+ * Lease a child's workers, unless the run is cancelled first.
+ *
+ * The budget waits until the machine has room and cannot be stopped, so a
+ * cancel gives up the wait instead: the child never starts, and a lease
+ * granted later is given back at once. Listening for the cancel while waiting
+ * also keeps Node from exiting on the signal before the run reports it.
+ *
+ * @param command - The child to lease for.
+ * @param budget - The run's machine budget.
+ * @returns The lease, or `undefined` when the run was cancelled.
+ */
+async function leaseUnlessCancelled(
+	command: ChildCommand,
+	budget: RunBudget,
+): Promise<ChildLease | undefined> {
+	if (cancelledBy !== undefined) {
+		return undefined;
+	}
+
+	const stopTracking = trackCancellation();
+	try {
+		return await new Promise<ChildLease | undefined>((resolve, reject) => {
+			let isAbandoned = false;
+			function abandon(): void {
+				isAbandoned = true;
+				resolve(undefined);
+			}
+
+			onCancel.add(abandon);
+			budget
+				.lease(command)
+				.then((lease) => {
+					onCancel.delete(abandon);
+					if (isAbandoned || cancelledBy !== undefined) {
+						lease.release();
+						resolve(undefined);
+						return;
+					}
+
+					resolve(lease);
+				})
+				.catch((err: unknown) => {
+					onCancel.delete(abandon);
+					reject(err instanceof Error ? err : new Error(String(err)));
+				});
+		});
+	} finally {
+		stopTracking();
+	}
 }
 
 /**
@@ -172,37 +283,25 @@ export async function executeStaged(
  * piped report.
  *
  * @param command - The child that was spawned.
+ * @param grant - What the machine budget granted it, when it holds a lease.
  */
-function announce(command: ChildCommand): void {
+function announce(command: ChildCommand, grant: string | undefined): void {
 	const prefix = ansis[PREFIX_COLOR[command.label]](`[${command.label}]`);
-	process.stderr.write(`${prefix} spawned ${command.bin}\n`);
+	const granted = grant === undefined ? "" : ` (${grant})`;
+	process.stderr.write(`${prefix} spawned ${command.bin}${granted}\n`);
 }
 
 /**
- * The names the children of one group are registered and logged under: the
- * engine, never its arguments. `concurrently` prints the name on each child's
- * exit line, so it must stay short however many files the child lints. The
- * line already carries the pass as its prefix (`[fast] eslint exited with code
- * 1`), so the pass only joins the name when two children share an engine.
+ * Tie a lease to the child it was taken for: measure the child from its spawn,
+ * and give the lease back when it exits or fails to start.
  *
- * @param commands - The group's children.
- * @returns Each child paired with a name unique within the group.
+ * @param child - The spawned child.
+ * @param lease - Its lease.
  */
-function nameCommands(commands: Array<ChildCommand>): Array<[string, ChildCommand]> {
-	const taken = new Set<string>();
-	return commands.map((command) => {
-		const shared = commands.filter((other) => other.bin === command.bin).length > 1;
-		const base = shared ? `${command.bin} (${command.label})` : command.bin;
-		let name = base;
-		let suffix = 1;
-		while (taken.has(name)) {
-			suffix += 1;
-			name = `${base} #${String(suffix)}`;
-		}
-
-		taken.add(name);
-		return [name, command];
-	});
+function holdLease(child: ChildProcess, lease: ChildLease): void {
+	lease.watch(child.pid);
+	child.once("error", lease.release);
+	child.once("close", lease.release);
 }
 
 /**
@@ -241,7 +340,8 @@ function launchEngine({ bin, command }: EngineLaunch, options: SpawnOptions): Ch
  * gone. Mirrors `concurrently`'s own `OutputErrorHandler`, which its package
  * exports do not expose.
  *
- * @param outputStream - The stream the group writes to.
+ * @param outputStream - The stream the run's output ends in: stdout, also for
+ *   a group whose output is held.
  * @param abortController - Aborts the group.
  * @returns The flow controller.
  */
@@ -267,33 +367,6 @@ function killOnOutputError(
 				},
 			};
 		},
-	};
-}
-
-/**
- * Record a cancelling signal for as long as children are running, and hand it
- * to `onSignal`. Listening at all replaces Node's default of exiting on the
- * signal, which is what lets the children be stopped and reaped first rather
- * than orphaned.
- *
- * @param onSignal - Forwards the signal to the running children; omitted when
- *   something else (`concurrently`'s `KillOnSignal`) already does.
- * @returns Removes the listeners.
- */
-function trackCancellation(onSignal?: (signal: NodeJS.Signals) => void): () => void {
-	function listener(signal: NodeJS.Signals): void {
-		cancelledBy ??= signal;
-		onSignal?.(signal);
-	}
-
-	for (const signal of CANCEL_SIGNALS) {
-		process.on(signal, listener);
-	}
-
-	return () => {
-		for (const signal of CANCEL_SIGNALS) {
-			process.off(signal, listener);
-		}
 	};
 }
 
@@ -324,57 +397,59 @@ function watchOutOfMemory(child: ChildProcess, onExhausted: () => void): void {
 }
 
 /**
- * Start every command as one `concurrently` group and announce the children.
- * Unlike the previous `killOthersOn: ["failure"]` behaviour, an ordinary lint
- * failure in one child no longer kills its siblings — each runs to the end so
- * the user keeps every result. The resolved code is non-zero when any child
- * exited non-zero; the promise never rejects.
+ * Start one leased child as a `concurrently` group and announce it. An
+ * ordinary lint failure in one child never kills its siblings: each runs to
+ * the end so the user keeps every result. The resolved code is non-zero when
+ * the child exited non-zero; the promise never rejects.
  *
  * Built on `concurrently`'s core rather than its default export, because the
  * wrapper always launches a command *string* through a shell (`cmd.exe` on
  * Windows), and that string would have to carry every lint target. Here the
- * group's spawner launches each engine directly through the bootstrap (see
+ * group's spawner launches the engine directly through the bootstrap (see
  * {@link launchEngine}); the command string is only the label `concurrently`
  * logs. The controllers are the ones the wrapper wires that do anything under
  * the options this runner always used — output and error logging, exit lines,
  * signal forwarding and the broken-output-pipe guard — and nothing else.
  *
- * @param commands - The child commands to run.
+ * The lease is given back by the time the group settles, also when the child
+ * never spawned.
+ *
+ * @param lease - The leased child to run.
+ * @param bin - The engine's resolved bin.
  * @param cwd - The working directory.
  * @param outputStream - Where the group writes its child output; defaults to
- *   stdout. A staged run passes a held stream (see {@link createHeldOutput}).
- * @returns The aggregated exit code.
+ *   stdout. A child that must wait its turn gets a held stream (see
+ *   {@link createHeldOutput}).
+ * @returns The child's exit code, as 0 or 1.
  */
-async function startGroup(
-	commands: Array<ChildCommand>,
+async function runGroup(
+	lease: ChildLease,
+	bin: string,
 	cwd: string,
 	outputStream: Writable = process.stdout,
 ): Promise<number> {
-	if (cancelledBy !== undefined || commands.length === 0) {
+	if (cancelledBy !== undefined) {
+		lease.release();
 		return 0;
 	}
 
-	// Resolve every bin before anything spawns, so a missing engine is a
-	// CliError up front rather than a failure inside the group.
-	const launches = new Map<string, EngineLaunch>(
-		nameCommands(commands).map(([name, command]) => {
-			return [name, { bin: resolveLocalBin(command.bin, cwd), command }];
-		}),
-	);
-
+	const { command } = lease;
 	const logger = new Logger({});
 	const exhausted = new Set<ToolLabel>();
 	const abortController = new AbortController();
 	const stopTracking = trackCancellation();
 	const { result } = createConcurrently(
-		Array.from(launches, ([name, { command }]) => {
-			return {
+		[
+			{
 				name: command.label,
-				command: name,
+				// `concurrently` prints this on the exit line, so it is the
+				// engine and never its arguments, however many files the child
+				// lints.
+				command: command.bin,
 				env: command.env,
 				prefixColor: PREFIX_COLOR[command.label],
-			};
-		}),
+			},
+		],
 		{
 			abortSignal: abortController.signal,
 			controllers: [
@@ -382,22 +457,18 @@ async function startGroup(
 				new LogOutput({ logger }),
 				new LogExit({ logger }),
 				new KillOnSignal({ abortController, process }),
-				killOnOutputError(outputStream, abortController),
+				killOnOutputError(process.stdout, abortController),
 			],
 			cwd,
 			group: true,
 			logger,
 			outputStream,
-			spawn: (name, options) => {
-				const launch = launches.get(name);
-				if (launch === undefined) {
-					throw new Error(`isentinel-lint: no engine registered as "${name}".`);
-				}
-
-				const child = launchEngine(launch, options);
-				if (launch.command.watchHeap) {
+			spawn: (_name, options) => {
+				const child = launchEngine({ bin, command }, options);
+				holdLease(child, lease);
+				if (command.watchHeap) {
 					watchOutOfMemory(child, () => {
-						exhausted.add(launch.command.label);
+						exhausted.add(command.label);
 					});
 				}
 
@@ -406,27 +477,133 @@ async function startGroup(
 		},
 	);
 
-	// `concurrently` starts every child synchronously before returning (no
-	// `maxProcesses` cap), so these lines report real spawns rather than intent.
+	// `concurrently` starts the child synchronously before returning (no
+	// `maxProcesses` cap), so this line reports a real spawn rather than intent.
 	// Everything above runs before this function's first `await`, which is what
-	// lets a staged caller keep working while the group it just started lints.
-	for (const command of commands) {
-		announce(command);
-	}
+	// lets a staged caller keep working while the child it just started lints.
+	announce(command, lease.grant);
 
 	try {
 		await result;
 		return 0;
 	} catch {
-		// Every child ran to completion (no kill-on-failure); the promise rejects
-		// when any exited non-zero.
+		// The promise rejects when the child exited non-zero.
 		return 1;
 	} finally {
 		stopTracking();
+		lease.release();
 		for (const label of exhausted) {
 			process.stderr.write(outOfMemoryHint(label));
 		}
 	}
+}
+
+/**
+ * A stream that swallows writes into memory until {@link HeldOutput.release} is
+ * called, then replays them to `target` and passes everything after them
+ * straight through.
+ *
+ * `concurrently` writes child output to whichever stream it is given, on its
+ * own schedule; this is the only handle on *when* that output surfaces, which a
+ * group started late needs so it cannot cut into a group started
+ * early.
+ *
+ * @param target - Where the output goes once released; defaults to stdout.
+ * @returns The stream and its release trigger.
+ */
+function createHeldOutput(target: Writable = process.stdout): HeldOutput {
+	const withheld: Array<string> = [];
+	let released = false;
+
+	const stream = new Writable({
+		decodeStrings: false,
+		write(chunk: unknown, _encoding, callback) {
+			const text = String(chunk);
+			if (released) {
+				target.write(text);
+			} else {
+				withheld.push(text);
+			}
+
+			callback();
+		},
+	});
+
+	return {
+		release: () => {
+			released = true;
+			for (const text of withheld) {
+				target.write(text);
+			}
+
+			withheld.length = 0;
+		},
+		stream,
+	};
+}
+
+/**
+ * Start a group of children, one at a time in run order: lease a child's
+ * workers, spawn it, then lease the next. A child never holds a lease while it
+ * waits for another one, so a full machine slows the group down but cannot
+ * stall it on workers that it holds itself.
+ *
+ * Each child runs as its own `concurrently` group, because a group spawns all
+ * of its children at once. A child's output is withheld until every child
+ * before it has exited and flushed, so the output keeps the run order, as one
+ * group with `group: true` gave it.
+ *
+ * @param commands - The children to run.
+ * @param cwd - The working directory.
+ * @param budget - The run's machine budget.
+ * @param outputStream - Where the children write their output.
+ * @returns The group, to wait for its spawns and its exit.
+ */
+function launchGroup(
+	commands: Array<ChildCommand>,
+	cwd: string,
+	budget: RunBudget,
+	outputStream: Writable = process.stdout,
+): LaunchedGroup {
+	// Resolve every bin before anything spawns, so a missing engine is a
+	// CliError up front rather than a failure after the first child started.
+	const launches = commands.map((command) => {
+		return { bin: resolveLocalBin(command.bin, cwd), command };
+	});
+	const runs: Array<Promise<number>> = [];
+	let flushed: Promise<unknown> = Promise.resolve();
+
+	const spawned = (async () => {
+		for (const { bin, command } of launches) {
+			const lease = await leaseUnlessCancelled(command, budget);
+			if (lease === undefined) {
+				break;
+			}
+
+			if (runs.length === 0) {
+				const run = runGroup(lease, bin, cwd, outputStream);
+				runs.push(run);
+				flushed = run;
+				continue;
+			}
+
+			const held = createHeldOutput(outputStream);
+			const run = runGroup(lease, bin, cwd, held.stream);
+			runs.push(run);
+			flushed = flushed.then(async () => {
+				held.release();
+				return run;
+			});
+		}
+	})();
+
+	const done = spawned.then(async () => {
+		await flushed;
+		const codes = await Promise.all(runs);
+		return codes.some((code) => code !== 0) ? 1 : 0;
+	});
+
+	return { done, spawned };
 }
 
 function signalExitCode(signal: NodeJS.Signals): number {
@@ -443,8 +620,15 @@ function cancelledCode(): number | undefined {
 	return cancelledBy === undefined ? undefined : signalExitCode(cancelledBy);
 }
 
-async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
-	const bin = resolveLocalBin(command.bin, cwd);
+async function spawnChild(planned: ChildCommand, cwd: string, budget: RunBudget): Promise<number> {
+	const bin = resolveLocalBin(planned.bin, cwd);
+	const lease = await leaseUnlessCancelled(planned, budget);
+	if (lease === undefined) {
+		// Cancelled while waiting: `execute` reports the signal's code.
+		return 0;
+	}
+
+	const { command } = lease;
 	// A watched child's stderr is piped so it can be read, and forwarded as is.
 	const watched = command.watchHeap;
 	let exhausted = false;
@@ -466,7 +650,8 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 			});
 		}
 
-		announce(command);
+		holdLease(child, lease);
+		announce(command, lease.grant);
 		const stopTracking = trackCancellation((signal) => {
 			child.kill(signal);
 		});
@@ -485,61 +670,22 @@ async function spawnChild(command: ChildCommand, cwd: string): Promise<number> {
 	});
 }
 
-async function runSequential(commands: Array<ChildCommand>, cwd: string): Promise<number> {
+async function runSequential(
+	commands: Array<ChildCommand>,
+	cwd: string,
+	budget: RunBudget,
+): Promise<number> {
 	let exitCode = 0;
 	for (const command of commands) {
 		if (cancelledBy !== undefined) {
 			break;
 		}
 
-		const code = await spawnChild(command, cwd);
+		const code = await spawnChild(command, cwd, budget);
 		if (code !== 0) {
 			exitCode = code;
 		}
 	}
 
 	return exitCode;
-}
-
-/**
- * A stream that swallows writes into memory until {@link HeldOutput.release} is
- * called, then replays them to stdout and passes everything after them straight
- * through.
- *
- * `concurrently` writes child output to whichever stream it is given, on its
- * own schedule; this is the only handle on *when* that output surfaces, which a
- * staged run needs so a group started late cannot cut into a group started
- * early.
- *
- * @returns The stream and its release trigger.
- */
-function createHeldOutput(): HeldOutput {
-	const withheld: Array<string> = [];
-	let released = false;
-
-	const stream = new Writable({
-		decodeStrings: false,
-		write(chunk: unknown, _encoding, callback) {
-			const text = String(chunk);
-			if (released) {
-				process.stdout.write(text);
-			} else {
-				withheld.push(text);
-			}
-
-			callback();
-		},
-	});
-
-	return {
-		release: () => {
-			released = true;
-			for (const text of withheld) {
-				process.stdout.write(text);
-			}
-
-			withheld.length = 0;
-		},
-		stream,
-	};
 }

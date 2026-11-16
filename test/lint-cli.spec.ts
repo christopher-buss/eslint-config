@@ -62,6 +62,7 @@ import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/
 import {
 	computeWorkerCount,
 	resolveFastFilesPerWorker,
+	resolveOxlintThreads,
 	resolveWorkerLimits,
 	TYPED_MAX_WORKERS,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
@@ -1028,6 +1029,16 @@ function printLines(
 	return commands.map((command) => formatCommandLine(command));
 }
 
+/**
+ * The planned `--threads` flag that a printed oxlint line carries.
+ *
+ * @param ci - Whether the run is in CI.
+ * @returns The flag and its value.
+ */
+function oxlintThreads(ci = false): string {
+	return `--threads ${String(resolveOxlintThreads(options(), os.availableParallelism(), ci))}`;
+}
+
 describe("compose --print", () => {
 	it("composes the default concurrent two-pass mode plus oxlint", ({
 		expect,
@@ -1038,7 +1049,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines([], directory)).toStrictEqual([
-			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads()} --type-aware --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
@@ -1052,7 +1063,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["--type-aware=off"], directory)).toStrictEqual([
-			"oxlint --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads()} --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
@@ -1064,7 +1075,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["--type-aware=only"], directory)).toStrictEqual([
-			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads()} --type-aware --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
 				"--no-warn-ignored --concurrency off .",
 		]);
@@ -1094,7 +1105,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["--type-aware=full"], directory)).toStrictEqual([
-			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads()} --type-aware --no-error-on-unmatched-pattern .`,
 			`ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT)} --no-warn-ignored --concurrency off .`,
 		]);
 	});
@@ -1108,7 +1119,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines([], directory, { CI: "true" })).toStrictEqual([
-			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads(true)} --type-aware --no-error-on-unmatched-pattern .`,
 			`ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_DEFAULT, { CI: "true" })} --no-warn-ignored --concurrency off --cache-strategy content .`,
 		]);
 	});
@@ -1132,7 +1143,7 @@ describe("compose --print", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["package.json", "src/index.ts", "docs"], directory)[0]).toBe(
-			"oxlint --type-aware --no-error-on-unmatched-pattern src/index.ts docs",
+			`oxlint ${oxlintThreads()} --type-aware --no-error-on-unmatched-pattern src/index.ts docs`,
 		);
 	});
 
@@ -1144,7 +1155,7 @@ describe("compose --print", () => {
 		// The fix child is conditional on what the checks report, so it cannot
 		// be composed up front and never appears in a printed plan.
 		expect(printLines(["--fix"], directory)).toStrictEqual([
-			"oxlint --type-aware --fix --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads()} --type-aware --fix --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST)} ` +
 				"--no-warn-ignored --concurrency off .",
 			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ISENTINEL_QUIET_CONFIG_WARNINGS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE)} ` +
@@ -2293,7 +2304,7 @@ describe("runLint type-aware backend check ordering", () => {
 		// the composed oxlint child carries --type-aware.
 		const printed = spy.mock.calls.map((call) => String(call[0])).join("");
 
-		expect(printed).toContain("oxlint --type-aware");
+		expect(printed).toContain(`oxlint ${oxlintThreads()} --type-aware`);
 	});
 });
 
@@ -2381,9 +2392,12 @@ describe("runLint --fix", () => {
 			return runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
 		});
 
+		// The budget is off in tests, so oxlint gets every thread it asked for.
+		const threads = resolveOxlintThreads(options(), os.availableParallelism(), false);
+
 		expect(code).toBe(0);
 		expect(spawnedArgv(argvLog).filter((line) => line.includes("--fix"))).toStrictEqual([
-			"--fix --no-error-on-unmatched-pattern .",
+			`--threads ${String(threads)} --fix --no-error-on-unmatched-pattern .`,
 		]);
 	});
 
@@ -2609,7 +2623,7 @@ describe("explicit --type-aware selection in CI", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["--type-aware=only"], directory, { CI: "true" })).toStrictEqual([
-			"oxlint --type-aware --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads(true)} --type-aware --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=only ISENTINEL_WRITE_HYBRID_STATUS=1 ${TEST_HEAP} eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_TYPE_AWARE, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
@@ -2621,7 +2635,7 @@ describe("explicit --type-aware selection in CI", () => {
 		const directory = temporaryDirectory(onTestFinished);
 
 		expect(printLines(["--type-aware=off"], directory, { CI: "true" })).toStrictEqual([
-			"oxlint --no-error-on-unmatched-pattern .",
+			`oxlint ${oxlintThreads(true)} --no-error-on-unmatched-pattern .`,
 			`ESLINT_TYPE_AWARE=off ISENTINEL_WRITE_HYBRID_STATUS=1 eslint --cache --cache-location ${keyedCacheFile(CACHE_FILE_FAST, { CI: "true" })} ` +
 				"--no-warn-ignored --concurrency off --cache-strategy content .",
 		]);
