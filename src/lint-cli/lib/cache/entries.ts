@@ -197,7 +197,7 @@ export function openCache(cacheFilePath: string, useChecksum: boolean): DirtyCac
 
 function safeMtimeMs(filePath: string): number | undefined {
 	try {
-		return fs.statSync(filePath).mtimeMs;
+		return fs.statSync(filePath, { throwIfNoEntry: false })?.mtimeMs;
 	} catch {
 		return undefined;
 	}
