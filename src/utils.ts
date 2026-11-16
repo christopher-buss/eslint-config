@@ -1069,6 +1069,42 @@ export function mergeTypeAwareIgnores(
 }
 
 /**
+ * Keeps `ignoresTypeAware` out of a type-aware complement block's `ignores`.
+ * One merged `ignores` list would let a negation in either list re-include a
+ * file the other excludes, so a second block turns the complement rules off on
+ * every file `ignoresTypeAware` excludes. Its `ignores` is the inverse of
+ * `ignoresTypeAware`: ignore all, then flip each glob.
+ *
+ * @param complement - A complement block scoped by the roblox globs alone.
+ * @param ignoresTypeAware - Globs that must not get type-aware rules.
+ * @returns The complement block, then its turn-off block.
+ */
+export function typeAwareComplement(
+	complement: Required<Pick<TypedFlatConfigItem, "files" | "name" | "rules">> &
+		TypedFlatConfigItem,
+	ignoresTypeAware: Array<string>,
+): Array<TypedFlatConfigItem> {
+	if (ignoresTypeAware.length === 0) {
+		return [complement];
+	}
+
+	return [
+		complement,
+		{
+			name: `${complement.name}/ignores-type-aware`,
+			files: complement.files,
+			ignores: [
+				"**",
+				...ignoresTypeAware.map((glob) => {
+					return glob.startsWith("!") ? glob.slice(1) : `!${glob}`;
+				}),
+			],
+			rules: Object.fromEntries(Object.keys(complement.rules).map((rule) => [rule, "off"])),
+		},
+	];
+}
+
+/**
  * Whether a glob can match a file with one of `extensions`, judged by the
  * extension of its last segment (`*.ts`, `*.{ts,tsx}`, `*.?ts`, `*`, ...).
  *
