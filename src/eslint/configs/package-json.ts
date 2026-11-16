@@ -10,6 +10,7 @@ import type {
 } from "../types.ts";
 
 export async function packageJson({
+	allowedScopes,
 	roblox = true,
 	scope,
 	stylistic = true,
@@ -199,8 +200,18 @@ export async function packageJson({
 						}
 					: {}),
 
-				...(scope !== undefined
-					? { "package-json/prefer-scoped-name": ["error", { preferred: scope }] }
+				...(scope !== undefined || allowedScopes !== undefined
+					? {
+							"package-json/prefer-scoped-name": [
+								"error",
+								{
+									...(allowedScopes !== undefined
+										? { allowed: allowedScopes }
+										: {}),
+									...(scope !== undefined ? { preferred: scope } : {}),
+								},
+							],
+						}
 					: {}),
 			},
 		},
