@@ -142,7 +142,9 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   ],
   "no-useless-set-construction": [],
   "no-using-resource-escape": [],
-  "prefer-regexp-exec": [],
+  "prefer-regexp-exec": [
+    "eslint:ts/prefer-regexp-exec",
+  ],
   "prefer-temporal-conversion": [],
   "require-text-decoder-streaming": [],
 }

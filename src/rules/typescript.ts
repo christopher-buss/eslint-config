@@ -189,6 +189,7 @@ export function typescriptTypeAwareRules({
 		...(roblox
 			? {}
 			: {
+					"ts/prefer-regexp-exec": "error",
 					"ts/related-getter-setter-pairs": "error",
 					"ts/require-array-sort-compare": "error",
 				}),

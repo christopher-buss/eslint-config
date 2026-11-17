@@ -93,6 +93,7 @@ export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
 	"unicorn/prefer-abort-signal-any",
 	"unicorn/prefer-combined-guards",
 	"unicorn/prefer-has-check",
+	"unicorn/prefer-options-parameter",
 	"unicorn/prefer-then-catch",
 ]);
 
