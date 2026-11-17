@@ -75,13 +75,24 @@ export async function runLint(
 	}
 
 	const run = resolveRunContext(cwd, environment, !options.print);
-	const staged = plan(options, run);
-	const { commands, notice } = compose(staged.eager, options);
 	const oxfmtConfig = findOxfmtModule(options, cwd);
+	const staged = plan(options, run, { format: oxfmtConfig !== undefined });
+	const { commands, notice } = compose(staged.eager, options);
+	const { format } = staged.eager;
+	// No file left to format means no child: oxfmt given no path formats the
+	// whole tree.
 	const formatCommand =
-		oxfmtConfig === undefined
+		oxfmtConfig === undefined || format === undefined || format.paths.length === 0
 			? undefined
-			: composeOxfmtCommand(options, { configPath: oxfmtConfig, write: options.fix });
+			: composeOxfmtCommand({
+					configPath: oxfmtConfig,
+					paths: format.paths,
+					write: options.fix,
+				});
+	if (format?.notice !== undefined) {
+		process.stderr.write(format.notice);
+	}
+
 	if (options.print) {
 		const printed = formatCommand === undefined ? commands : [...commands, formatCommand];
 		for (const command of printed) {

@@ -74,7 +74,7 @@ export function composeInDirectory(
 	{ environment = {}, memory = TEST_MEMORY, mutate = false }: ComposeInDirectoryOptions = {},
 ): CommandPlan {
 	const options = parseArguments(argv, environment);
-	const staged = plan(options, runContext(directory, { environment, mutate }), memory);
+	const staged = plan(options, runContext(directory, { environment, mutate }), { memory });
 	const eager = compose(staged.eager, options);
 	if (staged.resolveDeferred === undefined) {
 		return eager;

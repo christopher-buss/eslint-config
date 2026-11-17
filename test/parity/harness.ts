@@ -10,7 +10,9 @@ import process from "node:process";
 
 import { isRecord } from "../../src/guards.ts";
 import { parseArguments } from "../../src/lint-cli/lib/cli/options.ts";
+import { resolveRunContext } from "../../src/lint-cli/lib/context.ts";
 import { composeOxfmtCommand } from "../../src/lint-cli/lib/plan/command.ts";
+import { plan } from "../../src/lint-cli/lib/plan/plan.ts";
 import {
 	changedFiles,
 	prepareProject,
@@ -140,8 +142,20 @@ async function runNode(args: Array<string>, cwd: string): Promise<ProcessResult>
 }
 
 async function runOxfmt(cwd: string, configPath: string, write: boolean): Promise<ProcessResult> {
-	// The arguments isentinel-lint passes for a whole-tree run.
-	const { args } = composeOxfmtCommand(parseArguments(["."], {}), { configPath, write });
+	// The arguments isentinel-lint passes for a whole-tree run: the files
+	// ESLint lints, as its plan narrows them.
+	const { format } = plan(parseArguments(["."], {}), resolveRunContext(cwd, {}, false), {
+		format: true,
+	}).eager;
+	if (format === undefined || format.notice !== undefined) {
+		throw new Error(`parity: could not narrow the oxfmt targets in ${cwd}`);
+	}
+
+	if (format.paths.length === 0) {
+		return { code: 0, stderr: "", stdout: "" };
+	}
+
+	const { args } = composeOxfmtCommand({ configPath, paths: format.paths, write });
 	return run(process.execPath, [OXFMT_BIN, ...args], cwd);
 }
 

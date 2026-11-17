@@ -81,31 +81,38 @@ export function composeOxlintCommand(
 }
 
 /**
- * Compose the oxfmt child command. Oxfmt receives the run's own targets and
- * applies its config's `ignorePatterns` to them, so a whole-tree run passes
- * `.` and lets oxfmt walk the tree itself. Like every engine child it is
- * launched through the bootstrap, so a long file list never reaches the OS
- * command line..
+ * Compose the oxfmt child command. Oxfmt receives the files ESLint would lint
+ * (see `FormatPlan`), so it formats the same files as the `oxfmt/oxfmt` rule
+ * does in ESLint mode, and it still applies its config's `ignorePatterns` to
+ * them. Only when the ESLint ignores cannot be resolved does it get the run's
+ * own targets, `.` included. Like every engine child it is launched through the
+ * bootstrap, so a long file list never reaches the OS command line.
  *
- * @param options - The parsed CLI options.
  * @param context - The child's settings.
  * @param context.configPath - The config module, passed as `--config` so oxfmt
  *   uses the file the lint factories read.
+ * @param context.paths - The files to format; must not be empty, or oxfmt
+ *   formats the whole tree.
  * @param context.write - Format the files in place rather than check them.
  * @returns The oxfmt child command.
  */
-export function composeOxfmtCommand(
-	options: LintCliOptions,
-	{ configPath, write }: { configPath: string; write: boolean },
-): ChildCommand {
-	// A hook hands over every staged file, most of which oxfmt may not format
-	// (Lua, say) or its config ignores; neither is a failure.
+export function composeOxfmtCommand({
+	configPath,
+	paths,
+	write,
+}: {
+	configPath: string;
+	paths: Array<string>;
+	write: boolean;
+}): ChildCommand {
+	// Oxfmt may not format every file it gets (Lua, say), or its config may
+	// ignore one; neither is a failure.
 	const args = [
 		write ? "--write" : "--check",
 		"--config",
 		configPath,
 		"--no-error-on-unmatched-pattern",
-		...pathArguments(options.paths),
+		...pathArguments(paths),
 	];
 	return { args, bin: "oxfmt", env: {}, label: "oxfmt", watchHeap: false };
 }

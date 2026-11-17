@@ -1001,7 +1001,9 @@ format Lua. The setup wizard can write all of this for you.
 `oxfmt.config.ts` or `oxfmt.config.mts`, and `oxfmt --write` last with `--fix`.
 It does this whatever the `formatter` option is, so set
 `formatter: "standalone"` with such a file, or the files are formatted twice.
-Pass `--no-oxfmt` to skip the pass.
+Pass `--no-oxfmt` to skip the pass. Oxfmt gets only the files that ESLint lints,
+so `ignores`, `gitignore` and the `formatters` options also limit what it
+formats.
 
 Both factories read the oxfmt config that oxfmt itself uses: `.oxfmtrc.json`,
 `.oxfmtrc.jsonc`, `oxfmt.config.ts` or `oxfmt.config.mts`, in the nearest
