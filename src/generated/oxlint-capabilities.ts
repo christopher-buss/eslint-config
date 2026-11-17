@@ -14,6 +14,7 @@ export const jsPluginRuleNames: ReadonlySet<string> = new Set([
 	"antfu/no-import-node-modules-by-path",
 	"antfu/no-top-level-await",
 	"antfu/no-ts-export-equal",
+	"antfu/reasonable-newline",
 	"antfu/top-level-function",
 	"array-bracket-newline",
 	"array-bracket-spacing",
