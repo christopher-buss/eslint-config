@@ -195,6 +195,59 @@ function overlaps(ranges: Array<Range>, line: number, endLine = line): boolean {
 }
 
 /**
+ * The oxlint codes a fixture's candidate rule reports under. Once the preset
+ * enables a candidate, oxlint runs it as `unicorn(<rule>)` natively or as
+ * `unicorn-js(<rule>)` through the jsPlugin.
+ *
+ * @param file - The fixture file name.
+ * @returns The candidate's possible oxlint codes.
+ */
+function candidateOxlintCodes(file: string): ReadonlySet<string> {
+	const ruleName = candidateRule(file).slice("unicorn/".length);
+	return new Set([`unicorn(${ruleName})`, `unicorn-js(${ruleName})`]);
+}
+
+/**
+ * Parse one oxlint diagnostic string.
+ *
+ * @param diagnostic - A `file:line code` diagnostic.
+ * @returns The fixture file name, line and rule code.
+ */
+function parseOxlintDiagnostic(diagnostic: string): { code: string; file: string; line: number } {
+	const groups = /^(?<name>[^:]+):(?<line>\d+) (?<code>.*)$/.exec(diagnostic)?.groups;
+	return {
+		code: groups?.["code"] ?? "",
+		file: path.basename(groups?.["name"] ?? ""),
+		line: Number(groups?.["line"]),
+	};
+}
+
+/**
+ * Whether oxlint reports each fixture's candidate rule. The overlap report
+ * filters the candidate's own oxlint reports out, so without this a candidate
+ * that oxlint stops running would leave the snapshot unchanged. A candidate
+ * that stays in ESLint, or that the preset does not enable, is `silent`.
+ *
+ * @param files - The fixture file names.
+ * @param diagnostics - The oxlint diagnostics for the whole group.
+ * @returns Each fixture name mapped to whether oxlint reports its candidate.
+ */
+function oxlintCandidateReports(
+	files: Array<string>,
+	diagnostics: Array<string>,
+): Record<string, "reports" | "silent"> {
+	const parsed = diagnostics.map(parseOxlintDiagnostic);
+	const reports: Record<string, "reports" | "silent"> = {};
+	for (const file of files) {
+		const codes = candidateOxlintCodes(file);
+		const isReported = parsed.some((entry) => entry.file === file && codes.has(entry.code));
+		reports[path.basename(file, ".ts")] = isReported ? "reports" : "silent";
+	}
+
+	return reports;
+}
+
+/**
  * The oxlint rules that report inside the candidate ranges of one fixture.
  *
  * @param file - The fixture file name.
@@ -207,25 +260,18 @@ function overlappingOxlintRules(
 	ranges: Array<Range>,
 	diagnostics: Array<string>,
 ): Array<string> {
-	// Once the preset enables a candidate, oxlint runs it too, as
-	// `unicorn(<rule>)` natively or `unicorn-js(<rule>)` through the jsPlugin.
-	const ruleName = candidateRule(file).slice("unicorn/".length);
-	const candidateCodes = new Set([`unicorn(${ruleName})`, `unicorn-js(${ruleName})`]);
+	const candidateCodes = candidateOxlintCodes(file);
 
-	const rules: Array<string> = [];
-	for (const diagnostic of diagnostics) {
-		const groups = /^(?<name>[^:]+):(?<line>\d+) (?<code>.*)$/.exec(diagnostic)?.groups;
-		if (
-			groups !== undefined &&
-			path.basename(groups["name"] ?? "") === file &&
-			!candidateCodes.has(groups["code"] ?? "") &&
-			overlaps(ranges, Number(groups["line"]))
-		) {
-			rules.push(`oxlint:${groups["code"]}`);
-		}
-	}
-
-	return rules;
+	return diagnostics
+		.map(parseOxlintDiagnostic)
+		.filter((entry) => {
+			return (
+				entry.file === file &&
+				!candidateCodes.has(entry.code) &&
+				overlaps(ranges, entry.line)
+			);
+		})
+		.map((entry) => `oxlint:${entry.code}`);
 }
 
 /**
@@ -273,7 +319,7 @@ describe("unicorn candidate rule coverage", () => {
 		"records the existing rules that overlap the $label fixtures",
 		{ timeout },
 		async (variant, { expect }) => {
-			expect.assertions(1);
+			expect.assertions(2);
 
 			const results = await lintWithEslint(variant);
 			const oxlintDiagnostics = await lintWithOxlint(variant);
@@ -287,6 +333,10 @@ describe("unicorn candidate rule coverage", () => {
 			}
 
 			expect(report).toMatchSnapshot();
+
+			const files = results.map((result) => path.basename(result.filePath));
+
+			expect(oxlintCandidateReports(files, oxlintDiagnostics)).toMatchSnapshot();
 		},
 	);
 });

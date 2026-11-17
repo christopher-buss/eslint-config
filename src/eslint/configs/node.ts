@@ -15,6 +15,9 @@ export async function node({
 	await ensurePackages(["eslint-plugin-n"]);
 
 	const pluginNode = lazyPlugin("eslint-plugin-n");
+	// `nodeRules` includes Node-only unicorn rules. `lazyPlugin` returns the
+	// same object per package, so registering it beside `unicorn()` is safe.
+	const pluginUnicorn = lazyPlugin("eslint-plugin-unicorn");
 
 	return [
 		{
@@ -23,6 +26,7 @@ export async function node({
 			...(ignores ? { ignores } : {}),
 			plugins: {
 				node: pluginNode,
+				unicorn: pluginUnicorn,
 			},
 			rules: nodeRules({ nodeMajor }),
 		},
