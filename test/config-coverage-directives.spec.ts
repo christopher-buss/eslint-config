@@ -9,17 +9,16 @@ const RULE = "eslint-comments/require-description";
 /**
  * Lints a snippet against the preset's comments configs.
  *
- * @param file - The virtual file name.
- * @param code - The source.
+ * @param code - The JS source.
  * @returns The lines `require-description` reported.
  */
-async function lint(file: string, code: string): Promise<Array<number>> {
+async function lint(code: string): Promise<Array<number>> {
 	const eslint = new ESLint({
 		overrideConfig: await comments({ stylistic: false }),
 		overrideConfigFile: true,
 	});
 	const [result] = await eslint.lintText(code, {
-		filePath: path.join(import.meta.dirname, file),
+		filePath: path.join(import.meta.dirname, "file.js"),
 	});
 
 	return (result?.messages ?? [])
@@ -38,7 +37,7 @@ describe("coverage directives require a description", () => {
 	])("should report %s", async (directive, { expect }) => {
 		expect.assertions(1);
 
-		await expect(lint("file.js", `${directive}\nfoo();\n`)).resolves.toStrictEqual([1]);
+		await expect(lint(`${directive}\nfoo();\n`)).resolves.toStrictEqual([1]);
 	});
 
 	it.for([
@@ -48,7 +47,7 @@ describe("coverage directives require a description", () => {
 	])("should accept %s", async (directive, { expect }) => {
 		expect.assertions(1);
 
-		await expect(lint("file.js", `${directive}\nfoo();\n`)).resolves.toStrictEqual([]);
+		await expect(lint(`${directive}\nfoo();\n`)).resolves.toStrictEqual([]);
 	});
 
 	it("should not treat prose that starts with a tool name as a directive", async ({ expect }) => {
@@ -56,6 +55,6 @@ describe("coverage directives require a description", () => {
 
 		const code = "// v8 engine quirk\n// cov is short for coverage\nfoo();\n";
 
-		await expect(lint("file.js", code)).resolves.toStrictEqual([]);
+		await expect(lint(code)).resolves.toStrictEqual([]);
 	});
 });
