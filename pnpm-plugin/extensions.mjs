@@ -127,7 +127,8 @@ export const packageExtensions = [
 	},
 	{
 		name: "editorconfig",
-		// Test declarations ship inside the tarball.
+		// Test declarations ship inside the tarball. Without an `exports` map
+		// any shipped file can be imported, so the check reads them too.
 		ignore: ["chai"],
 	},
 	{

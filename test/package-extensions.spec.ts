@@ -192,6 +192,7 @@ describe("collectSurface", () => {
 	const shipped = {
 		"dist/a.d.ts": "export type A = string;",
 		"dist/b/index.d.ts": "export type B = number;",
+		"dist/cjs.d.cts": "export type C = bigint;",
 		"dist/esm.d.mts": "export type E = boolean;",
 		"dist/globals.d.ts": "declare const g: string;",
 		"dist/index.d.ts": [
@@ -200,6 +201,8 @@ describe("collectSurface", () => {
 			'export type { B } from "./b";',
 		].join("\n"),
 		"dist/internal.d.ts": 'import type { Node } from "estree";',
+		"dist/legacy.d.ts": "export type L = symbol;",
+		"dist/private.d.ts": "export type P = null;",
 	};
 
 	it("follows only what the entry points reach", ({ expect, onTestFinished }) => {
@@ -218,6 +221,38 @@ describe("collectSurface", () => {
 			"dist/globals.d.ts",
 			"dist/index.d.ts",
 		]);
+	});
+
+	it.for<[string, Record<string, unknown>, string]>([
+		["a string exports", { exports: "./dist/index.js" }, "dist/a.d.ts"],
+		[
+			"a require condition",
+			{ exports: { ".": { require: "./dist/cjs.cjs" } } },
+			"dist/cjs.d.cts",
+		],
+		[
+			"a default condition",
+			{ exports: { ".": { default: "./dist/esm.mjs" } } },
+			"dist/esm.d.mts",
+		],
+		[
+			"typings",
+			{ exports: "./dist/esm.mjs", typings: "./dist/legacy.d.ts" },
+			"dist/legacy.d.ts",
+		],
+		["main", { exports: "./dist/esm.mjs", main: "./dist/legacy.js" }, "dist/legacy.d.ts"],
+		[
+			"an imports target",
+			{ exports: "./dist/esm.mjs", imports: { "#private": "./dist/private.js" } },
+			"dist/private.d.ts",
+		],
+	])("reaches the surface from %s", ([, manifest, reached], { expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		const surface = surfaceOf(writePackage(shipped, onTestFinished), manifest);
+
+		expect(surface).toContain(reached);
+		expect(surface).not.toContain("dist/internal.d.ts");
 	});
 
 	it.for<[string, Record<string, unknown>]>([
