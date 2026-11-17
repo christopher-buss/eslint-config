@@ -1,5 +1,5 @@
 import { GLOB_JSX, GLOB_MARKDOWN, GLOB_TSX } from "../../globs.ts";
-import { reactRules } from "../../rules/react.ts";
+import { reactRules, reactSettings } from "../../rules/react.ts";
 import { ensurePackages, getTsConfig, interopDefault, mergeTypeAwareIgnores } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
@@ -10,7 +10,6 @@ import type {
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	ReactConfig,
-	ReactSettings,
 	TypedFlatConfigItem,
 } from "../types.ts";
 import { loadSmallRulesPlugin } from "./small-rules.ts";
@@ -28,7 +27,6 @@ export async function react(
 		files = [GLOB_JSX, GLOB_TSX],
 		filesTypeAware = [GLOB_TSX],
 		ignoresTypeAware: userIgnoresTypeAware,
-		importSource,
 		overrides = {},
 		overridesTypeAware,
 		reactCompiler = true,
@@ -66,11 +64,6 @@ export async function react(
 
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
-
-	const reactSettings = {
-		importSource: importSource ?? "@rbxts",
-		version: "17.0.2",
-	} satisfies ReactSettings;
 
 	const typeAwareRules: TypedFlatConfigItem["rules"] = {
 		"react/no-implicit-children": "error",
@@ -140,7 +133,7 @@ export async function react(
 				...overrides,
 			},
 			settings: {
-				"react-x": reactSettings,
+				"react-x": reactSettings(options),
 				...(testing ? { "testing-library/utils-module": "testing-library-lua" } : {}),
 			},
 		},
