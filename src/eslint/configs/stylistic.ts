@@ -1,21 +1,19 @@
 import type PluginStylistic from "@stylistic/eslint-plugin";
 
-import type { SetRequired } from "type-fest";
+import type { DefaultsFor, Except } from "type-fest";
 
 import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../../globs.ts";
 import { stylisticJsxRules, stylisticRules } from "../../rules/stylistic.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 
-export const StylisticConfigDefaults: SetRequired<
-	StylisticConfig,
-	"indent" | "jsx" | "quotes" | "semi"
-> = {
+/** Every stylistic option except `maxLen`, which has no default. */
+export const StylisticConfigDefaults = {
 	indent: "tab",
 	jsx: true,
 	quotes: "double",
 	semi: true,
-};
+} satisfies DefaultsFor<Except<StylisticConfig, "maxLen">>;
 
 /**
  * The JS/TS stylistic rules.

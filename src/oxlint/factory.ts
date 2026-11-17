@@ -6,6 +6,7 @@ import type {
 	RuleCategories,
 } from "oxlint";
 import { defineConfig } from "oxlint";
+import type { DefaultsFor } from "type-fest";
 
 import { GLOB_EXCLUDE, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
@@ -75,9 +76,10 @@ import {
 /**
  * The preset enables its rules explicitly, so every category is disabled to
  * stop oxlint's own defaults (notably `correctness: "warn"`) from firing on top
- * of the curated set.
+ * of the curated set. `DefaultsFor` makes a category that oxlint adds later a
+ * type error here, rather than a category left on oxlint's default.
  */
-const DEFAULT_CATEGORIES: RuleCategories = {
+const DEFAULT_CATEGORIES = {
 	correctness: "off",
 	nursery: "off",
 	pedantic: "off",
@@ -85,7 +87,7 @@ const DEFAULT_CATEGORIES: RuleCategories = {
 	restriction: "off",
 	style: "off",
 	suspicious: "off",
-};
+} satisfies DefaultsFor<RuleCategories>;
 
 /**
  * JsPlugins the preset keeps even under `jsPlugins: false`.

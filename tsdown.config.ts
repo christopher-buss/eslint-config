@@ -12,6 +12,8 @@ const sharedOptions = {
 } satisfies UserConfig;
 
 const TYPE_FEST = "type-fest";
+/** Types-only dependency of type-fest, reached through its types. */
+const TAGGED_TAG = "tagged-tag";
 
 /**
  * Every shipped entry, in one place. The unused-dependency check builds all of
@@ -36,6 +38,7 @@ export default defineConfig([
 				// Bundled to ship patches/eslint-plugin-yml.patch
 				"eslint-plugin-yml",
 				TYPE_FEST,
+				TAGGED_TAG,
 			],
 			neverBundle: [
 				/^@typescript-eslint\//,
@@ -62,6 +65,7 @@ export default defineConfig([
 				"prelude-ls",
 				"type-check",
 				TYPE_FEST,
+				TAGGED_TAG,
 			],
 		},
 		entry: { index: entries.index, oxlint: entries.oxlint },
@@ -104,7 +108,7 @@ export default defineConfig([
 		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
 		// both factories; keep it small and its runtime deps external.
 		deps: {
-			alwaysBundle: [TYPE_FEST, "tagged-tag"],
+			alwaysBundle: [TYPE_FEST, TAGGED_TAG],
 			neverBundle: true,
 		},
 		entry: { oxfmt: entries.oxfmt },

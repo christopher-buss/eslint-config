@@ -1,4 +1,5 @@
 import type { Options as PrettierOptions } from "prettier";
+import type { UndefinedOnPartial } from "type-fest";
 
 import { FORMATTED_FILES, resolveFormattedLanguages } from "../../formatted-files.ts";
 import { GLOB_JSON5, GLOB_MARKDOWN } from "../../globs.ts";
@@ -27,30 +28,33 @@ import type {
 /** A code-block language: its name, its globs and its options layer. */
 type CodeBlock = [name: string, files: Array<string>, layer: OxfmtOptions];
 
+/** Options for {@link oxfmt}. */
+type OxfmtConfigOptions = OptionsComponentExtensions &
+	OptionsFiles &
+	OptionsOverrides & {
+		/**
+		 * The `.editorconfig` sections as oxfmt overrides. The rule's config
+		 * loader ranks them below the inline options, but the oxfmt CLI ranks
+		 * them above the root options, so the rule gets them as its own
+		 * overrides.
+		 */
+		editorConfigOverrides?: Array<EditorConfigOverride>;
+		formatters?: OptionsFormatters | true;
+		oxfmtConfigOptions?: OxfmtOptions;
+		/** The oxfmt config's ignore patterns, for Markdown code blocks. */
+		oxfmtIgnorePatterns?: Array<string>;
+		oxfmtOptions?: OxfmtOptions;
+		oxlint?: boolean;
+		prettierOptions?: PrettierOptions;
+		/**
+		 * Oxfmt runs as its own tool: keep the formatter-conflict disables and
+		 * the plain parsers but enable `oxfmt/oxfmt` nowhere.
+		 */
+		standalone?: boolean;
+	};
+
 export async function oxfmt(
-	options?: OptionsComponentExtensions &
-		OptionsFiles &
-		OptionsOverrides & {
-			/**
-			 * The `.editorconfig` sections as oxfmt overrides. The rule's
-			 * config loader ranks them below the inline options, but the oxfmt
-			 * CLI ranks them above the root options, so the rule gets them as
-			 * its own overrides.
-			 */
-			editorConfigOverrides?: Array<EditorConfigOverride>;
-			formatters?: OptionsFormatters | true | undefined;
-			oxfmtConfigOptions?: OxfmtOptions;
-			/** The oxfmt config's ignore patterns, for Markdown code blocks. */
-			oxfmtIgnorePatterns?: Array<string> | undefined;
-			oxfmtOptions?: OxfmtOptions | undefined;
-			oxlint?: boolean;
-			prettierOptions?: PrettierOptions;
-			/**
-			 * Oxfmt runs as its own tool: keep the formatter-conflict
-			 * disables and the plain parsers but enable `oxfmt/oxfmt` nowhere.
-			 */
-			standalone?: boolean;
-		},
+	options?: UndefinedOnPartial<OxfmtConfigOptions>,
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],

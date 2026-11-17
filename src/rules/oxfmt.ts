@@ -1,3 +1,5 @@
+import type { UndefinedOnPartial } from "type-fest";
+
 import { isRecord } from "../guards.ts";
 import type { OxfmtOptions } from "../utils.ts";
 
@@ -131,11 +133,11 @@ export function buildOxfmtOptions({
 	oxfmtConfigOptions = {},
 	oxfmtOptions,
 	prettierOptions = {},
-}: {
+}: UndefinedOnPartial<{
 	oxfmtConfigOptions?: OxfmtOptions;
-	oxfmtOptions?: OxfmtOptions | undefined;
+	oxfmtOptions?: OxfmtOptions;
 	prettierOptions?: Record<string, unknown>;
-}): OxfmtOptions {
+}>): OxfmtOptions {
 	return {
 		sortImports: defaultSortImports,
 		sortPackageJson: false,

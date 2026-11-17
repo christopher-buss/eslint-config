@@ -11,7 +11,7 @@ import process from "node:process";
 import { isMainThread } from "node:worker_threads";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import { minVersion } from "semver";
-import type { SetRequired } from "type-fest";
+import type { SetRequired, UndefinedOnPartial } from "type-fest";
 
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
@@ -142,19 +142,19 @@ export function createTsParser({
 	parserOptionsTypeAware = {},
 	tsconfigPath,
 	typeAware,
-}: {
-	componentExtensions?: Array<string> | undefined;
+}: UndefinedOnPartial<{
+	componentExtensions?: Array<string>;
 	configName: string;
 	files: Array<Array<string> | string>;
-	ignores?: Array<string> | undefined;
-	outOfProjectFiles?: Array<string> | undefined;
+	ignores?: Array<string>;
+	outOfProjectFiles?: Array<string>;
 	parser: Parser;
-	parserOptions?: ParserOptions | undefined;
-	parserOptionsNonTypeAware?: ParserOptions | undefined;
-	parserOptionsTypeAware?: ParserOptions | undefined;
-	tsconfigPath?: string | undefined;
+	parserOptions?: ParserOptions;
+	parserOptionsNonTypeAware?: ParserOptions;
+	parserOptionsTypeAware?: ParserOptions;
+	tsconfigPath?: string;
 	typeAware: boolean;
-}): TypedFlatConfigItem {
+}>): TypedFlatConfigItem {
 	return {
 		name: `isentinel/${configName}/${typeAware ? "type-aware-parser" : "parser"}`,
 		files,
