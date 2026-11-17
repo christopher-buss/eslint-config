@@ -9,7 +9,12 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
+import {
+	editorConfigOverrides,
+	resolvePrettierSettings,
+	withOxfmtStyle,
+	withOxfmtWidths,
+} from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
@@ -437,6 +442,7 @@ export function isentinel(
 		configs.push(
 			oxlintOxfmt({
 				componentExts: componentExtensions,
+				editorConfigOverrides: editorConfigOverrides(undefined, oxfmtConfigOptions),
 				oxfmtOptions,
 				standalone: formatter === "standalone",
 			}),

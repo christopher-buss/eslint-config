@@ -619,6 +619,7 @@ export async function isentinel(
 		configs.push(
 			oxfmt({
 				componentExts: componentExtensions,
+				editorConfigOverrides: sectionOverrides,
 				formatters:
 					typeAwareOnly || formatters === false
 						? {

@@ -377,8 +377,8 @@ catalogs:
       specifier: 3.4.2
       version: 3.4.2
     eslint-plugin-oxfmt:
-      specifier: 0.18.0
-      version: 0.18.0
+      specifier: 0.33.0
+      version: 0.33.0
     eslint-plugin-package-json:
       specifier: 1.14.0
       version: 1.14.0
@@ -555,7 +555,7 @@ importers:
         version: 3.4.2(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-oxfmt:
         specifier: catalog:prod
-        version: 0.18.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.78.0)
+        version: 0.33.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.78.0)
       eslint-plugin-package-json:
         specifier: catalog:prod
         version: 1.14.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -1028,6 +1028,9 @@ packages:
     peerDependencies:
       devframe: 1.3.5
 
+  '@dual-bundle/import-meta-resolve@4.2.1':
+    resolution: {integrity: sha512-id+7YRUgoUX6CgV0DtuhirQWodeeA7Lf4i2x71JS/vtA5pRb/hIGWlw+G6MeXvsM+MXrz0VAydTGElX1rAfgPg==}
+
   '@e18e/eslint-plugin@0.8.1':
     resolution: {integrity: sha512-OV3T7l0r52/IglskdAuoO+BJyzsCs7AcIHpwpBMlIMO0+3RHskM2h5MuHdLuesIhSRhwCURGMKtp/XwnfXrfxg==}
     peerDependencies:
@@ -1468,8 +1471,8 @@ packages:
       '@emnapi/core': ^1.7.1 || 2.0.0-beta.2
       '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2
 
-  '@ntnyq/utils@0.21.1':
-    resolution: {integrity: sha512-xeNRUQUM6ArKV/vUu18zqFBlrnFrx6lwghRnLwPWdXq8vL1Axnt1OlLGwDY5WbaCgEJC2+x5Wm2C4Bz923TLsQ==}
+  '@ntnyq/utils@0.26.0':
+    resolution: {integrity: sha512-ejxU8uzfL7DJ+EJtGBr28L20r+z/TZ5gUgIfcXe9SMtWZ7AEYz0iWBaZGW+AMuJQ/aaAd8t1D/0Vz+HfjUS0qg==}
     engines: {node: ^22.19.0 || >=24.11.0}
 
   '@one-ini/wasm@0.2.1':
@@ -3080,14 +3083,17 @@ packages:
       typescript:
         optional: true
 
-  eslint-plugin-oxfmt@0.18.0:
-    resolution: {integrity: sha512-8dTysX1no8njWOSSjvteN4MIAEgr7EL3/SXPlZYudmW3nLPZ+wNeYviZd3oXzuspZrje4wGukBS8Is1zLaxFjA==}
-    engines: {node: ^20.19.0 || >=22.12.0}
+  eslint-plugin-oxfmt@0.33.0:
+    resolution: {integrity: sha512-bYUF3VWJ01KYDyFWcRh02wyoszyyz98F2G7wU3dildvnW1ClwX8geJgpYTBCzcbdCbEG1/DrfYbJvfcbmg6i5w==}
+    engines: {node: ^22.13.0 || >=24}
     peerDependencies:
+      '@astrojs/compiler-rs': ^0.5.0
       eslint: ^9.5.0 || ^10.0.0
-      oxfmt: '>=0.63.0'
+      oxfmt: '>=0.78.0'
       svelte: '*'
     peerDependenciesMeta:
+      '@astrojs/compiler-rs':
+        optional: true
       svelte:
         optional: true
 
@@ -3467,10 +3473,6 @@ packages:
     resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
     engines: {node: '>= 4'}
 
-  ignore@7.0.6:
-    resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==}
-    engines: {node: '>= 4'}
-
   import-fresh@4.0.0:
     resolution: {integrity: sha512-Fpi660c7VPDM3fPKYovStd9IP1CPOikf6v/dGxJJMmHPcwYQIMJ4W7kO1avBYEpMqkCh+Dx3Ln6H7VYqgztLjw==}
     engines: {node: '>=22.15'}
@@ -3664,11 +3666,11 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
-  load-oxfmt-config@0.19.0:
-    resolution: {integrity: sha512-k+PBZ2TnF8Jh9znL0Av/n8eXh0dRz1lcnu9ZP2rySpiglQXnnFQyTf1VKWME02tkh6qGmRj2nFcYRk4IsOOVlg==}
+  load-oxfmt-config@0.33.0:
+    resolution: {integrity: sha512-PIQPAF6ouz5VIH37WfKW2Hb73j7hLcndT+Th/8illSh2dhqGTCYiDSxqjgph52AMnTBSIgR8rFZ/G1+NcUAepg==}
     engines: {node: ^22.13.0 || >=24}
     peerDependencies:
-      oxfmt: '>=0.63.0'
+      oxfmt: '>=0.78.0'
 
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
@@ -4213,6 +4215,10 @@ packages:
 
   synckit@0.11.13:
     resolution: {integrity: sha512-eNRKgb3z66Yp3D2CixVujOUvXLFUTij/zVnV8KRyvFdQwpz7I5DS8UfRkTeLzb64u+dkzDSdelE24izu+zSSUg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+
+  synckit@0.12.3:
+    resolution: {integrity: sha512-U+/AXT6LWsxnj2vz9HeUuPWBNgdWxjyIEjEPdbJARC9txmgPzo2VEdqnFo4hHaNyMPtycyVJrSaQYeQv/PoyyA==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
   tagged-tag@1.0.0:
@@ -4898,6 +4904,8 @@ snapshots:
       - crossws
       - ocache
 
+  '@dual-bundle/import-meta-resolve@4.2.1': {}
+
   '@e18e/eslint-plugin@0.8.1(@typescript-eslint/typescript-estree@8.72.2(supports-color@10.2.2)(typescript@6.0.3))(@typescript-eslint/utils@8.72.2(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxlint@1.94.0(oxlint-tsgolint@7.0.2007))(typescript@6.0.3)':
     dependencies:
       '@eslint/core': 1.2.1
@@ -5393,7 +5401,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@ntnyq/utils@0.21.1': {}
+  '@ntnyq/utils@0.26.0': {}
 
   '@one-ini/wasm@0.2.1': {}
 
@@ -6612,15 +6620,15 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  eslint-plugin-oxfmt@0.18.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.78.0):
+  eslint-plugin-oxfmt@0.33.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.78.0):
     dependencies:
       eslint: 10.15.0(jiti@2.7.0)(supports-color@10.2.2)
       generate-differences: 0.1.1
-      ignore: 7.0.6
-      load-oxfmt-config: 0.19.0(oxfmt@0.78.0)
+      ignore: 7.0.14
+      load-oxfmt-config: 0.33.0(oxfmt@0.78.0)
       oxfmt: 0.78.0
       picomatch: 4.0.7
-      synckit: 0.11.13
+      synckit: 0.12.3
 
   eslint-plugin-package-json@1.14.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
@@ -7070,8 +7078,6 @@ snapshots:
 
   ignore@7.0.5: {}
 
-  ignore@7.0.6: {}
-
   import-fresh@4.0.0: {}
 
   import-meta-resolve@4.2.0: {}
@@ -7231,13 +7237,14 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.32.0
       lightningcss-win32-x64-msvc: 1.32.0
 
-  load-oxfmt-config@0.19.0(oxfmt@0.78.0):
+  load-oxfmt-config@0.33.0(oxfmt@0.78.0):
     dependencies:
-      '@ntnyq/utils': 0.21.1
+      '@ntnyq/utils': 0.26.0
       editorconfig: 3.0.2
-      ignore: 7.0.6
+      ignore: 7.0.14
       jiti: 2.7.0
       jsonc-parser: 3.3.1
+      minimatch: 11.0.5
       oxfmt: 0.78.0
 
   locate-path@6.0.0:
@@ -8055,6 +8062,11 @@ snapshots:
 
   synckit@0.11.13:
     dependencies:
+      '@pkgr/core': 0.3.6
+
+  synckit@0.12.3:
+    dependencies:
+      '@dual-bundle/import-meta-resolve': 4.2.1
       '@pkgr/core': 0.3.6
 
   tagged-tag@1.0.0: {}

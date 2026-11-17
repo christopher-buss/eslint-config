@@ -2,7 +2,6 @@ import { isRecord } from "../guards.ts";
 import type { OxfmtOptions } from "../utils.ts";
 
 const UNSUPPORTED_PRETTIER_KEYS = new Set([
-	"experimentalOperatorPosition",
 	"experimentalTernaries",
 	"jsdocPreferCodeFences",
 	"jsdocPrintWidth",
