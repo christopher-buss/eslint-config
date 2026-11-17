@@ -53,6 +53,7 @@ import type { RepositoryFiles } from "../src/lint-cli/lib/files/collect.ts";
 import { findWorkspaceRoot } from "../src/lint-cli/lib/files/workspace.ts";
 import {
 	HYBRID_UNKNOWN_WARNING,
+	HYBRID_UNVERIFIED_NOTICE,
 	NON_HYBRID_WARNING,
 	resolveOxlintRun,
 } from "../src/lint-cli/lib/hybrid/gate.ts";
@@ -1919,6 +1920,23 @@ function setMtimeInFuture(filePath: string): void {
 	fs.utimesSync(filePath, future, future);
 }
 
+/**
+ * Link the real typescript into a fixture, so the gate can walk the config's
+ * import closure from it.
+ *
+ * @param directory - The fixture root; its `node_modules` must exist.
+ */
+function linkTypescript(directory: string): void {
+	const typescriptDirectory = path.dirname(
+		createRequire(import.meta.url).resolve("typescript/package.json"),
+	);
+	fs.symlinkSync(
+		fs.realpathSync(typescriptDirectory),
+		path.join(directory, "node_modules", "typescript"),
+		"junction",
+	);
+}
+
 describe("hybrid status file", () => {
 	it("only writes when node_modules exists", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
@@ -2046,6 +2064,7 @@ describe("resolveOxlintRun", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = freshConfig(directory);
 		writeHybridStatus(directory, false);
 
@@ -2073,6 +2092,7 @@ describe("resolveOxlintRun", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = freshConfig(directory);
 		writeHybridStatus(directory, true);
 
@@ -2128,6 +2148,110 @@ describe("resolveOxlintRun", () => {
 		expect(probeCalls).toBe(1);
 		expect(decision).toStrictEqual({ reason: NON_HYBRID_WARNING, run: false });
 		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: false });
+	});
+
+	it("re-probes when a module the config imports changed after a non-hybrid status", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(3);
+
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
+
+		// Hybrid mode is toggled in a module the config imports, not in the
+		// config file itself.
+		const config = path.join(directory, "eslint.config.ts");
+		const toggle = path.join(directory, "hybrid.ts");
+		fs.writeFileSync(config, 'import { oxlint } from "./hybrid";\nexport default [oxlint];\n');
+		fs.writeFileSync(toggle, "export const oxlint = false;\n");
+		setMtimeInPast(config);
+		setMtimeInPast(toggle);
+		writeHybridStatus(directory, false);
+
+		// The user turns hybrid mode on. The config file itself is untouched.
+		fs.writeFileSync(toggle, "export const oxlint = true;\n");
+		setMtimeInFuture(toggle);
+
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: true };
+		}
+
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{
+				files: repositoryFiles({
+					configFiles: [config],
+					typeAware: [path.join(directory, "a.ts")],
+				}),
+				runEslint: true,
+				runOxlint: true,
+			},
+			probe,
+		);
+
+		expect(probeCalls).toBe(1);
+		expect(decision).toStrictEqual({ reason: undefined, run: true });
+		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
+	});
+
+	it("re-probes a fresh status when the config's imports cannot be discovered", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		// No typescript: the gate cannot see what the config imports, so a
+		// fresh-looking status may hide a changed import.
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, false);
+
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: true };
+		}
+
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{
+				files: repositoryFiles({
+					configFiles: [config],
+					typeAware: [path.join(directory, "a.ts")],
+				}),
+				runEslint: true,
+				runOxlint: true,
+			},
+			probe,
+		);
+
+		expect(probeCalls).toBe(1);
+		expect(decision).toStrictEqual({ reason: undefined, run: true });
+	});
+
+	it("marks --print unverified when the config's imports cannot be discovered", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, false);
+
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: false }),
+			{ files: repositoryFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			() => ({ oxlint: false }),
+		);
+
+		expect(decision).toStrictEqual({ reason: HYBRID_UNVERIFIED_NOTICE, run: true });
 	});
 
 	it("fails open when the probe cannot determine the status", ({ expect, onTestFinished }) => {
@@ -2204,9 +2328,9 @@ describe("resolveOxlintRun", () => {
 			probe,
 		);
 
-		// Stale status, but --print never probes: assume hybrid, print
-		// unchanged.
-		expect(decision).toStrictEqual({ reason: undefined, run: true });
+		// Stale status, but --print never probes: list oxlint, and say it is
+		// unverified.
+		expect(decision).toStrictEqual({ reason: HYBRID_UNVERIFIED_NOTICE, run: true });
 		expect(probeCalls).toBe(0);
 		expect(fs.existsSync(hybridStatusPath(directory))).toBe(false);
 	});
@@ -2218,6 +2342,7 @@ describe("plan hybrid integration", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = path.join(directory, "eslint.config.ts");
 		fs.writeFileSync(config, "export default []");
 		fs.writeFileSync(path.join(directory, "a.ts"), "export const x = 1;\n");
@@ -2305,6 +2430,58 @@ describe("runLint type-aware backend check ordering", () => {
 		const printed = spy.mock.calls.map((call) => String(call[0])).join("");
 
 		expect(printed).toContain(`oxlint ${oxlintThreads()} --type-aware`);
+	});
+
+	it("prints the notice when the hybrid gate drops oxlint", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
+		const stdout = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+		const stderr = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+		onTestFinished(() => {
+			stdout.mockRestore();
+			stderr.mockRestore();
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+		writeHybridStatus(directory, false);
+
+		await runLint(["--print"], { cwd: directory, environment: {} });
+
+		const printed = stdout.mock.calls.map((call) => String(call[0])).join("");
+		const warned = stderr.mock.calls.map((call) => String(call[0])).join("");
+
+		// The dropped child must be explained where you look for it.
+		expect(printed).not.toContain("oxlint ");
+		expect(warned).toContain(NON_HYBRID_WARNING);
+	});
+
+	it("says when --print cannot confirm hybrid mode", async ({ expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-pre-"));
+		const stdout = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+		const stderr = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+		onTestFinished(() => {
+			stdout.mockRestore();
+			stderr.mockRestore();
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+		// No hybrid status yet: a real run would probe, --print does not.
+		fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
+
+		await runLint(["--print"], { cwd: directory, environment: {} });
+
+		const printed = stdout.mock.calls.map((call) => String(call[0])).join("");
+		const warned = stderr.mock.calls.map((call) => String(call[0])).join("");
+
+		// The oxlint line is a guess, so --print must say so: a real run may
+		// drop the child after its probe.
+		expect(printed).toContain("oxlint ");
+		expect(warned).toMatch(/hybrid mode/);
 	});
 });
 

@@ -13,6 +13,18 @@ import { loadTypescript } from "../typescript/load.ts";
  */
 const MAX_CLOSURE_FILES = 500;
 
+/** The config import closure as paths, and whether the walk found all of it. */
+export interface ConfigClosure {
+	/**
+	 * False when the imports could not all be found (`typescript` is
+	 * unresolvable, or the walk hit its file cap). `files` then holds only part
+	 * of the closure, so a check over it can miss a changed import.
+	 */
+	complete: boolean;
+	/** The absolute closure paths, entry points included. */
+	files: Array<string>;
+}
+
 /**
  * One file in the config import closure, read once for both imports and hash.
  */
@@ -63,7 +75,7 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
 		return undefined;
 	}
 
-	const closure = discoverConfigClosure(ts, cwd, configFiles);
+	const closure = walkConfigClosure(ts, cwd, configFiles).files;
 	if (closure.length === 0) {
 		return undefined;
 	}
@@ -77,6 +89,29 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
 	}
 
 	return hash.digest("hex");
+}
+
+/**
+ * The paths of `eslint.config.*` and its transitive local import closure (see
+ * {@link computeConfigHash} for how the closure is found). When `typescript` is
+ * unresolvable, returns the entry points alone, marked incomplete.
+ *
+ * @param cwd - The consumer project root.
+ * @param configFiles - The flat-config entry points (see `RepositoryFiles.configFiles`).
+ * @returns The closure paths and whether they are complete.
+ */
+export function configClosureFiles(cwd: string, configFiles: Array<string>): ConfigClosure {
+	if (configFiles.length === 0) {
+		return { complete: true, files: [] };
+	}
+
+	const ts = loadTypescript(cwd);
+	if (ts === undefined) {
+		return { complete: false, files: configFiles };
+	}
+
+	const { complete, files } = walkConfigClosure(ts, cwd, configFiles);
+	return { complete, files: files.map(({ file }) => file) };
 }
 
 /**
@@ -181,13 +216,14 @@ function resolveCompilerOptions(ts: typeof TypeScript, cwd: string): TypeScript.
  * @param ts - The consumer's resolved TypeScript module.
  * @param cwd - The consumer project root.
  * @param roots - The config entry-point paths to start from.
- * @returns The readable closure files (roots included), each with its content.
+ * @returns The readable closure files (roots included), each with its content,
+ *   and whether the walk finished before the file cap.
  */
-function discoverConfigClosure(
+function walkConfigClosure(
 	ts: typeof TypeScript,
 	cwd: string,
 	roots: Array<string>,
-): Array<ClosureFile> {
+): { complete: boolean; files: Array<ClosureFile> } {
 	const options = resolveCompilerOptions(ts, cwd);
 	const resolver: ClosureResolver = {
 		cache: ts.createModuleResolutionCache(cwd, (fileName) => fileName, options),
@@ -218,5 +254,6 @@ function discoverConfigClosure(
 		enqueueUnvisited(importsOf(resolver, file, content), visited, queue);
 	}
 
-	return files;
+	// A non-empty queue means the cap stopped the walk early.
+	return { complete: queue.length === 0, files };
 }
