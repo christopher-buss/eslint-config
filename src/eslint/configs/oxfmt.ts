@@ -2,6 +2,7 @@ import type { Options as PrettierOptions } from "prettier";
 
 import { FORMATTED_FILES, resolveFormattedLanguages } from "../../formatted-files.ts";
 import { GLOB_JSON5, GLOB_MARKDOWN } from "../../globs.ts";
+import { EXTRA_FORMATTER_CONFLICTS } from "../../prettier-config.ts";
 import type { EditorConfigOverride } from "../../prettier-config.ts";
 import {
 	buildOxfmtOptions,
@@ -136,6 +137,10 @@ export async function oxfmt(
 	const rules = renameRules(configPrettier.rules, defaultPluginRenaming);
 	for (const rule of rulesToIgnore) {
 		delete rules[rule];
+	}
+
+	for (const rule of EXTRA_FORMATTER_CONFLICTS) {
+		rules[rule] = "off";
 	}
 
 	const configs: Array<TypedFlatConfigItem> = [

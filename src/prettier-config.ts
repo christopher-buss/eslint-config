@@ -38,6 +38,12 @@ export const PRETTIER_DEFAULTS = {
 } as const satisfies PrettierOptions;
 
 /**
+ * Formatting rules that conflict with oxfmt but that `eslint-config-prettier`
+ * does not turn off yet. Both oxfmt configs add them to its disables.
+ */
+export const EXTRA_FORMATTER_CONFLICTS = ["style/list-style"] as const;
+
+/**
  * Config file names searched in each directory, in Prettier's own precedence
  * order. `package.json` is handled separately (it only counts when it carries
  * a `prettier` key).
