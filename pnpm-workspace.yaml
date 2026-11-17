@@ -63,7 +63,7 @@ catalogs:
     vitest: 5.1.0
   peer:
     "@vitest/eslint-plugin": 1.6.26
-    eslint: 10.14.0
+    eslint: 10.15.0
     eslint-plugin-erasable-syntax-only: 0.7.2
     eslint-plugin-eslint-plugin: 7.5.0
     eslint-plugin-jest: 29.17.0
@@ -82,7 +82,7 @@ catalogs:
     "@clack/prompts": 1.9.0
     "@cspell/eslint-plugin": 10.0.1
     "@e18e/eslint-plugin": 0.8.1
-    "@eslint-community/eslint-plugin-eslint-comments": 4.7.2
+    "@eslint-community/eslint-plugin-eslint-comments": 4.8.1
     "@eslint/markdown": 8.0.3
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
@@ -139,9 +139,6 @@ allowBuilds:
   koffi: false
 
 packageExtensions:
-  "@cspell/eslint-plugin":
-    dependencies:
-      "@types/estree": ^1
   "@e18e/eslint-plugin":
     dependencies:
       "@eslint/core": ^1
@@ -186,9 +183,6 @@ packageExtensions:
     peerDependenciesMeta:
       eslint:
         optional: true
-  eslint-plugin-de-morgan:
-    dependencies:
-      "@types/estree": ^1
   eslint-plugin-jsdoc:
     dependencies:
       "@eslint/core": ^1
@@ -207,15 +201,6 @@ packageExtensions:
     dependencies:
       "@eslint/core": ^1
       "@types/estree": ^1
-  eslint-plugin-perfectionist:
-    peerDependencies:
-      "@typescript-eslint/types": "*"
-      typescript: "*"
-    peerDependenciesMeta:
-      "@typescript-eslint/types":
-        optional: true
-      typescript:
-        optional: true
   eslint-plugin-sentinel:
     peerDependencies:
       "@typescript-eslint/utils": "*"
