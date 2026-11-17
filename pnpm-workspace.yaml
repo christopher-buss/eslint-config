@@ -11,6 +11,7 @@ minimumReleaseAgeExclude:
   - "@tsrs/*"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
+  - eslint-plugin-roblox-ts@1.5.0
   - oxlint
   - oxlint-plugin-eslint
   - tsrs
@@ -117,7 +118,7 @@ catalogs:
     eslint-plugin-perfectionist: 5.13.0
     eslint-plugin-pnpm: 1.9.1
     eslint-plugin-promise: 7.3.0
-    eslint-plugin-roblox-ts: 1.4.1
+    eslint-plugin-roblox-ts: 1.5.0
     eslint-plugin-sentinel: 0.1.2
     eslint-plugin-sonarjs: 4.2.2
     eslint-plugin-toml: 1.5.0
