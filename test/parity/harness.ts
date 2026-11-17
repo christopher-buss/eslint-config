@@ -9,7 +9,6 @@ import path from "node:path";
 import process from "node:process";
 
 import { isRecord } from "../../src/guards.ts";
-import { parseArguments } from "../../src/lint-cli/lib/cli/options.ts";
 import { composeOxfmtCommand } from "../../src/lint-cli/lib/plan/command.ts";
 import {
 	changedFiles,
@@ -140,8 +139,10 @@ async function runNode(args: Array<string>, cwd: string): Promise<ProcessResult>
 }
 
 async function runOxfmt(cwd: string, configPath: string, write: boolean): Promise<ProcessResult> {
-	// The arguments isentinel-lint passes for a whole-tree run.
-	const { args } = composeOxfmtCommand(parseArguments(["."], {}), { configPath, write });
+	// The arguments isentinel-lint passes for a whole-tree run. It passes the
+	// files ESLint lints rather than `.`; here they are the same set, or the
+	// two modes would already disagree.
+	const { args } = composeOxfmtCommand({ configPath, paths: ["."], write });
 	return run(process.execPath, [OXFMT_BIN, ...args], cwd);
 }
 

@@ -1,16 +1,18 @@
 // cspell:words lintable typeaware
 import { availableParallelism } from "node:os";
+import path from "node:path";
 
 import { applyHashBust, CONFIG_DRIFT, PACKAGE_RESOLUTION } from "../cache/bust.ts";
 import { computeConfigHash } from "../cache/config-hash.ts";
-import { maxMtimeMs, sweepStaleCaches } from "../cache/entries.ts";
+import { maxMtimeMs, normalizePath, sweepStaleCaches } from "../cache/entries.ts";
 import { computePackageJsonHash } from "../cache/package-hash.ts";
 import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import { resolveAgentsFormatter } from "../exec/resolve.ts";
 import { collectRepositoryFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
-import { resolveIgnoredFiles } from "../files/ignored.ts";
+import { resolveIgnoredFiles, resolveIgnoredFilesExact } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
+import { toPosix } from "../paths.ts";
 import { resolveOxlintThreads, resolveWorkerLimits } from "./concurrency.ts";
 import { planFixChild } from "./fix.ts";
 import type { MemoryFacts } from "./heap.ts";
@@ -19,6 +21,22 @@ import type { PassDescriptor } from "./passes.ts";
 import { selectPasses } from "./passes.ts";
 import type { PassPlan, SizingInputs } from "./sizing.ts";
 import { sizePasses } from "./sizing.ts";
+
+/** The files the oxfmt child receives. */
+export interface FormatPlan {
+	/**
+	 * A stderr warning when the ESLint ignores could not be resolved, so oxfmt
+	 * gets the run's own targets unfiltered; otherwise `undefined`.
+	 */
+	notice: string | undefined;
+	/**
+	 * The oxfmt targets: the files within the run's targets that ESLint would
+	 * lint, cwd-relative, plus any target outside the cwd as given. Empty when
+	 * nothing is left, and then no oxfmt child runs — an empty list would make
+	 * oxfmt format the whole tree.
+	 */
+	paths: Array<string>;
+}
 
 /**
  * A composed run as plain data: the I/O and mutation behind it happen in
@@ -33,6 +51,8 @@ export interface RunPlan {
 	agentsFormatterPath: string;
 	/** Whether the run is in CI. */
 	ci: boolean;
+	/** The oxfmt targets, or `undefined` when the run does not format. */
+	format: FormatPlan | undefined;
 	/** Whether the oxlint child runs. */
 	oxlint: boolean;
 	/** The paths the oxlint child receives (see `oxlintTargets`). */
@@ -96,6 +116,19 @@ export interface StagedPlan {
 	resolveFixChild: ((passes: Array<PassPlan>) => ChildCommand | undefined) | undefined;
 }
 
+/** What the caller of {@link plan} adds beyond the CLI options. */
+export interface PlanSettings {
+	/** Whether the run has an oxfmt child to plan targets for. */
+	format?: boolean;
+	/** The machine's memory facts (injected in tests). */
+	memory?: MemoryFacts;
+}
+
+/** The warning when the oxfmt targets cannot be narrowed to ESLint's files. */
+const FORMAT_UNFILTERED_NOTICE =
+	"isentinel-lint: could not resolve the ESLint ignores, so oxfmt checks the run's " +
+	"targets unfiltered and can format files that ESLint ignores.\n";
+
 /** What the staging decision needs to know beyond the descriptors. */
 interface StagingInputs {
 	/** Whether the run selected more than one pass. */
@@ -128,13 +161,13 @@ interface StagedDescriptors {
  *
  * @param options - The parsed CLI options.
  * @param run - The run context (cwd, variant key, environment, mutate).
- * @param memory - The machine's memory facts (injected in tests).
+ * @param settings - Whether the run formats, and the memory facts.
  * @returns The staged run plan.
  */
 export function plan(
 	options: LintCliOptions,
 	run: RunContext,
-	memory: MemoryFacts = probeMemory(),
+	{ format = false, memory = probeMemory() }: PlanSettings = {},
 ): StagedPlan {
 	const { ci, cwd, environment, mutate } = run;
 	const runEslint = !options.oxlint;
@@ -156,6 +189,8 @@ export function plan(
 			eager: {
 				agentsFormatterPath,
 				ci,
+				// A single-engine run never formats (see `findOxfmtModule`).
+				format: undefined,
 				oxlint: runOxlint,
 				oxlintPaths,
 				oxlintReason: undefined,
@@ -229,8 +264,27 @@ export function plan(
 	// Drop the files ESLint declines to lint before anything sizes from them:
 	// they never enter a cache, so they would otherwise read as dirty forever
 	// and hold the typed pass's dirty count above zero (see
-	// `resolveIgnoredFiles`).
-	const ignored = resolveIgnoredFiles(run, configHash, files.lintable);
+	// `resolveIgnoredFiles`). A formatting run classifies every targeted file
+	// exactly, once, and the sizing reads its lintable subset from that answer.
+	let ignored: ReadonlySet<string>;
+	let formatPlan: FormatPlan | undefined;
+	if (format) {
+		const exact = resolveIgnoredFilesExact(run, configHash, files.targeted);
+		ignored = exact ?? new Set();
+		formatPlan =
+			exact === undefined
+				? { notice: FORMAT_UNFILTERED_NOTICE, paths: options.paths }
+				: {
+						notice: undefined,
+						paths: [
+							...retainedRelative(cwd, files.targeted, exact),
+							...files.outsideCwdTargets,
+						],
+					};
+	} else {
+		ignored = resolveIgnoredFiles(run, configHash, files.lintable);
+	}
+
 	const sizingFiles = withoutIgnored(files, ignored);
 
 	const inputs: SizingInputs = {
@@ -256,6 +310,7 @@ export function plan(
 		eager: {
 			agentsFormatterPath,
 			ci,
+			format: formatPlan,
 			oxlint: oxlintDecision.run,
 			oxlintPaths,
 			oxlintReason: oxlintDecision.reason,
@@ -279,6 +334,25 @@ export function plan(
 					}
 				: undefined,
 	};
+}
+
+/**
+ * The files ESLint would lint, as cwd-relative posix paths, so the oxfmt
+ * command line stays short.
+ *
+ * @param cwd - The working directory.
+ * @param files - The absolute candidate paths.
+ * @param ignored - The ignored set, as {@link normalizePath} keys.
+ * @returns The kept files, cwd-relative.
+ */
+function retainedRelative(
+	cwd: string,
+	files: Array<string>,
+	ignored: ReadonlySet<string>,
+): Array<string> {
+	return files
+		.filter((file) => !ignored.has(normalizePath(file)))
+		.map((file) => toPosix(path.relative(cwd, file)));
 }
 
 function resolveOxlintTypeAware(options: LintCliOptions): boolean {

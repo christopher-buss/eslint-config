@@ -69,6 +69,13 @@ export interface RepositoryFiles {
 	 */
 	outsideCwdTargets: Array<string>;
 	/**
+	 * Absolute paths of every listed file within the lint targets, whatever its
+	 * extension. A superset of {@link RepositoryFiles.lintable}: the candidates
+	 * the oxfmt child is narrowed from, since oxfmt formats more languages than
+	 * the lintable extensions name.
+	 */
+	targeted: Array<string>;
+	/**
 	 * The type-aware (TS/JS-family) subset of
 	 * {@link RepositoryFiles.lintable}.
 	 */
@@ -97,17 +104,23 @@ export function collectRepositoryFiles(cwd: string, targets: Array<string>): Rep
 
 	const bustFiles = collectAncestorBustFiles(cwd);
 	const lintable: Array<string> = [];
+	const targeted: Array<string> = [];
 	const typeAware: Array<string> = [];
 	for (const relative of relatives) {
 		if (isBustFile(relative)) {
 			bustFiles.push(path.resolve(cwd, relative));
 		}
 
-		if (!isWithinTargets(relative) || !hasLintableExtension(relative)) {
+		if (!isWithinTargets(relative)) {
 			continue;
 		}
 
 		const absolute = path.resolve(cwd, relative);
+		targeted.push(absolute);
+		if (!hasLintableExtension(relative)) {
+			continue;
+		}
+
 		lintable.push(absolute);
 		if (isTypeAwareFile(relative)) {
 			typeAware.push(absolute);
@@ -116,19 +129,19 @@ export function collectRepositoryFiles(cwd: string, targets: Array<string>): Rep
 
 	const configFiles = bustFiles.filter(isConfigEntryPoint);
 
-	return { bustFiles, configFiles, lintable, outsideCwdTargets, typeAware };
+	return { bustFiles, configFiles, lintable, outsideCwdTargets, targeted, typeAware };
 }
 
 /**
  * Drop the files ESLint declines to lint from the *target* lists, leaving the
  * rest of the listing untouched.
  *
- * Only the `lintable` and `typeAware` lists are lint targets. The `bustFiles`
- * and `configFiles` lists are whole-project cache-bust inputs — a tsconfig or
- * lockfile is never linted, so filtering them by "would ESLint lint this"
- * would empty them. Any list added to {@link RepositoryFiles} later has to
- * make that same choice here, which is why this lives beside the type rather
- * than at the call site.
+ * Only the `lintable`, `targeted` and `typeAware` lists are lint targets. The
+ * `bustFiles` and `configFiles` lists are whole-project cache-bust inputs — a
+ * tsconfig or lockfile is never linted, so filtering them by "would ESLint
+ * lint this" would empty them. Any list added to {@link RepositoryFiles} later
+ * has to make that same choice here, which is why this lives beside the type
+ * rather than at the call site.
  *
  * @param files - The collected repository files.
  * @param ignored - The ignored set from `resolveIgnoredFiles` (normalized keys).
@@ -141,6 +154,7 @@ export function withoutIgnored(
 	return {
 		...files,
 		lintable: retained(files.lintable, ignored),
+		targeted: retained(files.targeted, ignored),
 		typeAware: retained(files.typeAware, ignored),
 	};
 }

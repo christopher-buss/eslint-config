@@ -114,33 +114,53 @@ export function resolveIgnoredFiles(
 		return EMPTY;
 	}
 
-	const { cwd, mutate } = run;
-	const stateFile = ignoredStatePath(run);
-	const stored = readState<IgnoredState>(stateFile);
-	const fresh = stored?.hash === configHash ? stored : undefined;
+	return classifyWithMemo(run, configHash, targets, false) ?? EMPTY;
+}
 
-	let payload = fresh?.payload;
-	if (payload === undefined) {
-		if (!mutate) {
-			return EMPTY;
-		}
-
-		payload = queryIgnoredFiles(cwd, targets);
-		if (payload === undefined) {
-			return EMPTY;
-		}
-	}
-
-	const classified = classifyTargets(cwd, payload, targets, fresh?.classified);
-	if (classified === undefined) {
+/**
+ * The lint targets ESLint declines to lint, answered exactly or not at all.
+ *
+ * {@link resolveIgnoredFiles} may guess "nothing ignored", because a wrong
+ * guess there only over-sizes workers. The oxfmt targets cannot take a guess:
+ * a target wrongly kept is a file oxfmt formats and ESLint mode does not. So
+ * this asks the helper whenever no stored answer covers every target: with no
+ * config hash (`--no-cache`), with `mutate` off (`--print`, which then does not
+ * store the answer), and when the stored payload is per-target answers that
+ * do not cover this list.
+ *
+ * @param run - The run context.
+ * @param configHash - The config hash for this run, or `undefined` when
+ *   unavailable (nothing is then read from or written to the memo).
+ * @param targets - The absolute target paths to classify.
+ * @returns The ignored subset of `targets` as {@link normalizePath} keys, or
+ *   `undefined` when ESLint's answer could not be found.
+ */
+export function resolveIgnoredFilesExact(
+	run: RunContext,
+	configHash: string | undefined,
+	targets: Array<string>,
+): ReadonlySet<string> | undefined {
+	if (targets.length === 0) {
 		return EMPTY;
 	}
 
-	if (mutate && !sameClassification(classified, fresh?.classified)) {
-		writeState(stateFile, { classified, hash: configHash, payload } satisfies IgnoredState);
+	return classifyWithMemo(run, configHash, targets, true);
+}
+
+/**
+ * Whether a stored classification already answers every target.
+ *
+ * @param cached - The stored classification.
+ * @param targets - The absolute target paths.
+ * @returns True when each target is in the stored ignored or linted list.
+ */
+function coversTargets(cached: Classification | undefined, targets: Array<string>): boolean {
+	if (cached === undefined) {
+		return false;
 	}
 
-	return new Set(classified.ignored);
+	const known = new Set([...cached.ignored, ...cached.linted]);
+	return targets.every((target) => known.has(normalizePath(target)));
 }
 
 /**
@@ -272,4 +292,63 @@ function queryIgnoredFiles(cwd: string, targets: Array<string>): IgnoredPayload 
 	} finally {
 		fs.rmSync(outFile, { force: true });
 	}
+}
+
+/**
+ * Classify the targets through the memo, asking the helper when the memo
+ * cannot answer.
+ *
+ * @param run - The run context.
+ * @param configHash - The memo key, or `undefined` to bypass the memo.
+ * @param targets - The absolute target paths to classify.
+ * @param exact - Whether every target must get a real answer. When false, a
+ *   run that may not mutate never spawns the helper, and targets an
+ *   `"answers"` payload does not know read as not-ignored.
+ * @returns The ignored subset, or `undefined` when it could not be found.
+ */
+function classifyWithMemo(
+	run: RunContext,
+	configHash: string | undefined,
+	targets: Array<string>,
+	exact: boolean,
+): ReadonlySet<string> | undefined {
+	const { cwd, mutate } = run;
+	const stateFile = ignoredStatePath(run);
+	const stored = configHash === undefined ? undefined : readState<IgnoredState>(stateFile);
+	const fresh = stored !== undefined && stored.hash === configHash ? stored : undefined;
+
+	let payload = fresh?.payload;
+	let cached = fresh?.classified;
+	if (exact && payload?.mode === "answers" && !coversTargets(cached, targets)) {
+		// Answers only know the list they were computed for.
+		payload = undefined;
+		cached = undefined;
+	}
+
+	const queried = payload === undefined;
+	if (payload === undefined) {
+		if (!mutate && !exact) {
+			return undefined;
+		}
+
+		payload = queryIgnoredFiles(cwd, targets);
+		if (payload === undefined) {
+			return undefined;
+		}
+	}
+
+	const classified = classifyTargets(cwd, payload, targets, cached);
+	if (classified === undefined) {
+		return undefined;
+	}
+
+	if (
+		configHash !== undefined &&
+		mutate &&
+		(queried || !sameClassification(classified, fresh?.classified))
+	) {
+		writeState(stateFile, { classified, hash: configHash, payload } satisfies IgnoredState);
+	}
+
+	return new Set(classified.ignored);
 }

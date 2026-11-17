@@ -8,7 +8,9 @@ import { describe, it, vi } from "vitest";
 import { isRecord, isStringArray } from "../src/guards.ts";
 import { writeHybridStatus } from "../src/hybrid-status.ts";
 import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
+import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
+import { runContext, TEST_MEMORY } from "./lint-cli-helpers.ts";
 
 /** One engine child as a recording fake bin saw it. */
 interface RecordedChild {
@@ -203,6 +205,24 @@ describe("runLint oxfmt pass", () => {
 		expect(ranOxfmt).toStrictEqual([false, false, false]);
 	});
 
+	it("warns and formats the run's targets when the ESLint ignores cannot be resolved", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		// The fake ESLint has no config loader and no entry point, so the
+		// ignore helper fails.
+		const { directory } = oxfmtFixture(onTestFinished);
+		const formatted = plan(parseArguments([], {}), runContext(directory, { mutate: true }), {
+			format: true,
+			memory: TEST_MEMORY,
+		}).eager.format;
+
+		expect(formatted!.paths).toStrictEqual(["."]);
+		expect(formatted!.notice).toMatch(/could not resolve the ESLint ignores/);
+	});
+
 	it("errors clearly when oxfmt is not installed", async ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
@@ -211,5 +231,98 @@ describe("runLint oxfmt pass", () => {
 		await expect(runLint(["--no-oxlint-type-aware"], directory, {})).rejects.toThrow(
 			/oxfmt is not installed/,
 		);
+	});
+});
+
+/**
+ * A project with a real ESLint config (resolved from this repository's ESLint)
+ * that ignores `generated/**` and matches only TS and `.mjs` files.
+ *
+ * @param onTestFinished - Registers the cleanup.
+ * @returns The fixture root.
+ */
+function eslintIgnoreFixture(onTestFinished: TestContext["onTestFinished"]): string {
+	const directory = fs.realpathSync(
+		fs.mkdtempSync(path.join(os.tmpdir(), "lint-cli-oxfmt-ignored-")),
+	);
+	onTestFinished(() => {
+		fs.rmSync(directory, { force: true, recursive: true });
+	});
+
+	fs.writeFileSync(
+		path.join(directory, "eslint.config.mjs"),
+		'export default [{ files: ["**/*.{ts,mjs}"], rules: {} }, { ignores: ["generated/**"] }];\n',
+	);
+	fs.writeFileSync(path.join(directory, "oxfmt.config.ts"), "export default {};\n");
+	fs.mkdirSync(path.join(directory, "src"));
+	fs.mkdirSync(path.join(directory, "generated"));
+	fs.writeFileSync(path.join(directory, "src", "a.ts"), "export const a = 1;\n");
+	fs.writeFileSync(path.join(directory, "generated", "b.ts"), "export const b = 1;\n");
+	// No config matches it, so ESLint does not lint it.
+	fs.writeFileSync(path.join(directory, "notes.txt"), "notes\n");
+	writeHybridStatus(directory, true);
+	return directory;
+}
+
+function formatPaths(directory: string, argv: Array<string>, mutate: boolean): Array<string> {
+	const formatted = plan(parseArguments(argv, {}), runContext(directory, { mutate }), {
+		format: true,
+		memory: TEST_MEMORY,
+	}).eager.format;
+	if (formatted === undefined || formatted.notice !== undefined) {
+		throw new Error("expected filtered oxfmt targets");
+	}
+
+	return formatted.paths.toSorted();
+}
+
+describe("oxfmt targets", () => {
+	it("passes only the files ESLint lints", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = eslintIgnoreFixture(onTestFinished);
+
+		expect(formatPaths(directory, [], true)).toStrictEqual([
+			"eslint.config.mjs",
+			"oxfmt.config.ts",
+			"src/a.ts",
+		]);
+	});
+
+	it("filters with --no-cache and with --print as well", ({ expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		const directory = eslintIgnoreFixture(onTestFinished);
+		const expected = ["eslint.config.mjs", "oxfmt.config.ts", "src/a.ts"];
+
+		expect(formatPaths(directory, ["--no-cache"], true)).toStrictEqual(expected);
+		expect(formatPaths(directory, [], false)).toStrictEqual(expected);
+	});
+
+	it("narrows explicit targets the same way", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = eslintIgnoreFixture(onTestFinished);
+
+		expect(formatPaths(directory, ["src", "generated", "notes.txt"], true)).toStrictEqual([
+			"src/a.ts",
+		]);
+	});
+
+	it("runs no oxfmt child when ESLint ignores every target", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = eslintIgnoreFixture(onTestFinished);
+		const write = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+		onTestFinished(() => {
+			write.mockRestore();
+		});
+		await runLint(["--print", "generated/b.ts", "notes.txt"], directory, {});
+		const printed = write.mock.calls.map((call) => String(call[0])).join("");
+
+		expect(printed).not.toContain("oxfmt");
 	});
 });
