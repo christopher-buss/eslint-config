@@ -124,7 +124,6 @@
 		"globals": "catalog:prod",
 		"jiti": "catalog:prod",
 		"jsonc-eslint-parser": "catalog:prod",
-		"local-pkg": "catalog:prod",
 		"oxfmt": "catalog:prod",
 		"oxlint-plugin-eslint": "catalog:prod",
 		"oxlint-plugin-oxlint-comments": "catalog:prod",

@@ -123,7 +123,6 @@ catalogs:
     globals: 17.14.0
     jiti: 2.7.0
     jsonc-eslint-parser: 3.3.0
-    local-pkg: 2.0.0
     oxfmt: 0.78.0
     oxlint-plugin-eslint: 1.93.0
     oxlint-plugin-oxlint-comments: 0.1.0
