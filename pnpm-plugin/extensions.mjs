@@ -139,6 +139,12 @@ export const packageExtensions = [
 		},
 	},
 	{
+		name: "eslint-plugin-antfu",
+		// The 3.3.x build keeps a bare side-effect import of a dev-only type
+		// package. It binds nothing, and the target has no global augmentations.
+		ignore: ["@typescript-eslint/utils"],
+	},
+	{
 		name: "eslint-plugin-jsdoc",
 		dependencies: {
 			"@eslint/core": "^1",
