@@ -27,6 +27,7 @@ export function nodeRules({ nodeMajor }: NodeRuleOptions = {}): TypedFlatConfigI
 		"node/no-path-concat": "error",
 		"node/prefer-global/buffer": ["error", "never"],
 		"node/prefer-global/process": ["error", "never"],
+		"node/prefer-import/assert-strict": "error",
 		"node/prefer-node-protocol": "error",
 		"node/process-exit-as-throw": "error",
 		"unicorn/no-unsafe-sqlite-interpolation": "error",

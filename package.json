@@ -180,7 +180,7 @@
 		"eslint-plugin-eslint-plugin": "^7.5.0",
 		"eslint-plugin-jest": "^29.15.0",
 		"eslint-plugin-jest-extended": "^3.0.0",
-		"eslint-plugin-n": "^17.0.0 || ^18.0.0",
+		"eslint-plugin-n": "^18.3.0",
 		"eslint-plugin-project-structure": "^3.14.0",
 		"eslint-plugin-react-jsx": "^5.10.0",
 		"eslint-plugin-react-naming-convention": "^5.10.0",
