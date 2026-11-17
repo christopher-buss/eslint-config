@@ -1,4 +1,3 @@
-import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
 import { oxlintNativeRuleNames } from "../src/generated/oxlint-native.ts";
@@ -12,6 +11,7 @@ import {
 	translateRuleToOxlint,
 } from "../src/oxlint/index.ts";
 import type { OxlintConfig } from "../src/oxlint/index.ts";
+import { isPackageInstalled } from "../src/resolve-package.ts";
 import type { Severity } from "./oxlint-helpers.ts";
 import {
 	effectiveEslintRules,
@@ -734,7 +734,7 @@ describe("oxlint jsPlugin type-awareness", () => {
 			for (const [prefix, specifier] of registered) {
 				const packageName = oxlintJsPlugins[prefix]!;
 
-				expect(isPackageExists(packageName), `${packageName} should be installed`).toBe(
+				expect(isPackageInstalled(packageName), `${packageName} should be installed`).toBe(
 					true,
 				);
 
