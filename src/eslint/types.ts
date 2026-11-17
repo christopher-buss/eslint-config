@@ -161,7 +161,11 @@ export interface OptionsTypeScriptParserOptions {
 	 * Globs of files to allow running with the default project compiler options
 	 * despite not being matched by the project service.
 	 *
-	 * @default ["*.js", "*.ts", ".*.js", ".*.ts"]
+	 * Outside roblox the default leaves out `*.ts`, because the
+	 * `@isentinel/tsconfig` `include` covers root-level `.ts` files. Set this
+	 * when your tsconfig does not include them.
+	 *
+	 * @default ["*.js", ".*.js", ".*.ts"] (roblox: ["*.js", "*.ts", ".*.js", ".*.ts"])
 	 */
 	outOfProjectFiles?: Array<string>;
 
@@ -241,7 +245,7 @@ export interface PerfectionistConfig {
  *
  * Upstream derives its own type from a Zod schema, so importing it would put
  * `zod` in the published declarations — and `@eslint-react/shared` itself,
- * which is a build-time dependency consumers never install. The shape is six
+ * which is a build-time dependency consumers never install. The shape is seven
  * optional primitives, so restating it costs nothing.
  * `test/react-settings.spec.ts` fails if the two ever drift apart.
  */
@@ -251,6 +255,11 @@ export interface ReactSettings {
 	 * `useEffect` and friends.
 	 */
 	additionalEffectHooks?: string;
+	/**
+	 * A pattern matching custom hooks to treat as ref hooks, alongside
+	 * `useRef`.
+	 */
+	additionalRefHooks?: string;
 	/**
 	 * A pattern matching custom hooks to treat as state hooks, alongside
 	 * `useState` and friends.

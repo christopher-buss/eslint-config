@@ -65,10 +65,10 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 		"Oxlint's native port does not check members of declare namespace / declare module blocks in .d.ts files (https://github.com/oxc-project/oxc/issues/27469)",
 	"type-aware jsPlugin rules":
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): flawless/no-ignored-return, flawless/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
+	"unicorn/* (optionally type-aware)":
+		"Seven unicorn rules (no-invalid-well-known-symbol-methods, no-unnecessary-parameters, no-useless-coercion, prefer-abort-signal-any, prefer-combined-guards, prefer-has-check, prefer-then-catch) run without type information but report more with it, and oxlint has no native port, so they stay in ESLint (see optionallyTypeAwareRules). prefer-default-parameters, prefer-logical-operator-over-ternary and prefer-ternary also read types, but run as native oxlint rules",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
-	"unicorn/no-useless-coercion":
-		"Optionally type-aware: values whose type is only known through TypeScript (a `string`-typed parameter, say) are missed without parser services, so it stays in ESLint (see optionallyTypeAwareRules)",
 	"vitest/prefer-each":
 		"Oxlint's native port ignores where test functions are imported from, so it reports loops over non-vitest helpers and misses aliased imports (https://github.com/oxc-project/oxc/issues/27471)",
 };

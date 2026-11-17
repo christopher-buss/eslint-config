@@ -347,6 +347,21 @@ describe("type-aware split", () => {
 		expect(slowEffective.has("no-console")).toBe(true);
 	});
 
+	// These rules run without a TypeScript program but report less without
+	// one, so the fast pass would miss reports the full config makes. The
+	// first has no native oxlint port; the second does.
+	it.for(["unicorn/prefer-combined-guards", "unicorn/prefer-ternary"])(
+		"should run optionally type-aware %s in the type-aware pass",
+		async (rule, { expect }) => {
+			expect.assertions(2);
+
+			const { fast, slow } = await buildSplitConfigs(baseOptions);
+
+			expect(effectiveEslintRules(fast, "src/services/service.ts").has(rule)).toBe(false);
+			expect(effectiveEslintRules(slow, "src/services/service.ts").has(rule)).toBe(true);
+		},
+	);
+
 	it("should register every JS/TS plugin in both passes", async ({ expect }) => {
 		expect.assertions(1);
 

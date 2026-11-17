@@ -7,6 +7,17 @@
 		":configMigration",
 		"security:minimumReleaseAgeNpm"
 	],
+	"ignorePaths": [
+		"**/node_modules/**",
+		"**/bower_components/**",
+		"**/vendor/**",
+		"**/examples/**",
+		"**/__tests__/**",
+		"**/test/**",
+		"**/tests/**",
+		"**/__fixtures__/**",
+		"fixtures/**"
+	],
 	"vulnerabilityAlerts": {
 		"enabled": true
 	},
@@ -55,6 +66,12 @@
 			],
 			"groupName": "oxlint monorepo",
 			"groupSlug": "oxlint-monorepo"
+		},
+		{
+			"description": "eslint-plugin-oxfmt pins a minimum oxfmt, so update them together",
+			"matchPackageNames": ["oxfmt", "eslint-plugin-oxfmt"],
+			"groupName": "oxfmt",
+			"groupSlug": "oxfmt"
 		},
 		{
 			"matchPackageNames": ["hk", "jdx/hk"],

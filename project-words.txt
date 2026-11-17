@@ -10,6 +10,7 @@ editmsg
 ependencies
 extglob
 fdir
+feff
 fromcharcode
 ghsas
 gypfile

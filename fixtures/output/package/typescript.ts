@@ -28,11 +28,7 @@ const isNull = neverReassigned == null;
  * @param value
  */
 function checkValue(value: number): string {
-	if (value > 0) {
-		return "positive";
-	}
- 
-		return "non-positive";
+	return value > 0 ? "positive" : "non-positive";
 	
 }
 
@@ -319,11 +315,7 @@ function consistentDestructure(options: { a: number; b: number }): number {
  * @param condition
  */
 function preferTernary(condition: boolean): string {
-	if (condition) {
-		return "yes";
-	}
-
-	return "no";
+	return condition ? "yes" : "no";
 }
 
 // Fixable: ts/no-unnecessary-template-expression

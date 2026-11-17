@@ -3,7 +3,10 @@ import type { ESLintReactSettings } from "@eslint-react/shared";
 
 import { describe, it } from "vitest";
 
+import { react } from "../src/eslint/configs/react.ts";
 import type { ReactSettings } from "../src/eslint/types.ts";
+import { oxlintReact } from "../src/oxlint/configs/react.ts";
+import { reactSettings } from "../src/rules/react.ts";
 
 /**
  * Whether two types are identical, rather than merely assignable to each other.
@@ -33,6 +36,15 @@ type Identical<Left, Right> =
 type CheckedReactSettings =
 	Identical<ReactSettings, ESLintReactSettings> extends true ? ReactSettings : never;
 
+function findReactXSettings(configs: ReadonlyArray<{ settings?: object }>): unknown {
+	const settings = configs.map((config) => config.settings).find((value) => value !== undefined);
+	if (settings === undefined || !("react-x" in settings)) {
+		throw new Error("No react-x settings were generated");
+	}
+
+	return settings["react-x"];
+}
+
 describe("react settings", () => {
 	it("documents the defaults upstream actually ships", ({ expect }) => {
 		expect.assertions(1);
@@ -55,6 +67,7 @@ describe("react settings", () => {
 		// validator accepts what our type describes.
 		const settings: CheckedReactSettings = {
 			additionalEffectHooks: "^useAsyncEffect$",
+			additionalRefHooks: "^useLocalRef$",
 			additionalStateHooks: "^useLocalState$",
 			compilationMode: "annotation",
 			importSource: "@rbxts",
@@ -63,5 +76,28 @@ describe("react settings", () => {
 		};
 
 		expect(isESLintReactSettings(settings)).toBe(true);
+	});
+
+	it("applies the roblox-ts defaults", ({ expect }) => {
+		expect.assertions(1);
+
+		expect(reactSettings()).toStrictEqual({
+			importSource: "@rbxts",
+			version: "17.0.2",
+		});
+	});
+
+	it("forwards user settings to both engines", async ({ expect }) => {
+		expect.assertions(2);
+
+		const options = {
+			additionalRefHooks: "/^use(Latest|Composed)Ref$/u",
+			additionalStateHooks: "useLocalState",
+		};
+		const eslintConfigs = await react({ ...options, stylistic: false, typeAware: false });
+		const expected = { ...options, importSource: "@rbxts", version: "17.0.2" };
+
+		expect(findReactXSettings(eslintConfigs)).toStrictEqual(expected);
+		expect(findReactXSettings(oxlintReact(options))).toStrictEqual(expected);
 	});
 });

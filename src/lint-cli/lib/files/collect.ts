@@ -47,14 +47,14 @@ const TYPE_AWARE_EXTENSION_SET = new Set<string>(
 /**
  * The repository file lists a run needs, all derived from one `git ls-files`.
  */
-export interface RepoFiles {
+export interface RepositoryFiles {
 	/** Absolute paths of every cache-busting file (whole project). */
 	bustFiles: Array<string>;
 	/**
-	 * The flat-config entry-point subset of {@link RepoFiles.bustFiles} — the
-	 * files whose change should invalidate a config-derived signal (the hybrid
-	 * status and the config-drift hash). Derived once here so consumers do not
-	 * each re-filter `bustFiles`.
+	 * The flat-config entry points among {@link RepositoryFiles.bustFiles}:
+	 * the files whose change should invalidate a config-derived signal (the
+	 * hybrid status and the config-drift hash). Derived once here so
+	 * consumers do not each re-filter `bustFiles`.
 	 */
 	configFiles: Array<string>;
 	/** Absolute paths of the lintable files within the lint targets. */
@@ -68,7 +68,10 @@ export interface RepoFiles {
 	 * it hands them to its fix child as they stand.
 	 */
 	outsideCwdTargets: Array<string>;
-	/** The type-aware (TS/JS-family) subset of {@link RepoFiles.lintable}. */
+	/**
+	 * The type-aware (TS/JS-family) subset of
+	 * {@link RepositoryFiles.lintable}.
+	 */
 	typeAware: Array<string>;
 }
 
@@ -83,7 +86,7 @@ export interface RepoFiles {
  * @param targets - The lint target paths that restrict the lintable set.
  * @returns The cache-bust, lintable and type-aware file lists.
  */
-export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles {
+export function collectRepositoryFiles(cwd: string, targets: Array<string>): RepositoryFiles {
 	const relatives = listFiles(cwd, ["."]);
 	const isBustFile = picomatch([...CACHE_BUST_PATTERNS], { dot: true });
 	const normalizedTargets = targets.map((target) => normalizeTarget(target, cwd));
@@ -100,12 +103,14 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
 			bustFiles.push(path.resolve(cwd, relative));
 		}
 
-		if (isWithinTargets(relative) && hasLintableExtension(relative)) {
-			const absolute = path.resolve(cwd, relative);
-			lintable.push(absolute);
-			if (isTypeAwareFile(relative)) {
-				typeAware.push(absolute);
-			}
+		if (!isWithinTargets(relative) || !hasLintableExtension(relative)) {
+			continue;
+		}
+
+		const absolute = path.resolve(cwd, relative);
+		lintable.push(absolute);
+		if (isTypeAwareFile(relative)) {
+			typeAware.push(absolute);
 		}
 	}
 
@@ -120,16 +125,19 @@ export function collectRepoFiles(cwd: string, targets: Array<string>): RepoFiles
  *
  * Only the `lintable` and `typeAware` lists are lint targets. The `bustFiles`
  * and `configFiles` lists are whole-project cache-bust inputs — a tsconfig or
- * lockfile is never linted, so filtering them by "would ESLint lint this" would
- * empty them. Any list added to {@link RepoFiles} later has to make that same
- * choice here, which is why this lives beside the type rather than at the call
- * site.
+ * lockfile is never linted, so filtering them by "would ESLint lint this"
+ * would empty them. Any list added to {@link RepositoryFiles} later has to
+ * make that same choice here, which is why this lives beside the type rather
+ * than at the call site.
  *
  * @param files - The collected repository files.
  * @param ignored - The ignored set from `resolveIgnoredFiles` (normalized keys).
  * @returns The listing with its target lists filtered.
  */
-export function withoutIgnored(files: RepoFiles, ignored: ReadonlySet<string>): RepoFiles {
+export function withoutIgnored(
+	files: RepositoryFiles,
+	ignored: ReadonlySet<string>,
+): RepositoryFiles {
 	return {
 		...files,
 		lintable: retained(files.lintable, ignored),

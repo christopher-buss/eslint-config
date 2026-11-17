@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
+exports[`config snapshots > minimal > should match the config snapshot 1`] = `
 [
   {
     "name": "isentinel/small-rules/setup",
@@ -45,6 +45,15 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "eslint-comments/no-unlimited-disable",
       "eslint-comments/no-unused-enable",
       "eslint-comments/require-description [{"ignore":["eslint-enable"]}]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/eslint/comments/coverage",
+    "rules": [
+      "eslint-comments/require-description [{"additionalDirectives":["c8 ignore","cov ignore","istanbul ignore","v8 ignore"],"ignore":["eslint-enable"]}]",
     ],
   },
   {
@@ -640,7 +649,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "ts/no-generated-empty-object-type",
       "ts/no-implied-eval",
       "ts/no-meaningless-void-operator",
-      "ts/no-misused-promises",
+      "ts/no-misused-promises [{"checksConditionals":{"flagUnions":"strict"}}]",
       "ts/no-misused-spread",
       "ts/no-mixed-enums",
       "ts/no-redundant-type-constituents",
@@ -742,6 +751,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "unicorn/no-single-promise-in-promise-methods",
       "unicorn/no-static-only-class",
       "unicorn/no-subtraction-comparison",
+      "unicorn/no-unnecessary-parameters",
       "unicorn/no-unreadable-array-destructuring",
       "unicorn/no-unreadable-for-of-expression",
       "unicorn/no-unreadable-new-expression",
@@ -758,18 +768,22 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "unicorn/no-useless-undefined [{"checkArguments":false}]",
       "unicorn/number-literal-case",
       "unicorn/operator-assignment",
+      "unicorn/prefer-combined-guards",
       "unicorn/prefer-continue",
       "unicorn/prefer-default-parameters",
       "unicorn/prefer-direct-iteration",
       "unicorn/prefer-else-if",
+      "unicorn/prefer-escaped-irregular-whitespace",
       "unicorn/prefer-export-from",
       "unicorn/prefer-has-check",
       "unicorn/prefer-hoisting-branch-code",
       "unicorn/prefer-identifier-import-export-specifiers",
       "unicorn/prefer-includes",
+      "unicorn/prefer-literal-ascii",
       "unicorn/prefer-logical-operator-over-ternary",
       "unicorn/prefer-optional-catch-binding",
       "unicorn/prefer-set-has",
+      "unicorn/prefer-short-escape-sequences",
       "unicorn/prefer-simple-condition-first",
       "unicorn/prefer-simplified-conditions",
       "unicorn/prefer-single-call",
@@ -1027,6 +1041,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
       "-style/spaced-comment",
       "yaml/block-sequence",
       "yaml/file-extension",
+      "yaml/no-boolean-key",
       "yaml/no-empty-key",
       "yaml/no-empty-sequence-entry",
       "yaml/no-irregular-whitespace",
@@ -1322,7 +1337,7 @@ exports[`config snapshots > 'minimal' > should match the config snapshot 1`] = `
 ]
 `;
 
-exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
+exports[`config snapshots > package > should match the config snapshot 1`] = `
 [
   {
     "name": "isentinel/small-rules/setup",
@@ -1373,6 +1388,15 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "eslint-comments/require-description [{"ignore":["eslint-enable"]}]",
       "no-inline-comments",
       "style/multiline-comment-style ["separate-lines"]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/eslint/comments/coverage",
+    "rules": [
+      "eslint-comments/require-description [{"additionalDirectives":["c8 ignore","cov ignore","istanbul ignore","v8 ignore"],"ignore":["eslint-enable"]}]",
     ],
   },
   {
@@ -2021,7 +2045,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "ts/no-generated-empty-object-type",
       "ts/no-implied-eval",
       "ts/no-meaningless-void-operator",
-      "ts/no-misused-promises",
+      "ts/no-misused-promises [{"checksConditionals":{"flagUnions":"strict"}}]",
       "ts/no-misused-spread",
       "ts/no-mixed-enums",
       "ts/no-redundant-type-constituents",
@@ -2099,6 +2123,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/no-array-concat-in-loop",
       "unicorn/no-array-fill-with-reference-type",
       "unicorn/no-array-sort-for-min-max",
+      "unicorn/no-async-iterator-callback",
       "unicorn/no-async-promise-finally",
       "unicorn/no-await-expression-member",
       "unicorn/no-boolean-sort-comparator",
@@ -2117,8 +2142,14 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/no-global-object-property-assignment",
       "unicorn/no-immediate-mutation",
       "unicorn/no-impossible-length-comparison",
+      "unicorn/no-incomplete-accessor-override",
       "unicorn/no-incorrect-template-string-interpolation",
       "unicorn/no-invalid-character-comparison",
+      "unicorn/no-invalid-intl-options",
+      "unicorn/no-invalid-property-descriptor",
+      "unicorn/no-invalid-response-options",
+      "unicorn/no-invalid-temporal-arithmetic",
+      "unicorn/no-invalid-url-protocol-comparison",
       "unicorn/no-invalid-well-known-symbol-methods",
       "unicorn/no-keyword-prefix",
       "unicorn/no-lonely-if",
@@ -2137,13 +2168,17 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/no-subtraction-comparison",
       "unicorn/no-unnecessary-fetch-options",
       "unicorn/no-unnecessary-global-this",
+      "unicorn/no-unnecessary-parameters",
       "unicorn/no-unnecessary-string-trim",
       "unicorn/no-unreadable-array-destructuring",
       "unicorn/no-unreadable-for-of-expression",
       "unicorn/no-unreadable-new-expression",
+      "unicorn/no-unsafe-json-serialization",
       "unicorn/no-unsafe-property-key",
       "unicorn/no-unsafe-string-replacement",
+      "unicorn/no-unused-iterator-helper",
       "unicorn/no-unused-properties",
+      "unicorn/no-url-in-search-params",
       "unicorn/no-useless-coercion",
       "unicorn/no-useless-collection-argument",
       "unicorn/no-useless-compound-assignment",
@@ -2154,7 +2189,9 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/no-useless-promise-resolve-reject",
       "unicorn/no-useless-re-export",
       "unicorn/no-useless-recursion",
+      "unicorn/no-useless-set-construction",
       "unicorn/no-useless-undefined [{"checkArguments":false}]",
+      "unicorn/no-using-resource-escape",
       "unicorn/no-xor-as-exponentiation",
       "unicorn/number-literal-case",
       "unicorn/operator-assignment",
@@ -2165,10 +2202,12 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/prefer-array-iterable-methods",
       "unicorn/prefer-array-slice",
       "unicorn/prefer-block-statement-over-iife",
+      "unicorn/prefer-combined-guards",
       "unicorn/prefer-continue",
       "unicorn/prefer-default-parameters",
       "unicorn/prefer-direct-iteration",
       "unicorn/prefer-else-if",
+      "unicorn/prefer-escaped-irregular-whitespace",
       "unicorn/prefer-export-from",
       "unicorn/prefer-flat-math-min-max",
       "unicorn/prefer-global-number-constants",
@@ -2178,10 +2217,12 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/prefer-identifier-import-export-specifiers",
       "unicorn/prefer-includes",
       "unicorn/prefer-iterator-helpers",
+      "unicorn/prefer-literal-ascii",
       "unicorn/prefer-logical-operator-over-ternary",
       "unicorn/prefer-math-constants",
       "unicorn/prefer-optional-catch-binding",
       "unicorn/prefer-set-has",
+      "unicorn/prefer-short-escape-sequences",
       "unicorn/prefer-simple-condition-first",
       "unicorn/prefer-simplified-conditions",
       "unicorn/prefer-single-call",
@@ -2190,10 +2231,12 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "unicorn/prefer-string-pad-start-end",
       "unicorn/prefer-string-repeat",
       "unicorn/prefer-switch",
+      "unicorn/prefer-temporal-conversion",
       "unicorn/prefer-ternary ["only-single-line"]",
       "unicorn/prefer-then-catch",
       "unicorn/prefer-unary-minus",
       "unicorn/require-passive-events",
+      "unicorn/require-text-decoder-streaming",
       "unicorn/switch-case-braces",
       "unicorn/throw-new-error",
     ],
@@ -2234,7 +2277,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "jsdoc/check-param-names (warn) [{"checkDestructured":false}]",
       "jsdoc/check-property-names (warn)",
       "jsdoc/check-types (warn)",
-      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
+      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","cov ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
       "jsdoc/empty-tags (warn)",
       "jsdoc/implements-on-classes (warn)",
       "jsdoc/informative-docs (warn)",
@@ -2305,6 +2348,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     "name": "isentinel/node/rules",
     "plugins": [
       "node",
+      "unicorn",
     ],
     "rules": [
       "node/handle-callback-err ["^(err|error)$"]",
@@ -2314,8 +2358,11 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "node/no-path-concat",
       "node/prefer-global/buffer ["never"]",
       "node/prefer-global/process ["never"]",
+      "node/prefer-import/assert-strict",
       "node/prefer-node-protocol",
       "node/process-exit-as-throw",
+      "unicorn/no-unsafe-sqlite-interpolation",
+      "unicorn/prefer-json-import",
     ],
   },
   {
@@ -2679,6 +2726,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "yaml/flow-sequence-bracket-newline",
       "yaml/flow-sequence-bracket-spacing",
       "yaml/key-spacing",
+      "yaml/no-boolean-key",
       "yaml/no-empty-key",
       "yaml/no-empty-sequence-entry",
       "yaml/no-irregular-whitespace",
@@ -3424,7 +3472,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3792,7 +3840,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3805,7 +3853,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3817,7 +3865,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3829,7 +3877,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3841,7 +3889,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3850,7 +3898,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3862,7 +3910,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3871,7 +3919,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3880,7 +3928,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3889,7 +3937,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3991,7 +4039,7 @@ exports[`config snapshots > 'package' > should match the config snapshot 1`] = `
 ]
 `;
 
-exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`] = `
+exports[`config snapshots > roblox-game > should match the config snapshot 1`] = `
 [
   {
     "name": "isentinel/small-rules/setup",
@@ -4042,6 +4090,15 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "eslint-comments/require-description [{"ignore":["eslint-enable"]}]",
       "no-inline-comments",
       "style/multiline-comment-style ["separate-lines"]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/eslint/comments/coverage",
+    "rules": [
+      "eslint-comments/require-description [{"additionalDirectives":["c8 ignore","cov ignore","istanbul ignore","v8 ignore"],"ignore":["eslint-enable"]}]",
     ],
   },
   {
@@ -4668,7 +4725,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "ts/no-generated-empty-object-type",
       "ts/no-implied-eval",
       "ts/no-meaningless-void-operator",
-      "ts/no-misused-promises",
+      "ts/no-misused-promises [{"checksConditionals":{"flagUnions":"strict"}}]",
       "ts/no-misused-spread",
       "ts/no-mixed-enums",
       "ts/no-redundant-type-constituents",
@@ -4770,6 +4827,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "unicorn/no-single-promise-in-promise-methods",
       "unicorn/no-static-only-class",
       "unicorn/no-subtraction-comparison",
+      "unicorn/no-unnecessary-parameters",
       "unicorn/no-unreadable-array-destructuring",
       "unicorn/no-unreadable-for-of-expression",
       "unicorn/no-unreadable-new-expression",
@@ -4787,18 +4845,22 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "unicorn/number-literal-case",
       "unicorn/operator-assignment",
       "unicorn/prefer-block-statement-over-iife",
+      "unicorn/prefer-combined-guards",
       "unicorn/prefer-continue",
       "unicorn/prefer-default-parameters",
       "unicorn/prefer-direct-iteration",
       "unicorn/prefer-else-if",
+      "unicorn/prefer-escaped-irregular-whitespace",
       "unicorn/prefer-export-from",
       "unicorn/prefer-has-check",
       "unicorn/prefer-hoisting-branch-code",
       "unicorn/prefer-identifier-import-export-specifiers",
       "unicorn/prefer-includes",
+      "unicorn/prefer-literal-ascii",
       "unicorn/prefer-logical-operator-over-ternary",
       "unicorn/prefer-optional-catch-binding",
       "unicorn/prefer-set-has",
+      "unicorn/prefer-short-escape-sequences",
       "unicorn/prefer-simple-condition-first",
       "unicorn/prefer-simplified-conditions",
       "unicorn/prefer-single-call",
@@ -4845,7 +4907,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "jsdoc/check-param-names (warn) [{"checkDestructured":false}]",
       "jsdoc/check-property-names (warn)",
       "jsdoc/check-types (warn)",
-      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
+      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","cov ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
       "jsdoc/empty-tags (warn)",
       "jsdoc/implements-on-classes (warn)",
       "jsdoc/informative-docs (warn)",
@@ -5262,6 +5324,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "yaml/flow-sequence-bracket-newline",
       "yaml/flow-sequence-bracket-spacing",
       "yaml/key-spacing",
+      "yaml/no-boolean-key",
       "yaml/no-empty-key",
       "yaml/no-empty-sequence-entry",
       "yaml/no-irregular-whitespace",
@@ -6002,7 +6065,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6370,7 +6433,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6383,7 +6446,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6395,7 +6458,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6407,7 +6470,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6419,7 +6482,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6428,7 +6491,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6440,7 +6503,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6449,7 +6512,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6458,7 +6521,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6467,7 +6530,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6569,7 +6632,7 @@ exports[`config snapshots > 'roblox-game' > should match the config snapshot 1`]
 ]
 `;
 
-exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1`] = `
+exports[`config snapshots > scoped-roblox > should match the config snapshot 1`] = `
 [
   {
     "name": "isentinel/small-rules/setup",
@@ -6620,6 +6683,15 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "eslint-comments/require-description [{"ignore":["eslint-enable"]}]",
       "no-inline-comments",
       "style/multiline-comment-style ["separate-lines"]",
+    ],
+  },
+  {
+    "files": [
+      "**/*.{,c,m}[jt]s{,x}",
+    ],
+    "name": "isentinel/eslint/comments/coverage",
+    "rules": [
+      "eslint-comments/require-description [{"additionalDirectives":["c8 ignore","cov ignore","istanbul ignore","v8 ignore"],"ignore":["eslint-enable"]}]",
     ],
   },
   {
@@ -7513,7 +7585,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "ts/no-generated-empty-object-type",
       "ts/no-implied-eval",
       "ts/no-meaningless-void-operator",
-      "ts/no-misused-promises",
+      "ts/no-misused-promises [{"checksConditionals":{"flagUnions":"strict"}}]",
       "ts/no-misused-spread",
       "ts/no-mixed-enums",
       "ts/no-redundant-type-constituents",
@@ -7589,7 +7661,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "ts/no-generated-empty-object-type",
       "ts/no-implied-eval",
       "ts/no-meaningless-void-operator",
-      "ts/no-misused-promises",
+      "ts/no-misused-promises [{"checksConditionals":{"flagUnions":"strict"}}]",
       "ts/no-misused-spread",
       "ts/no-mixed-enums",
       "ts/no-redundant-type-constituents",
@@ -7772,6 +7844,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/no-single-promise-in-promise-methods",
       "unicorn/no-static-only-class",
       "unicorn/no-subtraction-comparison",
+      "unicorn/no-unnecessary-parameters",
       "unicorn/no-unreadable-array-destructuring",
       "unicorn/no-unreadable-for-of-expression",
       "unicorn/no-unreadable-new-expression",
@@ -7789,18 +7862,22 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/number-literal-case",
       "unicorn/operator-assignment",
       "unicorn/prefer-block-statement-over-iife",
+      "unicorn/prefer-combined-guards",
       "unicorn/prefer-continue",
       "unicorn/prefer-default-parameters",
       "unicorn/prefer-direct-iteration",
       "unicorn/prefer-else-if",
+      "unicorn/prefer-escaped-irregular-whitespace",
       "unicorn/prefer-export-from",
       "unicorn/prefer-has-check",
       "unicorn/prefer-hoisting-branch-code",
       "unicorn/prefer-identifier-import-export-specifiers",
       "unicorn/prefer-includes",
+      "unicorn/prefer-literal-ascii",
       "unicorn/prefer-logical-operator-over-ternary",
       "unicorn/prefer-optional-catch-binding",
       "unicorn/prefer-set-has",
+      "unicorn/prefer-short-escape-sequences",
       "unicorn/prefer-simple-condition-first",
       "unicorn/prefer-simplified-conditions",
       "unicorn/prefer-single-call",
@@ -7855,6 +7932,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/no-array-concat-in-loop",
       "unicorn/no-array-fill-with-reference-type",
       "unicorn/no-array-sort-for-min-max",
+      "unicorn/no-async-iterator-callback",
       "unicorn/no-async-promise-finally",
       "unicorn/no-await-expression-member",
       "unicorn/no-boolean-sort-comparator",
@@ -7873,8 +7951,14 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/no-global-object-property-assignment",
       "unicorn/no-immediate-mutation",
       "unicorn/no-impossible-length-comparison",
+      "unicorn/no-incomplete-accessor-override",
       "unicorn/no-incorrect-template-string-interpolation",
       "unicorn/no-invalid-character-comparison",
+      "unicorn/no-invalid-intl-options",
+      "unicorn/no-invalid-property-descriptor",
+      "unicorn/no-invalid-response-options",
+      "unicorn/no-invalid-temporal-arithmetic",
+      "unicorn/no-invalid-url-protocol-comparison",
       "unicorn/no-invalid-well-known-symbol-methods",
       "unicorn/no-keyword-prefix",
       "unicorn/no-lonely-if",
@@ -7893,13 +7977,17 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/no-subtraction-comparison",
       "unicorn/no-unnecessary-fetch-options",
       "unicorn/no-unnecessary-global-this",
+      "unicorn/no-unnecessary-parameters",
       "unicorn/no-unnecessary-string-trim",
       "unicorn/no-unreadable-array-destructuring",
       "unicorn/no-unreadable-for-of-expression",
       "unicorn/no-unreadable-new-expression",
+      "unicorn/no-unsafe-json-serialization",
       "unicorn/no-unsafe-property-key",
       "unicorn/no-unsafe-string-replacement",
+      "unicorn/no-unused-iterator-helper",
       "unicorn/no-unused-properties",
+      "unicorn/no-url-in-search-params",
       "unicorn/no-useless-coercion",
       "unicorn/no-useless-collection-argument",
       "unicorn/no-useless-compound-assignment",
@@ -7910,7 +7998,9 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/no-useless-promise-resolve-reject",
       "unicorn/no-useless-re-export",
       "unicorn/no-useless-recursion",
+      "unicorn/no-useless-set-construction",
       "unicorn/no-useless-undefined [{"checkArguments":false}]",
+      "unicorn/no-using-resource-escape",
       "unicorn/no-xor-as-exponentiation",
       "unicorn/number-literal-case",
       "unicorn/operator-assignment",
@@ -7921,10 +8011,12 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/prefer-array-iterable-methods",
       "unicorn/prefer-array-slice",
       "unicorn/prefer-block-statement-over-iife",
+      "unicorn/prefer-combined-guards",
       "unicorn/prefer-continue",
       "unicorn/prefer-default-parameters",
       "unicorn/prefer-direct-iteration",
       "unicorn/prefer-else-if",
+      "unicorn/prefer-escaped-irregular-whitespace",
       "unicorn/prefer-export-from",
       "unicorn/prefer-flat-math-min-max",
       "unicorn/prefer-global-number-constants",
@@ -7934,10 +8026,12 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/prefer-identifier-import-export-specifiers",
       "unicorn/prefer-includes",
       "unicorn/prefer-iterator-helpers",
+      "unicorn/prefer-literal-ascii",
       "unicorn/prefer-logical-operator-over-ternary",
       "unicorn/prefer-math-constants",
       "unicorn/prefer-optional-catch-binding",
       "unicorn/prefer-set-has",
+      "unicorn/prefer-short-escape-sequences",
       "unicorn/prefer-simple-condition-first",
       "unicorn/prefer-simplified-conditions",
       "unicorn/prefer-single-call",
@@ -7946,10 +8040,12 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "unicorn/prefer-string-pad-start-end",
       "unicorn/prefer-string-repeat",
       "unicorn/prefer-switch",
+      "unicorn/prefer-temporal-conversion",
       "unicorn/prefer-ternary ["only-single-line"]",
       "unicorn/prefer-then-catch",
       "unicorn/prefer-unary-minus",
       "unicorn/require-passive-events",
+      "unicorn/require-text-decoder-streaming",
       "unicorn/switch-case-braces",
       "unicorn/throw-new-error",
     ],
@@ -7991,7 +8087,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "jsdoc/check-param-names (warn) [{"checkDestructured":false}]",
       "jsdoc/check-property-names (warn)",
       "jsdoc/check-types (warn)",
-      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
+      "jsdoc/convert-to-jsdoc-comments (warn) [{"allowedPrefixes":["@ts-","istanbul ","c8 ","v8 ","cov ","eslint","jshint","jslint","globals","exported","jscs","oxlint-","prettier-"]}]",
       "jsdoc/empty-tags (warn)",
       "jsdoc/implements-on-classes (warn)",
       "jsdoc/informative-docs (warn)",
@@ -8065,6 +8161,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     "name": "isentinel/node/rules",
     "plugins": [
       "node",
+      "unicorn",
     ],
     "rules": [
       "node/handle-callback-err ["^(err|error)$"]",
@@ -8074,8 +8171,11 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "node/no-path-concat",
       "node/prefer-global/buffer ["never"]",
       "node/prefer-global/process ["never"]",
+      "node/prefer-import/assert-strict",
       "node/prefer-node-protocol",
       "node/process-exit-as-throw",
+      "unicorn/no-unsafe-sqlite-interpolation",
+      "unicorn/prefer-json-import",
     ],
   },
   {
@@ -8465,6 +8565,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "yaml/flow-sequence-bracket-newline",
       "yaml/flow-sequence-bracket-spacing",
       "yaml/key-spacing",
+      "yaml/no-boolean-key",
       "yaml/no-empty-key",
       "yaml/no-empty-sequence-entry",
       "yaml/no-irregular-whitespace",
@@ -9207,7 +9308,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9575,7 +9676,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9588,7 +9689,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9600,7 +9701,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9612,7 +9713,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9624,7 +9725,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9633,7 +9734,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9645,7 +9746,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9654,7 +9755,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9663,7 +9764,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9672,7 +9773,7 @@ exports[`config snapshots > 'scoped-roblox' > should match the config snapshot 1
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {

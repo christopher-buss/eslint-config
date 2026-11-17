@@ -83,6 +83,21 @@ describe("generated Oxlint routing", () => {
 		},
 	);
 
+	// Optionally type-aware unicorn rules: a jsPlugin has no type information
+	// either, so one without a native port stays in ESLint, while one with a
+	// native port runs there.
+	it("routes optionally type-aware unicorn rules by native availability", ({ expect }) => {
+		expect.assertions(2);
+
+		expect(resolveOxlintRule("unicorn/prefer-combined-guards")).toMatchObject({
+			kind: "eslint-only",
+		});
+		expect(resolveOxlintRule("unicorn/prefer-ternary")).toMatchObject({
+			kind: "native",
+			oxlintName: "unicorn/prefer-ternary",
+		});
+	});
+
 	// Categories can only ever switch native rules back on, so a rule the preset
 	// deliberately disables has to reach the config as an explicit "off" or a
 	// consumer setting `categories` would silently get it back. Native rules

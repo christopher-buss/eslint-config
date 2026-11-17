@@ -9,7 +9,12 @@ import { defineConfig } from "oxlint";
 
 import { GLOB_EXCLUDE, GLOB_SRC } from "../globs.ts";
 import { isRecord } from "../guards.ts";
-import { resolvePrettierSettings, withOxfmtStyle, withOxfmtWidths } from "../prettier-config.ts";
+import {
+	editorConfigOverrides,
+	resolvePrettierSettings,
+	withOxfmtStyle,
+	withOxfmtWidths,
+} from "../prettier-config.ts";
 import { buildOxfmtOptions } from "../rules/oxfmt.ts";
 import { mergeRestrictedDomImportRule } from "../rules/react.ts";
 import type { Rules } from "../types.ts";
@@ -62,6 +67,7 @@ import {
 	createOxlintConfigs,
 	isUnscopedFragment,
 	jsPluginKey,
+	namedNativePlugins,
 	scopeOverridePlugins,
 	stripUnregisteredPluginRules,
 } from "./utils.ts";
@@ -322,7 +328,12 @@ export function isentinel(
 
 	// Node rules cover the complement regardless of the game/package distinction.
 	if (hasComplement) {
-		configs.push(oxlintNode({ excludeFiles: robloxScopedFiles }));
+		configs.push(
+			oxlintNode({
+				excludeFiles: robloxScopedFiles,
+				nodeMajor: resolveNodeMajor(options.settings),
+			}),
+		);
 	}
 
 	if (enableTest !== false) {
@@ -432,6 +443,7 @@ export function isentinel(
 		configs.push(
 			oxlintOxfmt({
 				componentExts: componentExtensions,
+				editorConfigOverrides: editorConfigOverrides(undefined, oxfmtConfigOptions),
 				oxfmtOptions,
 				standalone: formatter === "standalone",
 			}),
@@ -468,11 +480,19 @@ export function isentinel(
 			nativePlugins.add(plugin);
 		}
 
+		// A disable does not list its plugin in `plugins`, but its rule still
+		// counts as registered for native-only stripping.
+		for (const plugin of namedNativePlugins(config.rules)) {
+			nativePlugins.add(plugin);
+		}
+
 		// A fragment covering the whole tree keeps its plugins at the top level,
 		// where `categories` reaches them; a narrower one carries them on its
 		// own override instead. Registering a plugin project-wide is what opts
 		// it into a consumer's categories, so a hand-written `plugins` entry on
-		// a whole-tree fragment stays the way to ask for that.
+		// a whole-tree fragment stays the way to ask for that. Generated
+		// fragments list only plugins with an enabled rule, so a plugin named
+		// only by disables is not hoisted.
 		if (isUnscopedFragment(config)) {
 			for (const plugin of fragmentPlugins) {
 				globalPlugins.add(plugin);

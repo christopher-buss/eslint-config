@@ -4,7 +4,6 @@ import type { ParserOptions } from "@typescript-eslint/parser";
 import type { Linter } from "eslint";
 import { findUp, findUpSync } from "find-up-simple";
 import { getStaticJSONValue, parseJSON } from "jsonc-eslint-parser";
-import { isPackageExists } from "local-pkg";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -20,6 +19,7 @@ import { isRecord, isStringArray } from "./guards.ts";
 import { editorConfigOverrides } from "./prettier-config.ts";
 import type { EditorConfigOverride } from "./prettier-config.ts";
 import { QUIET_WARNINGS_ENV } from "./quiet-warnings.ts";
+import { isPackageInstalled } from "./resolve-package.ts";
 import type { Awaitable, TypedFlatConfigItem } from "./types.ts";
 
 export type ExtractRuleOptions<T> = T extends Linter.RuleEntry<infer U> ? U : never;
@@ -115,6 +115,20 @@ export async function combine(
 	return resolved.flat();
 }
 
+/**
+ * Default `allowDefaultProject` globs for roblox projects. Their tsconfig
+ * roots at `src`, so root-level `.ts` files are always out of project.
+ */
+export const ROBLOX_OUT_OF_PROJECT_FILES = ["*.js", "*.ts", ".*.js", ".*.ts"];
+
+/**
+ * Default `allowDefaultProject` globs outside roblox. The `@isentinel/tsconfig`
+ * `include` covers root-level `.ts` files, and typescript-eslint rejects a
+ * file that is both in project and in `allowDefaultProject`. Dotfiles and
+ * `.js` files stay out of project.
+ */
+export const OUT_OF_PROJECT_FILES = ["*.js", ".*.js", ".*.ts"];
+
 export function createTsParser({
 	componentExtensions = [],
 	configName,
@@ -154,12 +168,8 @@ export function createTsParser({
 				...(typeAware
 					? {
 							projectService: {
-								allowDefaultProject: outOfProjectFiles ?? [
-									"*.js",
-									"*.ts",
-									".*.js",
-									".*.ts",
-								],
+								allowDefaultProject:
+									outOfProjectFiles ?? ROBLOX_OUT_OF_PROJECT_FILES,
 								defaultProject: tsconfigPath,
 							},
 							tsconfigRootDir: process.cwd(),
@@ -187,12 +197,11 @@ export const TYPE_AWARE_BACKENDS = ["tsrs", "oxlint-tsgolint"] as const;
  * Whether a type-aware Oxlint backend is installed: `tsrs` (its `tsrs-lint`
  * binary) or `oxlint-tsgolint`.
  *
- * @param paths - Directories to resolve from. Defaults to the process cwd.
+ * @param cwd - The directory to resolve from. Defaults to the process cwd.
  * @returns Whether either backend is resolvable.
  */
-export function hasTypeAwareBackend(paths?: Array<string>): boolean {
-	const options = paths === undefined ? undefined : { paths };
-	return TYPE_AWARE_BACKENDS.some((name) => isPackageExists(name, options));
+export function hasTypeAwareBackend(cwd: string = process.cwd()): boolean {
+	return TYPE_AWARE_BACKENDS.some((name) => isPackageInstalled(name, cwd));
 }
 
 export async function ensurePackages(packages: Array<string | undefined>): Promise<void> {
@@ -201,7 +210,7 @@ export async function ensurePackages(packages: Array<string | undefined>): Promi
 	}
 
 	const nonExistingPackages = packages.filter(
-		(index): index is string => index !== undefined && !isPackageExists(index),
+		(index): index is string => index !== undefined && !isPackageInstalled(index),
 	);
 	if (nonExistingPackages.length === 0) {
 		return;
@@ -488,11 +497,7 @@ export function isInEditorEnvironment(environment: NodeJS.ProcessEnv = process.e
 		return explicitValue === "true" || explicitValue === "1";
 	}
 
-	if (isCi(environment)) {
-		return false;
-	}
-
-	if (isInGitHooksOrLintStaged(environment)) {
+	if (isCi(environment) || isInGitHooksOrLintStaged(environment)) {
 		return false;
 	}
 

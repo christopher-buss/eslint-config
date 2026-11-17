@@ -44,11 +44,7 @@ function isActive(value: null | number): boolean {
  * @param type
  */
 function getLabel(type: string): string {
-	if (type === "submit") {
-		return "Submit";
-	}
- 
-		return "Cancel";
+	return type === "submit" ? "Submit" : "Cancel";
 	
 }
 

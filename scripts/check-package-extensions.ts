@@ -1,7 +1,9 @@
+// cspell:words extensionless
 /**
  * Guards `pnpm-plugin/extensions.mjs` against drift: every module specifier an
- * installed package's shipped declarations import must be declared by that
- * package or covered by a table entry.
+ * installed package's type surface imports must be declared by that package or
+ * covered by a table entry. The surface is what its entry points reach (see
+ * {@link collectSurface}); a declaration nothing loads cannot degrade a type.
  *
  * Deliberately layout-independent. Pnpm disables `enableGlobalVirtualStore` in
  * CI, where the hoisted store hides every under-declaration, so a type-checker
@@ -25,6 +27,22 @@ import { isRecord } from "../src/guards.ts";
  */
 const DECLARATION_PATTERN = /\.d\.(?:[cm])?ts$/u;
 
+/**
+ * A source or runtime extension (`.js`, `.mjs`, `.cts`, ...), whose declaration
+ * sits beside it with the matching `.d.*ts` extension.
+ */
+const SCRIPT_EXTENSION = /\.([cm]?)[jt]s$/u;
+
+/** What an extensionless target may resolve to, tried in order. */
+const EXTENSIONLESS_CANDIDATES = [
+	".d.ts",
+	".d.mts",
+	".d.cts",
+	"/index.d.ts",
+	"/index.d.mts",
+	"/index.d.cts",
+];
+
 /** Directories that never hold shipped declarations, skipped while walking. */
 const SKIPPED_DIRECTORIES = new Set([".bin", ".git", "node_modules"]);
 
@@ -47,6 +65,17 @@ const BUILTINS = new Set([
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDirectory = path.resolve(path.dirname(scriptPath), "..");
+
+/** What a declaration file points at, split by how each target resolves. */
+interface FileSpecifiers {
+	/**
+	 * Files inside the same package: relative or absolute import specifiers,
+	 * and `/// <reference path>` targets.
+	 */
+	localFiles: Array<string>;
+	/** The packages it references, which its manifest has to declare. */
+	packages: Array<string>;
+}
 
 /**
  * Locates an installed dependency the way a resolver would: in a nested
@@ -140,6 +169,50 @@ export function findPublishedDependencies(): Map<string, string> {
 }
 
 /**
+ * Collects the declarations a consumer can load from a package: those its
+ * entry points reach through relative imports and `/// <reference path>`.
+ * Anything else ships in the tarball without being part of the type surface,
+ * so its imports break nothing.
+ *
+ * Falls back to every shipped declaration when the surface is open, or when no
+ * entry point resolves to one — the guard must not go quiet just because a
+ * manifest is laid out in a way this walk does not understand.
+ *
+ * @param directory - The installed package directory.
+ * @param manifest - Its parsed manifest.
+ * @returns The declaration file paths.
+ */
+export function collectSurface(
+	directory: string,
+	manifest: Record<string, unknown>,
+): Array<string> {
+	const entries = entryDeclarations(directory, manifest);
+	if (entries === undefined || entries.length === 0) {
+		return collectDeclarations(directory);
+	}
+
+	const reached = new Set<string>();
+	const queue = [...entries];
+	while (queue.length > 0) {
+		const file = queue.pop();
+		if (file === undefined || reached.has(file)) {
+			continue;
+		}
+
+		reached.add(file);
+
+		for (const specifier of readSpecifiers(file).localFiles) {
+			const declaration = declarationFor(path.resolve(path.dirname(file), specifier));
+			if (declaration !== undefined) {
+				queue.push(declaration);
+			}
+		}
+	}
+
+	return [...reached];
+}
+
+/**
  * Parses the manifest of an installed package.
  *
  * @param directory - The package directory.
@@ -183,30 +256,6 @@ function declaredPackages(manifest: Record<string, unknown>): Set<string> {
 }
 
 /**
- * Reduces a module specifier to the package it resolves from, dropping any
- * subpath (`@typescript-eslint/utils/ts-eslint` → `@typescript-eslint/utils`).
- *
- * @param specifier - A bare module specifier.
- * @returns The portion of it that names an installed package.
- */
-function packageNameOf(specifier: string): string {
-	const segments = specifier.split("/");
-	return specifier.startsWith("@") ? segments.slice(0, 2).join("/") : (segments[0] ?? specifier);
-}
-
-/**
- * The other name that satisfies an import of this package: `foo` and
- * `@types/foo` stand in for each other, since a package either ships its own
- * declarations or has them supplied by DefinitelyTyped.
- *
- * @param name - The name written in the import.
- * @returns The name that also satisfies it.
- */
-function alternateName(name: string): string {
-	return name.startsWith("@types/") ? name.slice("@types/".length) : `@types/${name}`;
-}
-
-/**
  * Collects every declaration file a package ships, ignoring any nested
  * `node_modules`.
  *
@@ -239,33 +288,160 @@ function collectDeclarations(directory: string, found: Array<string> = []): Arra
 }
 
 /**
- * Extracts the packages a declaration file references, from both its import
- * specifiers and its triple-slash type references. TypeScript's own
- * pre-processor is used rather than a pattern: specifiers inside JSDoc code
- * examples otherwise read as real imports.
+ * Maps a file a package points at, at runtime or for types, to the declaration
+ * TypeScript loads for it.
+ *
+ * @param target - The absolute path of the target.
+ * @returns The declaration file, or undefined when none exists.
+ */
+function declarationFor(target: string): string | undefined {
+	let candidates: Array<string>;
+	if (DECLARATION_PATTERN.test(target)) {
+		candidates = [target];
+	} else if (SCRIPT_EXTENSION.test(target)) {
+		candidates = [target.replace(SCRIPT_EXTENSION, ".d.$1ts")];
+	} else {
+		candidates = EXTENSIONLESS_CANDIDATES.map((suffix) => target + suffix);
+	}
+
+	return candidates.find((candidate) => {
+		return statSync(candidate, { throwIfNoEntry: false })?.isFile() === true;
+	});
+}
+
+/**
+ * Collects every string leaf of a manifest field such as `exports`.
+ *
+ * @param value - The field's value.
+ * @param found - The accumulator carried through the recursion.
+ * @returns The strings found at any depth.
+ */
+function stringLeaves(value: unknown, found: Array<string> = []): Array<string> {
+	if (typeof value === "string") {
+		found.push(value);
+	} else if (Array.isArray(value)) {
+		for (const item of value) {
+			stringLeaves(item, found);
+		}
+	} else if (isRecord(value)) {
+		for (const item of Object.values(value)) {
+			stringLeaves(item, found);
+		}
+	}
+
+	return found;
+}
+
+/**
+ * The declarations a package's entry points load directly, or undefined when
+ * its surface is open: without an `exports` map, with a wildcard or folder
+ * subpath, or with `typesVersions`, a consumer can reach any shipped file.
+ *
+ * @param directory - The installed package directory.
+ * @param manifest - Its parsed manifest.
+ * @returns The entry declarations, or undefined for an open surface.
+ */
+function entryDeclarations(
+	directory: string,
+	manifest: Record<string, unknown>,
+): Array<string> | undefined {
+	if (manifest["exports"] === undefined || manifest["typesVersions"] !== undefined) {
+		return undefined;
+	}
+
+	// `imports` targets are reached through `#` specifiers, which the walk
+	// does not follow, so they count as entry points of their own. `main`
+	// counts too: `moduleResolution: node10` ignores `exports` and, without a
+	// `types` field, loads the declaration beside it.
+	const targets = [
+		...stringLeaves(manifest["exports"]),
+		...stringLeaves(manifest["imports"]),
+		...stringLeaves([manifest["types"], manifest["typings"], manifest["main"]]),
+	];
+	if (targets.some((target) => target.includes("*") || target.endsWith("/"))) {
+		return undefined;
+	}
+
+	const entries = new Set<string>();
+	for (const target of targets) {
+		const declaration = declarationFor(path.join(directory, target));
+		if (declaration !== undefined) {
+			entries.add(declaration);
+		}
+	}
+
+	return [...entries];
+}
+
+/**
+ * Reduces a module specifier to the package it resolves from, dropping any
+ * subpath (`@typescript-eslint/utils/ts-eslint` → `@typescript-eslint/utils`).
+ *
+ * @param specifier - A bare module specifier.
+ * @returns The portion of it that names an installed package.
+ */
+function packageNameOf(specifier: string): string {
+	const segments = specifier.split("/");
+	return specifier.startsWith("@") ? segments.slice(0, 2).join("/") : (segments[0] ?? specifier);
+}
+
+/**
+ * The other name that satisfies an import of this package: `foo` and
+ * `@types/foo` stand in for each other, since a package either ships its own
+ * declarations or has them supplied by DefinitelyTyped.
+ *
+ * @param name - The name written in the import.
+ * @returns The name that also satisfies it.
+ */
+function alternateName(name: string): string {
+	return name.startsWith("@types/") ? name.slice("@types/".length) : `@types/${name}`;
+}
+
+/**
+ * Each declaration file's specifiers, keyed by path: the surface walk and the
+ * audit both read every file it reaches.
+ */
+const specifierCache = new Map<string, FileSpecifiers>();
+
+/**
+ * Reads what a declaration file references, from its import specifiers and
+ * its triple-slash references. TypeScript's own pre-processor is used rather
+ * than a pattern: specifiers inside JSDoc code examples otherwise read as real
+ * imports.
  *
  * @param file - The declaration file to read.
- * @returns The referenced package names.
+ * @returns The files it reaches inside its package, and the packages it needs.
  */
-function referencedPackages(file: string): Array<string> {
+function readSpecifiers(file: string): FileSpecifiers {
+	const cached = specifierCache.get(file);
+	if (cached !== undefined) {
+		return cached;
+	}
+
 	const info = ts.preProcessFile(readFileSync(file, "utf8"), true, true);
-	const referenced: Array<string> = [];
+	const specifiers: FileSpecifiers = {
+		localFiles: info.referencedFiles.map(({ fileName }) => fileName),
+		packages: [],
+	};
 
 	for (const { fileName } of info.importedFiles) {
-		// `#` starts a subpath import, resolved through the package's own
-		// `imports` field rather than through a dependency.
-		if (!fileName.startsWith(".") && !fileName.startsWith("/") && !fileName.startsWith("#")) {
-			referenced.push(packageNameOf(fileName));
+		if (fileName.startsWith(".") || fileName.startsWith("/")) {
+			specifiers.localFiles.push(fileName);
+		} else if (!fileName.startsWith("#")) {
+			// `#` starts a subpath import, resolved through the package's own
+			// `imports` field rather than through a dependency.
+			specifiers.packages.push(packageNameOf(fileName));
 		}
 	}
 
 	// A `/// <reference types="estree" />` is satisfied by the corresponding
 	// `@types` package, which is what has to be declared.
 	for (const { fileName } of info.typeReferenceDirectives) {
-		referenced.push(fileName.startsWith("@types/") ? fileName : `@types/${fileName}`);
+		specifiers.packages.push(fileName.startsWith("@types/") ? fileName : `@types/${fileName}`);
 	}
 
-	return referenced;
+	specifierCache.set(file, specifiers);
+	return specifiers;
 }
 
 /** Whether a package supplies declarations, keyed by its real directory. */
@@ -365,8 +541,8 @@ function findUndeclared(directory: string, declaredBy: string): Set<string> | un
 	const declared = declaredPackages(manifest);
 	const undeclared = new Set<string>();
 
-	for (const file of collectDeclarations(directory)) {
-		for (const name of referencedPackages(file)) {
+	for (const file of collectSurface(directory, manifest)) {
+		for (const name of readSpecifiers(file).packages) {
 			const missing = missingProvider(directory, declaredBy, declared, name);
 			if (missing !== undefined) {
 				undeclared.add(missing);
@@ -465,8 +641,8 @@ function main(): number {
 	if (uncovered.size > 0) {
 		console.error(
 			`[check-extensions] ${uncovered.size} package(s) import types they do not declare. ` +
-				"Add them to pnpm-plugin/extensions.mjs, or list them under `ignore` when the " +
-				"declarations are not part of the package's type surface.",
+				"Add them to pnpm-plugin/extensions.mjs, or list them under `ignore` when no " +
+				"declaration can satisfy them.",
 		);
 		return 1;
 	}

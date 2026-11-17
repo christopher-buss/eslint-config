@@ -50,7 +50,7 @@ interface ClosureResolver {
  * point exists, so the caller treats the check as a no-op.
  *
  * @param cwd - The consumer project root.
- * @param configFiles - The flat-config entry points (see `RepoFiles.configFiles`).
+ * @param configFiles - The flat-config entry points (see `RepositoryFiles.configFiles`).
  * @returns The hex digest, or `undefined` when unavailable.
  */
 export function computeConfigHash(cwd: string, configFiles: Array<string>): string | undefined {

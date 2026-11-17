@@ -53,11 +53,7 @@ const result = [1, 2, 3].map(function (item) {
  * @param value
  */
 function jsCheckValue(value) {
-	if (value > 0) {
-		return "positive";
-	}
-
-	return "negative";
+	return value > 0 ? "positive" : "negative";
 }
 
 /**
@@ -248,11 +244,7 @@ function jsEmpty() {}
  * @param cond
  */
 function jsPreferTernary(cond) {
-	if (cond) {
-		return "y";
-	}
-
-	return "n";
+	return cond ? "y" : "n";
 }
 
 // Use values so they are not unused
@@ -717,11 +709,7 @@ function isActive(value: null | number): boolean {
  * @param type
  */
 function getLabel(type: string): string {
-	if (type === "submit") {
-		return "Submit";
-	}
-
-	return "Cancel";
+	return type === "submit" ? "Submit" : "Cancel";
 }
 
 // Fixable: prefer-template
@@ -932,11 +920,7 @@ const isNull = neverReassigned == null;
  * @param value
  */
 function checkValue(value: number): string {
-	if (value > 0) {
-		return "positive";
-	}
-
-	return "non-positive";
+	return value > 0 ? "positive" : "non-positive";
 }
 
 // Fixable: object-shorthand
@@ -1230,11 +1214,7 @@ function consistentDestructure(options: { a: number; b: number }): number {
  * @param condition
  */
 function preferTernary(condition: boolean): string {
-	if (condition) {
-		return "yes";
-	}
-
-	return "no";
+	return condition ? "yes" : "no";
 }
 
 // Fixable: ts/no-unnecessary-template-expression

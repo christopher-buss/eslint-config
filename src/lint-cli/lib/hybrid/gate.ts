@@ -4,7 +4,7 @@ import { hybridStatusPath, readHybridStatus, writeHybridStatus } from "../../../
 import type { HybridStatus } from "../../../hybrid-status.ts";
 import { maxMtimeMs } from "../cache/entries.ts";
 import type { RunContext } from "../context.ts";
-import type { RepoFiles } from "../files/collect.ts";
+import type { RepositoryFiles } from "../files/collect.ts";
 import type { HybridProbe } from "./probe.ts";
 import { probeHybridConfig } from "./probe.ts";
 
@@ -29,7 +29,7 @@ export const HYBRID_UNKNOWN_WARNING =
 /** Inputs to {@link resolveOxlintRun}, assembled once in the plan phase. */
 export interface OxlintRunInput {
 	/** The collected repo file lists (config-file subset + a probe target). */
-	files: RepoFiles;
+	files: RepositoryFiles;
 	/** Whether ESLint would run (false for `--oxlint`). */
 	runEslint: boolean;
 	/** Whether oxlint would run (false for `--eslint`). */

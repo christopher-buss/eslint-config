@@ -1,0 +1,132 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-roblox fixtures 1`] = `
+{
+  "iteration-fallback-style": [
+    "eslint:unicorn/no-unreadable-for-of-expression",
+    "oxlint:unicorn-js(no-unreadable-for-of-expression)",
+  ],
+  "iteration-fallback-style.for-in": [],
+  "iteration-fallback-style.object-entries": [
+    "eslint:unicorn/no-unreadable-for-of-expression",
+    "oxlint:unicorn-js(no-unreadable-for-of-expression)",
+  ],
+  "no-repeated-call-wrappers": [],
+  "no-unnecessary-default-arguments": [],
+  "no-unnecessary-parameters": [],
+  "prefer-combined-guards": [],
+  "prefer-escaped-irregular-whitespace": [],
+  "prefer-literal-ascii": [],
+  "prefer-short-escape-sequences": [],
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-roblox fixtures 2`] = `
+{
+  "iteration-fallback-style": "silent",
+  "iteration-fallback-style.for-in": "silent",
+  "iteration-fallback-style.object-entries": "silent",
+  "no-repeated-call-wrappers": "silent",
+  "no-unnecessary-default-arguments": "silent",
+  "no-unnecessary-parameters": "silent",
+  "prefer-combined-guards": "silent",
+  "prefer-escaped-irregular-whitespace": "reports",
+  "prefer-literal-ascii": "reports",
+  "prefer-short-escape-sequences": "reports",
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-ts fixtures 1`] = `
+{
+  "iteration-fallback-style": [
+    "eslint:unicorn/no-unreadable-for-of-expression",
+    "oxlint:unicorn-js(no-unreadable-for-of-expression)",
+  ],
+  "iteration-fallback-style.for-in": [],
+  "iteration-fallback-style.object-entries": [
+    "eslint:unicorn/no-unreadable-for-of-expression",
+    "oxlint:unicorn-js(no-unreadable-for-of-expression)",
+  ],
+  "no-repeated-call-wrappers": [],
+  "no-unnecessary-default-arguments": [],
+  "no-unnecessary-parameters": [],
+  "prefer-combined-guards": [],
+  "prefer-escaped-irregular-whitespace": [],
+  "prefer-literal-ascii": [],
+  "prefer-short-escape-sequences": [],
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-ts fixtures 2`] = `
+{
+  "iteration-fallback-style": "silent",
+  "iteration-fallback-style.for-in": "silent",
+  "iteration-fallback-style.object-entries": "silent",
+  "no-repeated-call-wrappers": "silent",
+  "no-unnecessary-default-arguments": "silent",
+  "no-unnecessary-parameters": "silent",
+  "prefer-combined-guards": "silent",
+  "prefer-escaped-irregular-whitespace": "reports",
+  "prefer-literal-ascii": "reports",
+  "prefer-short-escape-sequences": "reports",
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the node-ts fixtures 1`] = `
+{
+  "no-unsafe-sqlite-interpolation": [],
+  "prefer-json-import": [],
+  "prefer-uint8array-hex": [],
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the node-ts fixtures 2`] = `
+{
+  "no-unsafe-sqlite-interpolation": "reports",
+  "prefer-json-import": "reports",
+  "prefer-uint8array-hex": "silent",
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the non-roblox-ts fixtures 1`] = `
+{
+  "no-async-iterator-callback": [],
+  "no-incomplete-accessor-override": [
+    "eslint:accessor-pairs",
+    "oxlint:eslint(accessor-pairs)",
+  ],
+  "no-incomplete-accessor-override.getter-only": [],
+  "no-invalid-intl-options": [],
+  "no-invalid-property-descriptor": [],
+  "no-invalid-response-options": [],
+  "no-invalid-temporal-arithmetic": [],
+  "no-invalid-url-protocol-comparison": [],
+  "no-unsafe-json-serialization": [],
+  "no-unused-iterator-helper": [],
+  "no-url-in-search-params": [],
+  "no-useless-set-construction": [],
+  "no-using-resource-escape": [],
+  "prefer-temporal-conversion": [],
+  "require-text-decoder-streaming": [],
+}
+`;
+
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the non-roblox-ts fixtures 2`] = `
+{
+  "no-async-iterator-callback": "reports",
+  "no-incomplete-accessor-override": "reports",
+  "no-incomplete-accessor-override.getter-only": "reports",
+  "no-invalid-intl-options": "reports",
+  "no-invalid-property-descriptor": "reports",
+  "no-invalid-response-options": "reports",
+  "no-invalid-temporal-arithmetic": "reports",
+  "no-invalid-url-protocol-comparison": "reports",
+  "no-unsafe-json-serialization": "reports",
+  "no-unused-iterator-helper": "reports",
+  "no-url-in-search-params": "reports",
+  "no-useless-set-construction": "reports",
+  "no-using-resource-escape": "reports",
+  "prefer-temporal-conversion": "reports",
+  "require-text-decoder-streaming": "reports",
+}
+`;

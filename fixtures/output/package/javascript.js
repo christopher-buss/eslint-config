@@ -30,11 +30,7 @@ const result = [1, 2, 3].map(function(item) { return item * 2; });
  * @param value
  */
 function jsCheckValue(value) {
-	if (value > 0) {
-		return "positive";
-	}
- 
-		return "negative";
+	return value > 0 ? "positive" : "negative";
 	
 }
 
@@ -222,11 +218,7 @@ function jsEmpty() {}
  * @param cond
  */
 function jsPreferTernary(cond) {
-	if (cond) {
-		return "y";
-	}
-
-	return "n";
+	return cond ? "y" : "n";
 }
 
 // Use values so they are not unused

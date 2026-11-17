@@ -414,7 +414,9 @@ export async function isentinel(
 	// runs in a standard-TS/Node environment, independent of the game/package
 	// distinction.
 	if (hasComplement) {
-		configs.push(node({ ignores: robloxScopedFiles }));
+		configs.push(
+			node({ ignores: robloxScopedFiles, nodeMajor: resolveNodeMajor(options.settings) }),
+		);
 	}
 
 	if (enableJsx) {
@@ -617,6 +619,7 @@ export async function isentinel(
 		configs.push(
 			oxfmt({
 				componentExts: componentExtensions,
+				editorConfigOverrides: sectionOverrides,
 				formatters:
 					typeAwareOnly || formatters === false
 						? {

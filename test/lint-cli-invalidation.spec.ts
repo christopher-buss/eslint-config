@@ -171,16 +171,17 @@ function builderStateFiles(directory: string, prefix: string): Array<string> {
 }
 
 /**
- * The content of every builder state file matching a prefix, in the order
+ * The content of every type-aware builder state file, in the order
  * {@link builderStateFiles} lists them. A run that skipped the builder leaves
  * these byte-identical; one that ran it over a changed program does not.
  *
  * @param directory - The fixture project root.
- * @param prefix - The `tsbuildinfo-<mode>-<key>` prefix to match.
  * @returns The matching files' contents.
  */
-function builderStateContents(directory: string, prefix: string): Array<string> {
-	return builderStateFiles(directory, prefix).map((file) => fs.readFileSync(file, "utf8"));
+function builderStateContents(directory: string): Array<string> {
+	return builderStateFiles(directory, TYPE_AWARE_BUILD_INFO).map((file) => {
+		return fs.readFileSync(file, "utf8");
+	});
 }
 
 /**
@@ -1201,7 +1202,7 @@ describe("config drift sizing", () => {
 		computeAffectedFiles(runFor(directory), "only");
 		seedCache(cacheFile, [fileA]);
 		plan(args, runContext(directory, { mutate: true }));
-		const before = builderStateContents(directory, TYPE_AWARE_BUILD_INFO);
+		const before = builderStateContents(directory);
 
 		expect(before).toHaveLength(1);
 
@@ -1217,7 +1218,7 @@ describe("config drift sizing", () => {
 		expect(typedPass(drifted)!.shouldRun).toBe(true);
 		// The bust already deleted this pass's cache, so every file is dirty and
 		// the builder can only produce invalidation nothing will read.
-		expect(builderStateContents(directory, TYPE_AWARE_BUILD_INFO)).toStrictEqual(before);
+		expect(builderStateContents(directory)).toStrictEqual(before);
 	});
 
 	it("still seeds absent builder state when the bust cleared the caches", ({

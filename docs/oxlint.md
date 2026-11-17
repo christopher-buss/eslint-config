@@ -370,18 +370,40 @@ export default isentinel({
   Values are merged over that default, so enabling one category leaves the rest
   off. Useful for previewing rules the preset does not enable yet, but expect
   reports the preset has not vetted. A category rule is silenced or reconfigured
-  from `options.rules` under its oxlint name — see
+  from `options.rules` under its oxlint name (a file-scoped plugin's rule is
+  silenced differently, see below) — see
   [How rules are split](#how-rules-are-split) for how a name resolves.
 
-  A category only reaches plugins registered at the top level: oxlint applies
-  categories to the base plugin set, not to plugins an override adds. The preset
-  keeps a plugin at the top level when it asks for it across the whole tree
-  (`typescript`, `unicorn`, `import`, `jsdoc`, `promise`, `oxc`, plus
-  `react-perf` under `react: true`), so categories reach those project-wide.
-  File-scoped ones — `vitest` under the test globs, `node` over the complement
-  of the `roblox` globs — are registered on their own override instead, which
-  keeps them from firing outside those globs; inside them they contribute the
-  rules the preset curates, and categories add nothing further.
+  A category reaches a plugin wherever it is registered: across the whole tree
+  for a top-level plugin, and on an override's files for a plugin that override
+  registers. The preset keeps a plugin at the top level when it asks for it
+  across the whole tree (`typescript`, `unicorn`, `import`, `jsdoc`, `promise`,
+  `oxc`, plus `react-perf` under `react: true`), so categories reach those
+  project-wide. File-scoped ones — `vitest` under the test globs, `node` over
+  the complement of the `roblox` globs — are registered on their own override
+  instead, so categories reach them inside those globs and nowhere else.
+
+  Naming a rule registers its plugin, so a config that covers the whole tree
+  (`options.rules`, or a fragment whose `files` narrow by extension only) does
+  not register a file-scoped plugin for rules it only turns `"off"` — that would
+  hand every file the plugin's category rules. Those disables are dropped. To
+  silence a file-scoped plugin's category rule, put the disable on a fragment
+  scoped to the plugin's globs:
+
+  ```ts
+  isentinel(
+  	{ categories: { correctness: "error" }, test: { vitest: true } },
+  	{
+  		name: "project/vitest-relaxations",
+  		files: GLOB_TESTS,
+  		rules: { "vitest/require-hook": "off" },
+  	},
+  );
+  ```
+
+  A narrow fragment still registers the plugin on all of its files, so a disable
+  on files outside the plugin's globs (`src/legacy/**` for `vitest`, say) makes
+  the plugin's category rules fire there.
 
   To opt a plugin into your categories project-wide, register it yourself on a
   whole-tree config fragment:

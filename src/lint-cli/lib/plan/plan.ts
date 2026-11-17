@@ -8,7 +8,7 @@ import { computePackageJsonHash } from "../cache/package-hash.ts";
 import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import { resolveAgentsFormatter } from "../exec/resolve.ts";
-import { collectRepoFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
+import { collectRepositoryFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
 import { resolveIgnoredFiles } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { resolveOxlintThreads, resolveWorkerLimits } from "./concurrency.ts";
@@ -170,7 +170,7 @@ export function plan(
 	}
 
 	const descriptors = selectPasses(options, ci);
-	const files = collectRepoFiles(cwd, options.paths);
+	const files = collectRepositoryFiles(cwd, options.paths);
 	const newestBustMtime = maxMtimeMs(files.bustFiles);
 	const limits = resolveWorkerLimits(environment, availableParallelism(), ci);
 	const heap = resolveHeapBudget(environment, memory);
