@@ -4,6 +4,7 @@ import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
 import { FORMATTED_FILES } from "../../formatted-files.ts";
 import { stylisticRuleNames } from "../../generated/stylistic.ts";
 import { isRecord } from "../../guards.ts";
+import type { EditorConfigOverride } from "../../prettier-config.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
 import type { TypedOxlintConfigItem } from "../types.ts";
@@ -14,6 +15,13 @@ const require = createRequire(import.meta.url);
 export function oxlintOxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles & {
+			/**
+			 * The `.editorconfig` sections as oxfmt overrides. The rule's
+			 * config loader ranks them below the inline options, but the oxfmt
+			 * CLI ranks them above the root options, so the rule gets them as
+			 * its own overrides.
+			 */
+			editorConfigOverrides?: Array<EditorConfigOverride>;
 			oxfmtOptions?: Record<string, unknown>;
 			/**
 			 * Oxfmt runs as its own tool: keep the formatter-conflict
@@ -24,6 +32,7 @@ export function oxlintOxfmt(
 ): Array<TypedOxlintConfigItem> {
 	const {
 		componentExts: componentExtensions = [],
+		editorConfigOverrides = [],
 		files: oxfmtFiles,
 		oxfmtOptions = {},
 		standalone = false,
@@ -82,6 +91,13 @@ export function oxlintOxfmt(
 		specifier: resolveJsPluginSpecifier("eslint-plugin-oxfmt"),
 	};
 
+	// The sections come first, as in the oxfmt CLI: later overrides win.
+	const inlineOverrides = oxfmtOptions["overrides"];
+	const ruleOverrides = [
+		...editorConfigOverrides,
+		...(Array.isArray(inlineOverrides) ? inlineOverrides : []),
+	];
+
 	const jsFiles = oxfmtFiles?.flat() ?? [...FORMATTED_FILES.javascript];
 	const tsFiles = oxfmtFiles?.flat() ?? [
 		...FORMATTED_FILES.typescript,
@@ -114,7 +130,13 @@ export function oxlintOxfmt(
 						: {
 								"oxfmt/oxfmt": [
 									"error",
-									{ ...oxfmtOptions, disableNestedConfig: true },
+									{
+										...oxfmtOptions,
+										disableNestedConfig: true,
+										...(ruleOverrides.length > 0
+											? { overrides: ruleOverrides }
+											: {}),
+									},
 								],
 							}),
 				} as TypedOxlintConfigItem["rules"],

@@ -2,6 +2,7 @@ import type { Options as PrettierOptions } from "prettier";
 
 import { FORMATTED_FILES, resolveFormattedLanguages } from "../../formatted-files.ts";
 import { GLOB_JSON5, GLOB_MARKDOWN } from "../../globs.ts";
+import type { EditorConfigOverride } from "../../prettier-config.ts";
 import {
 	buildOxfmtOptions,
 	JSON5_OXFMT_OPTIONS,
@@ -29,6 +30,13 @@ export async function oxfmt(
 	options?: OptionsComponentExtensions &
 		OptionsFiles &
 		OptionsOverrides & {
+			/**
+			 * The `.editorconfig` sections as oxfmt overrides. The rule's
+			 * config loader ranks them below the inline options, but the oxfmt
+			 * CLI ranks them above the root options, so the rule gets them as
+			 * its own overrides.
+			 */
+			editorConfigOverrides?: Array<EditorConfigOverride>;
 			formatters?: OptionsFormatters | true;
 			oxfmtConfigOptions?: OxfmtOptions;
 			/** The oxfmt config's ignore patterns, for Markdown code blocks. */
@@ -45,6 +53,7 @@ export async function oxfmt(
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		componentExts: componentExtensions = [],
+		editorConfigOverrides = [],
 		files: oxfmtFiles,
 		formatters = {},
 		oxfmtConfigOptions = {},
@@ -62,6 +71,12 @@ export async function oxfmt(
 		oxfmtOptions: userOxfmtOptions,
 		prettierOptions,
 	});
+	// The sections come first, as in the oxfmt CLI: later overrides win.
+	const inlineOverrides = oxfmtOptions["overrides"];
+	const ruleOverrides = [
+		...editorConfigOverrides,
+		...(Array.isArray(inlineOverrides) ? inlineOverrides : []),
+	];
 
 	/**
 	 * The `oxfmt/oxfmt` entry for a block, with an options layer over the
@@ -77,7 +92,12 @@ export async function oxfmt(
 			: {
 					"oxfmt/oxfmt": [
 						"error",
-						{ ...oxfmtOptions, ...layer, disableNestedConfig: true },
+						{
+							...oxfmtOptions,
+							...layer,
+							disableNestedConfig: true,
+							...(ruleOverrides.length > 0 ? { overrides: ruleOverrides } : {}),
+						},
 					],
 				};
 	}
