@@ -2,6 +2,7 @@ import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
 import { oxlintNativeRuleNames } from "../src/generated/oxlint-native.ts";
+import { GLOB_SRC } from "../src/globs.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import {
@@ -516,6 +517,27 @@ describe("oxlint options-level rules", () => {
 	it("should let an unmapped native rule be disabled from options.rules", ({ expect }) => {
 		expect.assertions(1);
 
+		// The disable only has an effect where its plugin is registered, so
+		// register it the way a consumer opts a plugin in.
+		const config = oxlintIsentinel(
+			{
+				name: "test/options-native-off",
+				gitignore: false,
+				isAgent: false,
+				isInEditor: false,
+				rules: { "jsx-a11y/alt-text": "off" },
+			},
+			{ name: "test/native-plugins", files: [GLOB_SRC], plugins: ["jsx-a11y"], rules: {} },
+		);
+
+		const effective = effectiveOxlintRules(config, "src/index.ts");
+
+		expect(effective.get("jsx-a11y/alt-text")).toBe("off");
+	});
+
+	it("should not register a native plugin for a disable in options.rules alone", ({ expect }) => {
+		expect.assertions(1);
+
 		const config = oxlintIsentinel({
 			name: "test/options-native-off",
 			gitignore: false,
@@ -524,9 +546,8 @@ describe("oxlint options-level rules", () => {
 			rules: { "jsx-a11y/alt-text": "off" },
 		});
 
-		const effective = effectiveOxlintRules(config, "src/index.ts");
-
-		expect(effective.get("jsx-a11y/alt-text")).toBe("off");
+		// Registering it would hand every file the plugin's category rules.
+		expect(registeredNativePlugins(config)).not.toContain("jsx-a11y");
 	});
 
 	// The native fallback is for unmapped rules only. 52 rules mapped

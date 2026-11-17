@@ -3,8 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it, vi } from "vitest";
 
+import { GLOB_SRC } from "../src/globs.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
-import type { OxlintConfig, OxlintFactoryOptions } from "../src/oxlint/index.ts";
+import type {
+	OxlintConfig,
+	OxlintFactoryOptions,
+	TypedOxlintConfigItem,
+} from "../src/oxlint/index.ts";
 import { effectiveOxlintRules } from "./oxlint-helpers.ts";
 import { OXLINT_TIMEOUT, runOxlint } from "./oxlint-run.ts";
 
@@ -29,16 +34,20 @@ const SOURCE_FILE = "src/sample.ts";
  * Build a config while capturing the dropped-override warnings it emits.
  *
  * @param options - Factory options to merge over the shared base.
+ * @param userConfigs - Consumer fragments to merge after the preset.
  * @returns The generated config and the warning messages.
  */
-function buildWithWarnings(options: Omit<OxlintFactoryOptions, "name">): {
+function buildWithWarnings(
+	options: Omit<OxlintFactoryOptions, "name">,
+	...userConfigs: Array<TypedOxlintConfigItem>
+): {
 	config: OxlintConfig;
 	warnings: Array<string>;
 } {
 	const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 	try {
-		const config = oxlintIsentinel({ ...baseOptions, ...options });
+		const config = oxlintIsentinel({ ...baseOptions, ...options }, ...userConfigs);
 		return { config, warnings: warn.mock.calls.map((call) => String(call[0])) };
 	} finally {
 		warn.mockRestore();
@@ -115,10 +124,15 @@ describe("oxlint overrides", () => {
 	it("should route an oxc-covered rule to the oxc rule it resolves to", ({ expect }) => {
 		expect.assertions(1);
 
-		const { config } = buildWithWarnings({
-			oxc: false,
-			typescript: { overrides: { "unicorn/no-accidental-bitwise-operator": "off" } },
-		});
+		// With `oxc: false` nothing else registers `oxc`, and a whole-tree
+		// disable alone does not register it, so opt it in.
+		const { config } = buildWithWarnings(
+			{
+				oxc: false,
+				typescript: { overrides: { "unicorn/no-accidental-bitwise-operator": "off" } },
+			},
+			{ name: "test/native-plugins", files: [GLOB_SRC], plugins: ["oxc"], rules: {} },
+		);
 
 		const effective = effectiveOxlintRules(config, SOURCE_FILE);
 
