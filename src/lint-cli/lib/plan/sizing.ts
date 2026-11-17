@@ -33,7 +33,8 @@ export interface PassPlan {
 	descriptor: PassDescriptor;
 	/**
 	 * The number of files the pass was sized for: its dirty count, or the
-	 * conservative count when a target is outside the working directory.
+	 * conservative count when a target is outside the working directory, never
+	 * below the dirty count.
 	 */
 	dirtyCount: number;
 	/**
@@ -245,6 +246,8 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	// count under-counts them — size for the worker cap instead (maxWorkers *
 	// filesPerWorker ceils back to exactly maxWorkers).
 	const sizingDirtyCount = conservative ? maxWorkers * filesPerWorker : dirtyCount;
+	// Cost sizing never counts fewer files than are known to be dirty.
+	const costDirtyCount = Math.max(dirtyCount, sizingDirtyCount);
 
 	const concurrency =
 		context.options.concurrency ??
@@ -273,7 +276,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 			cacheFile,
 			concurrency,
 			descriptor,
-			dirtyCount: sizingDirtyCount,
+			dirtyCount: costDirtyCount,
 			heap,
 			shouldRun: false,
 			skipReason: TYPED_SKIP_NOTICE,
@@ -284,7 +287,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 		cacheFile,
 		concurrency,
 		descriptor,
-		dirtyCount: sizingDirtyCount,
+		dirtyCount: costDirtyCount,
 		heap,
 		shouldRun: true,
 		skipReason: undefined,
