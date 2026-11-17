@@ -26,7 +26,6 @@ export function stylisticRules({
 			},
 		],
 
-		"style/object-property-newline": ["error", { allowAllPropertiesOnSameLine: true }],
 		"style/padding-line-between-statements": [
 			"error",
 			{

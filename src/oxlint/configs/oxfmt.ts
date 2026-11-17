@@ -4,6 +4,7 @@ import { defaultPluginRenaming } from "../../eslint/plugin-renaming.ts";
 import { FORMATTED_FILES } from "../../formatted-files.ts";
 import { stylisticRuleNames } from "../../generated/stylistic.ts";
 import { isRecord } from "../../guards.ts";
+import { EXTRA_FORMATTER_CONFLICTS } from "../../prettier-config.ts";
 import type { EditorConfigOverride } from "../../prettier-config.ts";
 import type { OptionsComponentExtensions, OptionsFiles, Rules } from "../../types.ts";
 import { renameRules } from "../../utils.ts";
@@ -47,7 +48,10 @@ export function oxlintOxfmt(
 
 	const rulesToIgnore = new Set(["curly", "style/quotes"]);
 	const canonicalDisables: Rules = {};
-	const prettierRuleNames = Object.keys(renameRules(configPrettierRules, defaultPluginRenaming));
+	const prettierRuleNames = [
+		...Object.keys(renameRules(configPrettierRules, defaultPluginRenaming)),
+		...EXTRA_FORMATTER_CONFLICTS,
+	];
 	for (const key of prettierRuleNames) {
 		if (!rulesToIgnore.has(key)) {
 			canonicalDisables[key] = "off";
