@@ -4,5 +4,5 @@ export const versionsMap = {
   "eslint-plugin-react-jsx": "5.30.2",
   "eslint-plugin-react-naming-convention": "5.30.2",
   "eslint-plugin-react-x": "5.30.2",
-  "oxfmt": "0.78.0"
+  "oxfmt": "0.79.0"
 }

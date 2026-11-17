@@ -190,6 +190,8 @@ export function typescriptTypeAwareRules({ roblox = true }: OptionsHasRoblox = {
 		...(roblox
 			? {}
 			: {
+					"ts/prefer-regexp-exec": "error",
+					"ts/prefer-string-starts-ends-with": "error",
 					"ts/related-getter-setter-pairs": "error",
 					"ts/require-array-sort-compare": "error",
 				}),

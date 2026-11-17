@@ -17,6 +17,7 @@ import { parseArguments } from "../src/lint-cli/lib/cli/options.ts";
 import { CliError } from "../src/lint-cli/lib/cli/types.ts";
 import { executeStaged } from "../src/lint-cli/lib/exec/execute.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
+import type { RunLintOptions } from "../src/lint-cli/lib/run.ts";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CLI_ENTRY = path.join(REPO_ROOT, "src", "lint-cli", "index.ts");
@@ -176,10 +177,9 @@ function targetsOf(child: RecordedChild, count: number): Array<string> {
 async function runQuietly(
 	argv: Array<string>,
 	directory: string,
-	stdin: Readable = Readable.from([]),
-	environment: NodeJS.ProcessEnv = {},
+	{ environment = {}, stdin = Readable.from([]) }: Omit<RunLintOptions, "cwd"> = {},
 ): Promise<number> {
-	return runLint(argv, directory, environment, stdin);
+	return runLint(argv, { cwd: directory, environment, stdin });
 }
 
 describe("--files0-from parsing", () => {
@@ -244,7 +244,7 @@ describe("runLint --files0-from", () => {
 		fs.writeFileSync(listFile, "");
 
 		await expect(
-			runQuietly(["--files0-from", "-"], directory, stdinOf(new Uint8Array())),
+			runQuietly(["--files0-from", "-"], directory, { stdin: stdinOf(new Uint8Array()) }),
 		).resolves.toBe(0);
 		await expect(runQuietly(["--files0-from", listFile], directory)).resolves.toBe(0);
 		expect(readRecorded(log)).toStrictEqual([]);
@@ -259,9 +259,9 @@ describe("runLint --files0-from", () => {
 		const { directory, log } = recordingFixture(onTestFinished);
 		const bytes = Buffer.concat([encodeList(["plain.ts"]), Buffer.from([0xff, 0xfe, 0])]);
 
-		await expect(runQuietly(["--files0-from", "-"], directory, stdinOf(bytes))).rejects.toThrow(
-			/not valid UTF-8/,
-		);
+		await expect(
+			runQuietly(["--files0-from", "-"], directory, { stdin: stdinOf(bytes) }),
+		).rejects.toThrow(/not valid UTF-8/);
 		expect(readRecorded(log)).toStrictEqual([]);
 	});
 
@@ -274,9 +274,9 @@ describe("runLint --files0-from", () => {
 		const { directory, log } = recordingFixture(onTestFinished);
 		const bytes = Buffer.from("plain.ts\0\0has space.ts\0", "utf8");
 
-		await expect(runQuietly(["--files0-from", "-"], directory, stdinOf(bytes))).rejects.toThrow(
-			/entry 2 of the file list is empty/,
-		);
+		await expect(
+			runQuietly(["--files0-from", "-"], directory, { stdin: stdinOf(bytes) }),
+		).rejects.toThrow(/entry 2 of the file list is empty/);
 		expect(readRecorded(log)).toStrictEqual([]);
 	});
 
@@ -301,7 +301,7 @@ describe("runLint --files0-from", () => {
 		const code = await runQuietly(
 			["--files0-from", "-", "--type-aware=off", "--no-oxlint-type-aware", "--no-agents"],
 			directory,
-			stdinOf(encodeList(selected)),
+			{ stdin: stdinOf(encodeList(selected)) },
 		);
 		const children = readRecorded(log);
 
@@ -362,8 +362,7 @@ describe("runLint --files0-from", () => {
 		const code = await runQuietly(
 			["--files0-from", "-", "--type-aware=off", "--no-oxlint-type-aware", "--no-agents"],
 			directory,
-			stdinOf(listBytes),
-			{ LINT_MAX_WORKERS: "4" },
+			{ environment: { LINT_MAX_WORKERS: "4" }, stdin: stdinOf(listBytes) },
 		);
 		const children = readRecorded(log);
 		const eslintArgv = children.find((child) => child.bin === "eslint")!.argv;
@@ -636,7 +635,7 @@ describe.skipIf(process.platform === "win32")("staged cancellation", () => {
 			runQuietly(
 				["--eslint", "--type-aware=full", "--no-agents", "--files0-from", "-"],
 				directory,
-				stdinOf(encodeList(["plain.ts"])),
+				{ stdin: stdinOf(encodeList(["plain.ts"])) },
 			),
 		).resolves.toBe(0);
 	}, 30_000);

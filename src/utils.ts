@@ -1202,7 +1202,7 @@ function toResolvedConfig(
 ): ResolvedOxfmtConfig {
 	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
 	// name the real source of those.
-	const sections = editorConfigOverrides(path.dirname(configPath));
+	const sections = editorConfigOverrides({ cwd: path.dirname(configPath) });
 	const list: Array<unknown> = Array.isArray(overrides) ? overrides : [];
 	const copied = list.filter((override) => mirrorsSection(override, sections));
 	warnScriptWidthOverrides(copied, ".editorconfig");

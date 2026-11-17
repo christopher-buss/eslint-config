@@ -1,8 +1,5 @@
 import type { Rule } from "eslint";
 
-/** As `GLOB_MARKDOWN`, case-sensitive. */
-const MARKDOWN_FILE = /\.md$/;
-
 /**
  * Wrap eslint-plugin-oxfmt so `oxfmt/oxfmt` formats Markdown code blocks.
  *
@@ -32,7 +29,8 @@ export function oxfmtMarkdownCode(plugin: object): object {
  * @returns Whether the file is a Markdown code block.
  */
 function isMarkdownCodeBlock({ filename, physicalFilename }: Rule.RuleContext): boolean {
-	return filename !== physicalFilename && MARKDOWN_FILE.test(physicalFilename);
+	// As `GLOB_MARKDOWN`, case-sensitive.
+	return filename !== physicalFilename && physicalFilename.endsWith(".md");
 }
 
 function markdownCodeRule(rule: Rule.RuleModule): Rule.RuleModule {

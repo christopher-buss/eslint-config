@@ -123,7 +123,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(2);
 
 		const { directory, log } = oxfmtFixture(onTestFinished);
-		const code = await runLint(["--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--no-oxlint-type-aware"], { cwd: directory, environment: {} });
 
 		expect(code).toBe(0);
 		expect(readRecorded(log).filter((child) => child.bin === "oxfmt")).toStrictEqual([
@@ -144,7 +144,7 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(1);
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmtExitCode: 1 });
-		const code = await runLint(["--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--no-oxlint-type-aware"], { cwd: directory, environment: {} });
 
 		expect(code).toBe(1);
 	});
@@ -153,7 +153,10 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(2);
 
 		const { directory, log } = oxfmtFixture(onTestFinished);
-		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], {
+			cwd: directory,
+			environment: {},
+		});
 
 		expect(code).toBe(0);
 		expect(readRecorded(log).at(-1)).toStrictEqual({
@@ -172,7 +175,10 @@ describe("runLint oxfmt pass", () => {
 		expect.assertions(1);
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmtExitCode: 2 });
-		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], {
+			cwd: directory,
+			environment: {},
+		});
 
 		expect(code).not.toBe(0);
 	});
@@ -185,7 +191,7 @@ describe("runLint oxfmt pass", () => {
 		onTestFinished(() => {
 			write.mockRestore();
 		});
-		await runLint(["--print"], directory, {});
+		await runLint(["--print"], { cwd: directory, environment: {} });
 		const printed = write.mock.calls.map((call) => String(call[0])).join("");
 
 		expect(printed).toContain("oxfmt --check --config");
@@ -200,9 +206,12 @@ describe("runLint oxfmt pass", () => {
 		const bare = oxfmtFixture(onTestFinished, { config: false });
 		const disabled = oxfmtFixture(onTestFinished);
 		const single = oxfmtFixture(onTestFinished);
-		await runLint(["--no-oxlint-type-aware"], bare.directory, {});
-		await runLint(["--no-oxlint-type-aware", "--no-oxfmt"], disabled.directory, {});
-		await runLint(["--eslint"], single.directory, {});
+		await runLint(["--no-oxlint-type-aware"], { cwd: bare.directory, environment: {} });
+		await runLint(["--no-oxlint-type-aware", "--no-oxfmt"], {
+			cwd: disabled.directory,
+			environment: {},
+		});
+		await runLint(["--eslint"], { cwd: single.directory, environment: {} });
 
 		const ranOxfmt = [bare, disabled, single].map(({ log }) => {
 			return readRecorded(log).some((child) => child.bin === "oxfmt");
@@ -234,9 +243,9 @@ describe("runLint oxfmt pass", () => {
 
 		const { directory } = oxfmtFixture(onTestFinished, { oxfmt: false });
 
-		await expect(runLint(["--no-oxlint-type-aware"], directory, {})).rejects.toThrow(
-			/oxfmt is not installed/,
-		);
+		await expect(
+			runLint(["--no-oxlint-type-aware"], { cwd: directory, environment: {} }),
+		).rejects.toThrow(/oxfmt is not installed/);
 	});
 });
 
@@ -326,7 +335,10 @@ describe("oxfmt targets", () => {
 		onTestFinished(() => {
 			write.mockRestore();
 		});
-		await runLint(["--print", "generated/b.ts", "notes.txt"], directory, {});
+		await runLint(["--print", "generated/b.ts", "notes.txt"], {
+			cwd: directory,
+			environment: {},
+		});
 		const printed = write.mock.calls.map((call) => String(call[0])).join("");
 
 		expect(printed).not.toContain("oxfmt");
@@ -384,7 +396,10 @@ describe("runLint oxfmt targets", () => {
 			expect.assertions(2);
 
 			const { directory, log } = realIgnoreFixture(onTestFinished);
-			const code = await runLint([...argv, "--no-oxlint-type-aware"], directory, {});
+			const code = await runLint([...argv, "--no-oxlint-type-aware"], {
+				cwd: directory,
+				environment: {},
+			});
 			const oxfmt = readRecorded(log).filter((child) => child.bin === "oxfmt");
 
 			expect(code).toBe(0);

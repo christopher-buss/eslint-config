@@ -443,7 +443,7 @@ export function isentinel(
 		configs.push(
 			oxlintOxfmt({
 				componentExts: componentExtensions,
-				editorConfigOverrides: editorConfigOverrides(undefined, oxfmtConfigOptions),
+				editorConfigOverrides: editorConfigOverrides({ root: oxfmtConfigOptions }),
 				oxfmtOptions,
 				standalone: formatter === "standalone",
 			}),

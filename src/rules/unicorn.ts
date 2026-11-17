@@ -162,6 +162,7 @@ export function unicornRules(
 		"unicorn/prefer-logical-operator-over-ternary": "error",
 		"unicorn/prefer-math-min-max": "off",
 		"unicorn/prefer-optional-catch-binding": "error",
+		"unicorn/prefer-options-parameter": "error",
 		"unicorn/prefer-set-has": "error",
 		"unicorn/prefer-short-escape-sequences": "error",
 		"unicorn/prefer-simple-condition-first": "error",

@@ -198,14 +198,15 @@ export function withOxfmtStyle(
  * relative to `cwd`. A key set in the oxfmt config root wins over the
  * sections.
  *
- * @param cwd - The config directory.
- * @param root - The oxfmt config root options.
+ * @param options - The lookup options.
+ * @param options.cwd - The config directory.
+ * @param options.root - The oxfmt config root options.
  * @returns The overrides, in file order.
  */
-export function editorConfigOverrides(
-	cwd: string = process.cwd(),
-	root: Record<string, unknown> = {},
-): Array<EditorConfigOverride> {
+export function editorConfigOverrides({
+	cwd = process.cwd(),
+	root = {},
+}: { cwd?: string; root?: Record<string, unknown> } = {}): Array<EditorConfigOverride> {
 	for (const directory of ancestorDirectories(cwd)) {
 		const contents = readFileOrUndefined(path.join(directory, ".editorconfig"));
 		if (contents === undefined) {
