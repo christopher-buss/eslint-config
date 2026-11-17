@@ -47,6 +47,7 @@ export async function yaml({
 				"style/spaced-comment": "off",
 				"yaml/block-sequence": "error",
 				"yaml/file-extension": "error",
+				"yaml/no-boolean-key": "error",
 				"yaml/no-empty-key": "error",
 				"yaml/no-empty-sequence-entry": "error",
 				"yaml/no-irregular-whitespace": "error",
