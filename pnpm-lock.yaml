@@ -416,8 +416,8 @@ catalogs:
       specifier: 1.0.1
       version: 1.0.1
     globals:
-      specifier: 17.7.0
-      version: 17.7.0
+      specifier: 17.14.0
+      version: 17.14.0
     jiti:
       specifier: 2.7.0
       version: 2.7.0
@@ -597,7 +597,7 @@ importers:
         version: 1.0.1
       globals:
         specifier: catalog:prod
-        version: 17.7.0
+        version: 17.14.0
       jiti:
         specifier: catalog:prod
         version: 2.7.0
@@ -3389,10 +3389,6 @@ packages:
 
   globals@17.14.0:
     resolution: {integrity: sha512-UtdkTVyAJePQv0J2M9Xe4L0ruNSDV314XiIJsADI2Zf40bcdAonE/D/OhAU8AT99oij9mhLByb+NvA3QWZYgCg==}
-    engines: {node: '>=18'}
-
-  globals@17.7.0:
-    resolution: {integrity: sha512-Czmyns5dUsq4seFBR/Kdydhmo8y9kC79hiSkPn0YcGtNnYWnrgt0vjrSjx9tspoDGWm2CMarffRuLjM4xUz8xg==}
     engines: {node: '>=18'}
 
   globrex@0.1.2:
@@ -6771,7 +6767,7 @@ snapshots:
       bytes: 3.1.2
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       functional-red-black-tree: 1.0.1
-      globals: 17.7.0
+      globals: 17.14.0
       jsx-ast-utils-x: 0.1.0
       lodash.merge: 4.6.2
       minimatch: 10.2.5
@@ -7042,8 +7038,6 @@ snapshots:
   globals@15.15.0: {}
 
   globals@17.14.0: {}
-
-  globals@17.7.0: {}
 
   globrex@0.1.2: {}
 

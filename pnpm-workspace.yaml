@@ -120,7 +120,7 @@ catalogs:
     eslint-plugin-unused-imports: 4.4.1
     file-entry-cache: 11.1.5
     find-up-simple: 1.0.1
-    globals: 17.7.0
+    globals: 17.14.0
     jiti: 2.7.0
     jsonc-eslint-parser: 3.3.0
     local-pkg: 2.0.0
