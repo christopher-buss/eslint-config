@@ -17,7 +17,17 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "prefer-combined-guards": [],
   "prefer-escaped-irregular-whitespace": [],
   "prefer-literal-ascii": [],
+  "prefer-options-parameter": [],
+  "prefer-options-parameter.optional": [],
   "prefer-short-escape-sequences": [],
+  "require-spread-parentheses": [
+    "eslint:unicorn/consistent-conditional-object-spread",
+    "oxlint:oxfmt(oxfmt)",
+    "oxlint:unicorn-js(consistent-conditional-object-spread)",
+  ],
+  "require-spread-parentheses.array": [
+    "oxlint:oxfmt(oxfmt)",
+  ],
 }
 `;
 
@@ -32,7 +42,11 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "prefer-combined-guards": "silent",
   "prefer-escaped-irregular-whitespace": "reports",
   "prefer-literal-ascii": "reports",
+  "prefer-options-parameter": "silent",
+  "prefer-options-parameter.optional": "silent",
   "prefer-short-escape-sequences": "reports",
+  "require-spread-parentheses": "silent",
+  "require-spread-parentheses.array": "silent",
 }
 `;
 
@@ -53,7 +67,17 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "prefer-combined-guards": [],
   "prefer-escaped-irregular-whitespace": [],
   "prefer-literal-ascii": [],
+  "prefer-options-parameter": [],
+  "prefer-options-parameter.optional": [],
   "prefer-short-escape-sequences": [],
+  "require-spread-parentheses": [
+    "eslint:unicorn/consistent-conditional-object-spread",
+    "oxlint:oxfmt(oxfmt)",
+    "oxlint:unicorn-js(consistent-conditional-object-spread)",
+  ],
+  "require-spread-parentheses.array": [
+    "oxlint:oxfmt(oxfmt)",
+  ],
 }
 `;
 
@@ -68,7 +92,11 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "prefer-combined-guards": "silent",
   "prefer-escaped-irregular-whitespace": "reports",
   "prefer-literal-ascii": "reports",
+  "prefer-options-parameter": "silent",
+  "prefer-options-parameter.optional": "silent",
   "prefer-short-escape-sequences": "reports",
+  "require-spread-parentheses": "silent",
+  "require-spread-parentheses.array": "silent",
 }
 `;
 
@@ -104,8 +132,17 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "no-unsafe-json-serialization": [],
   "no-unused-iterator-helper": [],
   "no-url-in-search-params": [],
+  "no-useless-coercion.condition": [
+    "eslint:no-extra-boolean-cast",
+    "eslint:ts/no-unnecessary-type-conversion",
+    "oxlint:eslint(no-extra-boolean-cast)",
+  ],
+  "no-useless-coercion.double-negation": [
+    "eslint:ts/no-unnecessary-type-conversion",
+  ],
   "no-useless-set-construction": [],
   "no-using-resource-escape": [],
+  "prefer-regexp-exec": [],
   "prefer-temporal-conversion": [],
   "require-text-decoder-streaming": [],
 }
@@ -124,8 +161,11 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
   "no-unsafe-json-serialization": "reports",
   "no-unused-iterator-helper": "reports",
   "no-url-in-search-params": "reports",
+  "no-useless-coercion.condition": "silent",
+  "no-useless-coercion.double-negation": "silent",
   "no-useless-set-construction": "reports",
   "no-using-resource-escape": "reports",
+  "prefer-regexp-exec": "silent",
   "prefer-temporal-conversion": "reports",
   "require-text-decoder-streaming": "reports",
 }
