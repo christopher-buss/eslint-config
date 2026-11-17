@@ -7,8 +7,13 @@ minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
+  - "@oxlint/*"
+  - "@tsrs/*"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
+  - oxlint
+  - oxlint-plugin-eslint
+  - tsrs
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -17,7 +22,7 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 
 trustPolicyExclude:
-  - tsrs@0.25.0-ts7.1.0-beta
+  - tsrs
 
 trustPolicyIgnoreAfter: 10080
 
@@ -74,9 +79,9 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.30.2
     eslint-plugin-react-x: 5.30.2
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.93.0
+    oxlint: 1.94.0
     oxlint-tsgolint: 7.0.2007
-    tsrs: 0.25.0-ts7.1.0-beta
+    tsrs: 7.1.0-beta.tsrs2
   prod:
     "@antfu/install-pkg": 2.1.0
     "@clack/prompts": 1.9.0
@@ -87,7 +92,7 @@ catalogs:
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
     "@isentinel/machine-budget": 0.2.0
-    "@oxlint/plugins": 1.93.0
+    "@oxlint/plugins": 1.94.0
     "@pobammer-ts/small-rules": 3.12.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.72.2
@@ -124,7 +129,7 @@ catalogs:
     jiti: 2.7.0
     jsonc-eslint-parser: 3.3.0
     oxfmt: 0.78.0
-    oxlint-plugin-eslint: 1.93.0
+    oxlint-plugin-eslint: 1.94.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.10.1
     semver: 7.8.6
