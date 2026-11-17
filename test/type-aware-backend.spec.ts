@@ -6,13 +6,13 @@ import { hasTypeAwareBackend } from "../src/utils.ts";
 
 const installed = vi.hoisted(() => new Set<string>());
 
-vi.mock(import("local-pkg"), async (importOriginal) => {
+vi.mock(import("../src/resolve-package.ts"), async (importOriginal) => {
 	const actual = await importOriginal();
 	const backends = new Set(["oxlint-tsgolint", "tsrs"]);
 	return {
 		...actual,
-		isPackageExists: (name: string, options?: Parameters<typeof actual.isPackageExists>[1]) => {
-			return backends.has(name) ? installed.has(name) : actual.isPackageExists(name, options);
+		isPackageInstalled: (name: string, cwd?: string) => {
+			return backends.has(name) ? installed.has(name) : actual.isPackageInstalled(name, cwd);
 		},
 	};
 });

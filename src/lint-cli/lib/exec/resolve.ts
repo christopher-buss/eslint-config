@@ -1,18 +1,11 @@
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { isRecord } from "../../../guards.ts";
+import { resolvePackageManifest } from "../../../resolve-package.ts";
 import { CliError } from "../cli/types.ts";
 import { readFileIfPresent } from "../state.ts";
-
-/**
- * A synthetic basename for `createRequire`, which resolves relative to a file
- * rather than a directory. Spelled so it can never collide with a real consumer
- * module.
- */
-export const RESOLVE_ANCHOR = "__isentinel-lint__.js";
 
 /** Memoised {@link resolveLocalBin} results, keyed by `cwd\0name`. */
 const localBinCache = new Map<string, string>();
@@ -39,7 +32,7 @@ export function resolveLocalBin(name: string, cwd: string): string {
 		return cached;
 	}
 
-	const manifestPath = resolveManifest(name, cwd);
+	const manifestPath = resolvePackageManifest(name, cwd);
 	if (manifestPath === undefined) {
 		throw new CliError(
 			`Could not find "${name}". Install it in this project to run isentinel-lint.`,
@@ -148,25 +141,4 @@ function readBinEntry(manifestPath: string, name: string): string | undefined {
 
 	const entry = isRecord(bin) ? bin[name] : undefined;
 	return typeof entry === "string" ? entry : undefined;
-}
-
-/**
- * Locate a package's manifest exactly as a `require` call from `cwd` would.
- *
- * Reads the manifest as a subpath, so a package whose `exports` map hides
- * `./package.json` counts as unresolvable. Both packages this serves publish
- * it, and one that does not could not be spawned from its `bin` field anyway.
- *
- * @param name - The package name to resolve.
- * @param cwd - The directory to resolve from.
- * @returns The absolute path to the package's `package.json`, or undefined when
- *   the package is not installed.
- */
-function resolveManifest(name: string, cwd: string): string | undefined {
-	const require = createRequire(path.join(cwd, RESOLVE_ANCHOR));
-	try {
-		return require.resolve(`${name}/package.json`);
-	} catch {
-		return undefined;
-	}
 }

@@ -11,7 +11,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
-import { RESOLVE_ANCHOR } from "./resolve.ts";
+import { RESOLVE_ANCHOR } from "../../../resolve-package.ts";
 
 /** A resolved ESLint installation. */
 export interface EslintInstall {
