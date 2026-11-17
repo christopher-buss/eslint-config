@@ -127,6 +127,7 @@ export const typeAwareRuleIds: ReadonlySet<string> = new Set([
   "sonar/slow-regex",
   "sonar/sql-queries",
   "sonar/strings-comparison",
+  "sonar/synchronous-exception-assertions",
   "sonar/unicode-aware-regex",
   "sonar/unused-import",
   "sonar/unused-named-groups",
