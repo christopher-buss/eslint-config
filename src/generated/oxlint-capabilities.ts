@@ -4001,6 +4001,7 @@ export const enabledPresetRuleNames: ReadonlySet<string> = new Set([
 	"yaml/flow-sequence-bracket-newline",
 	"yaml/flow-sequence-bracket-spacing",
 	"yaml/key-spacing",
+	"yaml/no-boolean-key",
 	"yaml/no-empty-key",
 	"yaml/no-empty-sequence-entry",
 	"yaml/no-irregular-whitespace",

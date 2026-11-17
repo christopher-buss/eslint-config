@@ -1,40 +1,86 @@
 diff --git a/lib/index.mjs b/lib/index.mjs
-index 8fca73e571598a0b16e2314e24115c44f4a1a8c8..ccec66e519c48858aca6491b7069f8380f15980f 100644
+index 577837337ea669f4750d5686cec9333267b758c1..450bdcf19b975878cf2074cb26e4fc4a30a31174 100644
 --- a/lib/index.mjs
 +++ b/lib/index.mjs
-@@ -4202,7 +4202,12 @@ var sort_keys_default = createRule("sort-keys", {
+@@ -4494,20 +4494,24 @@ var sort_keys_default = createRule("sort-keys", {
+ 			};
+ 		}
+ 		/**
  		* Verify for pairs order
+ 		* @param pairs The pairs to verify. These pairs include some that should be ignored.
+ 		* @param option The option for the current mapping.
  		*/
  		function verifyPairs(pairs, option) {
--			const editScript = calcShortestEditScript(pairs, bubbleSort(pairs, option));
-+			const sorted = bubbleSort(pairs, option);
-+			const editScript = calcShortestEditScript(pairs, sorted);
+ 			const { sorted, unsafeMoveUpPairs, unsafeMoveDownPairs } = buildSafeSortTarget(pairs, option);
+ 			if (pairs.every((e, i) => e === sorted[i])) return;
 +			const mappingNode = pairs[0].mapping.node;
 +			const useSeqItemReorder = pairs.length === mappingNode.pairs.length && isSeqItemWithInnerComments(mappingNode);
 +			const usePlainBlockReorder = !useSeqItemReorder && !option.allowLineSeparatedGroups && isPlainBlockReorderable(mappingNode);
 +			const sortedNodes = sorted.map((data) => data.node);
- 			for (let index = 0; index < editScript.length; index++) {
- 				const edit = editScript[index];
- 				if (edit.type !== "delete") continue;
-@@ -4221,6 +4226,8 @@ var sort_keys_default = createRule("sort-keys", {
- 						},
- 						*fix(fixer) {
- 							if (edit.a.mapping.node.style === "flow") yield* fixToMoveDownForFlow(fixer, edit.a, target);
-+							else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
-+							else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
- 							else yield* fixToMoveDownForBlock(fixer, edit.a, target);
- 						}
- 					});
-@@ -4237,6 +4244,8 @@ var sort_keys_default = createRule("sort-keys", {
- 						},
- 						*fix(fixer) {
- 							if (edit.a.mapping.node.style === "flow") yield* fixToMoveUpForFlow(fixer, edit.a, target);
-+							else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
-+							else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
- 							else yield* fixToMoveUpForBlock(fixer, edit.a, target);
- 						}
- 					});
-@@ -4404,6 +4413,186 @@ var sort_keys_default = createRule("sort-keys", {
+ 			const alreadyReports = /* @__PURE__ */ new Set();
+ 			reportUsingShortestEditScript({ disableIgnore: !unsafeMoveUpPairs.isEmpty() || !unsafeMoveDownPairs.isEmpty() });
+ 			if (alreadyReports.size > 0) return;
+ 			reportUsingSortedPairs({ disableIgnore: !unsafeMoveUpPairs.isEmpty() || !unsafeMoveDownPairs.isEmpty() });
+ 			/**
+ 			* Report using the shortest edit script.
+ 			* This is a fallback when the above logic cannot determine a safe reordering.
+ 			*/
+ 			function reportUsingShortestEditScript(options) {
+ 				const editScript = calcShortestEditScript(pairs, sorted);
+@@ -4557,20 +4561,22 @@ var sort_keys_default = createRule("sort-keys", {
+ 				context.report({
+ 					loc: pair.reportLoc,
+ 					messageId: "shouldBeAfter",
+ 					data: {
+ 						thisName: pair.name,
+ 						targetName: target.name,
+ 						orderText: option.orderText
+ 					},
+ 					fix: !unsafeMoveDownPairs.isUnsafe(pair, target) ? function* (fixer) {
+ 						if (pair.mapping.node.style === "flow") yield* fixToMoveDownForFlow(fixer, pair, target);
++						else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
++						else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
+ 						else yield* fixToMoveDownForBlock(fixer, pair, target);
+ 					} : void 0
+ 				});
+ 			}
+ 			/**
+ 			* Report that the given pair should be before the target pair.
+ 			* @param pair The pair that should be before the target.
+ 			* @param target The target pair that the given pair should be before.
+ 			*/
+ 			function reportShouldBeBefore(pair, target) {
+@@ -4578,20 +4584,22 @@ var sort_keys_default = createRule("sort-keys", {
+ 				context.report({
+ 					loc: pair.reportLoc,
+ 					messageId: "shouldBeBefore",
+ 					data: {
+ 						thisName: pair.name,
+ 						targetName: target.name,
+ 						orderText: option.orderText
+ 					},
+ 					fix: !unsafeMoveUpPairs.isUnsafe(pair, target) ? function* (fixer) {
+ 						if (pair.mapping.node.style === "flow") yield* fixToMoveUpForFlow(fixer, pair, target);
++						else if (useSeqItemReorder) yield* fixByReorderingSeqItemBlock(fixer, mappingNode, sortedNodes);
++						else if (usePlainBlockReorder) yield* fixByReorderingPlainBlock(fixer, mappingNode, sortedNodes);
+ 						else yield* fixToMoveUpForBlock(fixer, pair, target);
+ 					} : void 0
+ 				});
+ 			}
+ 			/**
+ 			* Find insert after target
+ 			*/
+ 			function findInsertAfterTarget(pair, editScript, insertEditIndex) {
+ 				let candidate = null;
+ 				for (let index = insertEditIndex - 1; index >= 0; index--) {
+@@ -4744,20 +4752,200 @@ var sort_keys_default = createRule("sort-keys", {
+ 					insertTargetToken = sourceCode.getTokenBefore(moveTargetBeforeToken);
+ 				} else {
+ 					insertCode = `${sourceCode.text.slice(beforeCommaToken.range[1], data.node.range[1])},`;
+ 					insertTargetToken = moveTargetBeforeToken;
+ 				}
+ 			}
+ 			yield fixer.insertTextAfterRange(insertTargetToken.range, insertCode);
  			yield fixer.removeRange(removeRange);
  		}
  		/**
@@ -221,7 +267,21 @@ index 8fca73e571598a0b16e2314e24115c44f4a1a8c8..ccec66e519c48858aca6491b7069f838
  		* Fix by moving the node after the target node for block.
  		*/
  		function* fixToMoveDownForBlock(fixer, data, moveTarget) {
-@@ -4479,7 +4668,7 @@ var sort_keys_default = createRule("sort-keys", {
+ 			const nodeLocs = getPairRangeForBlock(data.node);
+ 			const moveTargetLocs = getPairRangeForBlock(moveTarget.node);
+ 			if (nodeLocs.loc.start.column === 0) {
+ 				const removeRange = [getNewlineStartIndex(nodeLocs.range[0]), nodeLocs.range[1]];
+ 				const moveTargetRange = [getNewlineStartIndex(moveTargetLocs.range[0]), moveTargetLocs.range[1]];
+ 				const insertCode = sourceCode.text.slice(...removeRange);
+ 				const isAtFileStart = nodeLocs.loc.start.line === 1;
+@@ -4824,21 +5012,21 @@ var sort_keys_default = createRule("sort-keys", {
+ 		/**
+ 		* Get range from given pair
+ 		*/
+ 		function getPairRangeForBlock(node) {
+ 			let end;
+ 			const afterToken = sourceCode.getTokenAfter(node, {
+ 				includeComments: true,
  				filter: (t) => !isCommentToken(t) || node.loc.end.line < t.loc.start.line
  			});
  			if (!afterToken || node.loc.end.line < afterToken.loc.start.line) {
@@ -230,3 +290,10 @@ index 8fca73e571598a0b16e2314e24115c44f4a1a8c8..ccec66e519c48858aca6491b7069f838
  				end = {
  					loc: {
  						line,
+ 						column: sourceCode.lines[line - 1].length
+ 					},
+ 					get index() {
+ 						return sourceCode.getIndexFromLoc(this.loc);
+ 					}
+ 				};
+ 			} else end = {
