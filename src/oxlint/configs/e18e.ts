@@ -22,7 +22,9 @@ export function oxlintE18e({
 	OptionsFiles &
 	OptionsIsInEditor &
 	OptionsOverrides &
-	OptionsProjectType & { excludeFiles?: Array<string> } = {}): Array<TypedOxlintConfigItem> {
+	OptionsProjectType & {
+		excludeFiles?: Array<string> | undefined;
+	} = {}): Array<TypedOxlintConfigItem> {
 	// `nodeMajor` is resolved by the factory from the shared settings; the
 	// default only covers direct callers of this config function.
 	return [

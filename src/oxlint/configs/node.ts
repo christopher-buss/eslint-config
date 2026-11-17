@@ -7,7 +7,7 @@ import type { TypedOxlintConfigItem } from "../types.ts";
 import { createOxlintConfigs } from "../utils.ts";
 
 export function oxlintNode(
-	options: NodeRuleOptions & OptionsFiles & { excludeFiles?: Array<string> } = {},
+	options: NodeRuleOptions & OptionsFiles & { excludeFiles?: Array<string> | undefined } = {},
 ): Array<TypedOxlintConfigItem> {
 	const files = options.files?.flat() ?? [GLOB_SRC];
 	const nodeMajor = options.nodeMajor ?? resolveNodeMajor();

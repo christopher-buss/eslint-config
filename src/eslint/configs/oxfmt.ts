@@ -38,11 +38,11 @@ export async function oxfmt(
 			 * its own overrides.
 			 */
 			editorConfigOverrides?: Array<EditorConfigOverride>;
-			formatters?: OptionsFormatters | true;
+			formatters?: OptionsFormatters | true | undefined;
 			oxfmtConfigOptions?: OxfmtOptions;
 			/** The oxfmt config's ignore patterns, for Markdown code blocks. */
-			oxfmtIgnorePatterns?: Array<string>;
-			oxfmtOptions?: OxfmtOptions;
+			oxfmtIgnorePatterns?: Array<string> | undefined;
+			oxfmtOptions?: OxfmtOptions | undefined;
 			oxlint?: boolean;
 			prettierOptions?: PrettierOptions;
 			/**
@@ -86,7 +86,7 @@ export async function oxfmt(
 	 * @param layer - Options applied over the base options.
 	 * @returns The rule entry, or no rules.
 	 */
-	function formatRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
+	function formatRule(layer: OxfmtOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 		// One root config, like the standalone CLI: nested configs are ignored.
 		return standalone
 			? {}
@@ -113,7 +113,7 @@ export async function oxfmt(
 	 * @param layer - Options applied over the base options.
 	 * @returns The rule entry.
 	 */
-	function codeBlockRule(layer: OxfmtOptions = {}): TypedFlatConfigItem["rules"] {
+	function codeBlockRule(layer: OxfmtOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 		return {
 			"oxfmt/oxfmt": [
 				"error",
@@ -321,7 +321,7 @@ function markdownCodeBlocks(
 function plainBlock(
 	name: string,
 	files: Array<string>,
-	rules: TypedFlatConfigItem["rules"],
+	rules: NonNullable<TypedFlatConfigItem["rules"]>,
 ): TypedFlatConfigItem {
 	return {
 		name: `isentinel/oxfmt/${name}`,

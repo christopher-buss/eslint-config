@@ -239,7 +239,7 @@ export function naming(
 							],
 
 							...overridesTypeAware,
-						} as TypedFlatConfigItem["rules"],
+						} as NonNullable<TypedFlatConfigItem["rules"]>,
 					},
 				]
 			: []),
@@ -421,7 +421,7 @@ export function naming(
 							],
 
 							...overridesTypeAware,
-						} as TypedFlatConfigItem["rules"],
+						} as NonNullable<TypedFlatConfigItem["rules"]>,
 					},
 				]
 			: []),

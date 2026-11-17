@@ -9,9 +9,9 @@ import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
  * @param options - Resolved stylistic options.
  * @returns The rule map.
  */
-export function stylisticRules({
-	quotes = "double",
-}: StylisticConfig = {}): TypedFlatConfigItem["rules"] {
+export function stylisticRules({ quotes = "double" }: StylisticConfig = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"antfu/consistent-list-newline": "off",
 		"antfu/if-newline": "off",
@@ -69,9 +69,9 @@ export function stylisticRules({
  * @param options - Resolved stylistic options.
  * @returns The rule map.
  */
-export function stylisticJsxRules({
-	jsx = true,
-}: StylisticConfig = {}): TypedFlatConfigItem["rules"] {
+export function stylisticJsxRules({ jsx = true }: StylisticConfig = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return jsx
 		? { "style/jsx-curly-brace-presence": ["error", { propElementValues: "always" }] }
 		: {};

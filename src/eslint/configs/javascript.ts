@@ -34,7 +34,7 @@ export function javascript({
 	const pluginDeMorgan = lazyPlugin("eslint-plugin-de-morgan");
 	const pluginMaxParameters = lazyPlugin("eslint-plugin-better-max-params");
 	const pluginUnusedImports = lazyPlugin("eslint-plugin-unused-imports");
-	const idLengthRules: TypedFlatConfigItem["rules"] =
+	const idLengthRules: NonNullable<TypedFlatConfigItem["rules"]> =
 		stylistic !== false ? { "id-length": ["error", ID_LENGTH_OPTIONS] } : {};
 
 	return [

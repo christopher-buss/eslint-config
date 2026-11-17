@@ -48,9 +48,9 @@ const ANCIENT_SECONDS = 1_000_000_000;
 /** The answer the child reports for one builder pass. */
 interface ChildResult {
 	/** Project-relative posix paths the pass reported affected. */
-	affected?: Array<string>;
+	affected?: Array<string> | undefined;
 	/** Whether the pass established initial state. */
-	firstRun?: boolean;
+	firstRun?: boolean | undefined;
 	/** True when the builder path was skipped entirely. */
 	skipped: boolean;
 }

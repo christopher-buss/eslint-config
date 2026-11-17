@@ -81,7 +81,7 @@ export async function roblox(
 		});
 	}
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+	const typeAwareRules: NonNullable<TypedFlatConfigItem["rules"]> = {
 		"roblox/lua-truthiness": "warn",
 		"roblox/misleading-lua-tuple-checks": "error",
 		"roblox/no-array-pairs": "warn",

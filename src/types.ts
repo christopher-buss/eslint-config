@@ -266,7 +266,7 @@ export type StylisticConfig = Pick<
 > & { maxLen?: number };
 
 export interface OptionsHasRoblox {
-	roblox?: boolean;
+	roblox?: boolean | undefined;
 }
 
 export interface OptionsHasTypeScript {

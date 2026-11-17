@@ -123,7 +123,7 @@ export interface ChildCommand {
 	 * before the spawn and starts the child with the workers it was granted.
 	 * `undefined` for a child that is not leased.
 	 */
-	workers?: WorkerDemand;
+	workers?: undefined | WorkerDemand;
 }
 
 /**
@@ -178,7 +178,7 @@ export interface OxlintComposeContext {
 	 * The threads oxlint asks the machine budget for. `undefined` leases
 	 * nothing and leaves oxlint's thread count alone.
 	 */
-	threads?: number;
+	threads?: number | undefined;
 }
 
 /**

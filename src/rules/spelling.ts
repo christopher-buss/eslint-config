@@ -11,7 +11,7 @@ export interface SpellingRuleOptions extends OptionsIsInEditor {
 	 *
 	 * @default true
 	 */
-	inEditor?: boolean;
+	inEditor?: boolean | undefined;
 	/** Defaults to `en-US`. */
 	language?: string;
 }
@@ -26,7 +26,7 @@ export function spellingRules({
 	inEditor,
 	isInEditor = false,
 	language = "en-US",
-}: SpellingRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: SpellingRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	const robloxDictionary = require.resolve("@isentinel/dict-roblox");
 	const urlRobloxDictionary = pathToFileURL(robloxDictionary);
 	const urlRoblox = new URL("dict/roblox.txt", urlRobloxDictionary);

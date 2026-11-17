@@ -17,19 +17,20 @@ import { createOxlintConfigs } from "../utils.ts";
  *   against.
  * @returns The generated config fragments.
  */
-export function oxlintProjectStructure({
-	enforceExistence,
-	files = PROJECT_STRUCTURE_FILES,
-	ignores = PROJECT_STRUCTURE_IGNORES,
-	overrides = {},
-	projectRoot,
-	structureRoot,
-}: ProjectStructureConfig = {}): Array<TypedOxlintConfigItem> {
+export function oxlintProjectStructure(
+	options: ProjectStructureConfig = {},
+): Array<TypedOxlintConfigItem> {
+	const {
+		files = PROJECT_STRUCTURE_FILES,
+		ignores = PROJECT_STRUCTURE_IGNORES,
+		overrides = {},
+	} = options;
+
 	return createOxlintConfigs({
 		name: "isentinel/project-structure",
 		excludeFiles: ignores,
 		files: files.flat(),
 		overrides,
-		rules: folderStructureRules({ enforceExistence, projectRoot, structureRoot }),
+		rules: folderStructureRules(options),
 	});
 }

@@ -5,7 +5,7 @@ import type { TypedFlatConfigItem } from "../types.ts";
  *
  * @returns The rule map.
  */
-export function promiseRules(): TypedFlatConfigItem["rules"] {
+export function promiseRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"promise/always-return": [
 			"error",

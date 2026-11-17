@@ -62,7 +62,7 @@ interface OxlintRuleInfo {
 
 interface RuleMeta {
 	deprecated?: unknown;
-	docs?: { description?: string; url?: string };
+	docs?: { description?: string | undefined; url?: string | undefined };
 }
 
 /**
@@ -172,7 +172,11 @@ const nativeEntries = nativeKeys.map((key) => {
 		lines.push("   * Requires type information (`oxlint --type-aware`).", "   *");
 	}
 
-	lines.push(`   * @see ${info?.docs_url}`, "   */", `  '${key}'?: DummyRuleMap['${key}']`);
+	lines.push(
+		`   * @see ${info?.docs_url}`,
+		"   */",
+		`  '${key}'?: NonNullable<DummyRuleMap['${key}']>`,
+	);
 	return lines.join("\n");
 });
 

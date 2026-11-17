@@ -496,7 +496,7 @@ export function createOxlintConfigs({
 			// The split rules are keyed by translated oxlint names, which the
 			// eslint-side `Rules` typing cannot express.
 			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
-			rules: nativeRules as TypedOxlintConfigItem["rules"],
+			rules: nativeRules as NonNullable<TypedOxlintConfigItem["rules"]>,
 			...(settings ? { settings } : {}),
 		});
 	}
@@ -509,7 +509,7 @@ export function createOxlintConfigs({
 			...(globals && fragments.length === 0 ? { globals } : {}),
 			jsPlugins,
 			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Rules and OxlintRules share a runtime shape; only the key naming differs.
-			rules: jsPluginRules as TypedOxlintConfigItem["rules"],
+			rules: jsPluginRules as NonNullable<TypedOxlintConfigItem["rules"]>,
 			...(settings && fragments.length === 0 ? { settings } : {}),
 		});
 	}

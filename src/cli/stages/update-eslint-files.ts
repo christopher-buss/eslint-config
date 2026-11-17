@@ -6,6 +6,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import parseGitignore from "parse-gitignore-ts";
+import type { PackageJson } from "type-fest";
 
 import { OXFMT_CONFIG_MODULE, oxfmtConfigNamesIn } from "../../utils.ts";
 import { oxfmtConfigContent } from "../constants.ts";
@@ -20,10 +21,10 @@ export async function updateEslintFiles(result: PromptResult): Promise<void> {
 	const pathPackageJSON = path.join(cwd, "package.json");
 
 	const packageContent = await fsp.readFile(pathPackageJSON, "utf-8");
-	const parsedPackage: Record<string, any> = JSON.parse(packageContent);
+	const parsedPackage: PackageJson = JSON.parse(packageContent);
 
 	const configFileName =
-		parsedPackage["type"] === "module" ? "eslint.config.js" : "eslint.config.mjs";
+		parsedPackage.type === "module" ? "eslint.config.js" : "eslint.config.mjs";
 	const pathFlatConfig = path.join(cwd, configFileName);
 
 	const eslintIgnores: Array<string> = [];

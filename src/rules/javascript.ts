@@ -26,7 +26,9 @@ export function javascriptRules({
 	isInEditor = false,
 	roblox = true,
 	stylistic = true,
-}: OptionsHasRoblox & OptionsIsInEditor & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+}: OptionsHasRoblox & OptionsIsInEditor & OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"accessor-pairs": ["error", { enforceForClassMembers: true, setWithoutGet: true }],
 

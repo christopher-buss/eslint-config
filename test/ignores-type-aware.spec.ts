@@ -60,7 +60,7 @@ async function createEslint(
 		pnpm: false,
 		react: true,
 		roblox,
-		root,
+		...(root === undefined ? {} : { root }),
 		spellCheck: false,
 		typescript: {
 			...(ignoresTypeAware === undefined ? {} : { ignoresTypeAware }),

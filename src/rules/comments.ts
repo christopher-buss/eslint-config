@@ -18,9 +18,9 @@ export interface CommentLengthRuleOptions {
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function commentsRules({
-	stylistic = true,
-}: OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+export function commentsRules({ stylistic = true }: OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		...(stylistic !== false
 			? {
@@ -42,7 +42,7 @@ export function commentLengthRules({
 	multiLineMaxLength,
 	semanticComments,
 	tabSize,
-}: CommentLengthRuleOptions): TypedFlatConfigItem["rules"] {
+}: CommentLengthRuleOptions): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"comment-length/limit-multi-line-comments": [
 			"error",

@@ -50,7 +50,7 @@ export function folderStructureRules({
 }: Pick<
 	ProjectStructureConfig,
 	"enforceExistence" | "projectRoot" | "structureRoot"
-> = {}): TypedFlatConfigItem["rules"] {
+> = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	const templates = typeof enforceExistence === "string" ? [enforceExistence] : enforceExistence;
 	const children = buildChildren(templates);
 
