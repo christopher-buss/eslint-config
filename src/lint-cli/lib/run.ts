@@ -104,6 +104,12 @@ export async function runLint(
 			process.stdout.write(`${formatCommandLine(command)}\n`);
 		}
 
+		// On stderr too, so a dropped or unverified child is explained where
+		// you look for it.
+		if (notice !== undefined) {
+			process.stderr.write(notice);
+		}
+
 		// The workers and heap each program-building pass was given. On stderr,
 		// so a captured command list stays exactly the commands.
 		for (const pass of staged.eager.passes) {

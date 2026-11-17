@@ -80,6 +80,29 @@ export function computeConfigHash(cwd: string, configFiles: Array<string>): stri
 }
 
 /**
+ * The paths of `eslint.config.*` and its transitive local import closure (see
+ * {@link computeConfigHash} for how the closure is found). Falls back to the
+ * entry points alone when `typescript` is unresolvable, so a caller always gets
+ * at least the files it passed in.
+ *
+ * @param cwd - The consumer project root.
+ * @param configFiles - The flat-config entry points (see `RepositoryFiles.configFiles`).
+ * @returns The absolute closure paths, entry points included.
+ */
+export function configClosureFiles(cwd: string, configFiles: Array<string>): Array<string> {
+	if (configFiles.length === 0) {
+		return [];
+	}
+
+	const ts = loadTypescript(cwd);
+	if (ts === undefined) {
+		return configFiles;
+	}
+
+	return discoverConfigClosure(ts, cwd, configFiles).map(({ file }) => file);
+}
+
+/**
  * Add every not-yet-seen target to the visited set and the work queue.
  *
  * @param targets - The candidate import targets.
