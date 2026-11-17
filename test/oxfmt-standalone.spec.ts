@@ -457,6 +457,32 @@ describe(".editorconfig sections", () => {
 		]);
 	});
 
+	it("reach the rule as overrides, which outrank its inline options", async ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		useProject(onTestFinished, { ".editorconfig": editorconfig });
+		const sections = [
+			{ files: ["*.json"], options: { printWidth: 40 } },
+			{ files: ["*.md"], options: { printWidth: 60, tabWidth: 3 } },
+		];
+
+		const configs = await isentinel({ name: "test/oxfmt", roblox: false, type: "package" });
+		const eslintRules = configs.find(
+			(config) => config.name === "isentinel/oxfmt/markdown",
+		)!.rules;
+		const oxlintRules = oxlint({
+			name: "test/oxfmt",
+			roblox: false,
+			type: "package",
+		}).overrides!.find((override) => override.rules!["oxfmt/oxfmt"] !== undefined)!.rules;
+
+		expect(ruleOptions(eslintRules, "oxfmt/oxfmt")).toMatchObject({ overrides: sections });
+		expect(ruleOptions(oxlintRules, "oxfmt/oxfmt")).toMatchObject({ overrides: sections });
+	});
+
 	it("are named as the source of a JS/TS width warning in standalone mode", async ({
 		expect,
 		onTestFinished,

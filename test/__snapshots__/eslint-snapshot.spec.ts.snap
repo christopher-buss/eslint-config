@@ -3471,7 +3471,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3839,7 +3839,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3852,7 +3852,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3864,7 +3864,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3876,7 +3876,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3888,7 +3888,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3897,7 +3897,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3909,7 +3909,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3918,7 +3918,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3927,7 +3927,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -3936,7 +3936,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6064,7 +6064,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6432,7 +6432,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6445,7 +6445,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6457,7 +6457,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6469,7 +6469,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6481,7 +6481,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6490,7 +6490,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6502,7 +6502,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6511,7 +6511,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6520,7 +6520,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -6529,7 +6529,7 @@ exports[`config snapshots > roblox-game > should match the config snapshot 1`] =
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9306,7 +9306,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9674,7 +9674,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
       "-wrap-iife",
       "-wrap-regex",
       "-yield-star-spacing",
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9687,7 +9687,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/css",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9699,7 +9699,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/scss",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9711,7 +9711,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/less",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9723,7 +9723,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/html",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9732,7 +9732,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/markdown",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":80,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":true,"endOfLine":"lf","embeddedLanguageFormatting":"off","proseWrap":"always","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9744,7 +9744,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     },
     "name": "isentinel/oxfmt/graphql",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9753,7 +9753,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/json",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9762,7 +9762,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/json5",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"preserve","semi":true,"singleQuote":false,"tabWidth":4,"trailingComma":"all","useTabs":true,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
@@ -9771,7 +9771,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
     ],
     "name": "isentinel/oxfmt/yaml",
     "rules": [
-      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true}]",
+      "oxfmt/oxfmt [{"sortImports":{"customGroups":[{"elementNamePattern":["react"],"groupName":"react"},{"elementNamePattern":["@*/**"],"groupName":"scoped"}],"groups":["react","scoped",["type-builtin","type-external","builtin","external"],["type-internal","internal","type-parent","type-sibling","type-index","parent","sibling","index"],"unknown"],"newlinesBetween":true},"sortPackageJson":false,"arrowParens":"always","printWidth":100,"quoteProps":"consistent","semi":true,"singleQuote":false,"tabWidth":2,"trailingComma":"all","useTabs":false,"endOfLine":"lf","disableNestedConfig":true,"overrides":[{"files":["*.{yaml}"],"options":{"useTabs":false,"tabWidth":2}}]}]",
     ],
   },
   {
