@@ -222,8 +222,8 @@ export type OptionsTypescript = (
 export interface PerfectionistConfig {
 	/**
 	 * Names of injected constructor parameters to put first, in this order, in
-	 * classes decorated with `@Service`, `@Controller` or `@Component`. The
-	 * other parameters follow in natural order.
+	 * classes decorated with `@Service`, `@Controller`, `@Component` or
+	 * `@Provider`. The other parameters follow in natural order.
 	 *
 	 * @example ["logger"]
 	 */

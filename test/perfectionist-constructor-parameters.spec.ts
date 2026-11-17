@@ -32,7 +32,7 @@ const UNSORTED_PARAMETERS =
 	"public constructor(private readonly logger: Logger, private readonly playerService: PlayerService, private readonly mtxService: MtxService) {}";
 
 describe("constructor parameter sorting", () => {
-	it.for(["Service", "Controller", "Component"])(
+	it.for(["Service", "Controller", "Component", "Provider"])(
 		"sorts the injected parameters of a @%s class",
 		(decorator, { expect }) => {
 			expect.assertions(1);

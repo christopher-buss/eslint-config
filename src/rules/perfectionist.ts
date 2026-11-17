@@ -28,12 +28,12 @@ const constructorGroup = {
 
 /**
  * Selects the constructor of a class with a dependency-injection decorator
- * (Flamework's `@Service`, `@Controller` and `@Component`). The framework
+ * (`@Service`, `@Controller`, `@Component` or `@Provider`). The framework
  * resolves those parameters by type, so their order has no meaning. Every other
  * constructor is positional and stays unsorted.
  */
 const INJECTED_CONSTRUCTOR_SELECTOR =
-	"ClassDeclaration:has(> Decorator[expression.callee.name=/^(?:Component|Controller|Service)$/]) > ClassBody > MethodDefinition[kind='constructor']";
+	"ClassDeclaration:has(> Decorator[expression.callee.name=/^(?:Component|Controller|Provider|Service)$/]) > ClassBody > MethodDefinition[kind='constructor']";
 
 export interface PerfectionistRuleOptions extends OptionsProjectType {
 	/**
