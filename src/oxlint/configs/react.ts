@@ -1,6 +1,7 @@
+import type { ReactSettings } from "../../eslint/types.ts";
 import { GLOB_JSX, GLOB_TSX } from "../../globs.ts";
 import type { ReactRuleOptions } from "../../rules/react.ts";
-import { reactRules } from "../../rules/react.ts";
+import { reactRules, reactSettings } from "../../rules/react.ts";
 import type {
 	ConfigSettings,
 	OptionsFiles,
@@ -32,12 +33,12 @@ export function oxlintReact(
 	options: OptionsFiles &
 		OptionsHasRoblox &
 		OptionsOverrides &
-		ReactRuleOptions & { importSource?: string; settings?: ConfigSettings } = {},
+		ReactRuleOptions &
+		ReactSettings & { settings?: ConfigSettings } = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		domPackage = options.settings?.["testing-library"]?.domPackage,
 		filenameCase = "kebabCase",
-		importSource,
 		overrides = {},
 		reactCompiler = true,
 		roblox = true,
@@ -64,10 +65,7 @@ export function oxlintReact(
 				testing,
 			}),
 			settings: {
-				"react-x": {
-					importSource: importSource ?? "@rbxts",
-					version: "17.0.2",
-				},
+				"react-x": reactSettings(options),
 				...(testing ? { "testing-library/utils-module": "testing-library-lua" } : {}),
 				...(options.settings?.["testing-library"]
 					? { "testing-library": options.settings["testing-library"] }

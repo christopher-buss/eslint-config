@@ -241,7 +241,7 @@ export interface PerfectionistConfig {
  *
  * Upstream derives its own type from a Zod schema, so importing it would put
  * `zod` in the published declarations — and `@eslint-react/shared` itself,
- * which is a build-time dependency consumers never install. The shape is six
+ * which is a build-time dependency consumers never install. The shape is seven
  * optional primitives, so restating it costs nothing.
  * `test/react-settings.spec.ts` fails if the two ever drift apart.
  */
@@ -251,6 +251,13 @@ export interface ReactSettings {
 	 * `useEffect` and friends.
 	 */
 	additionalEffectHooks?: string;
+	/**
+	 * A pattern matching custom hooks to treat as ref hooks, alongside
+	 * `useRef`.
+	 *
+	 * @default "useLatest" - `@rbxts/pretty-react-hooks` returns a ref from it
+	 */
+	additionalRefHooks?: string;
 	/**
 	 * A pattern matching custom hooks to treat as state hooks, alongside
 	 * `useState` and friends.
