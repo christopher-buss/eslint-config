@@ -1,7 +1,8 @@
 import { findUpSync } from "find-up-simple";
 import { readFileSync } from "node:fs";
-import path from "node:path";
 import process from "node:process";
+
+import { findGitExclude } from "../../git-exclude.ts";
 
 const LINE_BREAK_PATTERN = /\r?\n/;
 
@@ -23,11 +24,10 @@ export function oxlintGitignore(): Array<string> {
 		patterns.push(...parseGitignoreFile(gitignoreFile));
 	}
 
-	const gitDirectory = findUpSync(".git", { cwd, type: "directory" });
-	if (gitDirectory !== undefined) {
-		const excludeFile = path.join(gitDirectory, "info", "exclude");
+	const exclude = findGitExclude(cwd);
+	if (exclude !== undefined) {
 		try {
-			patterns.push(...parseGitignoreContent(readFileSync(excludeFile, "utf-8")));
+			patterns.push(...parseGitignoreContent(readFileSync(exclude.file, "utf-8")));
 		} catch {
 			// No exclude file
 		}
