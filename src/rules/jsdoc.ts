@@ -77,6 +77,7 @@ export function jsdocRules({
 								"istanbul ",
 								"c8 ",
 								"v8 ",
+								"cov ",
 								"eslint",
 								"jshint",
 								"jslint",

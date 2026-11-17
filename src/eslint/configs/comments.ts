@@ -4,6 +4,13 @@ import { interopDefault } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type { OptionsFormatters, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
+/**
+ * Coverage-ignore comments that must explain themselves like an
+ * `eslint-disable`. `cov ignore` is the Jest Roblox CLI marker; its parser
+ * reads only the hint word, so a ` -- reason` suffix is safe for every tool.
+ */
+const COVERAGE_DIRECTIVES = ["c8 ignore", "cov ignore", "istanbul ignore", "v8 ignore"];
+
 export async function comments({
 	prettierOptions = {},
 	stylistic = true,
@@ -38,6 +45,21 @@ export async function comments({
 				],
 
 				...commentsRules({ stylistic }),
+			},
+		},
+		{
+			// Scoped to JS/TS: custom directives make the plugin scan comments
+			// itself instead of using ESLint's directive API.
+			name: "isentinel/eslint/comments/coverage",
+			files: [GLOB_SRC],
+			rules: {
+				"eslint-comments/require-description": [
+					"error",
+					{
+						additionalDirectives: COVERAGE_DIRECTIVES,
+						ignore: ["eslint-enable"],
+					},
+				],
 			},
 		},
 		...(stylistic !== false
