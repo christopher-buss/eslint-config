@@ -7,39 +7,13 @@ minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
-  - "@oxlint/binding-android-arm-eabi@1.94.0"
-  - "@oxlint/binding-android-arm64@1.94.0"
-  - "@oxlint/binding-darwin-arm64@1.94.0"
-  - "@oxlint/binding-darwin-x64@1.94.0"
-  - "@oxlint/binding-freebsd-x64@1.94.0"
-  - "@oxlint/binding-linux-arm-gnueabihf@1.94.0"
-  - "@oxlint/binding-linux-arm-musleabihf@1.94.0"
-  - "@oxlint/binding-linux-arm64-gnu@1.94.0"
-  - "@oxlint/binding-linux-arm64-musl@1.94.0"
-  - "@oxlint/binding-linux-ppc64-gnu@1.94.0"
-  - "@oxlint/binding-linux-riscv64-gnu@1.94.0"
-  - "@oxlint/binding-linux-riscv64-musl@1.94.0"
-  - "@oxlint/binding-linux-s390x-gnu@1.94.0"
-  - "@oxlint/binding-linux-x64-gnu@1.94.0"
-  - "@oxlint/binding-linux-x64-musl@1.94.0"
-  - "@oxlint/binding-openharmony-arm64@1.94.0"
-  - "@oxlint/binding-win32-arm64-msvc@1.94.0"
-  - "@oxlint/binding-win32-ia32-msvc@1.94.0"
-  - "@oxlint/binding-win32-x64-msvc@1.94.0"
-  - "@oxlint/plugins@1.94.0"
-  - "@tsrs/darwin-arm64@7.1.0-beta.tsrs2"
-  - "@tsrs/darwin-x64@7.1.0-beta.tsrs2"
-  - "@tsrs/linux-arm64-gnu@7.1.0-beta.tsrs2"
-  - "@tsrs/linux-arm64-musl@7.1.0-beta.tsrs2"
-  - "@tsrs/linux-x64-gnu@7.1.0-beta.tsrs2"
-  - "@tsrs/linux-x64-musl@7.1.0-beta.tsrs2"
-  - "@tsrs/win32-arm64@7.1.0-beta.tsrs2"
-  - "@tsrs/win32-x64@7.1.0-beta.tsrs2"
+  - "@oxlint/*"
+  - "@tsrs/*"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
-  - oxlint@1.94.0
-  - oxlint-plugin-eslint@1.94.0
-  - tsrs@7.1.0-beta.tsrs2
+  - oxlint
+  - oxlint-plugin-eslint
+  - tsrs
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -48,7 +22,7 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 
 trustPolicyExclude:
-  - tsrs@7.1.0-beta.tsrs2
+  - tsrs
 
 trustPolicyIgnoreAfter: 10080
 
