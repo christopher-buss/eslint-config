@@ -1,3 +1,5 @@
+import type { UndefinedOnPartial } from "type-fest";
+
 import { rebaseAncestorAnchor, workspaceRelativeDirectory } from "../../anchors.ts";
 import {
 	GLOB_BUILD_CONFIGS,
@@ -28,12 +30,12 @@ export function oxlintDisables({
 	root,
 	rootExcludes = GLOB_ROOT_EXCLUDE,
 	workspaceRoot,
-}: {
-	configDirectory?: string | undefined;
+}: UndefinedOnPartial<{
+	configDirectory?: string;
 	root: Array<string>;
 	rootExcludes?: Array<string>;
 	workspaceRoot: string;
-}): Array<TypedOxlintConfigItem> {
+}>): Array<TypedOxlintConfigItem> {
 	const relativeConfigDirectory =
 		configDirectory === undefined
 			? undefined

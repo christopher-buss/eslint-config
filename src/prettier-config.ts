@@ -21,6 +21,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import type { Options as PrettierOptions } from "prettier";
+import type { UndefinedOnPartial } from "type-fest";
 import { getStaticYAMLValue, parseYAML } from "yaml-eslint-parser";
 
 import type { StylisticConfig } from "./types.ts";
@@ -206,7 +207,10 @@ export function withOxfmtStyle(
 export function editorConfigOverrides({
 	cwd = process.cwd(),
 	root = {},
-}: { cwd?: string; root?: Record<string, unknown> } = {}): Array<EditorConfigOverride> {
+}: UndefinedOnPartial<{
+	cwd?: string;
+	root?: Record<string, unknown>;
+}> = {}): Array<EditorConfigOverride> {
 	for (const directory of ancestorDirectories(cwd)) {
 		const contents = readFileOrUndefined(path.join(directory, ".editorconfig"));
 		if (contents === undefined) {
