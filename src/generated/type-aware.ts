@@ -165,6 +165,7 @@ export const typeAwareRuleIds: ReadonlySet<string> = new Set([
   "ts/no-unsafe-argument",
   "ts/no-unsafe-assignment",
   "ts/no-unsafe-call",
+  "ts/no-unsafe-class-instance-assignment",
   "ts/no-unsafe-enum-assignment",
   "ts/no-unsafe-enum-comparison",
   "ts/no-unsafe-member-access",
