@@ -152,22 +152,40 @@ describe("publishedExtensions", () => {
 
 describe("collectSurface", () => {
 	/**
-	 * Writes a package to a fresh directory, removed when the test finishes.
+	 * The declarations every test package ships. `dist/index.d.ts` reaches
+	 * `a`, `b` and `globals`; `internal` imports `estree` and nothing reaches
+	 * it.
+	 */
+	const shipped = {
+		"dist/a.d.ts": "export type A = string;",
+		"dist/b/index.d.ts": "export type B = number;",
+		"dist/cjs.d.cts": "export type C = bigint;",
+		"dist/esm.d.mts": "export type E = boolean;",
+		"dist/globals.d.ts": "declare const g: string;",
+		"dist/index.d.ts": [
+			'/// <reference path="./globals.d.ts" />',
+			'export type { A } from "./a.js";',
+			'export type { B } from "./b";',
+		].join("\n"),
+		"dist/internal.d.ts": 'import type { Node } from "estree";',
+		"dist/legacy.d.ts": "export type L = symbol;",
+		"dist/private.d.ts": "export type P = null;",
+	};
+
+	/**
+	 * Writes the {@link shipped} declarations to a fresh directory, removed
+	 * when the test finishes.
 	 *
-	 * @param files - Each file's path relative to the package, and its text.
 	 * @param onTestFinished - The test's cleanup hook.
 	 * @returns The package directory.
 	 */
-	function writePackage(
-		files: Record<string, string>,
-		onTestFinished: TestContext["onTestFinished"],
-	): string {
+	function writePackage(onTestFinished: TestContext["onTestFinished"]): string {
 		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "isentinel-surface-"));
 		onTestFinished(() => {
 			fs.rmSync(directory, { force: true, recursive: true });
 		});
 
-		for (const [file, text] of Object.entries(files)) {
+		for (const [file, text] of Object.entries(shipped)) {
 			const target = path.join(directory, file);
 			fs.mkdirSync(path.dirname(target), { recursive: true });
 			fs.writeFileSync(target, text);
@@ -189,26 +207,10 @@ describe("collectSurface", () => {
 			.toSorted();
 	}
 
-	const shipped = {
-		"dist/a.d.ts": "export type A = string;",
-		"dist/b/index.d.ts": "export type B = number;",
-		"dist/cjs.d.cts": "export type C = bigint;",
-		"dist/esm.d.mts": "export type E = boolean;",
-		"dist/globals.d.ts": "declare const g: string;",
-		"dist/index.d.ts": [
-			'/// <reference path="./globals.d.ts" />',
-			'export type { A } from "./a.js";',
-			'export type { B } from "./b";',
-		].join("\n"),
-		"dist/internal.d.ts": 'import type { Node } from "estree";',
-		"dist/legacy.d.ts": "export type L = symbol;",
-		"dist/private.d.ts": "export type P = null;",
-	};
-
 	it("follows only what the entry points reach", ({ expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = writePackage(shipped, onTestFinished);
+		const directory = writePackage(onTestFinished);
 
 		expect(
 			surfaceOf(directory, {
@@ -249,7 +251,7 @@ describe("collectSurface", () => {
 	])("reaches the surface from %s", ([, manifest, reached], { expect, onTestFinished }) => {
 		expect.assertions(2);
 
-		const surface = surfaceOf(writePackage(shipped, onTestFinished), manifest);
+		const surface = surfaceOf(writePackage(onTestFinished), manifest);
 
 		expect(surface).toContain(reached);
 		expect(surface).not.toContain("dist/internal.d.ts");
@@ -264,7 +266,7 @@ describe("collectSurface", () => {
 	])("walks every declaration %s", ([, manifest], { expect, onTestFinished }) => {
 		expect.assertions(1);
 
-		const directory = writePackage(shipped, onTestFinished);
+		const directory = writePackage(onTestFinished);
 
 		expect(surfaceOf(directory, manifest)).toContain("dist/internal.d.ts");
 	});
