@@ -277,7 +277,10 @@ Other behaviours:
   oxlint's `--threads`. When other runs hold the machine, the lease waits and
   prints why on stderr. When an ESLint child exits, the runner gives the lease
   back with the child's peak memory, so the budget learns what one worker of
-  each pass costs. oxlint's lease learns nothing, because its memory does not
+  each pass costs. A pass that builds a TypeScript program learns one cost for
+  each size (up to 50, up to 300, and over 300 files per worker), because its
+  workers grow with their files; until then, each file over 300 adds 1.5 MB to
+  the 2 GB estimate. oxlint's lease learns nothing, because its memory does not
   grow with its threads. `MACHINE_BUDGET=off` and CI grant every lease in full
   at once. A `--threads` in `--oxlint-args`, or a `--concurrency` in
   `--eslint-args`, is left alone and that child leases nothing. Each child

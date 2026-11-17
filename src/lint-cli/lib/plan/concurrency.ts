@@ -19,6 +19,66 @@ export const FAST_WORKER_MEMORY_MB = 1024;
 export const PROGRAM_WORKER_MEMORY_MB = 2048;
 
 /**
+ * The files a program-building worker may hold within
+ * {@link PROGRAM_WORKER_MEMORY_MB}. Measured on a 630-file package: about
+ * 2.1 GB per worker at 315 files each. Fixed, unlike the `FILES_PER_WORKER`
+ * sizing knob, because it describes memory, not speed.
+ */
+export const PROGRAM_WORKER_FILES = 300;
+
+/**
+ * What each file past {@link PROGRAM_WORKER_FILES} adds to one
+ * program-building worker, in MB: its AST and type information. Measured at
+ * about 1.3 MB on a 5,400-file workspace and about 1.8 MB on a 630-file
+ * package.
+ */
+export const PROGRAM_FILE_MEMORY_MB = 1.5;
+
+/**
+ * The most files per worker of a small program-building child: an edit or a
+ * commit hook, which loads few projects.
+ */
+export const SMALL_PROGRAM_FILES = 50;
+
+/**
+ * How many files each worker of a program-building child holds, by size. The
+ * machine budget learns a separate cost for each size: one cost learned from
+ * many small runs would let a full run lease a fraction of what it uses.
+ */
+export type ProgramSize = "large" | "medium" | "small";
+
+/**
+ * The size of a program-building child.
+ *
+ * @param filesPerWorker - The files each planned worker lints.
+ * @returns `small` up to {@link SMALL_PROGRAM_FILES}, `medium` up to
+ *   {@link PROGRAM_WORKER_FILES}, and `large` past it.
+ */
+export function programSize(filesPerWorker: number): ProgramSize {
+	if (filesPerWorker <= SMALL_PROGRAM_FILES) {
+		return "small";
+	}
+
+	return filesPerWorker <= PROGRAM_WORKER_FILES ? "medium" : "large";
+}
+
+/**
+ * What one program-building worker is expected to use until the machine budget
+ * learns its cost: {@link PROGRAM_WORKER_MEMORY_MB}, plus
+ * {@link PROGRAM_FILE_MEMORY_MB} for each file past
+ * {@link PROGRAM_WORKER_FILES}. A small or medium worker counts at exactly
+ * {@link PROGRAM_WORKER_MEMORY_MB}, so one of them still fits the budget's
+ * small-job lane.
+ *
+ * @param filesPerWorker - The files each planned worker lints.
+ * @returns The expected memory of one worker, in MB.
+ */
+export function programWorkerMemoryMb(filesPerWorker: number): number {
+	const extra = Math.max(0, filesPerWorker - PROGRAM_WORKER_FILES);
+	return PROGRAM_WORKER_MEMORY_MB + Math.ceil(extra * PROGRAM_FILE_MEMORY_MB);
+}
+
+/**
  * What one oxlint thread counts for in the machine budget. Oxlint's lease
  * learns no cost (see `composeOxlintCommand`), so this value is used on every
  * run.

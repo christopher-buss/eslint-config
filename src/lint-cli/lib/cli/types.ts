@@ -140,6 +140,11 @@ export interface ComposeContext {
 	ci: boolean;
 	/** Concurrency value passed to ESLint's `--concurrency`. */
 	concurrency: "off" | number;
+	/**
+	 * The number of files the child is sized for. Sets the size its machine
+	 * budget cost is learned under when it builds a TypeScript program.
+	 */
+	dirtyCount: number;
 	/** Label for the composed ESLint child (`eslint`, `fast` or `typed`). */
 	eslintLabel: ToolLabel;
 	/**

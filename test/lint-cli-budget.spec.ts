@@ -25,6 +25,7 @@ import { composeEslintCommand, composeOxlintCommand } from "../src/lint-cli/lib/
 import {
 	FAST_WORKER_MEMORY_MB,
 	OXLINT_THREAD_MEMORY_MB,
+	PROGRAM_FILE_MEMORY_MB,
 	PROGRAM_WORKER_MEMORY_MB,
 	resolveOxlintThreads,
 } from "../src/lint-cli/lib/plan/concurrency.ts";
@@ -129,6 +130,7 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		cacheLocation: ".eslintcache",
 		ci: false,
 		concurrency: "off",
+		dirtyCount: 0,
 		eslintLabel: "eslint",
 		fix: false,
 		heap: undefined,
@@ -440,11 +442,74 @@ describe("worker demands on composed children", () => {
 		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
 		const command = composeEslintCommand(
 			options(),
-			baseContext({ concurrency: 2, eslintLabel: "typed", heap, typeAwareEnv: "only" }),
+			baseContext({
+				concurrency: 2,
+				dirtyCount: 400,
+				eslintLabel: "typed",
+				heap,
+				typeAwareEnv: "only",
+			}),
 		);
 
 		expect(command.workers!.memoryPerWorkerMb).toBe(PROGRAM_WORKER_MEMORY_MB);
-		expect(command.workers!.pass).toBe("eslint-typed");
+		expect(command.workers!.pass).toBe("eslint-typed:medium");
+	});
+
+	it.for([
+		[1, "off", "small"],
+		[50, "off", "small"],
+		[51, "off", "medium"],
+		[1500, 5, "medium"],
+		[1505, 5, "large"],
+	] as const)(
+		"learns %i files on %s workers under the %s program cost",
+		([dirtyCount, concurrency, size], { expect }) => {
+			expect.assertions(1);
+
+			const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
+			const command = composeEslintCommand(
+				options(),
+				baseContext({
+					concurrency,
+					dirtyCount,
+					eslintLabel: "typed",
+					heap,
+					typeAwareEnv: "only",
+				}),
+			);
+
+			expect(command.workers!.pass).toBe(`eslint-typed:${size}`);
+		},
+	);
+
+	it("counts each file past a medium worker's share", ({ expect }) => {
+		expect.assertions(1);
+
+		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
+		const command = composeEslintCommand(
+			options(),
+			baseContext({ concurrency: 5, dirtyCount: 3200, eslintLabel: "eslint", heap }),
+		);
+
+		// 640 files per worker: 340 past the medium share.
+		expect(command.workers).toStrictEqual({
+			flag: "--concurrency",
+			maxWorkers: 5,
+			memoryPerWorkerMb: PROGRAM_WORKER_MEMORY_MB + Math.ceil(340 * PROGRAM_FILE_MEMORY_MB),
+			pass: "eslint-full:large",
+		});
+	});
+
+	it("learns a pass that builds no program under one cost", ({ expect }) => {
+		expect.assertions(2);
+
+		const command = composeEslintCommand(
+			options(),
+			baseContext({ concurrency: 2, dirtyCount: 3200, eslintLabel: "fast" }),
+		);
+
+		expect(command.workers!.memoryPerWorkerMb).toBe(FAST_WORKER_MEMORY_MB);
+		expect(command.workers!.pass).toBe("eslint-fast");
 	});
 
 	it("asks for oxlint's threads", ({ expect }) => {

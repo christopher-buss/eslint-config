@@ -88,6 +88,7 @@ function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
 		cacheLocation: ".eslintcache",
 		ci: false,
 		concurrency: "off",
+		dirtyCount: 0,
 		eslintLabel: "eslint",
 		fix: false,
 		heap: undefined,
@@ -1717,6 +1718,7 @@ describe("collectFixTargets", () => {
 			cacheFile,
 			concurrency: "off",
 			descriptor,
+			dirtyCount: linted.length,
 			heap: undefined,
 			shouldRun: true,
 			skipReason: undefined,
@@ -1803,6 +1805,40 @@ describe("collectFixTargets", () => {
 		});
 
 		expect(planFixChild(passes, runContext(directory), inputs)!.args.at(-1)).toBe("src");
+	});
+
+	it("sizes a --no-cache child by the files its raw paths expand to", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+		const lintable = Array.from({ length: 40 }, (_, index) => {
+			return path.join(directory, `file-${index}.ts`);
+		});
+		const inputs = fixInputs({
+			files: repositoryFiles({ lintable }),
+			options: options({ cache: false, fix: true, paths: ["src"] }),
+		});
+
+		// One raw path, but 40 files at 20 per worker: two workers.
+		expect(planFixChild(passes, runContext(directory), inputs)!.workers!.maxWorkers).toBe(2);
+	});
+
+	it("sizes an outside-cwd fix target for the worker cap", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		const passes = [passWithCache(directory, FAST_PASS, [], [])];
+		const child = planFixChild(
+			passes,
+			runContext(directory),
+			fixInputs({ files: repositoryFiles({ outsideCwdTargets: ["../sibling"] }) }),
+		);
+
+		expect(child!.workers!.maxWorkers).toBe(2);
 	});
 
 	it("still lints an outside-cwd target after clean checks", ({ expect, onTestFinished }) => {

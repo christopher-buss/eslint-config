@@ -117,13 +117,19 @@ export function planFixChild(
 		openCache(path.resolve(run.cwd, cacheFile), run.ci)?.removeEntries(covered);
 	}
 
+	const maxWorkers = capWorkersForHeap(limits.typedMaxWorkers, limits.explicitMaxWorkers, heap);
+	// A raw path stands for every file under it, so count files, not targets:
+	// the in-cwd listing already holds what the raw paths expand to, and an
+	// outside-cwd target is sized for the worker cap, as the check passes do.
+	const knownCount = options.cache ? covered.length : files.lintable.length;
+	const dirtyCount =
+		files.outsideCwdTargets.length > 0
+			? Math.max(knownCount, maxWorkers * limits.filesPerWorker)
+			: knownCount;
+
 	const concurrency =
 		options.concurrency ??
-		computeWorkerCount({
-			dirtyCount: targets.length,
-			filesPerWorker: limits.filesPerWorker,
-			maxWorkers: capWorkersForHeap(limits.typedMaxWorkers, limits.explicitMaxWorkers, heap),
-		});
+		computeWorkerCount({ dirtyCount, filesPerWorker: limits.filesPerWorker, maxWorkers });
 
 	return composeEslintCommand(
 		{ ...options, cache: options.cache && uncovered.length === 0 },
@@ -132,9 +138,10 @@ export function planFixChild(
 			cacheLocation: cacheFile,
 			ci: run.ci,
 			concurrency,
+			dirtyCount,
 			eslintLabel: FULL_PASS.label,
 			fix: true,
-			heap: planPassHeap(FULL_PASS.label, heap, { concurrency, dirtyCount: targets.length }),
+			heap: planPassHeap(FULL_PASS.label, heap, { concurrency, dirtyCount }),
 			paths: targets,
 			// The check children already printed the config warnings.
 			quietWarnings: true,
