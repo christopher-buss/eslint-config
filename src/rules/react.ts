@@ -1,3 +1,4 @@
+import type { ReactSettings } from "../eslint/types.ts";
 import { isRecord } from "../guards.ts";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
@@ -96,6 +97,33 @@ export function mergeRestrictedDomImportRule(
 
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- appending a path descriptor preserves ESLint's valid legacy rule shape.
 	return [...parts, domImportRestriction(domPackage)] as unknown as RestrictedImportRule;
+}
+
+/**
+ * Build the `react-x` settings shared by both engines, with roblox-ts
+ * defaults.
+ *
+ * @param settings - The settings the user passed.
+ * @returns The settings to hand to the react plugins.
+ */
+export function reactSettings({
+	additionalEffectHooks,
+	additionalRefHooks,
+	additionalStateHooks,
+	compilationMode,
+	importSource = "@rbxts",
+	polymorphicPropName,
+	version = "17.0.2",
+}: ReactSettings = {}): ReactSettings {
+	return {
+		importSource,
+		version,
+		...(additionalEffectHooks === undefined ? {} : { additionalEffectHooks }),
+		...(additionalRefHooks === undefined ? {} : { additionalRefHooks }),
+		...(additionalStateHooks === undefined ? {} : { additionalStateHooks }),
+		...(compilationMode === undefined ? {} : { compilationMode }),
+		...(polymorphicPropName === undefined ? {} : { polymorphicPropName }),
+	};
 }
 
 /**
