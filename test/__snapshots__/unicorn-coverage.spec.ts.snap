@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'all-roblox' fixtures 1`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-roblox fixtures 1`] = `
 {
   "iteration-fallback-style": [
     "eslint:unicorn/no-unreadable-for-of-expression",
@@ -21,7 +21,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'all-roblox' fixtures 2`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-roblox fixtures 2`] = `
 {
   "iteration-fallback-style": "silent",
   "iteration-fallback-style.for-in": "silent",
@@ -36,7 +36,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'all-ts' fixtures 1`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-ts fixtures 1`] = `
 {
   "iteration-fallback-style": [
     "eslint:unicorn/no-unreadable-for-of-expression",
@@ -57,7 +57,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'all-ts' fixtures 2`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the all-ts fixtures 2`] = `
 {
   "iteration-fallback-style": "silent",
   "iteration-fallback-style.for-in": "silent",
@@ -72,7 +72,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'node-ts' fixtures 1`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the node-ts fixtures 1`] = `
 {
   "no-unsafe-sqlite-interpolation": [],
   "prefer-json-import": [],
@@ -80,7 +80,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'node-ts' fixtures 2`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the node-ts fixtures 2`] = `
 {
   "no-unsafe-sqlite-interpolation": "reports",
   "prefer-json-import": "reports",
@@ -88,7 +88,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'non-roblox-ts' fixtures 1`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the non-roblox-ts fixtures 1`] = `
 {
   "no-async-iterator-callback": [],
   "no-incomplete-accessor-override": [
@@ -111,7 +111,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 }
 `;
 
-exports[`unicorn candidate rule coverage > records the existing rules that overlap the 'non-roblox-ts' fixtures 2`] = `
+exports[`unicorn candidate rule coverage > records the existing rules that overlap the non-roblox-ts fixtures 2`] = `
 {
   "no-async-iterator-callback": "reports",
   "no-incomplete-accessor-override": "reports",
