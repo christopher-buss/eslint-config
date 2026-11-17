@@ -7,6 +7,17 @@
 		":configMigration",
 		"security:minimumReleaseAgeNpm"
 	],
+	"ignorePaths": [
+		"**/node_modules/**",
+		"**/bower_components/**",
+		"**/vendor/**",
+		"**/examples/**",
+		"**/__tests__/**",
+		"**/test/**",
+		"**/tests/**",
+		"**/__fixtures__/**",
+		"fixtures/**"
+	],
 	"vulnerabilityAlerts": {
 		"enabled": true
 	},
