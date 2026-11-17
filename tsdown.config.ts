@@ -11,8 +11,6 @@ const sharedOptions = {
 	shims: true,
 } satisfies UserConfig;
 
-// https://github.com/antfu/eslint-config-flat-gitignore/issues/18
-const FLAT_GITIGNORE = "eslint-config-flat-gitignore";
 const TYPE_FEST = "type-fest";
 
 /**
@@ -35,7 +33,6 @@ export default defineConfig([
 		...sharedOptions,
 		deps: {
 			alwaysBundle: [
-				FLAT_GITIGNORE,
 				// Bundled to ship patches/eslint-plugin-yml.patch
 				"eslint-plugin-yml",
 				TYPE_FEST,
@@ -51,7 +48,6 @@ export default defineConfig([
 				"oxlint",
 			],
 			onlyBundle: [
-				FLAT_GITIGNORE,
 				"@eslint/compat",
 				// eslint-plugin-yml (see alwaysBundle) and its transitive tree
 				"eslint-plugin-yml",
@@ -108,7 +104,7 @@ export default defineConfig([
 		// Loaded from the consumer's oxfmt.config.ts, by oxfmt itself and by
 		// both factories; keep it small and its runtime deps external.
 		deps: {
-			alwaysBundle: [FLAT_GITIGNORE, TYPE_FEST, "tagged-tag"],
+			alwaysBundle: [TYPE_FEST, "tagged-tag"],
 			neverBundle: true,
 		},
 		entry: { oxfmt: entries.oxfmt },

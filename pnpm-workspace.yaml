@@ -7,12 +7,8 @@ minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
-  - "@oxlint/plugins@1.92.0"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
-  - oxlint@1.92.0
-  - oxlint-plugin-eslint@1.92.0
-  - oxlint-tsgolint@7.0.2006
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -38,7 +34,6 @@ overrides:
   semver@6: 7.8.5
 
 patchedDependencies:
-  eslint-config-flat-gitignore: patches/eslint-config-flat-gitignore.patch
   eslint-plugin-yml: patches/eslint-plugin-yml.patch
 
 catalogs:
@@ -55,7 +50,6 @@ catalogs:
     "@types/semver": 7.8.0
     "@types/yargs": 17.0.35
     bumpp: 12.3.0
-    eslint-config-flat-gitignore: 2.3.0
     eslint-plugin-yml: 3.5.0
     eslint-typegen: 2.3.1
     parse-gitignore-ts: 1.0.0
@@ -100,6 +94,7 @@ catalogs:
     "@typescript-eslint/parser": 8.72.2
     ansis: 4.5.0
     concurrently: 10.0.6
+    eslint-config-flat-gitignore: 2.4.0
     eslint-config-prettier: 10.1.8
     eslint-flat-config-utils: 3.2.0
     eslint-merge-processors: 2.0.0
