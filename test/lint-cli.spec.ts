@@ -1920,6 +1920,23 @@ function setMtimeInFuture(filePath: string): void {
 	fs.utimesSync(filePath, future, future);
 }
 
+/**
+ * Link the real typescript into a fixture, so the gate can walk the config's
+ * import closure from it.
+ *
+ * @param directory - The fixture root; its `node_modules` must exist.
+ */
+function linkTypescript(directory: string): void {
+	const typescriptDirectory = path.dirname(
+		createRequire(import.meta.url).resolve("typescript/package.json"),
+	);
+	fs.symlinkSync(
+		fs.realpathSync(typescriptDirectory),
+		path.join(directory, "node_modules", "typescript"),
+		"junction",
+	);
+}
+
 describe("hybrid status file", () => {
 	it("only writes when node_modules exists", ({ expect, onTestFinished }) => {
 		expect.assertions(2);
@@ -2047,6 +2064,7 @@ describe("resolveOxlintRun", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = freshConfig(directory);
 		writeHybridStatus(directory, false);
 
@@ -2074,6 +2092,7 @@ describe("resolveOxlintRun", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = freshConfig(directory);
 		writeHybridStatus(directory, true);
 
@@ -2138,16 +2157,8 @@ describe("resolveOxlintRun", () => {
 		expect.assertions(3);
 
 		const directory = temporaryDirectory(onTestFinished);
-		// Real typescript, so the config's import closure can be resolved.
-		const typescriptDirectory = path.dirname(
-			createRequire(import.meta.url).resolve("typescript/package.json"),
-		);
 		fs.mkdirSync(path.join(directory, "node_modules"));
-		fs.symlinkSync(
-			fs.realpathSync(typescriptDirectory),
-			path.join(directory, "node_modules", "typescript"),
-			"junction",
-		);
+		linkTypescript(directory);
 
 		// Hybrid mode is toggled in a module the config imports, not in the
 		// config file itself.
@@ -2185,6 +2196,62 @@ describe("resolveOxlintRun", () => {
 		expect(probeCalls).toBe(1);
 		expect(decision).toStrictEqual({ reason: undefined, run: true });
 		expect(readHybridStatus(directory)).toStrictEqual({ oxlint: true });
+	});
+
+	it("re-probes a fresh status when the config's imports cannot be discovered", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		// No typescript: the gate cannot see what the config imports, so a
+		// fresh-looking status may hide a changed import.
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, false);
+
+		let probeCalls = 0;
+		function probe(): HybridStatus {
+			probeCalls += 1;
+			return { oxlint: true };
+		}
+
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: true }),
+			{
+				files: repositoryFiles({
+					configFiles: [config],
+					typeAware: [path.join(directory, "a.ts")],
+				}),
+				runEslint: true,
+				runOxlint: true,
+			},
+			probe,
+		);
+
+		expect(probeCalls).toBe(1);
+		expect(decision).toStrictEqual({ reason: undefined, run: true });
+	});
+
+	it("marks --print unverified when the config's imports cannot be discovered", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(1);
+
+		const directory = temporaryDirectory(onTestFinished);
+		fs.mkdirSync(path.join(directory, "node_modules"));
+		const config = freshConfig(directory);
+		writeHybridStatus(directory, false);
+
+		const decision = resolveOxlintRun(
+			runContext(directory, { mutate: false }),
+			{ files: repositoryFiles({ configFiles: [config] }), runEslint: true, runOxlint: true },
+			() => ({ oxlint: false }),
+		);
+
+		expect(decision).toStrictEqual({ reason: HYBRID_UNVERIFIED_NOTICE, run: true });
 	});
 
 	it("fails open when the probe cannot determine the status", ({ expect, onTestFinished }) => {
@@ -2275,6 +2342,7 @@ describe("plan hybrid integration", () => {
 
 		const directory = temporaryDirectory(onTestFinished);
 		fs.mkdirSync(path.join(directory, "node_modules"));
+		linkTypescript(directory);
 		const config = path.join(directory, "eslint.config.ts");
 		fs.writeFileSync(config, "export default []");
 		fs.writeFileSync(path.join(directory, "a.ts"), "export const x = 1;\n");

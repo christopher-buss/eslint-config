@@ -134,9 +134,9 @@ function readFreshHybridStatus(
 }
 
 /**
- * Resolve the hybrid status, trusting a fresh cache file and otherwise probing.
- * Returns `undefined` when a probe failed, or when a read-only (`--print`) run
- * skipped it.
+ * Resolve the hybrid status, trusting a fresh cache file (only when the config
+ * import closure was found in full) and otherwise probing. Returns `undefined`
+ * when a probe failed, or when a read-only (`--print`) run skipped it.
  *
  * @param run - The run context.
  * @param input - The assembled plan-phase inputs.
@@ -148,11 +148,16 @@ function resolveHybridStatus(
 	{ files }: OxlintRunInput,
 	probe: HybridProbe,
 ): HybridStatus | undefined {
-	const configMtime = maxMtimeMs(configClosureFiles(cwd, files.configFiles));
+	const closure = configClosureFiles(cwd, files.configFiles);
 
-	const cached = readFreshHybridStatus(cwd, configMtime);
-	if (cached !== undefined) {
-		return cached;
+	// A partial closure cannot show that no import changed, so its cache is
+	// never trusted. The cost is a probe on every run, only where `typescript`
+	// is missing or the config imports more modules than the walk's cap.
+	if (closure.complete) {
+		const cached = readFreshHybridStatus(cwd, maxMtimeMs(closure.files));
+		if (cached !== undefined) {
+			return cached;
+		}
 	}
 
 	if (!mutate) {

@@ -367,10 +367,12 @@ oxlint explicitly). The check is cheap: the factory records the hybrid status in
 evaluate the config (other evaluations, such as tests or scripts that build a
 different config, do not write it), and the runner trusts that cache unless your
 ESLint config, or a local module it imports, is newer, in which case it probes
-`eslint --print-config` once and caches the result. If the status cannot be
-determined it fails open and runs both engines as before. `--print` never
-probes: without a current cache it lists oxlint and says so on stderr. Explicit
-`--eslint` / `--oxlint` runs skip the check entirely.
+`eslint --print-config` once and caches the result. If it cannot find all those
+imports (no `typescript` installed), it does not trust the cache and probes on
+every run. If the status cannot be determined it fails open and runs both
+engines as before. `--print` never probes: without a current cache it lists
+oxlint and says so on stderr. Explicit `--eslint` / `--oxlint` runs skip the
+check entirely.
 
 Any trailing positional arguments are treated as paths to lint (default `.`).
 
