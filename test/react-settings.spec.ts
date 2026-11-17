@@ -67,7 +67,7 @@ describe("react settings", () => {
 		// validator accepts what our type describes.
 		const settings: CheckedReactSettings = {
 			additionalEffectHooks: "^useAsyncEffect$",
-			additionalRefHooks: "useLatest",
+			additionalRefHooks: "^useLocalRef$",
 			additionalStateHooks: "^useLocalState$",
 			compilationMode: "annotation",
 			importSource: "@rbxts",
@@ -82,7 +82,6 @@ describe("react settings", () => {
 		expect.assertions(1);
 
 		expect(reactSettings()).toStrictEqual({
-			additionalRefHooks: "useLatest",
 			importSource: "@rbxts",
 			version: "17.0.2",
 		});

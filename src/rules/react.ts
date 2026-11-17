@@ -108,7 +108,7 @@ export function mergeRestrictedDomImportRule(
  */
 export function reactSettings({
 	additionalEffectHooks,
-	additionalRefHooks = "useLatest",
+	additionalRefHooks,
 	additionalStateHooks,
 	compilationMode,
 	importSource = "@rbxts",
@@ -116,10 +116,10 @@ export function reactSettings({
 	version = "17.0.2",
 }: ReactSettings = {}): ReactSettings {
 	return {
-		additionalRefHooks,
 		importSource,
 		version,
 		...(additionalEffectHooks === undefined ? {} : { additionalEffectHooks }),
+		...(additionalRefHooks === undefined ? {} : { additionalRefHooks }),
 		...(additionalStateHooks === undefined ? {} : { additionalStateHooks }),
 		...(compilationMode === undefined ? {} : { compilationMode }),
 		...(polymorphicPropName === undefined ? {} : { polymorphicPropName }),

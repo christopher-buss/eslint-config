@@ -254,8 +254,6 @@ export interface ReactSettings {
 	/**
 	 * A pattern matching custom hooks to treat as ref hooks, alongside
 	 * `useRef`.
-	 *
-	 * @default "useLatest" - `@rbxts/pretty-react-hooks` returns a ref from it
 	 */
 	additionalRefHooks?: string;
 	/**
