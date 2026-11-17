@@ -78,7 +78,7 @@ catalogs:
     oxlint-tsgolint: 7.0.2007
     tsrs: 0.25.0-ts7.1.0-beta
   prod:
-    "@antfu/install-pkg": 2.0.1
+    "@antfu/install-pkg": 2.1.0
     "@clack/prompts": 1.9.0
     "@cspell/eslint-plugin": 10.0.1
     "@e18e/eslint-plugin": 0.8.1
