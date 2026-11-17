@@ -2,7 +2,6 @@ import { isPackageExists } from "local-pkg";
 import { describe, it } from "vitest";
 
 import { oxlintNativeRuleNames } from "../src/generated/oxlint-native.ts";
-import { GLOB_SRC } from "../src/globs.ts";
 import { isRecord } from "../src/guards.ts";
 import { isentinel } from "../src/index.ts";
 import {
@@ -17,6 +16,7 @@ import type { Severity } from "./oxlint-helpers.ts";
 import {
 	effectiveEslintRules,
 	effectiveOxlintRules,
+	nativePluginOptIn,
 	registeredNativePlugins,
 } from "./oxlint-helpers.ts";
 
@@ -527,7 +527,7 @@ describe("oxlint options-level rules", () => {
 				isInEditor: false,
 				rules: { "jsx-a11y/alt-text": "off" },
 			},
-			{ name: "test/native-plugins", files: [GLOB_SRC], plugins: ["jsx-a11y"], rules: {} },
+			nativePluginOptIn("jsx-a11y"),
 		);
 
 		const effective = effectiveOxlintRules(config, "src/index.ts");

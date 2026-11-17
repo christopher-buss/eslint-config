@@ -168,37 +168,6 @@ export function isUnscopedFragment(
 }
 
 /**
- * The native plugins a rule map names only to turn their rules off.
- *
- * On a whole-tree fragment (see {@link isUnscopedFragment}) these must not be
- * registered: a registration hands the fragment's files every category-enabled
- * rule the plugin owns, so a fragment that only disables a file-scoped plugin's
- * rules would switch the rest of them on across the whole tree.
- *
- * @param rules - The rule map to inspect.
- * @returns The plugins whose every entry in `rules` is a disable.
- */
-export function disabledOnlyPlugins(
-	rules: Readonly<Record<string, unknown>> | undefined,
-): Set<OxlintPlugin> {
-	const disabled = new Set<OxlintPlugin>();
-	const enabled = new Set<OxlintPlugin>();
-	const entries = Object.entries(rules ?? {});
-	for (const [rule, entry] of entries) {
-		const prefix = rulePluginPrefix(rule);
-		if (isNativePlugin(prefix)) {
-			(isOffEntry(entry) ? disabled : enabled).add(prefix);
-		}
-	}
-
-	for (const plugin of enabled) {
-		disabled.delete(plugin);
-	}
-
-	return disabled;
-}
-
-/**
  * Move file-scoped native plugins from the top level onto the overrides that
  * use them, mutating the overrides in place.
  *
@@ -218,7 +187,8 @@ export function disabledOnlyPlugins(
  * override (see {@link isUnscopedFragment}) that only disables the plugin's
  * rules: carrying the plugin there would re-register it across the whole tree,
  * and its disables are dropped instead. Disables meant for the plugin's own
- * files belong on an override scoped to them.
+ * files belong on an override scoped to them. A plugin the override declares
+ * in `plugins` is an explicit opt-in and is never dropped.
  *
  * @param overrides - The merged overrides (mutated).
  * @param globalPlugins - Plugins registered at the top level.
@@ -229,37 +199,39 @@ export function scopeOverridePlugins(
 ): void {
 	for (const override of overrides) {
 		const { rules } = override;
-		const leaking = isUnscopedFragment(override)
-			? disabledOnlyPlugins(rules)
-			: new Set<OxlintPlugin>();
-		for (const plugin of leaking) {
-			if (globalPlugins.has(plugin)) {
-				leaking.delete(plugin);
-			}
-		}
-
-		const scoped = new Set<OxlintPlugin>();
 		const declared = override.plugins ?? [];
+		const scoped = new Set<OxlintPlugin>();
 		for (const plugin of declared) {
-			if (!globalPlugins.has(plugin) && !leaking.has(plugin)) {
+			if (!globalPlugins.has(plugin)) {
 				scoped.add(plugin);
 			}
 		}
 
+		// Plugins this override would register only to carry disables across
+		// the whole tree. A declared plugin is an explicit opt-in and stays.
+		const droppedDisables = isUnscopedFragment(override)
+			? disabledOnlyPlugins(rules)
+			: new Set<OxlintPlugin>();
 		const ruleNames = Object.keys(rules ?? {});
 		for (const rule of ruleNames) {
 			const prefix = rulePluginPrefix(rule);
-			if (isNativePlugin(prefix) && !globalPlugins.has(prefix) && !leaking.has(prefix)) {
+			if (!isNativePlugin(prefix)) {
+				continue;
+			}
+
+			if (globalPlugins.has(prefix) || scoped.has(prefix)) {
+				droppedDisables.delete(prefix);
+			} else if (!droppedDisables.has(prefix)) {
 				scoped.add(prefix);
 			}
 		}
 
-		if (rules !== undefined && leaking.size > 0) {
+		if (rules !== undefined && droppedDisables.size > 0) {
 			// A fresh object: `rules` can still be the consumer's own.
 			override.rules = Object.fromEntries(
 				Object.entries(rules).filter(([rule]) => {
 					const prefix = rulePluginPrefix(rule);
-					return !isNativePlugin(prefix) || !leaking.has(prefix);
+					return !isNativePlugin(prefix) || !droppedDisables.has(prefix);
 				}),
 			);
 		}
@@ -397,15 +369,14 @@ export function splitOxlintRules(
 		}
 
 		if (!covered && isOff && (keepUnmappedOff || isOverride)) {
-			// Preserve an explicit disable. A native-prefix disable is kept and
-			// registers its (always-available) native plugin, which lets a
-			// config disable an unmapped native-only rule such as oxc/* for
-			// specific files. A jsPlugin disable is kept only when the plugin is
+			// Preserve an explicit disable. A native-prefix disable is kept, which
+			// lets a config disable an unmapped native-only rule such as oxc/*
+			// for specific files; like every native disable it does not list its
+			// plugin (see `nativePlugins` below). A jsPlugin disable is kept only when the plugin is
 			// installed, since oxlint errors the whole config build both on an
 			// unregistered plugin and on a registered-but-unresolvable one.
 			if (nativePrefix !== undefined) {
 				nativeRules[translated] = value;
-				nativePlugins.add(nativePrefix);
 			} else {
 				const specifier = oxlintJsPlugins[prefix];
 				if (specifier !== undefined && canResolveJsPlugin(specifier)) {
@@ -435,10 +406,6 @@ export function splitOxlintRules(
 
 			if (route.kind === "js-plugin" && route.suppressedNativeName !== undefined) {
 				nativeRules[route.suppressedNativeName] = "off";
-				const suppressedPrefix = rulePluginPrefix(route.suppressedNativeName);
-				if (isNativePlugin(suppressedPrefix)) {
-					nativePlugins.add(suppressedPrefix);
-				}
 			}
 
 			continue;
@@ -463,7 +430,11 @@ export function splitOxlintRules(
 			nativeRules[translated] = value;
 		}
 
-		if (nativePrefix !== undefined) {
+		// A disable does not list its plugin: `plugins` on a fragment then means
+		// an enabled rule or an explicit opt-in, never a bare disable. An
+		// override still registers the plugin a disable names, derived from the
+		// rule name in `scopeOverridePlugins`.
+		if (nativePrefix !== undefined && !isOff) {
 			nativePlugins.add(nativePrefix);
 		}
 	}
@@ -547,6 +518,39 @@ export function createOxlintConfigs({
 }
 
 /**
+ * The plugin a rule name belongs to, with unprefixed core rules mapped to
+ * `eslint`.
+ *
+ * @param rule - The oxlint rule name.
+ * @returns The part before the slash, or `eslint` when there is none.
+ */
+/**
+ * The native plugins a rule map names, enabled or not.
+ *
+ * @param rules - The rule map to inspect.
+ * @returns The native plugin prefixes of the rules.
+ */
+export function namedNativePlugins(
+	rules: Readonly<Record<string, unknown>> | undefined,
+): Set<OxlintPlugin> {
+	const plugins = new Set<OxlintPlugin>();
+	const ruleNames = Object.keys(rules ?? {});
+	for (const rule of ruleNames) {
+		const prefix = rulePluginPrefix(rule);
+		if (isNativePlugin(prefix)) {
+			plugins.add(prefix);
+		}
+	}
+
+	return plugins;
+}
+
+function rulePluginPrefix(rule: string): string {
+	const slashIndex = rule.indexOf("/");
+	return slashIndex === -1 ? "eslint" : rule.slice(0, slashIndex);
+}
+
+/**
  * Whether a rule entry turns its rule off.
  *
  * @param entry - A severity, or a severity followed by options.
@@ -558,15 +562,34 @@ function isOffEntry(entry: unknown): boolean {
 }
 
 /**
- * The plugin a rule name belongs to, with unprefixed core rules mapped to
- * `eslint`.
+ * The native plugins a rule map names only to turn their rules off.
  *
- * @param rule - The oxlint rule name.
- * @returns The part before the slash, or `eslint` when there is none.
+ * On a whole-tree fragment (see {@link isUnscopedFragment}) these must not be
+ * registered: a registration hands the fragment's files every category-enabled
+ * rule the plugin owns, so a fragment that only disables a file-scoped plugin's
+ * rules would switch the rest of them on across the whole tree.
+ *
+ * @param rules - The rule map to inspect.
+ * @returns The plugins whose every entry in `rules` is a disable.
  */
-function rulePluginPrefix(rule: string): string {
-	const slashIndex = rule.indexOf("/");
-	return slashIndex === -1 ? "eslint" : rule.slice(0, slashIndex);
+function disabledOnlyPlugins(
+	rules: Readonly<Record<string, unknown>> | undefined,
+): Set<OxlintPlugin> {
+	const disabled = new Set<OxlintPlugin>();
+	const enabled = new Set<OxlintPlugin>();
+	const entries = Object.entries(rules ?? {});
+	for (const [rule, entry] of entries) {
+		const prefix = rulePluginPrefix(rule);
+		if (isNativePlugin(prefix)) {
+			(isOffEntry(entry) ? disabled : enabled).add(prefix);
+		}
+	}
+
+	for (const plugin of enabled) {
+		disabled.delete(plugin);
+	}
+
+	return disabled;
 }
 
 /**

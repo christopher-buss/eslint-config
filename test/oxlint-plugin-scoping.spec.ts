@@ -6,6 +6,7 @@ import { GLOB_SRC } from "../src/globs.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import type {
 	OxlintConfig,
+	OxlintFactoryOptions,
 	OxlintOverride,
 	RuleCategories,
 	TypedOxlintConfigItem,
@@ -58,18 +59,18 @@ const WHOLE_TREE_VITEST_DISABLES: TypedOxlintConfigItem = {
  * Build the scoped config the probes lint, with `vitest` confined to
  * {@link VITEST_FILES}.
  *
- * @param categories - The categories to enable.
+ * @param options - Extra factory options, such as `categories`.
  * @param userConfigs - Consumer fragments to merge after the preset.
  * @returns The generated oxlint config.
  */
 function scopedConfig(
-	categories: RuleCategories | undefined,
+	options: Omit<OxlintFactoryOptions, "name"> = {},
 	...userConfigs: Array<TypedOxlintConfigItem>
 ): OxlintConfig {
 	return oxlintIsentinel(
 		{
 			name: "test/oxlint-plugin-scoping",
-			categories,
+			...options,
 			gitignore: false,
 			isAgent: false,
 			isInEditor: false,
@@ -99,7 +100,7 @@ async function lintProbes(
 	await fs.writeFile(path.join(temporaryDirectory, "src", "probe.ts"), PROBE);
 	await fs.writeFile(path.join(temporaryDirectory, "bedrock", "probe.test.ts"), PROBE);
 
-	const config = scopedConfig(ALL_CATEGORIES, ...userConfigs);
+	const config = scopedConfig({ categories: ALL_CATEGORIES }, ...userConfigs);
 
 	await fs.writeFile(
 		path.join(temporaryDirectory, ".oxlintrc.json"),
@@ -237,7 +238,7 @@ describe("oxlint plugin scoping", () => {
 	it("should register scoped plugins on their override, not at the top level", ({ expect }) => {
 		expect.assertions(3);
 
-		const config = scopedConfig(undefined);
+		const config = scopedConfig();
 
 		expect(config.plugins).not.toContain("vitest");
 		// `node` covers the complement of the roblox globs; its rules cannot
@@ -250,7 +251,7 @@ describe("oxlint plugin scoping", () => {
 	it("should drop a whole-tree override's disables for a scoped plugin", ({ expect }) => {
 		expect.assertions(2);
 
-		const userOverride = lastOverride(scopedConfig(undefined, WHOLE_TREE_VITEST_DISABLES));
+		const userOverride = lastOverride(scopedConfig({}, WHOLE_TREE_VITEST_DISABLES));
 
 		// Registering the plugin to carry the disables would hand the whole
 		// tree its category rules; without it they are inert.
@@ -263,15 +264,7 @@ describe("oxlint plugin scoping", () => {
 	}) => {
 		expect.assertions(2);
 
-		const config = oxlintIsentinel({
-			name: "test/oxlint-plugin-scoping",
-			gitignore: false,
-			isAgent: false,
-			isInEditor: false,
-			roblox: { files: ["src/**"] },
-			rules: { "vitest/require-hook": "off" },
-			test: { vitest: { files: VITEST_FILES } },
-		});
+		const config = scopedConfig({ rules: { "vitest/require-hook": "off" } });
 
 		// `options.rules` covers the whole tree, so registering the plugin for
 		// its disables would hoist it to the top level.
@@ -281,14 +274,28 @@ describe("oxlint plugin scoping", () => {
 		).not.toContain(GLOB_SRC);
 	});
 
+	it("should keep an explicit plugin opt-in on a whole-tree override", ({ expect }) => {
+		expect.assertions(2);
+
+		const config = scopedConfig({}, { ...WHOLE_TREE_VITEST_DISABLES, plugins: ["vitest"] });
+
+		// A hand-written `plugins` entry opts the plugin into categories
+		// project-wide, so it stays global and its disables stay with it.
+		expect(config.plugins).toContain("vitest");
+		expect(lastOverride(config).rules).toStrictEqual(WHOLE_TREE_VITEST_DISABLES.rules);
+	});
+
 	it("should keep a narrow override's disables for a scoped plugin", ({ expect }) => {
 		expect.assertions(2);
 
 		const userOverride = lastOverride(
-			scopedConfig(undefined, {
-				...WHOLE_TREE_VITEST_DISABLES,
-				files: ["bedrock/legacy/**/*.test.ts"],
-			}),
+			scopedConfig(
+				{},
+				{
+					...WHOLE_TREE_VITEST_DISABLES,
+					files: ["bedrock/legacy/**/*.test.ts"],
+				},
+			),
 		);
 
 		// A narrow disable is a relaxation where the plugin is enabled, and it
@@ -307,7 +314,7 @@ describe("oxlint plugin scoping", () => {
 			"vitest/no-focused-tests": "error",
 		} as const;
 		const userOverride = lastOverride(
-			scopedConfig(undefined, { ...WHOLE_TREE_VITEST_DISABLES, rules }),
+			scopedConfig({}, { ...WHOLE_TREE_VITEST_DISABLES, rules }),
 		);
 
 		// The override asks for the plugin across the whole tree, so the

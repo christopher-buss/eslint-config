@@ -401,6 +401,10 @@ export default isentinel({
   );
   ```
 
+  A narrow fragment still registers the plugin on all of its files, so a disable
+  on files outside the plugin's globs (`src/legacy/**` for `vitest`, say) makes
+  the plugin's category rules fire there.
+
   To opt a plugin into your categories project-wide, register it yourself on a
   whole-tree config fragment:
 

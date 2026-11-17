@@ -3,14 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import { describe, it, vi } from "vitest";
 
-import { GLOB_SRC } from "../src/globs.ts";
 import { isentinel as oxlintIsentinel } from "../src/oxlint/index.ts";
 import type {
 	OxlintConfig,
 	OxlintFactoryOptions,
 	TypedOxlintConfigItem,
 } from "../src/oxlint/index.ts";
-import { effectiveOxlintRules } from "./oxlint-helpers.ts";
+import { effectiveOxlintRules, nativePluginOptIn } from "./oxlint-helpers.ts";
 import { OXLINT_TIMEOUT, runOxlint } from "./oxlint-run.ts";
 
 // Formatting is off throughout: nothing here tests it, and the oxfmt native
@@ -131,7 +130,7 @@ describe("oxlint overrides", () => {
 				oxc: false,
 				typescript: { overrides: { "unicorn/no-accidental-bitwise-operator": "off" } },
 			},
-			{ name: "test/native-plugins", files: [GLOB_SRC], plugins: ["oxc"], rules: {} },
+			nativePluginOptIn("oxc"),
 		);
 
 		const effective = effectiveOxlintRules(config, SOURCE_FILE);

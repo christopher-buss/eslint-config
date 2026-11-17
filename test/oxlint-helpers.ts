@@ -1,8 +1,9 @@
 import picomatch from "picomatch";
 
+import { GLOB_SRC } from "../src/globs.ts";
 import type { TypedFlatConfigItem } from "../src/index.ts";
 import { isPruningViewConfig } from "../src/oxlint/adapters.ts";
-import type { OxlintConfig } from "../src/oxlint/index.ts";
+import type { OxlintConfig, OxlintPlugin, TypedOxlintConfigItem } from "../src/oxlint/index.ts";
 
 export type Severity = "enabled" | "off";
 
@@ -255,4 +256,15 @@ export function enabledFromEffective(effective: Map<string, Severity>): Set<stri
 	}
 
 	return enabled;
+}
+
+/**
+ * A whole-tree fragment that registers native plugins and sets no rules — the
+ * way a consumer opts a plugin in project-wide.
+ *
+ * @param plugins - The native plugins to register.
+ * @returns The opt-in fragment.
+ */
+export function nativePluginOptIn(...plugins: Array<OxlintPlugin>): TypedOxlintConfigItem {
+	return { name: "test/native-plugins", files: [GLOB_SRC], plugins, rules: {} };
 }
