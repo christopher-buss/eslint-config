@@ -46,7 +46,7 @@ export function oxlintTypescript(
 		...componentExtensions.map((extension) => `**/*.${extension}`),
 	];
 
-	const typeAwareRules = typescriptTypeAwareRules({ roblox }) ?? {};
+	const typeAwareRules = typescriptTypeAwareRules({ roblox });
 	const gatedTypeAwareRules = typeAware
 		? typeAwareRules
 		: (Object.fromEntries(

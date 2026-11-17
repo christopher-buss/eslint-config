@@ -193,7 +193,7 @@ export interface OptionsTypeScriptWithTypes {
 	 * @default true
 	 * @see https://typescript-eslint.io/linting/typed-linting/
 	 */
-	typeAware?: boolean;
+	typeAware?: boolean | undefined;
 }
 
 export interface OptionsTypeScriptTypeAwareRoot {
@@ -210,7 +210,7 @@ export interface OptionsTypeScriptTypeAwareRoot {
 	 *
 	 * @default true
 	 */
-	typeAwareRoot?: boolean;
+	typeAwareRoot?: boolean | undefined;
 }
 
 export type OptionsTypescript = (
@@ -254,37 +254,37 @@ export interface ReactSettings {
 	 * A pattern matching custom hooks to treat as effect hooks, alongside
 	 * `useEffect` and friends.
 	 */
-	additionalEffectHooks?: string;
+	additionalEffectHooks?: string | undefined;
 	/**
 	 * A pattern matching custom hooks to treat as ref hooks, alongside
 	 * `useRef`.
 	 */
-	additionalRefHooks?: string;
+	additionalRefHooks?: string | undefined;
 	/**
 	 * A pattern matching custom hooks to treat as state hooks, alongside
 	 * `useState` and friends.
 	 */
-	additionalStateHooks?: string;
+	additionalStateHooks?: string | undefined;
 	/** How the React Compiler decides which components to compile. */
-	compilationMode?: "all" | "annotation" | "infer" | "syntax";
+	compilationMode?: "all" | "annotation" | "infer" | "syntax" | undefined;
 	/**
 	 * The module React is imported from.
 	 *
 	 * @default "react"
 	 */
-	importSource?: string;
+	importSource?: string | undefined;
 	/**
 	 * The prop a polymorphic component uses to override its element.
 	 *
 	 * @default "as"
 	 */
-	polymorphicPropName?: string;
+	polymorphicPropName?: string | undefined;
 	/**
 	 * The React version to assume, rather than detecting it.
 	 *
 	 * @default "detect"
 	 */
-	version?: string;
+	version?: string | undefined;
 }
 
 export type ReactConfig = OptionsOverridesTypeAware &
@@ -380,7 +380,7 @@ export interface OptionsE18e extends OptionsOverrides {
 	 *
 	 * @default the running Node major version
 	 */
-	nodeMajor?: number;
+	nodeMajor?: number | undefined;
 	/**
 	 * Include performance improvements rules.
 	 *

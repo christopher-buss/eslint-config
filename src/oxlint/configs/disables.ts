@@ -29,7 +29,7 @@ export function oxlintDisables({
 	rootExcludes = GLOB_ROOT_EXCLUDE,
 	workspaceRoot,
 }: {
-	configDirectory?: string;
+	configDirectory?: string | undefined;
 	root: Array<string>;
 	rootExcludes?: Array<string>;
 	workspaceRoot: string;

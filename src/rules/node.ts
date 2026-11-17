@@ -6,7 +6,7 @@ export interface NodeRuleOptions {
 	 * whose suggested APIs older runtimes lack. Rules stay off when it is
 	 * undefined.
 	 */
-	nodeMajor?: number;
+	nodeMajor?: number | undefined;
 }
 
 /** `Uint8Array#toHex` and `Uint8Array.fromHex` shipped in Node 25. */
@@ -18,7 +18,9 @@ const NODE_UINT8ARRAY_HEX = 25;
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function nodeRules({ nodeMajor }: NodeRuleOptions = {}): TypedFlatConfigItem["rules"] {
+export function nodeRules({ nodeMajor }: NodeRuleOptions = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"node/handle-callback-err": ["error", "^(err|error)$"],
 		"node/no-deprecated-api": "error",

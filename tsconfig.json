@@ -2,7 +2,6 @@
 	"extends": "@isentinel/tsconfig/typescript",
 	"compilerOptions": {
 		"allowJs": true,
-		"exactOptionalPropertyTypes": false,
 		"isolatedDeclarations": false
 	},
 	"exclude": [

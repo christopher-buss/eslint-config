@@ -34,7 +34,7 @@ export function oxlintReact(
 		OptionsHasRoblox &
 		OptionsOverrides &
 		ReactRuleOptions &
-		ReactSettings & { settings?: ConfigSettings } = {},
+		ReactSettings & { settings?: ConfigSettings | undefined } = {},
 ): Array<TypedOxlintConfigItem> {
 	const {
 		domPackage = options.settings?.["testing-library"]?.domPackage,

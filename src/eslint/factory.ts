@@ -689,13 +689,13 @@ export async function isentinel(
 					continue;
 				}
 
-				config.rules = {
-					...config.rules,
-					"no-restricted-imports": mergeRestrictedDomImportRule(
-						restrictedImports,
-						restrictedDomPackage,
-					),
-				};
+				const merged = mergeRestrictedDomImportRule(
+					restrictedImports,
+					restrictedDomPackage,
+				);
+				if (merged !== undefined) {
+					config.rules = { ...config.rules, "no-restricted-imports": merged };
+				}
 			}
 		});
 	}

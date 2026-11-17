@@ -89,7 +89,7 @@ const testCaseSortConfigs = [
  */
 export function perfectionistRules(
 	config?: PerfectionistRuleOptions,
-): TypedFlatConfigItem["rules"] {
+): NonNullable<TypedFlatConfigItem["rules"]> {
 	const { customClassGroups = [], sortObjects, type = "game" } = config ?? {};
 
 	const customGroups = [
@@ -214,7 +214,7 @@ export function perfectionistRules(
  */
 export function perfectionistJsxRules(
 	config?: PerfectionistRuleOptions,
-): TypedFlatConfigItem["rules"] {
+): NonNullable<TypedFlatConfigItem["rules"]> {
 	const { sortObjects } = config ?? {};
 
 	const sortedObjectJsxConfig = sortObjects ?? {

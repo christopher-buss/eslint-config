@@ -20,7 +20,7 @@ export async function react(
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
 		OptionsTypeScriptWithTypes &
-		ReactConfig & { settings?: ConfigSettings } = {},
+		ReactConfig & { settings?: ConfigSettings | undefined } = {},
 ): Promise<Array<TypedFlatConfigItem>> {
 	const {
 		filenameCase = "kebabCase",
@@ -65,7 +65,7 @@ export async function react(
 	const tsconfigPath = typeAware ? getTsConfig(options.tsconfigPath) : undefined;
 	const isTypeAware = tsconfigPath !== undefined;
 
-	const typeAwareRules: TypedFlatConfigItem["rules"] = {
+	const typeAwareRules: NonNullable<TypedFlatConfigItem["rules"]> = {
 		"react/no-implicit-children": "error",
 		"react/no-implicit-key": "error",
 		"react/no-implicit-ref": "error",

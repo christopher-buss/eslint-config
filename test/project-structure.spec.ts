@@ -175,10 +175,22 @@ function onlyStructureRule(config: OxlintConfig): OxlintConfig {
 			return [];
 		}
 
-		return [{ ...override, jsPlugins: override.jsPlugins?.filter(isStructurePlugin), rules }];
+		return [
+			{
+				...override,
+				...(override.jsPlugins
+					? { jsPlugins: override.jsPlugins.filter(isStructurePlugin) }
+					: {}),
+				rules,
+			},
+		];
 	});
 
-	return { ...config, jsPlugins: config.jsPlugins?.filter(isStructurePlugin), overrides };
+	return {
+		...config,
+		...(config.jsPlugins ? { jsPlugins: config.jsPlugins.filter(isStructurePlugin) } : {}),
+		overrides,
+	};
 }
 
 /**

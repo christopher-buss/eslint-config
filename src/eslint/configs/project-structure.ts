@@ -6,14 +6,15 @@ import {
 import { ensurePackages } from "../../utils.ts";
 import type { ProjectStructureConfig, TypedFlatConfigItem } from "../types.ts";
 
-export async function projectStructure({
-	enforceExistence,
-	files = PROJECT_STRUCTURE_FILES,
-	ignores = PROJECT_STRUCTURE_IGNORES,
-	overrides = {},
-	projectRoot,
-	structureRoot,
-}: ProjectStructureConfig = {}): Promise<Array<TypedFlatConfigItem>> {
+export async function projectStructure(
+	options: ProjectStructureConfig = {},
+): Promise<Array<TypedFlatConfigItem>> {
+	const {
+		files = PROJECT_STRUCTURE_FILES,
+		ignores = PROJECT_STRUCTURE_IGNORES,
+		overrides = {},
+	} = options;
+
 	await ensurePackages(["eslint-plugin-project-structure"]);
 
 	const { projectStructurePlugin } = await import("eslint-plugin-project-structure");
@@ -30,7 +31,7 @@ export async function projectStructure({
 			files,
 			ignores,
 			rules: {
-				...folderStructureRules({ enforceExistence, projectRoot, structureRoot }),
+				...folderStructureRules(options),
 
 				...overrides,
 			},

@@ -133,7 +133,7 @@ export function buildOxfmtOptions({
 	prettierOptions = {},
 }: {
 	oxfmtConfigOptions?: OxfmtOptions;
-	oxfmtOptions?: OxfmtOptions;
+	oxfmtOptions?: OxfmtOptions | undefined;
 	prettierOptions?: Record<string, unknown>;
 }): OxfmtOptions {
 	return {

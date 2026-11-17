@@ -6,9 +6,9 @@ import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function importsRules({
-	stylistic = true,
-}: OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+export function importsRules({ stylistic = true }: OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"antfu/import-dedupe": "error",
 		"antfu/no-import-dist": "error",
@@ -32,7 +32,7 @@ export function importsRules({
  *
  * @returns The rule map.
  */
-export function importsGameRules(): TypedFlatConfigItem["rules"] {
+export function importsGameRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"no-restricted-syntax": [
 			"error",

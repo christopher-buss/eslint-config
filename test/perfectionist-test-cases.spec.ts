@@ -8,8 +8,7 @@ import { perfectionistRules, perfectionistSettings } from "../src/rules/perfecti
 const config: Linter.Config = {
 	plugins: { perfectionist: pluginPerfectionist },
 	rules: {
-		"perfectionist/sort-objects":
-			perfectionistRules()?.["perfectionist/sort-objects"] ?? "error",
+		"perfectionist/sort-objects": perfectionistRules()["perfectionist/sort-objects"] ?? "error",
 	},
 	settings: { ...perfectionistSettings },
 };

@@ -21,7 +21,9 @@ export interface VitestRuleOptions extends OptionsIsInEditor, OptionsStylistic {
  * @param prefix - The test-plugin prefix in use (`jest` or `vitest`).
  * @returns The rule map.
  */
-export function typeTestRules(prefix: "jest" | "vitest"): TypedFlatConfigItem["rules"] {
+export function typeTestRules(
+	prefix: "jest" | "vitest",
+): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		...(prefix === "vitest"
 			? {
@@ -46,7 +48,7 @@ export function typeTestRules(prefix: "jest" | "vitest"): TypedFlatConfigItem["r
  *
  * @returns The rule map.
  */
-export function jestExtendedRules(): TypedFlatConfigItem["rules"] {
+export function jestExtendedRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"jest-extended/prefer-to-be-array": "error",
 		"jest-extended/prefer-to-be-false": "error",
@@ -72,7 +74,7 @@ export function jestRules({
 	isInEditor = false,
 	roblox: isRoblox = true,
 	stylistic = true,
-}: JestRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: JestRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/no-incompatible-assertion-types": "error",
 		"flawless/no-shared-mocks": "error",
@@ -170,7 +172,7 @@ export function vitestRules({
 	extended = false,
 	isInEditor = false,
 	stylistic = true,
-}: VitestRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: VitestRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/no-conditional-in-test": ["error", { allowOptionalChaining: false }],
 		"flawless/no-incompatible-assertion-types": "error",
