@@ -32,6 +32,11 @@ export interface PassPlan {
 	/** The pass descriptor (cache base name, label, type-aware env, sizing). */
 	descriptor: PassDescriptor;
 	/**
+	 * The number of files the pass was sized for: its dirty count, or the
+	 * conservative count when a target is outside the working directory.
+	 */
+	dirtyCount: number;
+	/**
 	 * The heap the pass's child runs with. `undefined` for a pass that builds
 	 * no TypeScript program, which never gets one.
 	 */
@@ -268,6 +273,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 			cacheFile,
 			concurrency,
 			descriptor,
+			dirtyCount: sizingDirtyCount,
 			heap,
 			shouldRun: false,
 			skipReason: TYPED_SKIP_NOTICE,
@@ -278,6 +284,7 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 		cacheFile,
 		concurrency,
 		descriptor,
+		dirtyCount: sizingDirtyCount,
 		heap,
 		shouldRun: true,
 		skipReason: undefined,

@@ -11,12 +11,14 @@ import type {
 import {
 	FAST_WORKER_MEMORY_MB,
 	OXLINT_THREAD_MEMORY_MB,
-	PROGRAM_WORKER_MEMORY_MB,
+	programSize,
+	programWorkerMemoryMb,
 } from "./concurrency.ts";
 
 /**
  * The pass each ESLint child's cost is learned under. The full config and the
- * fix child share one: both lint with every rule.
+ * fix child share one: both lint with every rule. A child that builds a
+ * TypeScript program adds its size (see `programSize`).
  */
 const ESLINT_COST_PASS: Partial<Record<ToolLabel, string>> = {
 	eslint: "eslint-full",
@@ -203,15 +205,25 @@ function pathArguments(paths: Array<string>): Array<string> {
  * its most workers (`off` is one, on the main thread), each counted at what a
  * worker of its kind is expected to use.
  *
+ * A worker that builds a TypeScript program grows with its files, so its cost
+ * is learned per size and its estimate counts its files. Both use the planned
+ * workers: a smaller grant gives each worker more files than its lease counts.
+ *
  * @param context - The resolved composition context.
  * @returns The child's worker demand.
  */
 function eslintDemand(context: ComposeContext): WorkerDemand {
+	const maxWorkers = context.concurrency === "off" ? 1 : context.concurrency;
+	const pass = ESLINT_COST_PASS[context.eslintLabel] ?? `eslint-${context.eslintLabel}`;
+	const filesPerWorker = Math.ceil(context.dirtyCount / maxWorkers);
+	const buildsProgram = context.heap !== undefined;
+
 	return {
 		flag: "--concurrency",
-		maxWorkers: context.concurrency === "off" ? 1 : context.concurrency,
-		memoryPerWorkerMb:
-			context.heap === undefined ? FAST_WORKER_MEMORY_MB : PROGRAM_WORKER_MEMORY_MB,
-		pass: ESLINT_COST_PASS[context.eslintLabel] ?? `eslint-${context.eslintLabel}`,
+		maxWorkers,
+		memoryPerWorkerMb: buildsProgram
+			? programWorkerMemoryMb(filesPerWorker)
+			: FAST_WORKER_MEMORY_MB,
+		pass: buildsProgram ? `${pass}:${programSize(filesPerWorker)}` : pass,
 	};
 }

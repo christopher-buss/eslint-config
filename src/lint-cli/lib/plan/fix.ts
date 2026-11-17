@@ -132,6 +132,7 @@ export function planFixChild(
 			cacheLocation: cacheFile,
 			ci: run.ci,
 			concurrency,
+			dirtyCount: targets.length,
 			eslintLabel: FULL_PASS.label,
 			fix: true,
 			heap: planPassHeap(FULL_PASS.label, heap, { concurrency, dirtyCount: targets.length }),
