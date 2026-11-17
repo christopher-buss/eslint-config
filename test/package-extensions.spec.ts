@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, it } from "vitest";
+import type { TestContext } from "vitest";
 
 import {
 	applyExtensions,
@@ -7,6 +11,7 @@ import {
 	publishedExtensions,
 } from "../pnpm-plugin/extensions.mjs";
 import {
+	collectSurface,
 	findPublishedDependencies,
 	resolveDependency,
 } from "../scripts/check-package-extensions.ts";
@@ -142,6 +147,91 @@ describe("publishedExtensions", () => {
 		});
 
 		expect(providerCounts.every((count) => count > 0)).toBe(true);
+	});
+});
+
+describe("collectSurface", () => {
+	/**
+	 * Writes a package to a fresh directory, removed when the test finishes.
+	 *
+	 * @param files - Each file's path relative to the package, and its text.
+	 * @param onTestFinished - The test's cleanup hook.
+	 * @returns The package directory.
+	 */
+	function writePackage(
+		files: Record<string, string>,
+		onTestFinished: TestContext["onTestFinished"],
+	): string {
+		const directory = fs.mkdtempSync(path.join(os.tmpdir(), "isentinel-surface-"));
+		onTestFinished(() => {
+			fs.rmSync(directory, { force: true, recursive: true });
+		});
+
+		for (const [file, text] of Object.entries(files)) {
+			const target = path.join(directory, file);
+			fs.mkdirSync(path.dirname(target), { recursive: true });
+			fs.writeFileSync(target, text);
+		}
+
+		return directory;
+	}
+
+	/**
+	 * Lists the surface as paths relative to the package, sorted.
+	 *
+	 * @param directory - The package directory.
+	 * @param manifest - Its manifest.
+	 * @returns The relative paths.
+	 */
+	function surfaceOf(directory: string, manifest: Record<string, unknown>): Array<string> {
+		return collectSurface(directory, manifest)
+			.map((file) => path.relative(directory, file).replaceAll("\\", "/"))
+			.toSorted();
+	}
+
+	const shipped = {
+		"dist/a.d.ts": "export type A = string;",
+		"dist/b/index.d.ts": "export type B = number;",
+		"dist/esm.d.mts": "export type E = boolean;",
+		"dist/globals.d.ts": "declare const g: string;",
+		"dist/index.d.ts": [
+			'/// <reference path="./globals.d.ts" />',
+			'export type { A } from "./a.js";',
+			'export type { B } from "./b";',
+		].join("\n"),
+		"dist/internal.d.ts": 'import type { Node } from "estree";',
+	};
+
+	it("follows only what the entry points reach", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = writePackage(shipped, onTestFinished);
+
+		expect(
+			surfaceOf(directory, {
+				exports: { ".": { import: "./dist/esm.mjs", types: "./dist/index.d.ts" } },
+			}),
+		).toStrictEqual([
+			"dist/a.d.ts",
+			"dist/b/index.d.ts",
+			"dist/esm.d.mts",
+			"dist/globals.d.ts",
+			"dist/index.d.ts",
+		]);
+	});
+
+	it.for<[string, Record<string, unknown>]>([
+		["without an exports map", { types: "./dist/index.d.ts" }],
+		["with a wildcard subpath", { exports: { "./*": "./dist/*.js" } }],
+		["with a folder subpath", { exports: { "./": "./dist/" } }],
+		["with typesVersions", { exports: "./dist/index.js", typesVersions: {} }],
+		["when no entry point resolves", { exports: "./dist/missing.js" }],
+	])("walks every declaration %s", ([, manifest], { expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = writePackage(shipped, onTestFinished);
+
+		expect(surfaceOf(directory, manifest)).toContain("dist/internal.d.ts");
 	});
 });
 

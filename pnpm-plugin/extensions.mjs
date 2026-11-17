@@ -40,9 +40,11 @@
  *   `dependencies`.
  * @property {string} [fixedIn] The first version to declare these itself. Later
  *   versions are left alone.
- * @property {Array<string>} [ignore] Specifiers accounted for without being
- *   injected, because they are not part of the package's type surface. Read
- *   only by the check script; nothing is injected for them.
+ * @property {Array<string>} [ignore] Specifiers on the package's type surface
+ *   accounted for without being injected, because no declaration can satisfy
+ *   them (a leaked template variable, an opt-in integration). Read only by the
+ *   check script; nothing is injected for them. Imports in files the entry
+ *   points never reach need no entry at all: the check skips those files.
  * @property {string} name The package to extend.
  * @property {Record<string, string>} [peerDependencies] Declarations to add to
  *   `peerDependencies`, each marked optional.
@@ -62,7 +64,7 @@
  * @property {string} [version] The installed version, tested against `fixedIn`.
  */
 /**
- * A tsconfig template variable that leaked into two plugins' published
+ * A tsconfig template variable that leaked into a plugin's published
  * declarations. Unresolvable under any layout; tracked in
  * christopher-buss/eslint-config#640.
  */
@@ -72,12 +74,6 @@ const LEAKED_CONFIG_DIR = "${configDir}";
 const RELEASE_SEPARATOR = /[-+]/u;
 /** @type {ReadonlyArray<PackageExtension>} */
 export const packageExtensions = [
-	{
-		name: "@cspell/eslint-plugin",
-		dependencies: {
-			"@types/estree": "^1",
-		},
-	},
 	{
 		name: "@e18e/eslint-plugin",
 		dependencies: {
@@ -142,25 +138,6 @@ export const packageExtensions = [
 		},
 	},
 	{
-		name: "eslint-plugin-comment-length",
-		// Rule-tester declarations ship inside the tarball.
-		ignore: ["@typescript-eslint/rule-tester"],
-	},
-	{
-		name: "eslint-plugin-de-morgan",
-		dependencies: {
-			"@types/estree": "^1",
-		},
-	},
-	{
-		name: "eslint-plugin-flawless",
-		ignore: [LEAKED_CONFIG_DIR],
-	},
-	{
-		name: "eslint-plugin-format-lua",
-		ignore: ["eslint-define-config"],
-	},
-	{
 		name: "eslint-plugin-jsdoc",
 		dependencies: {
 			"@eslint/core": "^1",
@@ -183,13 +160,6 @@ export const packageExtensions = [
 		dependencies: {
 			"@eslint/core": "^1",
 			"@types/estree": "^1",
-		},
-	},
-	{
-		name: "eslint-plugin-perfectionist",
-		peerDependencies: {
-			"@typescript-eslint/types": "*",
-			"typescript": "*",
 		},
 	},
 	{

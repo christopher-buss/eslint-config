@@ -1,7 +1,9 @@
+// cspell:words extensionless
 /**
  * Guards `pnpm-plugin/extensions.mjs` against drift: every module specifier an
- * installed package's shipped declarations import must be declared by that
- * package or covered by a table entry.
+ * installed package's type surface imports must be declared by that package or
+ * covered by a table entry. The surface is what its entry points reach (see
+ * {@link collectSurface}); a declaration nothing loads cannot degrade a type.
  *
  * Deliberately layout-independent. Pnpm disables `enableGlobalVirtualStore` in
  * CI, where the hoisted store hides every under-declaration, so a type-checker
@@ -239,6 +241,157 @@ function collectDeclarations(directory: string, found: Array<string> = []): Arra
 }
 
 /**
+ * A source or runtime extension (`.js`, `.mjs`, `.cts`, ...), whose declaration
+ * sits beside it with the matching `.d.*ts` extension.
+ */
+const SCRIPT_EXTENSION = /\.([cm]?)[jt]s$/u;
+
+/** What an extensionless target may resolve to, tried in order. */
+const EXTENSIONLESS_CANDIDATES = [
+	".d.ts",
+	".d.mts",
+	".d.cts",
+	"/index.d.ts",
+	"/index.d.mts",
+	"/index.d.cts",
+];
+
+/**
+ * Collects the declarations a consumer can load from a package: those its
+ * entry points reach through relative imports and `/// <reference path>`.
+ * Anything else ships in the tarball without being part of the type surface,
+ * so its imports break nothing.
+ *
+ * Falls back to every shipped declaration when the surface is open, or when no
+ * entry point resolves to one — the guard must not go quiet just because a
+ * manifest is laid out in a way this walk does not understand.
+ *
+ * @param directory - The installed package directory.
+ * @param manifest - Its parsed manifest.
+ * @returns The declaration file paths.
+ */
+export function collectSurface(
+	directory: string,
+	manifest: Record<string, unknown>,
+): Array<string> {
+	const entries = entryDeclarations(directory, manifest);
+	if (entries === undefined || entries.length === 0) {
+		return collectDeclarations(directory);
+	}
+
+	const reached = new Set<string>();
+	const queue = [...entries];
+	while (queue.length > 0) {
+		const file = queue.pop();
+		if (file === undefined || reached.has(file)) {
+			continue;
+		}
+
+		reached.add(file);
+
+		const info = ts.preProcessFile(readFileSync(file, "utf8"), true, true);
+		const relative = [
+			...info.importedFiles
+				.map(({ fileName }) => fileName)
+				.filter((fileName) => fileName.startsWith(".")),
+			...info.referencedFiles.map(({ fileName }) => fileName),
+		];
+		for (const specifier of relative) {
+			const declaration = declarationFor(path.resolve(path.dirname(file), specifier));
+			if (declaration !== undefined) {
+				queue.push(declaration);
+			}
+		}
+	}
+
+	return [...reached];
+}
+
+/**
+ * Maps a file a package points at, at runtime or for types, to the declaration
+ * TypeScript loads for it.
+ *
+ * @param target - The absolute path of the target.
+ * @returns The declaration file, or undefined when none exists.
+ */
+function declarationFor(target: string): string | undefined {
+	let candidates: Array<string>;
+	if (DECLARATION_PATTERN.test(target)) {
+		candidates = [target];
+	} else if (SCRIPT_EXTENSION.test(target)) {
+		candidates = [target.replace(SCRIPT_EXTENSION, ".d.$1ts")];
+	} else {
+		candidates = EXTENSIONLESS_CANDIDATES.map((suffix) => target + suffix);
+	}
+
+	return candidates.find((candidate) => {
+		return statSync(candidate, { throwIfNoEntry: false })?.isFile() === true;
+	});
+}
+
+/**
+ * Collects every string leaf of a manifest field such as `exports`.
+ *
+ * @param value - The field's value.
+ * @param found - The accumulator carried through the recursion.
+ * @returns The strings found at any depth.
+ */
+function stringLeaves(value: unknown, found: Array<string> = []): Array<string> {
+	if (typeof value === "string") {
+		found.push(value);
+	} else if (Array.isArray(value)) {
+		for (const item of value) {
+			stringLeaves(item, found);
+		}
+	} else if (isRecord(value)) {
+		for (const item of Object.values(value)) {
+			stringLeaves(item, found);
+		}
+	}
+
+	return found;
+}
+
+/**
+ * The declarations a package's entry points load directly, or undefined when
+ * its surface is open: without an `exports` map, with a wildcard or folder
+ * subpath, or with `typesVersions`, a consumer can reach any shipped file.
+ *
+ * @param directory - The installed package directory.
+ * @param manifest - Its parsed manifest.
+ * @returns The entry declarations, or undefined for an open surface.
+ */
+function entryDeclarations(
+	directory: string,
+	manifest: Record<string, unknown>,
+): Array<string> | undefined {
+	if (manifest["exports"] === undefined || manifest["typesVersions"] !== undefined) {
+		return undefined;
+	}
+
+	// `imports` targets are reached through `#` specifiers, which the walk
+	// does not follow, so they count as entry points of their own.
+	const targets = [
+		...stringLeaves(manifest["exports"]),
+		...stringLeaves(manifest["imports"]),
+		...stringLeaves([manifest["types"], manifest["typings"]]),
+	];
+	if (targets.some((target) => target.includes("*") || target.endsWith("/"))) {
+		return undefined;
+	}
+
+	const entries = new Set<string>();
+	for (const target of targets) {
+		const declaration = declarationFor(path.join(directory, target));
+		if (declaration !== undefined) {
+			entries.add(declaration);
+		}
+	}
+
+	return [...entries];
+}
+
+/**
  * Extracts the packages a declaration file references, from both its import
  * specifiers and its triple-slash type references. TypeScript's own
  * pre-processor is used rather than a pattern: specifiers inside JSDoc code
@@ -365,7 +518,7 @@ function findUndeclared(directory: string, declaredBy: string): Set<string> | un
 	const declared = declaredPackages(manifest);
 	const undeclared = new Set<string>();
 
-	for (const file of collectDeclarations(directory)) {
+	for (const file of collectSurface(directory, manifest)) {
 		for (const name of referencedPackages(file)) {
 			const missing = missingProvider(directory, declaredBy, declared, name);
 			if (missing !== undefined) {
@@ -465,8 +618,8 @@ function main(): number {
 	if (uncovered.size > 0) {
 		console.error(
 			`[check-extensions] ${uncovered.size} package(s) import types they do not declare. ` +
-				"Add them to pnpm-plugin/extensions.mjs, or list them under `ignore` when the " +
-				"declarations are not part of the package's type surface.",
+				"Add them to pnpm-plugin/extensions.mjs, or list them under `ignore` when no " +
+				"declaration can satisfy them.",
 		);
 		return 1;
 	}
