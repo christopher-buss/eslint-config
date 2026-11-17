@@ -220,6 +220,14 @@ export type OptionsTypescript = (
 	OptionsTypeScriptTypeAwareRoot;
 
 export interface PerfectionistConfig {
+	/**
+	 * Names of injected constructor parameters to put first, in this order, in
+	 * classes decorated with `@Service`, `@Controller`, `@Component` or
+	 * `@Provider`. The other parameters follow in natural order.
+	 *
+	 * @example ["logger"]
+	 */
+	constructorParameterGroups?: Array<string>;
 	customClassGroups?: Array<string>;
 	/**
 	 * Custom configuration for perfectionist/sort-objects rule. Merges with
