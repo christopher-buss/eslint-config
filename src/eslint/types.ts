@@ -161,7 +161,11 @@ export interface OptionsTypeScriptParserOptions {
 	 * Globs of files to allow running with the default project compiler options
 	 * despite not being matched by the project service.
 	 *
-	 * @default ["*.js", "*.ts", ".*.js", ".*.ts"]
+	 * Outside roblox the default leaves out `*.ts`, because the
+	 * `@isentinel/tsconfig` `include` covers root-level `.ts` files. Set this
+	 * when your tsconfig does not include them.
+	 *
+	 * @default ["*.js", ".*.js", ".*.ts"] (roblox: ["*.js", "*.ts", ".*.js", ".*.ts"])
 	 */
 	outOfProjectFiles?: Array<string>;
 

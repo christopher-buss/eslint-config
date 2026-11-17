@@ -10,6 +10,7 @@ import {
 	getTsConfig,
 	interopDefault,
 	mergeTypeAwareIgnores,
+	OUT_OF_PROJECT_FILES,
 	renameRules,
 	typeAwareComplement,
 } from "../../utils.ts";
@@ -101,7 +102,7 @@ export async function typescript(
 			configName: "typescript",
 			files: parserFiles,
 			ignores,
-			outOfProjectFiles,
+			outOfProjectFiles: outOfProjectFiles ?? (roblox ? undefined : OUT_OF_PROJECT_FILES),
 			parser: parserTs,
 			parserOptions,
 			parserOptionsNonTypeAware,
