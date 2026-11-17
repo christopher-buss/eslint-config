@@ -139,9 +139,6 @@ allowBuilds:
   koffi: false
 
 packageExtensions:
-  "@cspell/eslint-plugin":
-    dependencies:
-      "@types/estree": ^1
   "@e18e/eslint-plugin":
     dependencies:
       "@eslint/core": ^1
@@ -186,9 +183,6 @@ packageExtensions:
     peerDependenciesMeta:
       eslint:
         optional: true
-  eslint-plugin-de-morgan:
-    dependencies:
-      "@types/estree": ^1
   eslint-plugin-jsdoc:
     dependencies:
       "@eslint/core": ^1
@@ -207,15 +201,6 @@ packageExtensions:
     dependencies:
       "@eslint/core": ^1
       "@types/estree": ^1
-  eslint-plugin-perfectionist:
-    peerDependencies:
-      "@typescript-eslint/types": "*"
-      typescript: "*"
-    peerDependenciesMeta:
-      "@typescript-eslint/types":
-        optional: true
-      typescript:
-        optional: true
   eslint-plugin-sentinel:
     peerDependencies:
       "@typescript-eslint/utils": "*"

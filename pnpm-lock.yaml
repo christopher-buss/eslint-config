@@ -460,7 +460,7 @@ overrides:
   '@typescript-eslint/visitor-keys': 8.72.2
   semver@6: 7.8.5
 
-packageExtensionsChecksum: sha256-YuQsbJbdtf9ovSiLKgZz2qfkNhV8TYBJI4HSTLFP/6E=
+packageExtensionsChecksum: sha256-3YRtkPv1HKQXQsGhfbmgf3ERv1KuTDcMEElstq1nU+Y=
 
 patchedDependencies:
   eslint-plugin-yml: 76443658b7f84bd12811f197a3c1c544cbf9f9c68e67397c661b5338845dba3d
@@ -3066,15 +3066,9 @@ packages:
     resolution: {integrity: sha512-kPlqE2Kdh0njsad9S9xL/xnq+NNVUsga/uS3yf6axE0RddACM3Q+idJyethC7R+C9b73+NRhAWvKyXPrkl0nFA==}
     engines: {node: ^20.0.0 || >=22.0.0}
     peerDependencies:
-      '@typescript-eslint/types': 8.72.2
       eslint: ^8.45.0 || ^9.0.0 || ^10.0.0
-      typescript: '*'
     peerDependenciesMeta:
-      '@typescript-eslint/types':
-        optional: true
       eslint:
-        optional: true
-      typescript:
         optional: true
 
   eslint-plugin-pnpm@1.9.1:
@@ -4873,7 +4867,6 @@ snapshots:
     dependencies:
       '@cspell/cspell-types': 10.0.1
       '@cspell/url': 10.0.1
-      '@types/estree': 1.0.9
       cspell-lib: 10.0.1
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
       synckit: 0.11.13
@@ -6423,8 +6416,6 @@ snapshots:
       - typescript
 
   eslint-plugin-de-morgan@2.3.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
-    dependencies:
-      '@types/estree': 1.0.10
     optionalDependencies:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
 
@@ -6593,9 +6584,9 @@ snapshots:
       natural-orderby: 5.0.0
     optionalDependencies:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
-      typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
+      - typescript
 
   eslint-plugin-pnpm@1.9.1(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
