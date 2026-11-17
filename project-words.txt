@@ -3,6 +3,7 @@ auggie
 canparse
 changelogithub
 claudecode
+commondir
 cves
 diffable
 dprint
@@ -13,6 +14,7 @@ fdir
 feff
 fromcharcode
 ghsas
+gitdir
 gypfile
 isentinel
 johnnymorganz
@@ -59,3 +61,4 @@ typecheck
 unjs
 unthrown
 worktree
+worktrees
