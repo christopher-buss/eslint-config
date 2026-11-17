@@ -67,6 +67,7 @@ import {
 	createOxlintConfigs,
 	isUnscopedFragment,
 	jsPluginKey,
+	namedNativePlugins,
 	scopeOverridePlugins,
 	stripUnregisteredPluginRules,
 } from "./utils.ts";
@@ -479,11 +480,19 @@ export function isentinel(
 			nativePlugins.add(plugin);
 		}
 
+		// A disable does not list its plugin in `plugins`, but its rule still
+		// counts as registered for native-only stripping.
+		for (const plugin of namedNativePlugins(config.rules)) {
+			nativePlugins.add(plugin);
+		}
+
 		// A fragment covering the whole tree keeps its plugins at the top level,
 		// where `categories` reaches them; a narrower one carries them on its
 		// own override instead. Registering a plugin project-wide is what opts
 		// it into a consumer's categories, so a hand-written `plugins` entry on
-		// a whole-tree fragment stays the way to ask for that.
+		// a whole-tree fragment stays the way to ask for that. Generated
+		// fragments list only plugins with an enabled rule, so a plugin named
+		// only by disables is not hoisted.
 		if (isUnscopedFragment(config)) {
 			for (const plugin of fragmentPlugins) {
 				globalPlugins.add(plugin);
