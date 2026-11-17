@@ -63,13 +63,6 @@
  *   Which of those peers are optional.
  * @property {string} [version] The installed version, tested against `fixedIn`.
  */
-/**
- * A tsconfig template variable that leaked into a plugin's published
- * declarations. Unresolvable under any layout; tracked in
- * christopher-buss/eslint-config#640.
- */
-// oxlint-disable-next-line no-template-curly-in-string -- The literal text those declarations ship.
-const LEAKED_CONFIG_DIR = "${configDir}";
 /** The release portion of a version, up to any prerelease or build metadata. */
 const RELEASE_SEPARATOR = /[-+]/u;
 /** @type {ReadonlyArray<PackageExtension>} */
@@ -168,10 +161,6 @@ export const packageExtensions = [
 			"@eslint/core": "^1",
 			"@types/estree": "^1",
 		},
-	},
-	{
-		name: "eslint-plugin-roblox-ts",
-		ignore: [LEAKED_CONFIG_DIR],
 	},
 	{
 		name: "eslint-plugin-sentinel",
