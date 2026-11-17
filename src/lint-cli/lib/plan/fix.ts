@@ -5,7 +5,7 @@ import { CACHE_FILE_DEFAULT, cacheFileFor } from "../cache/constants.ts";
 import { openCache } from "../cache/entries.ts";
 import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
-import type { RepoFiles } from "../files/collect.ts";
+import type { RepositoryFiles } from "../files/collect.ts";
 import { composeEslintCommand } from "./command.ts";
 import { computeWorkerCount } from "./concurrency.ts";
 import type { WorkerLimits } from "./concurrency.ts";
@@ -21,7 +21,7 @@ export interface FixInputs {
 	 */
 	agentsFormatterPath: string;
 	/** The lint-target lists the passes were sized against. */
-	files: RepoFiles;
+	files: RepositoryFiles;
 	/** The heap budget; the fix child builds a TypeScript program too. */
 	heap: HeapBudget;
 	/** The resolved worker limits, for sizing the child. */
@@ -51,7 +51,7 @@ export interface FixInputs {
 export function collectFixTargets(
 	passes: Array<PassPlan>,
 	run: RunContext,
-	files: RepoFiles,
+	files: RepositoryFiles,
 ): Array<string> {
 	const targets = new Set<string>();
 
@@ -84,9 +84,9 @@ export function collectFixTargets(
  * cannot. `--no-cache` records no verdict at all, so the whole run falls back
  * to its own paths — the whole tree, as a fix run always used to lint. An
  * out-of-cwd target is invisible to the cwd-relative listing the verdicts are
- * looked up against (see {@link RepoFiles.outsideCwdTargets}), so it is passed
- * through as it stands while every in-cwd file stays narrowed to what the
- * checks reported.
+ * looked up against (see {@link RepositoryFiles.outsideCwdTargets}), so it is
+ * passed through as it stands while every in-cwd file stays narrowed to what
+ * the checks reported.
  *
  * A raw path names no file whose cache entry can be dropped, so a child
  * carrying one runs without the cache rather than risk a stale clean entry

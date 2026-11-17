@@ -27,10 +27,7 @@ const result = [1, 2, 3].map((item) => { return item * 2; });
 
 // Fixable: no-else-return
 function jsCheckValue(value) {
-	if (value > 0) {
-		return "positive";
-	} 
-		return "negative";
+	return value > 0 ? "positive" : "negative";
 	
 }
 
@@ -177,10 +174,7 @@ function jsEmpty() {}
 
 // Fixable: unicorn/prefer-ternary
 function jsPreferTernary(cond) {
-	if (cond) {
-		return "y";
-	}
-	return "n";
+	return cond ? "y" : "n";
 }
 
 // Use values so they are not unused

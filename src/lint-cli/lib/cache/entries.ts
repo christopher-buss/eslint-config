@@ -285,10 +285,12 @@ function removeEntriesFrom(cache: FileEntryCache, files: Iterable<string>): numb
 	let removed = 0;
 	for (const file of files) {
 		const key = keyByNormalized.get(normalizePath(file));
-		if (key !== undefined) {
-			cache.removeEntry(key);
-			removed += 1;
+		if (key === undefined) {
+			continue;
 		}
+
+		cache.removeEntry(key);
+		removed += 1;
 	}
 
 	if (removed > 0) {

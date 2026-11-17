@@ -119,10 +119,12 @@ for (const rule of configRules) {
 	// Core eslint rules have no prefix in config but are listed as
 	// `eslint/<rule>` in `--rules`.
 	const lookup = rule.includes("/") ? rule : `eslint/${rule}`;
-	if (!validRules.has(lookup)) {
-		console.error(`Unknown oxlint rule: ${rule}`);
-		invalid += 1;
+	if (validRules.has(lookup)) {
+		continue;
 	}
+
+	console.error(`Unknown oxlint rule: ${rule}`);
+	invalid += 1;
 }
 
 if (invalid > 0) {

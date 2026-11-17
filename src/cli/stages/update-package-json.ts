@@ -75,10 +75,12 @@ export async function mergeScripts(
 		}
 
 		const shouldOverwrite = await options.confirmOverwrite?.(name, existing, desired);
-		if (shouldOverwrite === true) {
-			scripts[name] = desired;
-			overwritten.push(name);
+		if (shouldOverwrite !== true) {
+			continue;
 		}
+
+		scripts[name] = desired;
+		overwritten.push(name);
 	}
 
 	return { added, overwritten };

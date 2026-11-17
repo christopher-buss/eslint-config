@@ -244,10 +244,12 @@ export function stripUnregisteredPluginRules(
 
 		for (const rule of Object.keys(rules)) {
 			const slashIndex = rule.indexOf("/");
-			if (slashIndex !== -1 && !registeredPlugins.has(rule.slice(0, slashIndex))) {
-				delete rules[rule as keyof typeof rules];
-				stripped.add(rule);
+			if (slashIndex === -1 || registeredPlugins.has(rule.slice(0, slashIndex))) {
+				continue;
 			}
+
+			delete rules[rule as keyof typeof rules];
+			stripped.add(rule);
 		}
 	}
 

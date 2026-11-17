@@ -102,7 +102,7 @@ export function ignoredStatePath(run: RunContext): string {
  * @param run - The run context.
  * @param configHash - The config hash for this run, or `undefined` when
  *   unavailable (the memo is then unusable and no filtering happens).
- * @param targets - Every lintable target, absolute (see `RepoFiles.lintable`).
+ * @param targets - Every lintable target, absolute (see `RepositoryFiles.lintable`).
  * @returns The ignored subset of `targets`, or an empty set when unavailable.
  */
 export function resolveIgnoredFiles(

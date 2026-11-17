@@ -322,7 +322,12 @@ export function isentinel(
 
 	// Node rules cover the complement regardless of the game/package distinction.
 	if (hasComplement) {
-		configs.push(oxlintNode({ excludeFiles: robloxScopedFiles }));
+		configs.push(
+			oxlintNode({
+				excludeFiles: robloxScopedFiles,
+				nodeMajor: resolveNodeMajor(options.settings),
+			}),
+		);
 	}
 
 	if (enableTest !== false) {

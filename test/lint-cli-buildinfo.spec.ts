@@ -108,7 +108,7 @@ const WORKSPACE: Tree = {
 };
 
 /** A byte-order mark, which `ts.sys.readFile` strips and `fs` does not. */
-const BOM = "﻿";
+const BOM = "\u{FEFF}";
 
 /** A fixture whose sources are stored in encodings `fs` would mangle. */
 const ENCODED: Tree = {

@@ -87,7 +87,13 @@ export const optionallyTypeAwareRules: ReadonlySet<string> = new Set([
 	"e18e/prefer-array-to-reversed",
 	"e18e/prefer-array-to-sorted",
 	"e18e/prefer-spread-syntax",
+	"unicorn/no-invalid-well-known-symbol-methods",
+	"unicorn/no-unnecessary-parameters",
 	"unicorn/no-useless-coercion",
+	"unicorn/prefer-abort-signal-any",
+	"unicorn/prefer-combined-guards",
+	"unicorn/prefer-has-check",
+	"unicorn/prefer-then-catch",
 ]);
 
 /**

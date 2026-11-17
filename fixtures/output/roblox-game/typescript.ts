@@ -27,11 +27,7 @@ const isNull = neverReassigned == null;
  * Fixable: no-else-return.
  */
 function checkValue(value: number): string {
-	if (value > 0) {
-		return "positive";
-	}
- 
-		return "non-positive";
+	return value > 0 ? "positive" : "non-positive";
 	
 }
 
@@ -302,11 +298,7 @@ function consistentDestructure(options: { a: number; b: number }): number {
  * Fixable: unicorn/prefer-ternary (single-line).
  */
 function preferTernary(condition: boolean): string {
-	if (condition) {
-		return "yes";
-	}
-
-	return "no";
+	return condition ? "yes" : "no";
 }
 
 // Fixable: ts/no-unnecessary-template-expression

@@ -60,13 +60,10 @@ export function oxlintJavascript(
 	];
 }
 
-function toGlobals(
-	source: Record<string, boolean>,
-	override?: "readonly" | "writable",
-): Record<string, "readonly" | "writable"> {
+function toGlobals(source: Record<string, boolean>): Record<string, "readonly" | "writable"> {
 	const result: Record<string, "readonly" | "writable"> = {};
 	for (const [key, value] of Object.entries(source)) {
-		result[key] = override ?? (value ? "writable" : "readonly");
+		result[key] = value ? "writable" : "readonly";
 	}
 
 	return result;
