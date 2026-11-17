@@ -26,7 +26,21 @@ const constructorGroup = {
 	groupName: "custom-constructor",
 } satisfies CustomGroupDefinition;
 
+/**
+ * Selects the constructor of a class with a dependency-injection decorator
+ * (Flamework's `@Service`, `@Controller` and `@Component`). The framework
+ * resolves those parameters by type, so their order has no meaning. Every other
+ * constructor is positional and stays unsorted.
+ */
+const INJECTED_CONSTRUCTOR_SELECTOR =
+	"ClassDeclaration:has(> Decorator[expression.callee.name=/^(?:Component|Controller|Service)$/]) > ClassBody > MethodDefinition[kind='constructor']";
+
 export interface PerfectionistRuleOptions extends OptionsProjectType {
+	/**
+	 * Names of injected constructor parameters to put first, in this order. The
+	 * other parameters follow in natural order.
+	 */
+	constructorParameterGroups?: Array<string>;
 	customClassGroups?: Array<string>;
 	sortObjects?: Record<string, unknown>;
 }
@@ -90,7 +104,12 @@ const testCaseSortConfigs = [
 export function perfectionistRules(
 	config?: PerfectionistRuleOptions,
 ): NonNullable<TypedFlatConfigItem["rules"]> {
-	const { customClassGroups = [], sortObjects, type = "game" } = config ?? {};
+	const {
+		constructorParameterGroups = [],
+		customClassGroups = [],
+		sortObjects,
+		type = "game",
+	} = config ?? {};
 
 	const customGroups = [
 		...Array.from(customClassGroups, (customGroup) => {
@@ -165,6 +184,16 @@ export function perfectionistRules(
 				],
 				newlinesBetween: 1,
 				useExperimentalDependencyDetection: true,
+			},
+		],
+		"perfectionist/sort-constructor-parameters": [
+			"error",
+			{
+				customGroups: constructorParameterGroups.map((name) => {
+					return { elementNamePattern: `^${escapeRegExp(name)}$`, groupName: name };
+				}),
+				groups: [...constructorParameterGroups, "parameter"],
+				useConfigurationIf: { matchesAstSelector: INJECTED_CONSTRUCTOR_SELECTOR },
 			},
 		],
 		"perfectionist/sort-decorators": ["error"],
@@ -256,4 +285,8 @@ export function perfectionistJsxRules(
 
 function capitalizeFirstLetter(value: string): string {
 	return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function escapeRegExp(value: string): string {
+	return value.replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
 }
