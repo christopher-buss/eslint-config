@@ -33,6 +33,12 @@ const abbreviations = {
 
 export type UnicornNameReplacements = Record<string, false | Readonly<Record<string, boolean>>>;
 
+/** Options for the unicorn rule maps that read `unicorn/name-replacements`. */
+export interface UnicornNameOptions extends OptionsHasRoblox {
+	/** Extra name replacements, merged over the defaults. */
+	nameReplacements?: undefined | UnicornNameReplacements;
+}
+
 /**
  * Resolve the `unicorn/name-replacements` replacement map.
  *
@@ -42,9 +48,7 @@ export type UnicornNameReplacements = Record<string, false | Readonly<Record<str
 export function unicornNameReplacements({
 	nameReplacements,
 	roblox = true,
-}: OptionsHasRoblox & {
-	nameReplacements?: UnicornNameReplacements;
-} = {}): UnicornNameReplacements {
+}: UnicornNameOptions = {}): UnicornNameReplacements {
 	return {
 		...abbreviations,
 		...(roblox ? { buf: false } : {}),
@@ -59,9 +63,8 @@ export function unicornNameReplacements({
  * @returns The rule map.
  */
 export function unicornRules(
-	options: OptionsHasRoblox &
-		OptionsStylistic & { nameReplacements?: UnicornNameReplacements } = {},
-): TypedFlatConfigItem["rules"] {
+	options: OptionsStylistic & UnicornNameOptions = {},
+): NonNullable<TypedFlatConfigItem["rules"]> {
 	const { roblox = true, stylistic = true } = options;
 
 	const replacements = unicornNameReplacements(options);
@@ -159,6 +162,7 @@ export function unicornRules(
 		"unicorn/prefer-logical-operator-over-ternary": "error",
 		"unicorn/prefer-math-min-max": "off",
 		"unicorn/prefer-optional-catch-binding": "error",
+		"unicorn/prefer-options-parameter": "error",
 		"unicorn/prefer-set-has": "error",
 		"unicorn/prefer-short-escape-sequences": "error",
 		"unicorn/prefer-simple-condition-first": "error",
@@ -238,8 +242,8 @@ export function unicornRules(
  * @returns The rule map.
  */
 export function unicornRootRules(
-	options: OptionsHasRoblox & { nameReplacements?: UnicornNameReplacements } = {},
-): TypedFlatConfigItem["rules"] {
+	options: UnicornNameOptions = {},
+): NonNullable<TypedFlatConfigItem["rules"]> {
 	const replacements = unicornNameReplacements(options);
 
 	return {

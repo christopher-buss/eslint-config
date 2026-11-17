@@ -11,6 +11,7 @@ import process from "node:process";
 import { isMainThread } from "node:worker_threads";
 import type { FormatConfig, JsdocConfig } from "oxfmt";
 import { minVersion } from "semver";
+import type { SetRequired } from "type-fest";
 
 import type { TypeAwareSplitMode } from "./eslint/type-aware-split.ts";
 import type { OptionsConfig } from "./eslint/types.ts";
@@ -142,16 +143,16 @@ export function createTsParser({
 	tsconfigPath,
 	typeAware,
 }: {
-	componentExtensions?: Array<string>;
+	componentExtensions?: Array<string> | undefined;
 	configName: string;
 	files: Array<Array<string> | string>;
-	ignores?: Array<string>;
-	outOfProjectFiles?: Array<string>;
+	ignores?: Array<string> | undefined;
+	outOfProjectFiles?: Array<string> | undefined;
 	parser: Parser;
-	parserOptions?: ParserOptions;
-	parserOptionsNonTypeAware?: ParserOptions;
-	parserOptionsTypeAware?: ParserOptions;
-	tsconfigPath?: string;
+	parserOptions?: ParserOptions | undefined;
+	parserOptionsNonTypeAware?: ParserOptions | undefined;
+	parserOptionsTypeAware?: ParserOptions | undefined;
+	tsconfigPath?: string | undefined;
 	typeAware: boolean;
 }): TypedFlatConfigItem {
 	return {
@@ -334,8 +335,8 @@ export function getOverrides(
 	files?: NonNullable<TypedFlatConfigItem["files"]>;
 	filesTypeAware?: NonNullable<TypedFlatConfigItem["files"]>;
 	ignoresTypeAware?: NonNullable<TypedFlatConfigItem["ignores"]>;
-	overrides: TypedFlatConfigItem["rules"];
-	overridesTypeAware: TypedFlatConfigItem["rules"];
+	overrides: NonNullable<TypedFlatConfigItem["rules"]>;
+	overridesTypeAware: NonNullable<TypedFlatConfigItem["rules"]>;
 } {
 	const sub = resolveSubOptions(options, key);
 	if (!isRecord(sub)) {
@@ -1085,8 +1086,7 @@ export function mergeTypeAwareIgnores(
  * @returns The complement block, then its turn-off block.
  */
 export function typeAwareComplement(
-	complement: Required<Pick<TypedFlatConfigItem, "files" | "name" | "rules">> &
-		TypedFlatConfigItem,
+	complement: SetRequired<TypedFlatConfigItem, "files" | "name" | "rules">,
 	ignoresTypeAware: Array<string>,
 ): Array<TypedFlatConfigItem> {
 	if (ignoresTypeAware.length === 0) {
@@ -1202,7 +1202,7 @@ function toResolvedConfig(
 ): ResolvedOxfmtConfig {
 	// `isentinelOxfmt` copies the `.editorconfig` sections into the config:
 	// name the real source of those.
-	const sections = editorConfigOverrides(path.dirname(configPath));
+	const sections = editorConfigOverrides({ cwd: path.dirname(configPath) });
 	const list: Array<unknown> = Array.isArray(overrides) ? overrides : [];
 	const copied = list.filter((override) => mirrorsSection(override, sections));
 	warnScriptWidthOverrides(copied, ".editorconfig");

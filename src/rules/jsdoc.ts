@@ -15,7 +15,9 @@ export function jsdocRules({
 	full = false,
 	stylistic = true,
 	type = "game",
-}: JsdocOptions & OptionsProjectType & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+}: JsdocOptions & OptionsProjectType & OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	const isPackage = type === "package" || full;
 
 	return {

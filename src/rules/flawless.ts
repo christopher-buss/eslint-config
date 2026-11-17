@@ -1,9 +1,9 @@
 import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface ArrowStyleRuleOptions {
-	maxLen?: number;
-	printWidth?: number;
-	tabWidth?: number;
+	maxLen?: number | undefined;
+	printWidth?: number | undefined;
+	tabWidth?: number | undefined;
 }
 
 /**
@@ -36,7 +36,7 @@ export interface FlawlessRuleOptions extends OptionsHasRoblox {
  *
  * @returns The rule map.
  */
-export function maxCommentLengthRules(): TypedFlatConfigItem["rules"] {
+export function maxCommentLengthRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/max-comment-length": ["error", { maximumWords: 50 }],
 	};
@@ -59,9 +59,9 @@ export function flawlessRules({
 	roblox = true,
 	stylistic = true,
 	...arrowOptions
-}: ArrowStyleRuleOptions &
-	FlawlessRuleOptions &
-	OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+}: ArrowStyleRuleOptions & FlawlessRuleOptions & OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"flawless/cognitive-complexity": ["warn", { threshold: 15 }],
 		"flawless/no-export-default-arrow": "error",
@@ -93,7 +93,7 @@ export function flawlessRules({
 export function flawlessTypeAwareRules({
 	antiSlop = false,
 	roblox = true,
-}: FlawlessRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: FlawlessRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/no-ignored-return": roblox
 			? ["error", { pureFunctions: [...ROBLOX_PURE_FUNCTIONS] }]
@@ -111,7 +111,7 @@ export function flawlessTypeAwareRules({
  *
  * @returns The rule map.
  */
-export function flawlessTypeAwareJsxRules(): TypedFlatConfigItem["rules"] {
+export function flawlessTypeAwareJsxRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/prefer-read-only-props": "error",
 	};
@@ -126,7 +126,9 @@ export function flawlessTypeAwareJsxRules(): TypedFlatConfigItem["rules"] {
  * @param options - Whether the rules target roblox-ts.
  * @returns The rule map.
  */
-function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
+function antiSlopRules({
+	roblox = true,
+}: OptionsHasRoblox): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		...maxCommentLengthRules(),
 		"flawless/no-conditional-empty-object-spread": "error",
@@ -148,11 +150,9 @@ function antiSlopRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-function arrowStyleRules({
-	maxLen,
-	printWidth,
-	tabWidth,
-}: ArrowStyleRuleOptions = {}): TypedFlatConfigItem["rules"] {
+function arrowStyleRules({ maxLen, printWidth, tabWidth }: ArrowStyleRuleOptions = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"flawless/arrow-return-style": [
 			"error",
@@ -179,7 +179,9 @@ function arrowStyleRules({
  * @param options - Whether the rules target roblox-ts.
  * @returns The rule map.
  */
-function antiSlopTypeAwareRules({ roblox = true }: OptionsHasRoblox): TypedFlatConfigItem["rules"] {
+function antiSlopTypeAwareRules({
+	roblox = true,
+}: OptionsHasRoblox): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"flawless/no-materialized-filter-map": ["error", { iteratorHelpers: !roblox }],
 		"flawless/no-unknown-returns": "error",

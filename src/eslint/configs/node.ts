@@ -9,7 +9,7 @@ export async function node({
 	files = [GLOB_SRC],
 	ignores,
 	nodeMajor = resolveNodeMajor(),
-}: NodeRuleOptions & OptionsFiles & { ignores?: Array<string> } = {}): Promise<
+}: NodeRuleOptions & OptionsFiles & { ignores?: Array<string> | undefined } = {}): Promise<
 	Array<TypedFlatConfigItem>
 > {
 	await ensurePackages(["eslint-plugin-n"]);

@@ -302,7 +302,7 @@ export async function isentinel(
 
 	// The `.editorconfig` sections, as the rule's config loader applies them.
 	const sectionOverrides = oxfmtFormats
-		? editorConfigOverrides(undefined, oxfmtConfigOptions)
+		? editorConfigOverrides({ root: oxfmtConfigOptions })
 		: [];
 	warnScriptWidthOverrides(sectionOverrides, ".editorconfig");
 
@@ -321,22 +321,18 @@ export async function isentinel(
 	configs.push(
 		smallRules({ isInEditor, stylistic: stylisticOptions }),
 		comments({ prettierOptions: widthSettings, stylistic: stylisticOptions }),
-		flawless(
-			{
-				...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
-				...typeAwareIgnores(),
-				...("tsconfigPath" in typescriptOptions
-					? { tsconfigPath: typescriptOptions.tsconfigPath }
-					: {}),
-				...("typeAware" in typescriptOptions
-					? { typeAware: typescriptOptions.typeAware }
-					: {}),
-				antiSlop,
-				roblox: enableRoblox,
-				stylistic: stylisticOptions,
-			},
-			widthSettings,
-		),
+		flawless({
+			...(needsComplementOverlay ? { complementIgnores: robloxScopedFiles } : {}),
+			...typeAwareIgnores(),
+			...("tsconfigPath" in typescriptOptions
+				? { tsconfigPath: typescriptOptions.tsconfigPath }
+				: {}),
+			...("typeAware" in typescriptOptions ? { typeAware: typescriptOptions.typeAware } : {}),
+			antiSlop,
+			prettierOptions: widthSettings,
+			roblox: enableRoblox,
+			stylistic: stylisticOptions,
+		}),
 		ignores(options.ignores),
 		imports({ stylistic: stylisticOptions, type: projectType }),
 		packageJson({
@@ -689,13 +685,13 @@ export async function isentinel(
 					continue;
 				}
 
-				config.rules = {
-					...config.rules,
-					"no-restricted-imports": mergeRestrictedDomImportRule(
-						restrictedImports,
-						restrictedDomPackage,
-					),
-				};
+				const merged = mergeRestrictedDomImportRule(
+					restrictedImports,
+					restrictedDomPackage,
+				);
+				if (merged !== undefined) {
+					config.rules = { ...config.rules, "no-restricted-imports": merged };
+				}
 			}
 		});
 	}

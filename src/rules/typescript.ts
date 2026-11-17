@@ -10,9 +10,9 @@ import type { OptionsHasRoblox, OptionsStylistic, TypedFlatConfigItem } from "..
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function typescriptRules({
-	stylistic = true,
-}: OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+export function typescriptRules({ stylistic = true }: OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"no-dupe-class-members": "off",
 		"no-empty-function": "off",
@@ -105,9 +105,9 @@ export function typescriptRules({
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function typescriptTypeAwareRules({
-	roblox = true,
-}: OptionsHasRoblox = {}): TypedFlatConfigItem["rules"] {
+export function typescriptTypeAwareRules({ roblox = true }: OptionsHasRoblox = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"dot-notation": "off",
 		"no-implied-eval": "off",
@@ -154,6 +154,7 @@ export function typescriptTypeAwareRules({
 		"ts/no-unsafe-argument": "error",
 		"ts/no-unsafe-assignment": "error",
 		"ts/no-unsafe-call": "error",
+		"ts/no-unsafe-class-instance-assignment": "error",
 		"ts/no-unsafe-enum-assignment": "error",
 		"ts/no-unsafe-enum-comparison": "error",
 		"ts/no-unsafe-member-access": "error",
@@ -189,6 +190,8 @@ export function typescriptTypeAwareRules({
 		...(roblox
 			? {}
 			: {
+					"ts/prefer-regexp-exec": "error",
+					"ts/prefer-string-starts-ends-with": "error",
 					"ts/related-getter-setter-pairs": "error",
 					"ts/require-array-sort-compare": "error",
 				}),
@@ -206,7 +209,7 @@ export function typescriptTypeAwareRules({
  *
  * @returns The rule map.
  */
-export function typescriptRecommendedOverrides(): TypedFlatConfigItem["rules"] {
+export function typescriptRecommendedOverrides(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"constructor-super": "off",
 		"getter-return": "off",
@@ -247,7 +250,7 @@ export function typescriptRecommendedOverrides(): TypedFlatConfigItem["rules"] {
  *
  * @returns The rule map.
  */
-export function typescriptStrictPresetRules(): TypedFlatConfigItem["rules"] {
+export function typescriptStrictPresetRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"ts/no-duplicate-enum-values": "error",
 		"ts/no-extra-non-null-assertion": "error",
@@ -267,7 +270,7 @@ export function typescriptStrictPresetRules(): TypedFlatConfigItem["rules"] {
  *
  * @returns The rule map.
  */
-export function erasableSyntaxOnlyRules(): TypedFlatConfigItem["rules"] {
+export function erasableSyntaxOnlyRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"erasable-syntax-only/enums": "error",
 		"erasable-syntax-only/export-aliases": "error",

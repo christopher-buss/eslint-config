@@ -14,11 +14,11 @@ import { isGitClean } from "./utils.ts";
 
 export interface CliRunOptions {
 	/** Where formatting runs: `eslint` or `standalone` (oxfmt on its own). */
-	formatter?: string;
+	formatter?: string | undefined;
 	/** Use the framework template for optimal customization: react. */
-	frameworks?: Array<string>;
+	frameworks?: Array<string> | undefined;
 	/** Skip prompts and use default values. */
-	yes?: boolean;
+	yes?: boolean | undefined;
 }
 
 export async function run(options: CliRunOptions = {}): Promise<undefined> {

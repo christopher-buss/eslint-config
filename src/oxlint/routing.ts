@@ -66,7 +66,7 @@ export const staysInEslint: Readonly<Record<string, string>> = {
 	"type-aware jsPlugin rules":
 		"Rules whose meta.docs.requiresTypeChecking is true crash or silently no-op under oxlint's jsPlugin runtime (no type information): flawless/no-ignored-return, flawless/no-incompatible-assertion-types, sonar/no-redundant-optional, sonar/no-try-promise, sonar/prefer-immediate-return, unicorn/no-non-function-verb-prefix, eslint-plugin/no-property-in-node, jest/no-error-equal, jest/no-unnecessary-assertion, jest/unbound-method, jest/valid-expect-with-promise",
 	"unicorn/* (optionally type-aware)":
-		"Seven unicorn rules (no-invalid-well-known-symbol-methods, no-unnecessary-parameters, no-useless-coercion, prefer-abort-signal-any, prefer-combined-guards, prefer-has-check, prefer-then-catch) run without type information but report more with it, and oxlint has no native port, so they stay in ESLint (see optionallyTypeAwareRules). prefer-default-parameters, prefer-logical-operator-over-ternary and prefer-ternary also read types, but run as native oxlint rules",
+		"Eight unicorn rules (no-invalid-well-known-symbol-methods, no-unnecessary-parameters, no-useless-coercion, prefer-abort-signal-any, prefer-combined-guards, prefer-has-check, prefer-options-parameter, prefer-then-catch) run without type information but report more with it, and oxlint has no native port, so they stay in ESLint (see optionallyTypeAwareRules). prefer-default-parameters, prefer-logical-operator-over-ternary and prefer-ternary also read types, but run as native oxlint rules",
 	"unicorn/no-unsafe-string-replacement":
 		"False positives under oxlint's jsPlugin scope analysis (template-literal replacements are not resolved)",
 	"vitest/prefer-each":

@@ -9,9 +9,9 @@ import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
  * @param options - Shared rule options.
  * @returns The rule map.
  */
-export function robloxRules({
-	stylistic = true,
-}: OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+export function robloxRules({ stylistic = true }: OptionsStylistic = {}): NonNullable<
+	TypedFlatConfigItem["rules"]
+> {
 	return {
 		"roblox/no-any": "error",
 

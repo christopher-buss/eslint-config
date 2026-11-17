@@ -13,7 +13,7 @@ import type { OptionsIsInEditor, OptionsStylistic, TypedFlatConfigItem } from ".
 export function smallRulesRules({
 	isInEditor = false,
 	stylistic = true,
-}: OptionsIsInEditor & OptionsStylistic = {}): TypedFlatConfigItem["rules"] {
+}: OptionsIsInEditor & OptionsStylistic = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"small-rules/isolated-functions": "error",
 		"small-rules/no-async-constructor": "error",
@@ -35,7 +35,7 @@ export function smallRulesRules({
 	};
 }
 
-export function smallRulesTestRules(): TypedFlatConfigItem["rules"] {
+export function smallRulesTestRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"small-rules/no-trivial-assertions": "error",
 	};

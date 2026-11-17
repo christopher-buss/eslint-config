@@ -17,6 +17,16 @@ import { plan } from "./plan/plan.ts";
 import type { StagedPlan } from "./plan/plan.ts";
 import type { PassPlan } from "./plan/sizing.ts";
 
+/** The process seams of {@link runLint}, injected in tests. */
+export interface RunLintOptions {
+	/** The working directory (defaults to `process.cwd()`). */
+	cwd?: string;
+	/** The process environment (defaults to `process.env`). */
+	environment?: NodeJS.ProcessEnv;
+	/** Where `--files0-from -` reads its list (defaults to `process.stdin`). */
+	stdin?: AsyncIterable<unknown>;
+}
+
 /** Everything the stages of a run share once it is planned. */
 interface RunStages {
 	/** The machine budget every child leases its workers from. */
@@ -49,18 +59,13 @@ interface CheckOutcome {
  * Parse, validate, compose and run the hybrid oxlint + ESLint invocation.
  *
  * @param argv - The argument slice (without the node/bin prefix).
- * @param cwd - The working directory (defaults to `process.cwd()`; injected in tests).
- * @param environment - The process environment (defaults to `process.env`).
- * @param stdin - Where `--files0-from -` reads its list (defaults to
- *   `process.stdin`).
+ * @param options - The process seams, injected in tests.
  * @returns The process exit code.
  * @rejects {CliError} When the arguments are invalid or a tool is missing.
  */
 export async function runLint(
 	argv: Array<string>,
-	cwd: string = process.cwd(),
-	environment: NodeJS.ProcessEnv = process.env,
-	stdin: AsyncIterable<unknown> = process.stdin,
+	{ cwd = process.cwd(), environment = process.env, stdin = process.stdin }: RunLintOptions = {},
 ): Promise<number> {
 	resetCancellation();
 

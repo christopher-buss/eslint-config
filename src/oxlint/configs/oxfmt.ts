@@ -120,7 +120,7 @@ export function oxlintOxfmt(
 					...nativeRules,
 					"arrow-body-style": "off",
 					"prefer-arrow-callback": "off",
-				} as TypedOxlintConfigItem["rules"],
+				} as NonNullable<TypedOxlintConfigItem["rules"]>,
 			},
 			{
 				name: `${name}/js-plugin`,
@@ -143,7 +143,7 @@ export function oxlintOxfmt(
 									},
 								],
 							}),
-				} as TypedOxlintConfigItem["rules"],
+				} as NonNullable<TypedOxlintConfigItem["rules"]>,
 			},
 		];
 	}

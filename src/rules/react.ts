@@ -3,7 +3,7 @@ import { isRecord } from "../guards.ts";
 import type { OptionsStylistic, TypedFlatConfigItem } from "../types.ts";
 
 export interface ReactRuleOptions extends OptionsStylistic {
-	domPackage?: string;
+	domPackage?: string | undefined;
 	filenameCase?: "kebabCase" | "pascalCase";
 	reactCompiler?: boolean;
 	testing?: boolean;
@@ -141,7 +141,7 @@ export function reactRules({
 	reactCompiler = true,
 	stylistic = true,
 	testing = false,
-}: ReactRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: ReactRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	const restrictedDomImport = testing ? restrictedDomImportRule(domPackage) : undefined;
 
 	return {

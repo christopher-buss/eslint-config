@@ -9,7 +9,7 @@ import type { OptionsHasRoblox, OptionsIsInEditor, TypedFlatConfigItem } from ".
 export function sonarjsRules({
 	isInEditor,
 	roblox = true,
-}: OptionsHasRoblox & Required<OptionsIsInEditor>): TypedFlatConfigItem["rules"] {
+}: OptionsHasRoblox & Required<OptionsIsInEditor>): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"sonar/bool-param-default": "error",
 		"sonar/constructor-for-side-effects": "error",
@@ -85,7 +85,7 @@ export function sonarjsRules({
 export function sonarjsTestRules({
 	jest = false,
 	roblox = true,
-}: { jest?: boolean; roblox?: boolean } = {}): TypedFlatConfigItem["rules"] {
+}: { jest?: boolean; roblox?: boolean } = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		...(jest
 			? {

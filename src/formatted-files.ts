@@ -30,12 +30,12 @@ export type FormattedLanguages = Pick<
 /** Which files are formatted. */
 export interface FormattedFilesOptions {
 	/** Component extensions formatted with TypeScript, without the dot. */
-	componentExts?: Array<string>;
+	componentExts?: Array<string> | undefined;
 	/**
 	 * Languages to format besides JS and TS; `false` formats JS and TS only.
 	 * Default `true`.
 	 */
-	formatters?: boolean | FormattedLanguages;
+	formatters?: boolean | FormattedLanguages | undefined;
 }
 
 /** Formatted globs, by `oxfmt/oxfmt` config block. */

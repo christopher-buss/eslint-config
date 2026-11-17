@@ -44,7 +44,7 @@ const PROBE = `export function outer(flag: boolean): void {
  */
 async function lintProbe(
 	name: string,
-	rules: OxlintFactoryOptions["rules"],
+	rules: NonNullable<OxlintFactoryOptions["rules"]>,
 ): Promise<Array<string>> {
 	const temporaryDirectory = path.resolve(OXLINT_FIXTURES_TEMP, name);
 	await fs.mkdir(path.join(temporaryDirectory, "src"), { recursive: true });

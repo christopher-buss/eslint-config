@@ -456,6 +456,7 @@ async function runGroup(
 				new LogError({ logger }),
 				new LogOutput({ logger }),
 				new LogExit({ logger }),
+				// eslint-disable-next-line ts/no-unsafe-class-instance-assignment -- `process` is an `EventEmitter` at runtime; `@types/node` types it as an interface that extends the class.
 				new KillOnSignal({ abortController, process }),
 				killOnOutputError(process.stdout, abortController),
 			],

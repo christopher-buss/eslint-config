@@ -8,7 +8,7 @@ export interface E18eRuleOptions {
 	 * resolve this from `settings.n.version` / `settings.node.version`, falling
 	 * back to `engines.node`; rules stay off when it cannot be determined.
 	 */
-	nodeMajor?: number;
+	nodeMajor?: number | undefined;
 	performanceImprovements?: boolean;
 }
 
@@ -32,7 +32,7 @@ export function e18eRules({
 	modernization = true,
 	nodeMajor,
 	performanceImprovements = true,
-}: E18eRuleOptions = {}): TypedFlatConfigItem["rules"] {
+}: E18eRuleOptions = {}): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		...(modernization
 			? {

@@ -1,23 +1,37 @@
 import type PluginStylistic from "@stylistic/eslint-plugin";
 
+import type { SetRequired } from "type-fest";
+
 import { GLOB_JSX, GLOB_SRC, GLOB_TSX } from "../../globs.ts";
 import { stylisticJsxRules, stylisticRules } from "../../rules/stylistic.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type { StylisticConfig, TypedFlatConfigItem } from "../types.ts";
 
-export const StylisticConfigDefaults: StylisticConfig = {
+export const StylisticConfigDefaults: SetRequired<
+	StylisticConfig,
+	"indent" | "jsx" | "quotes" | "semi"
+> = {
 	indent: "tab",
 	jsx: true,
 	quotes: "double",
 	semi: true,
 };
 
-export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigItem> {
-	const { indent, jsx, quotes, semi } = {
-		...StylisticConfigDefaults,
-		...options,
-	};
-
+/**
+ * The JS/TS stylistic rules.
+ *
+ * The defaults apply to an explicit `undefined` too, which a consumer without
+ * `exactOptionalPropertyTypes` can still pass.
+ *
+ * @param options - Indent, JSX, quotes and semicolon choices.
+ * @returns The stylistic config items.
+ */
+export function stylistic({
+	indent = StylisticConfigDefaults.indent,
+	jsx = StylisticConfigDefaults.jsx,
+	quotes = StylisticConfigDefaults.quotes,
+	semi = StylisticConfigDefaults.semi,
+}: StylisticConfig = {}): Array<TypedFlatConfigItem> {
 	const pluginAntfu = lazyPlugin("eslint-plugin-antfu");
 	// Hydrates immediately on the next line; the laziness is for the callers
 	// that only register `style` (`comments`, `react`) on a run with
@@ -51,7 +65,7 @@ export function stylistic(options: StylisticConfig = {}): Array<TypedFlatConfigI
 				...stylisticRules({ indent, jsx, quotes, semi }),
 			},
 		},
-		...(jsx === false
+		...(!jsx
 			? []
 			: [
 					{

@@ -15,7 +15,7 @@ const ROOT_GLOBS = ["*", "packages/*/*"];
  *
  * @returns The ESLint disables blocks carrying an ancestor-directory anchor.
  */
-function anchoredEslintBlocks(): Array<{ basePath?: string; name: string }> {
+function anchoredEslintBlocks(): Array<{ basePath?: string | undefined; name: string }> {
 	return (
 		disables({ root: ROOT_GLOBS, workspaceRoot: WORKSPACE_ROOT })
 			// ESLint allows a nested array as one AND-matched entry, so flatten

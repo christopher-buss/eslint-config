@@ -6,7 +6,7 @@ import type { TypedFlatConfigItem } from "../types.ts";
  *
  * @returns The rule map.
  */
-export function eslintPluginRules(): TypedFlatConfigItem["rules"] {
+export function eslintPluginRules(): NonNullable<TypedFlatConfigItem["rules"]> {
 	return {
 		"eslint-plugin/consistent-output": "error",
 		"eslint-plugin/fixer-return": "error",
