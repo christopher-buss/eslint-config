@@ -187,9 +187,9 @@
 		"eslint-plugin-react-naming-convention": "^5.10.0",
 		"eslint-plugin-react-x": "^5.10.0",
 		"eslint-plugin-testing-library": "^7.16.2",
-		"oxlint": ">=1.92.0",
-		"oxlint-tsgolint": ">=7.0.2005",
-		"tsrs": ">=0.25.0-0"
+		"oxlint": ">=1.94.0",
+		"oxlint-tsgolint": ">=7.0.2007",
+		"tsrs": ">=7.1.0-beta.tsrs2"
 	},
 	"peerDependenciesMeta": {
 		"@vitest/eslint-plugin": {

@@ -137,7 +137,7 @@ export function typescriptTypeAwareRules({
 		"ts/no-generated-empty-object-type": "error",
 		"ts/no-implied-eval": "error",
 		"ts/no-meaningless-void-operator": "error",
-		"ts/no-misused-promises": "error",
+		"ts/no-misused-promises": ["error", { checksConditionals: { flagUnions: "strict" } }],
 		"ts/no-misused-spread": "error",
 		"ts/no-mixed-enums": "error",
 		"ts/no-redundant-type-constituents": "error",

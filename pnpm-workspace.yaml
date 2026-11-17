@@ -7,8 +7,39 @@ minimumReleaseAgeExclude:
   - "@es-joy/escodegen@5.0.1"
   - "@eslint/plugin-kit@0.7.3"
   - "@isentinel/machine-budget@0.2.0"
+  - "@oxlint/binding-android-arm-eabi@1.94.0"
+  - "@oxlint/binding-android-arm64@1.94.0"
+  - "@oxlint/binding-darwin-arm64@1.94.0"
+  - "@oxlint/binding-darwin-x64@1.94.0"
+  - "@oxlint/binding-freebsd-x64@1.94.0"
+  - "@oxlint/binding-linux-arm-gnueabihf@1.94.0"
+  - "@oxlint/binding-linux-arm-musleabihf@1.94.0"
+  - "@oxlint/binding-linux-arm64-gnu@1.94.0"
+  - "@oxlint/binding-linux-arm64-musl@1.94.0"
+  - "@oxlint/binding-linux-ppc64-gnu@1.94.0"
+  - "@oxlint/binding-linux-riscv64-gnu@1.94.0"
+  - "@oxlint/binding-linux-riscv64-musl@1.94.0"
+  - "@oxlint/binding-linux-s390x-gnu@1.94.0"
+  - "@oxlint/binding-linux-x64-gnu@1.94.0"
+  - "@oxlint/binding-linux-x64-musl@1.94.0"
+  - "@oxlint/binding-openharmony-arm64@1.94.0"
+  - "@oxlint/binding-win32-arm64-msvc@1.94.0"
+  - "@oxlint/binding-win32-ia32-msvc@1.94.0"
+  - "@oxlint/binding-win32-x64-msvc@1.94.0"
+  - "@oxlint/plugins@1.94.0"
+  - "@tsrs/darwin-arm64@7.1.0-beta.tsrs2"
+  - "@tsrs/darwin-x64@7.1.0-beta.tsrs2"
+  - "@tsrs/linux-arm64-gnu@7.1.0-beta.tsrs2"
+  - "@tsrs/linux-arm64-musl@7.1.0-beta.tsrs2"
+  - "@tsrs/linux-x64-gnu@7.1.0-beta.tsrs2"
+  - "@tsrs/linux-x64-musl@7.1.0-beta.tsrs2"
+  - "@tsrs/win32-arm64@7.1.0-beta.tsrs2"
+  - "@tsrs/win32-x64@7.1.0-beta.tsrs2"
   - eslint-plugin-flawless
   - eslint-plugin-jsdoc@65.4.6
+  - oxlint@1.94.0
+  - oxlint-plugin-eslint@1.94.0
+  - tsrs@7.1.0-beta.tsrs2
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
@@ -17,7 +48,7 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 
 trustPolicyExclude:
-  - tsrs@0.25.0-ts7.1.0-beta
+  - tsrs@7.1.0-beta.tsrs2
 
 trustPolicyIgnoreAfter: 10080
 
@@ -74,9 +105,9 @@ catalogs:
     eslint-plugin-react-naming-convention: 5.17.3
     eslint-plugin-react-x: 5.17.3
     eslint-plugin-testing-library: 7.16.2
-    oxlint: 1.93.0
+    oxlint: 1.94.0
     oxlint-tsgolint: 7.0.2007
-    tsrs: 0.25.0-ts7.1.0-beta
+    tsrs: 7.1.0-beta.tsrs2
   prod:
     "@antfu/install-pkg": 2.1.0
     "@clack/prompts": 1.9.0
@@ -87,7 +118,7 @@ catalogs:
     "@isentinel/dict-rbxts": latest
     "@isentinel/dict-roblox": latest
     "@isentinel/machine-budget": 0.2.0
-    "@oxlint/plugins": 1.93.0
+    "@oxlint/plugins": 1.94.0
     "@pobammer-ts/small-rules": 3.12.0
     "@stylistic/eslint-plugin": 5.10.0
     "@typescript-eslint/eslint-plugin": 8.72.2
@@ -125,7 +156,7 @@ catalogs:
     jsonc-eslint-parser: 3.3.0
     local-pkg: 2.0.0
     oxfmt: 0.78.0
-    oxlint-plugin-eslint: 1.93.0
+    oxlint-plugin-eslint: 1.94.0
     oxlint-plugin-oxlint-comments: 0.1.0
     prettier: 3.10.1
     semver: 7.8.5
