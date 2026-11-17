@@ -15,6 +15,7 @@ minimumReleaseAgeExclude:
   - oxlint
   - oxlint-plugin-eslint
   - tsrs
+  - type-fest@6.0.1
 
 minimumReleaseAgeExcludePrune: true
 savePrefix: ""
