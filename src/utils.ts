@@ -115,6 +115,20 @@ export async function combine(
 	return resolved.flat();
 }
 
+/**
+ * Default `allowDefaultProject` globs for roblox projects. Their tsconfig
+ * roots at `src`, so root-level `.ts` files are always out of project.
+ */
+export const ROBLOX_OUT_OF_PROJECT_FILES = ["*.js", "*.ts", ".*.js", ".*.ts"];
+
+/**
+ * Default `allowDefaultProject` globs outside roblox. The `@isentinel/tsconfig`
+ * `include` covers root-level `.ts` files, and typescript-eslint rejects a
+ * file that is both in project and in `allowDefaultProject`. Dotfiles and
+ * `.js` files stay out of project.
+ */
+export const OUT_OF_PROJECT_FILES = ["*.js", ".*.js", ".*.ts"];
+
 export function createTsParser({
 	componentExtensions = [],
 	configName,
@@ -154,12 +168,8 @@ export function createTsParser({
 				...(typeAware
 					? {
 							projectService: {
-								allowDefaultProject: outOfProjectFiles ?? [
-									"*.js",
-									"*.ts",
-									".*.js",
-									".*.ts",
-								],
+								allowDefaultProject:
+									outOfProjectFiles ?? ROBLOX_OUT_OF_PROJECT_FILES,
 								defaultProject: tsconfigPath,
 							},
 							tsconfigRootDir: process.cwd(),
