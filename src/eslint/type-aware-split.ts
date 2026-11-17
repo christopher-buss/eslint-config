@@ -13,6 +13,14 @@ const FUNCTIONALLY_TYPE_AWARE_RULES: ReadonlySet<string> = new Set([
 	...typeAwareJsPluginRules,
 	...optionallyTypeAwareRules,
 	"flawless/prefer-read-only-props",
+	// Unicorn rules that read parser services when a TypeScript program is
+	// present and report less without one. Oxlint has native ports of these,
+	// which do the syntactic subset, so like the vitest pair below this is a
+	// split classification and not a routing decision. The ones with no native
+	// port are in `optionallyTypeAwareRules`.
+	"unicorn/prefer-default-parameters",
+	"unicorn/prefer-logical-operator-over-ternary",
+	"unicorn/prefer-ternary",
 	// The only two `@vitest/eslint-plugin` rules that reach for parser services:
 	// under `settings.vitest.typecheck` both ask the type of a describe/test
 	// title to tell a function or class from a plain value. The flag is off by
