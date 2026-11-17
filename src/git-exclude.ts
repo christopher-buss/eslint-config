@@ -5,7 +5,7 @@ const GIT_DIRECTORY_PREFIX = "gitdir:";
 const LINE_BREAK_PATTERN = /\r?\n/;
 
 export interface GitExclude {
-	/** Absolute path of `info/exclude`, which may not exist. */
+	/** Absolute path of an existing `info/exclude` file. */
 	file: string;
 	/** Whether the closest `.git` is a file (linked worktree or submodule). */
 	linked: boolean;
@@ -19,7 +19,7 @@ export interface GitExclude {
  * shared git directory, which owns `info/exclude`.
  *
  * @param cwd - Directory to start the search from.
- * @returns The exclude file, or `undefined` outside a repository.
+ * @returns The exclude file, or `undefined` when there is none to read.
  */
 export function findGitExclude(cwd: string): GitExclude | undefined {
 	const dotGit = findClosestDotGit(cwd);
@@ -27,23 +27,14 @@ export function findGitExclude(cwd: string): GitExclude | undefined {
 		return undefined;
 	}
 
-	if (statSync(dotGit).isDirectory()) {
-		return { file: path.join(dotGit, "info", "exclude"), linked: false };
-	}
-
-	const line = readFileSync(dotGit, "utf8")
-		.split(LINE_BREAK_PATTERN)
-		.find((entry) => entry.startsWith(GIT_DIRECTORY_PREFIX));
-	if (line === undefined) {
+	const linked = !statSync(dotGit).isDirectory();
+	const gitDirectory = linked ? readGitDirectory(dotGit) : dotGit;
+	if (gitDirectory === undefined) {
 		return undefined;
 	}
 
-	const target = line.slice(GIT_DIRECTORY_PREFIX.length).trim();
-	const gitDirectory = path.resolve(path.dirname(dotGit), target);
-	return {
-		file: path.join(resolveCommonDirectory(gitDirectory), "info", "exclude"),
-		linked: true,
-	};
+	const file = path.join(resolveCommonDirectory(gitDirectory), "info", "exclude");
+	return existsSync(file) ? { file, linked } : undefined;
 }
 
 function findClosestDotGit(cwd: string): string | undefined {
@@ -61,6 +52,25 @@ function findClosestDotGit(cwd: string): string | undefined {
 
 		directory = parent;
 	}
+}
+
+function readGitDirectory(dotGitFile: string): string | undefined {
+	let content: string;
+	try {
+		content = readFileSync(dotGitFile, "utf8");
+	} catch {
+		return undefined;
+	}
+
+	const line = content
+		.split(LINE_BREAK_PATTERN)
+		.find((entry) => entry.startsWith(GIT_DIRECTORY_PREFIX));
+	if (line === undefined) {
+		return undefined;
+	}
+
+	const target = line.slice(GIT_DIRECTORY_PREFIX.length).trim();
+	return path.resolve(path.dirname(dotGitFile), target);
 }
 
 function resolveCommonDirectory(gitDirectory: string): string {
