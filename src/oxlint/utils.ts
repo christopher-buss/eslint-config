@@ -155,14 +155,47 @@ const WHOLE_TREE_GLOB = /^\*\*\/\*\.[^./]+$/;
  * reaches them project-wide; one covering `**\/*.spec.ts` is a location, and
  * its plugins have to stay on their own override.
  *
- * @param fragment - The fragment to classify.
+ * @param fragment - The fragment (or merged override) to classify.
  * @returns Whether the fragment narrows by extension only.
  */
-export function isUnscopedFragment(fragment: TypedOxlintConfigItem): boolean {
+export function isUnscopedFragment(
+	fragment: Pick<OxlintOverride, "excludeFiles" | "files">,
+): boolean {
 	return (
 		fragment.excludeFiles === undefined &&
 		fragment.files.every((glob) => WHOLE_TREE_GLOB.test(glob))
 	);
+}
+
+/**
+ * The native plugins a rule map names only to turn their rules off.
+ *
+ * On a whole-tree fragment (see {@link isUnscopedFragment}) these must not be
+ * registered: a registration hands the fragment's files every category-enabled
+ * rule the plugin owns, so a fragment that only disables a file-scoped plugin's
+ * rules would switch the rest of them on across the whole tree.
+ *
+ * @param rules - The rule map to inspect.
+ * @returns The plugins whose every entry in `rules` is a disable.
+ */
+export function disabledOnlyPlugins(
+	rules: Readonly<Record<string, unknown>> | undefined,
+): Set<OxlintPlugin> {
+	const disabled = new Set<OxlintPlugin>();
+	const enabled = new Set<OxlintPlugin>();
+	const entries = Object.entries(rules ?? {});
+	for (const [rule, entry] of entries) {
+		const prefix = rulePluginPrefix(rule);
+		if (isNativePlugin(prefix)) {
+			(isOffEntry(entry) ? disabled : enabled).add(prefix);
+		}
+	}
+
+	for (const plugin of enabled) {
+		disabled.delete(plugin);
+	}
+
+	return disabled;
 }
 
 /**
@@ -172,16 +205,20 @@ export function isUnscopedFragment(fragment: TypedOxlintConfigItem): boolean {
  * A plugin registered at the top level hands every category-enabled rule it
  * owns to the whole project, however narrow the `files` glob that asked for it
  * was — the reason `vitest/*` fires on ordinary source files once a consumer
- * turns a category on. Registering it on the override instead confines it:
- * oxlint unions an override's `plugins` onto the base set, but applies
- * `categories` to the base set alone, so an override-registered plugin
- * contributes exactly the rules that override names and nothing more.
+ * turns a category on. Registering it on the override instead confines it to
+ * the files that override matches. It does not shield those files from
+ * `categories`: oxlint applies them to override-registered plugins too, so
+ * every override that carries a plugin hands its own files every
+ * category-enabled rule the plugin owns.
  *
  * A rule whose plugin is registered in neither place is silently ignored rather
- * than rejected, so every override naming a scoped plugin has to carry it —
- * including one that only disables its rules, which would otherwise lose a
- * relaxation it makes wherever the plugin *is* enabled. Carrying it costs
- * nothing, precisely because no category reaches it there.
+ * than rejected, so an override naming a scoped plugin has to carry it — even
+ * one that only disables its rules, which would otherwise lose a relaxation it
+ * makes wherever the plugin *is* enabled. The exception is a whole-tree
+ * override (see {@link isUnscopedFragment}) that only disables the plugin's
+ * rules: carrying the plugin there would re-register it across the whole tree,
+ * and its disables are dropped instead. Disables meant for the plugin's own
+ * files belong on an override scoped to them.
  *
  * @param overrides - The merged overrides (mutated).
  * @param globalPlugins - Plugins registered at the top level.
@@ -191,21 +228,40 @@ export function scopeOverridePlugins(
 	globalPlugins: ReadonlySet<string>,
 ): void {
 	for (const override of overrides) {
-		const scoped = new Set<OxlintPlugin>();
+		const { rules } = override;
+		const leaking = isUnscopedFragment(override)
+			? disabledOnlyPlugins(rules)
+			: new Set<OxlintPlugin>();
+		for (const plugin of leaking) {
+			if (globalPlugins.has(plugin)) {
+				leaking.delete(plugin);
+			}
+		}
 
+		const scoped = new Set<OxlintPlugin>();
 		const declared = override.plugins ?? [];
 		for (const plugin of declared) {
-			if (!globalPlugins.has(plugin)) {
+			if (!globalPlugins.has(plugin) && !leaking.has(plugin)) {
 				scoped.add(plugin);
 			}
 		}
 
-		const ruleNames = Object.keys(override.rules ?? {});
+		const ruleNames = Object.keys(rules ?? {});
 		for (const rule of ruleNames) {
 			const prefix = rulePluginPrefix(rule);
-			if (isNativePlugin(prefix) && !globalPlugins.has(prefix)) {
+			if (isNativePlugin(prefix) && !globalPlugins.has(prefix) && !leaking.has(prefix)) {
 				scoped.add(prefix);
 			}
+		}
+
+		if (rules !== undefined && leaking.size > 0) {
+			// A fresh object: `rules` can still be the consumer's own.
+			override.rules = Object.fromEntries(
+				Object.entries(rules).filter(([rule]) => {
+					const prefix = rulePluginPrefix(rule);
+					return !isNativePlugin(prefix) || !leaking.has(prefix);
+				}),
+			);
 		}
 
 		if (scoped.size > 0) {
@@ -488,6 +544,17 @@ export function createOxlintConfigs({
 	}
 
 	return fragments;
+}
+
+/**
+ * Whether a rule entry turns its rule off.
+ *
+ * @param entry - A severity, or a severity followed by options.
+ * @returns Whether the severity is `"off"` or `0`.
+ */
+function isOffEntry(entry: unknown): boolean {
+	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
+	return severity === "off" || severity === 0;
 }
 
 /**

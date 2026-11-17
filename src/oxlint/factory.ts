@@ -60,6 +60,7 @@ import type {
 import {
 	anchorOxlintGlob,
 	createOxlintConfigs,
+	disabledOnlyPlugins,
 	isUnscopedFragment,
 	jsPluginKey,
 	scopeOverridePlugins,
@@ -477,10 +478,15 @@ export function isentinel(
 		// where `categories` reaches them; a narrower one carries them on its
 		// own override instead. Registering a plugin project-wide is what opts
 		// it into a consumer's categories, so a hand-written `plugins` entry on
-		// a whole-tree fragment stays the way to ask for that.
+		// a whole-tree fragment stays the way to ask for that. A plugin the
+		// fragment names only to disable its rules is not hoisted: that would
+		// switch the plugin's category rules on across the whole tree.
 		if (isUnscopedFragment(config)) {
+			const disabledOnly = disabledOnlyPlugins(config.rules);
 			for (const plugin of fragmentPlugins) {
-				globalPlugins.add(plugin);
+				if (!disabledOnly.has(plugin)) {
+					globalPlugins.add(plugin);
+				}
 			}
 		}
 
