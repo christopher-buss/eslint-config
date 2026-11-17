@@ -9,16 +9,7 @@ minimumReleaseAgeExclude:
   - "@isentinel/machine-budget@0.2.0"
   - "@oxlint/*"
   - "@tsrs/*"
-  - "@typescript-eslint/eslint-plugin@8.73.0"
-  - "@typescript-eslint/parser@8.73.0"
-  - "@typescript-eslint/project-service@8.73.0"
-  - "@typescript-eslint/scope-manager@8.73.0"
-  - "@typescript-eslint/tsconfig-utils@8.73.0"
-  - "@typescript-eslint/type-utils@8.73.0"
-  - "@typescript-eslint/types@8.73.0"
-  - "@typescript-eslint/typescript-estree@8.73.0"
-  - "@typescript-eslint/utils@8.73.0"
-  - "@typescript-eslint/visitor-keys@8.73.0"
+  - "@typescript-eslint/*"
   - eslint-plugin-flawless
   - eslint-plugin-roblox-ts@1.5.0
   - oxlint
