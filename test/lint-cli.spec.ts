@@ -1,6 +1,5 @@
 // cspell:words typeaware lintable mtimes CLAUDECODE extensionless
 import fileEntryCache from "file-entry-cache";
-import { getPackageInfoSync } from "local-pkg";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -79,6 +78,7 @@ import type { PassDescriptor } from "../src/lint-cli/lib/plan/passes.ts";
 import { plan } from "../src/lint-cli/lib/plan/plan.ts";
 import type { PassPlan } from "../src/lint-cli/lib/plan/sizing.ts";
 import { runLint } from "../src/lint-cli/lib/run.ts";
+import { resolvePackageManifest } from "../src/resolve-package.ts";
 import { composeInDirectory, runContext, TEST_MEMORY } from "./lint-cli-helpers.ts";
 
 function baseContext(overrides: Partial<ComposeContext> = {}): ComposeContext {
@@ -665,6 +665,12 @@ describe("cache helpers", () => {
 		return String(isRecord(dependencies) ? dependencies[name] : undefined);
 	}
 
+	function installedVersion(name: string): string {
+		const manifest = resolvePackageManifest(name, process.cwd());
+		const parsed: unknown = JSON.parse(fs.readFileSync(manifest!, "utf8"));
+		return isRecord(parsed) ? String(parsed["version"]) : "";
+	}
+
 	it("resolves a file-entry-cache ESLint would load itself", ({ expect }) => {
 		expect.assertions(1);
 
@@ -673,9 +679,9 @@ describe("cache helpers", () => {
 		// be one ESLint would load itself. A version outside that range writes
 		// entries ESLint parses as none, turning every surgical removal into a
 		// silent wipe of the whole cache.
-		const resolved = getPackageInfoSync("file-entry-cache", { paths: [process.cwd()] });
+		const version = installedVersion("file-entry-cache");
 
-		expect(satisfies(resolved!.version!, eslintDependencyRange("file-entry-cache"))).toBe(true);
+		expect(satisfies(version, eslintDependencyRange("file-entry-cache"))).toBe(true);
 	});
 
 	it("removes one entry from a cache without disturbing the rest", ({

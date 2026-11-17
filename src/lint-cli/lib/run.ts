@@ -1,6 +1,6 @@
-import { isPackageExists } from "local-pkg";
 import process from "node:process";
 
+import { isPackageInstalled } from "../../resolve-package.ts";
 import { findOxfmtConfig, hasTypeAwareBackend } from "../../utils.ts";
 import { readFileList } from "./cli/file-list.ts";
 import { parseArguments } from "./cli/options.ts";
@@ -108,14 +108,14 @@ export async function runLint(
 	const needsTypeAwareBackend = commands.some(
 		(command) => command.bin === "oxlint" && command.args.includes("--type-aware"),
 	);
-	if (needsTypeAwareBackend && !hasTypeAwareBackend([cwd])) {
+	if (needsTypeAwareBackend && !hasTypeAwareBackend(cwd)) {
 		throw new CliError(
 			"No type-aware oxlint backend is installed, so oxlint cannot run type-aware rules. " +
 				"Install tsrs or oxlint-tsgolint, or pass --no-oxlint-type-aware to skip type-aware linting.",
 		);
 	}
 
-	if (formatCommand !== undefined && !isPackageExists("oxfmt", { paths: [cwd] })) {
+	if (formatCommand !== undefined && !isPackageInstalled("oxfmt", cwd)) {
 		throw new CliError(
 			"oxfmt is not installed, but this project has an `oxfmt.config.*` file. " +
 				"Install oxfmt, or pass --no-oxfmt to skip formatting.",
