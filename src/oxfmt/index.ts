@@ -75,7 +75,7 @@ export function isentinelOxfmt({
 		prettierSettings["overrides"],
 	);
 	const languages = resolveFormattedLanguages(formatters);
-	const sectionOverrides = editorConfigOverrides(cwd, rest);
+	const sectionOverrides = editorConfigOverrides({ cwd, root: rest });
 
 	return {
 		...base,

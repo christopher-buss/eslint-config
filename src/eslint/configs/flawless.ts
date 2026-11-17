@@ -8,16 +8,17 @@ import type { FlawlessRuleOptions } from "../../rules/flawless.ts";
 import { getTsConfig, mergeTypeAwareIgnores, typeAwareComplement } from "../../utils.ts";
 import { lazyPlugin } from "../lazy-plugin.ts";
 import type {
+	OptionsFormatters,
 	OptionsOverridesTypeAware,
 	OptionsStylistic,
 	OptionsTypeScriptParserOptions,
 	OptionsTypeScriptWithTypes,
 	TypedFlatConfigItem,
 } from "../types.ts";
-import type { PrettierOptions } from "./oxfmt.ts";
 
 export function flawless(
 	options: FlawlessRuleOptions &
+		OptionsFormatters &
 		OptionsOverridesTypeAware &
 		OptionsStylistic &
 		OptionsTypeScriptParserOptions &
@@ -29,12 +30,12 @@ export function flawless(
 			 */
 			complementIgnores?: Array<string>;
 		} = {},
-	prettierOptions: PrettierOptions = {},
 ): Array<TypedFlatConfigItem> {
 	const {
 		antiSlop = false,
 		complementIgnores,
 		overridesTypeAware = {},
+		prettierOptions = {},
 		roblox = true,
 		stylistic = true,
 		typeAware = true,

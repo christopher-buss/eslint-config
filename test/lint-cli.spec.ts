@@ -2263,7 +2263,7 @@ describe("runLint type-aware backend check ordering", () => {
 		// --type-aware and the check must not fire.
 		writeHybridStatus(directory, false);
 
-		const code = await runLint([], directory, {});
+		const code = await runLint([], { cwd: directory, environment: {} });
 
 		expect(code).toBe(0);
 	});
@@ -2279,7 +2279,7 @@ describe("runLint type-aware backend check ordering", () => {
 			fs.rmSync(directory, { force: true, recursive: true });
 		});
 
-		await expect(runLint(["--oxlint"], directory, {})).rejects.toThrow(
+		await expect(runLint(["--oxlint"], { cwd: directory, environment: {} })).rejects.toThrow(
 			/No type-aware oxlint backend is installed/,
 		);
 	});
@@ -2296,7 +2296,7 @@ describe("runLint type-aware backend check ordering", () => {
 			spy.mockRestore();
 			fs.rmSync(directory, { force: true, recursive: true });
 		});
-		const code = await runLint(["--print"], directory, {});
+		const code = await runLint(["--print"], { cwd: directory, environment: {} });
 
 		expect(code).toBe(0);
 
@@ -2388,7 +2388,10 @@ describe("runLint --fix", () => {
 		expect.assertions(2);
 
 		const { argvLog, directory } = fixFixture([], onTestFinished);
-		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], {
+			cwd: directory,
+			environment: {},
+		});
 
 		// The budget is off in tests, so oxlint gets every thread it asked for.
 		const threads = resolveOxlintThreads(options(), os.availableParallelism(), false);
@@ -2406,7 +2409,10 @@ describe("runLint --fix", () => {
 		expect.assertions(2);
 
 		const { argvLog, directory } = fixFixture(["dirty.ts"], onTestFinished);
-		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], {
+			cwd: directory,
+			environment: {},
+		});
 		const fixChild = spawnedArgv(argvLog).at(-1);
 
 		expect(code).toBe(0);
@@ -2433,7 +2439,10 @@ describe("runLint --fix", () => {
 		writeFakeToolBin(directory, "oxlint", loggingBin(logPath, "oxlint"));
 		writeFakeToolBin(directory, "eslint", loggingBin(logPath, "eslint"));
 
-		const code = await runLint(["--fix", "--no-oxlint-type-aware"], directory, {});
+		const code = await runLint(["--fix", "--no-oxlint-type-aware"], {
+			cwd: directory,
+			environment: {},
+		});
 		const lines = fs.readFileSync(logPath, "utf8").trim().split("\n");
 
 		expect(code).toBe(0);
