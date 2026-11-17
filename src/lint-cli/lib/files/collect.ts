@@ -1,4 +1,4 @@
-// cspell:words lintable pathspec
+// cspell:words lintable pathspec rbxm extensionless jakefile tfstate
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -10,6 +10,8 @@ import {
 	CACHE_BUST_PATTERNS,
 	ESLINT_CONFIG_FILE_PATTERN,
 	LINTABLE_EXTENSIONS,
+	OXFMT_EXTENSIONS,
+	OXFMT_FILENAMES,
 	TYPE_AWARE_EXTENSIONS,
 } from "./constants.ts";
 import { findWorkspaceRoot } from "./workspace.ts";
@@ -69,10 +71,14 @@ export interface RepositoryFiles {
 	 */
 	outsideCwdTargets: Array<string>;
 	/**
-	 * Absolute paths of every listed file within the lint targets, whatever its
-	 * extension. A superset of {@link RepositoryFiles.lintable}: the candidates
-	 * the oxfmt child is narrowed from, since oxfmt formats more languages than
-	 * the lintable extensions name.
+	 * Absolute paths of the files within the lint targets that ESLint lints by
+	 * extension or that oxfmt can format (see {@link isFormatCandidate}). A
+	 * superset of {@link RepositoryFiles.lintable}: the candidates the oxfmt
+	 * child is narrowed from, since oxfmt formats more languages than the
+	 * lintable extensions name. Files with neither (`.png`, `.rbxm`) are left
+	 * out, so they never pay for an ignore classification. An explicit file
+	 * target that exists on disk but is not listed (a gitignored file, say) is
+	 * included too.
 	 */
 	targeted: Array<string>;
 	/**
@@ -80,6 +86,12 @@ export interface RepositoryFiles {
 	 * {@link RepositoryFiles.lintable}.
 	 */
 	typeAware: Array<string>;
+	/**
+	 * The raw in-cwd lint targets that match no listed file and do not exist on
+	 * disk: globs such as `src/**\/*.ts`, which this listing cannot expand.
+	 * The oxfmt targets cannot be narrowed while one is present.
+	 */
+	unresolvedTargets: Array<string>;
 }
 
 /**
@@ -116,8 +128,12 @@ export function collectRepositoryFiles(cwd: string, targets: Array<string>): Rep
 		}
 
 		const absolute = path.resolve(cwd, relative);
-		targeted.push(absolute);
-		if (!hasLintableExtension(relative)) {
+		const isLintable = hasLintableExtension(relative);
+		if (isLintable || isFormatCandidate(relative)) {
+			targeted.push(absolute);
+		}
+
+		if (!isLintable) {
 			continue;
 		}
 
@@ -128,8 +144,54 @@ export function collectRepositoryFiles(cwd: string, targets: Array<string>): Rep
 	}
 
 	const configFiles = bustFiles.filter(isConfigEntryPoint);
+	const unresolvedTargets = addUnlistedTargets(cwd, {
+		normalizedTargets,
+		relatives,
+		targeted,
+		targets,
+	});
 
-	return { bustFiles, configFiles, lintable, outsideCwdTargets, targeted, typeAware };
+	return {
+		bustFiles,
+		configFiles,
+		lintable,
+		outsideCwdTargets,
+		targeted,
+		typeAware,
+		unresolvedTargets,
+	};
+}
+
+const OXFMT_EXTENSION_SET = new Set<string>(OXFMT_EXTENSIONS.map((extension) => `.${extension}`));
+
+const OXFMT_FILENAME_SET = new Set<string>(OXFMT_FILENAMES);
+
+/** The listed files and the directories above them. */
+interface ListedPrefixes {
+	/** As cwd-relative posix paths, case kept. */
+	exact: Set<string>;
+	/** As {@link normalizePath} keys. */
+	keys: Set<string>;
+}
+
+/**
+ * Whether oxfmt may format a file, judged by its name alone. Extensionless
+ * names and dotfiles stay candidates, since oxfmt matches many of them by name
+ * (`.babelrc`, `Jakefile`); the ignore classification and oxfmt itself decide
+ * the rest. Case-sensitive, like oxfmt.
+ *
+ * @param filePath - A path, relative or absolute.
+ * @returns Whether the file is worth handing to oxfmt.
+ */
+export function isFormatCandidate(filePath: string): boolean {
+	const name = path.basename(filePath);
+	const extension = path.extname(name);
+	if (extension === "" || OXFMT_FILENAME_SET.has(name) || OXFMT_EXTENSION_SET.has(extension)) {
+		return true;
+	}
+
+	// Two-part extensions (`tfstate.backup`).
+	return OXFMT_EXTENSION_SET.has(path.extname(path.basename(name, extension)) + extension);
 }
 
 /**
@@ -203,6 +265,186 @@ export function oxlintTargets(cwd: string, targets: Array<string>): Array<string
 
 	const ignored = gitIgnoredTargets(cwd, candidates);
 	return candidates.filter((target) => !ignored.has(target));
+}
+
+function retained(files: Array<string>, ignored: ReadonlySet<string>): Array<string> {
+	return files.filter((file) => !ignored.has(normalizePath(file)));
+}
+
+/**
+ * The subset of `targets` oxlint's own ignore matching would skip, echoed back
+ * verbatim by `git check-ignore`. Empty when git cannot answer (outside a repo,
+ * git absent) or when nothing matches — either way the caller drops nothing,
+ * the behaviour before this existed.
+ *
+ * Oxlint matches `.gitignore` rules through the `ignore` crate, which never
+ * consults git's index — so a file that is `.gitignore`d yet git-*tracked* is
+ * ignored by oxlint all the same. `--no-index` is the flag that makes git
+ * agree: without it, git reports a tracked file as not-ignored and we keep
+ * handing oxlint a path it refuses. `check-ignore` exits 1 (printing nothing)
+ * when no path matches, which `execFileSync` raises as a throw —
+ * indistinguishable here from git being absent, and correctly so: both mean
+ * "drop nothing"..
+ *
+ * @param cwd - The working directory to resolve targets against.
+ * @param targets - The candidate target paths, passed verbatim on stdin.
+ * @returns The ignored subset, matched against the original target strings.
+ */
+function gitIgnoredTargets(cwd: string, targets: Array<string>): ReadonlySet<string> {
+	try {
+		const output = execFileSync("git", ["check-ignore", "--no-index", "--stdin", "-z"], {
+			cwd,
+			encoding: "utf8",
+			// NUL-delimited both ways, so a target holding a newline stays one
+			// path.
+			input: `${targets.join("\0")}\0`,
+			maxBuffer: 64 * 1024 * 1024,
+			// Pipe stdin/stdout, silence stderr: outside a repo git prints
+			// "fatal: not a git repository", which the catch already handles as
+			// no filtering.
+			stdio: ["pipe", "pipe", "ignore"],
+		});
+		return new Set(output.split("\0").filter(Boolean));
+	} catch {
+		return new Set();
+	}
+}
+
+/**
+ * Add a relative posix path and each directory above it to a set, stopping at
+ * the first one already present (its parents are then present too).
+ *
+ * @param set - The set to extend.
+ * @param relative - The cwd-relative posix path.
+ */
+function addWithParents(set: Set<string>, relative: string): void {
+	let candidate = relative;
+	while (!set.has(candidate)) {
+		set.add(candidate);
+		const slash = candidate.lastIndexOf("/");
+		if (slash < 0) {
+			return;
+		}
+
+		candidate = candidate.slice(0, slash);
+	}
+}
+
+/**
+ * Every listed file and each directory above it.
+ *
+ * @param cwd - The project root.
+ * @param relatives - The listed cwd-relative posix paths.
+ * @returns The prefixes, as given and as keys.
+ */
+function listedPrefixes(cwd: string, relatives: Array<string>): ListedPrefixes {
+	const exact = new Set<string>();
+	for (const relative of relatives) {
+		addWithParents(exact, relative);
+	}
+
+	const keys = new Set(
+		Array.from(exact, (relative) => normalizePath(path.resolve(cwd, relative))),
+	);
+	return { exact, keys };
+}
+
+/**
+ * Whether a normalized target lies outside `cwd`. A cwd-relative listing never
+ * starts with `..`, so any `..`-prefixed target can never match — its files are
+ * invisible to the dirty count.
+ *
+ * @param normalizedTarget - A target already run through {@link normalizeTarget}.
+ * @returns True when the target escapes `cwd`.
+ */
+function isOutsideCwd(normalizedTarget: string): boolean {
+	return normalizedTarget === ".." || normalizedTarget.startsWith("../");
+}
+
+/**
+ * Account for the explicit in-cwd targets the listing did not cover. A file
+ * that exists on disk is added to `targeted` (when it is a candidate), so it
+ * is classified rather than dropped. A target that exists nowhere and matches
+ * no listed file is returned as unresolved.
+ *
+ * @param cwd - The project root.
+ * @param lists - The run's targets and the lists built from the listing.
+ * @param lists.normalizedTargets - The targets, normalized against cwd.
+ * @param lists.relatives - The listed cwd-relative posix paths.
+ * @param lists.targeted - The targeted list, extended in place.
+ * @param lists.targets - The raw targets, index-aligned with the normalized ones.
+ * @returns The raw targets that resolve to nothing.
+ */
+function addUnlistedTargets(
+	cwd: string,
+	{
+		normalizedTargets,
+		relatives,
+		targeted,
+		targets,
+	}: {
+		normalizedTargets: Array<string>;
+		relatives: Array<string>;
+		targeted: Array<string>;
+		targets: Array<string>;
+	},
+): Array<string> {
+	const explicit = normalizedTargets.flatMap((normalized, index) => {
+		const raw = targets[index];
+		return raw === undefined ||
+			normalized === "" ||
+			normalized === "." ||
+			isOutsideCwd(normalized)
+			? []
+			: [{ normalized, raw }];
+	});
+	if (explicit.length === 0) {
+		return [];
+	}
+
+	const known = new Set(targeted.map((file) => normalizePath(file)));
+	const unresolved: Array<string> = [];
+	let listed: ListedPrefixes | undefined;
+	for (const { normalized, raw } of explicit) {
+		const absolute = path.resolve(cwd, normalized);
+		let stat: fs.Stats | undefined;
+		try {
+			stat = fs.statSync(absolute, { throwIfNoEntry: false });
+		} catch {
+			stat = undefined;
+		}
+
+		if (stat?.isFile() === true) {
+			const key = normalizePath(absolute);
+			if (isFormatCandidate(absolute) && !known.has(key)) {
+				known.add(key);
+				targeted.push(absolute);
+			}
+
+			continue;
+		}
+
+		listed ??= listedPrefixes(cwd, relatives);
+		if (stat !== undefined) {
+			// A directory spelled in another case (Windows) passes the stat but
+			// matched no listed file, as the target match is case-sensitive.
+			if (!listed.exact.has(normalized) && listed.keys.has(normalizePath(absolute))) {
+				unresolved.push(raw);
+			}
+
+			continue;
+		}
+
+		// Absent from disk: a tracked file deleted since, or a directory of
+		// them, still matched the listing; anything else is a glob. Compared
+		// through `normalizePath`, so a Windows target spelled in another case
+		// still matches.
+		if (!listed.keys.has(normalizePath(absolute))) {
+			unresolved.push(raw);
+		}
+	}
+
+	return unresolved;
 }
 
 /**
@@ -285,18 +527,6 @@ function normalizeTarget(target: string, cwd: string): string {
 	}
 
 	return value;
-}
-
-/**
- * Whether a normalized target lies outside `cwd`. A cwd-relative listing never
- * starts with `..`, so any `..`-prefixed target can never match — its files are
- * invisible to the dirty count.
- *
- * @param normalizedTarget - A target already run through {@link normalizeTarget}.
- * @returns True when the target escapes `cwd`.
- */
-function isOutsideCwd(normalizedTarget: string): boolean {
-	return normalizedTarget === ".." || normalizedTarget.startsWith("../");
 }
 
 /**
@@ -409,47 +639,4 @@ function walkFallback(cwd: string, targets: Array<string>): Array<string> {
 
 function listFiles(cwd: string, targets: Array<string>): Array<string> {
 	return gitListFiles(cwd, targets) ?? walkFallback(cwd, targets);
-}
-
-function retained(files: Array<string>, ignored: ReadonlySet<string>): Array<string> {
-	return files.filter((file) => !ignored.has(normalizePath(file)));
-}
-
-/**
- * The subset of `targets` oxlint's own ignore matching would skip, echoed back
- * verbatim by `git check-ignore`. Empty when git cannot answer (outside a repo,
- * git absent) or when nothing matches — either way the caller drops nothing,
- * the behaviour before this existed.
- *
- * Oxlint matches `.gitignore` rules through the `ignore` crate, which never
- * consults git's index — so a file that is `.gitignore`d yet git-*tracked* is
- * ignored by oxlint all the same. `--no-index` is the flag that makes git
- * agree: without it, git reports a tracked file as not-ignored and we keep
- * handing oxlint a path it refuses. `check-ignore` exits 1 (printing nothing)
- * when no path matches, which `execFileSync` raises as a throw —
- * indistinguishable here from git being absent, and correctly so: both mean
- * "drop nothing"..
- *
- * @param cwd - The working directory to resolve targets against.
- * @param targets - The candidate target paths, passed verbatim on stdin.
- * @returns The ignored subset, matched against the original target strings.
- */
-function gitIgnoredTargets(cwd: string, targets: Array<string>): ReadonlySet<string> {
-	try {
-		const output = execFileSync("git", ["check-ignore", "--no-index", "--stdin", "-z"], {
-			cwd,
-			encoding: "utf8",
-			// NUL-delimited both ways, so a target holding a newline stays one
-			// path.
-			input: `${targets.join("\0")}\0`,
-			maxBuffer: 64 * 1024 * 1024,
-			// Pipe stdin/stdout, silence stderr: outside a repo git prints
-			// "fatal: not a git repository", which the catch already handles as
-			// no filtering.
-			stdio: ["pipe", "pipe", "ignore"],
-		});
-		return new Set(output.split("\0").filter(Boolean));
-	} catch {
-		return new Set();
-	}
 }

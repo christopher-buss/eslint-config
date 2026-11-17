@@ -1678,6 +1678,7 @@ function repositoryFiles(overrides: Partial<RepositoryFiles> = {}): RepositoryFi
 		outsideCwdTargets: [],
 		targeted: [],
 		typeAware: [],
+		unresolvedTargets: [],
 		...overrides,
 	};
 }

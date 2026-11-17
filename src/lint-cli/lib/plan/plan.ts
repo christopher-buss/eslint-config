@@ -9,7 +9,12 @@ import { computePackageJsonHash } from "../cache/package-hash.ts";
 import type { ChildCommand, LintCliOptions } from "../cli/types.ts";
 import type { RunContext } from "../context.ts";
 import { resolveAgentsFormatter } from "../exec/resolve.ts";
-import { collectRepositoryFiles, oxlintTargets, withoutIgnored } from "../files/collect.ts";
+import {
+	collectRepositoryFiles,
+	isFormatCandidate,
+	oxlintTargets,
+	withoutIgnored,
+} from "../files/collect.ts";
 import { resolveIgnoredFiles, resolveIgnoredFilesExact } from "../files/ignored.ts";
 import { resolveOxlintRun } from "../hybrid/gate.ts";
 import { toPosix } from "../paths.ts";
@@ -31,7 +36,8 @@ export interface FormatPlan {
 	notice: string | undefined;
 	/**
 	 * The oxfmt targets: the files within the run's targets that ESLint would
-	 * lint, cwd-relative, plus any target outside the cwd as given. Empty when
+	 * lint and oxfmt can format, cwd-relative. Targets outside the cwd are
+	 * never included, as ESLint does not lint them. Empty when
 	 * nothing is left, and then no oxfmt child runs — an empty list would make
 	 * oxfmt format the whole tree.
 	 */
@@ -127,6 +133,13 @@ export interface PlanSettings {
 /** The warning when the oxfmt targets cannot be narrowed to ESLint's files. */
 const FORMAT_UNFILTERED_NOTICE =
 	"isentinel-lint: could not resolve the ESLint ignores, so oxfmt checks the run's " +
+	"targets unfiltered and can format files that ESLint ignores.\n";
+
+/**
+ * The warning when a target is a glob, which the file listing cannot expand.
+ */
+const FORMAT_GLOB_NOTICE =
+	"isentinel-lint: a target matches no file (a glob?), so oxfmt checks the run's " +
 	"targets unfiltered and can format files that ESLint ignores.\n";
 
 /** What the staging decision needs to know beyond the descriptors. */
@@ -234,9 +247,13 @@ export function plan(
 
 	// One hash per run, shared by the drift bust below and the ignore-set memo:
 	// both answer "has the resolved config changed since last time", and the
-	// closure walk is not worth doing twice. Only meaningful with caching on —
-	// `--no-cache` counts every file dirty regardless.
-	const configHash = options.cache ? computeConfigHash(cwd, files.configFiles) : undefined;
+	// closure walk is not worth doing twice. The bust is only meaningful with
+	// caching on — `--no-cache` counts every file dirty regardless — but a
+	// formatting run needs the hash under `--no-cache` too, for the ignore memo
+	// alone: without it, every such run would spawn the ignore helper. The
+	// busts below still only run with caching on.
+	const configHash =
+		format || options.cache ? computeConfigHash(cwd, files.configFiles) : undefined;
 
 	const cleared: Array<string> = [];
 	if (canMutateCaches) {
@@ -268,21 +285,33 @@ export function plan(
 	// exactly, once, and the sizing reads its lintable subset from that answer.
 	let ignored: ReadonlySet<string>;
 	let formatPlan: FormatPlan | undefined;
-	if (format) {
-		const exact = resolveIgnoredFilesExact(run, configHash, files.targeted);
-		ignored = exact ?? new Set();
-		formatPlan =
-			exact === undefined
-				? { notice: FORMAT_UNFILTERED_NOTICE, paths: options.paths }
-				: {
-						notice: undefined,
-						paths: [
-							...retainedRelative(cwd, files.targeted, exact),
-							...files.outsideCwdTargets,
-						],
-					};
+	// A glob target cannot be expanded from the listing, so its files cannot
+	// be classified; oxfmt then gets the targets as they stand.
+	const exact =
+		format && files.unresolvedTargets.length === 0
+			? resolveIgnoredFilesExact(run, configHash, files.targeted)
+			: undefined;
+	if (exact !== undefined) {
+		ignored = exact;
+		formatPlan = {
+			notice: undefined,
+			paths: retainedRelative(cwd, files.targeted.filter(isFormatCandidate), exact),
+		};
 	} else {
 		ignored = resolveIgnoredFiles(run, configHash, files.lintable);
+		if (format) {
+			// ESLint lints nothing outside its base path (the cwd), so a target
+			// out there is dropped here too, or oxfmt would format a file that
+			// ESLint mode leaves alone.
+			const outside = new Set(files.outsideCwdTargets);
+			formatPlan = {
+				notice:
+					files.unresolvedTargets.length > 0
+						? FORMAT_GLOB_NOTICE
+						: FORMAT_UNFILTERED_NOTICE,
+				paths: options.paths.filter((target) => !outside.has(target)),
+			};
+		}
 	}
 
 	const sizingFiles = withoutIgnored(files, ignored);

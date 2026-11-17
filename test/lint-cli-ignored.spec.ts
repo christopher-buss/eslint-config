@@ -1,4 +1,4 @@
-// cspell:words unconfigured
+// cspell:words unconfigured lintable
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -8,7 +8,11 @@ import { describe, it } from "vitest";
 import { normalizePath } from "../src/lint-cli/lib/cache/entries.ts";
 import type { RunContext } from "../src/lint-cli/lib/context.ts";
 import type { IgnoredPayload } from "../src/lint-cli/lib/files/ignored-predicate.ts";
-import { ignoredStatePath, resolveIgnoredFiles } from "../src/lint-cli/lib/files/ignored.ts";
+import {
+	ignoredStatePath,
+	resolveIgnoredFiles,
+	resolveIgnoredFilesExact,
+} from "../src/lint-cli/lib/files/ignored.ts";
 import { readState } from "../src/lint-cli/lib/state.ts";
 
 /** The config-variant key these fixtures store their ignore set under. */
@@ -181,5 +185,154 @@ describe("resolveIgnoredFiles", () => {
 
 		expect(ignored.size).toBe(0);
 		expect(storedMode(directory)).toBeUndefined();
+	});
+});
+
+/**
+ * Every config ignored: what a re-spawned helper would answer once swapped in.
+ */
+const IGNORE_ALL_CONFIG = 'export default [{ ignores: ["**/*"] }];\n';
+
+function touch(directory: string, relatives: Array<string>): void {
+	for (const relative of relatives) {
+		const file = path.join(directory, relative);
+		fs.mkdirSync(path.dirname(file), { recursive: true });
+		fs.writeFileSync(file, "export {};\n");
+	}
+}
+
+function resolveExact(
+	directory: string,
+	targets: Array<string>,
+	{ cache = true, mutate = true }: { cache?: boolean; mutate?: boolean } = {},
+): ReadonlySet<string> | undefined {
+	return resolveIgnoredFilesExact(
+		runFor(directory, mutate),
+		cache ? HASH : undefined,
+		targets.map((target) => path.join(directory, target)),
+	);
+}
+
+function storedCount(directory: string): number | undefined {
+	const stored = readState<{ classified: { ignored: Array<string>; linted: Array<string> } }>(
+		ignoredStatePath(runFor(directory, false)),
+	);
+	return stored === undefined
+		? undefined
+		: stored.classified.ignored.length + stored.classified.linted.length;
+}
+
+/**
+ * Swap the config for one that ignores everything. The memo key stays the
+ * same, so any answer that changes after this came from a re-spawned helper.
+ *
+ * @param directory - The fixture project root.
+ */
+function poisonConfig(directory: string): void {
+	fs.writeFileSync(path.join(directory, "eslint.config.mjs"), IGNORE_ALL_CONFIG);
+}
+
+describe("resolveIgnoredFilesExact", () => {
+	it("re-asks when a stored answers payload does not cover the targets", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(3);
+
+		const directory = createFixture(FUNCTION_CONFIG, onTestFinished);
+		touch(directory, ["src/c.generated.ts"]);
+		resolveAndStore(directory, ["src/a.ts"]);
+
+		expect(storedMode(directory)).toBe("answers");
+
+		// A non-exact run guesses the unknown file is linted; the guess must
+		// not be stored as an answer.
+		resolveAndStore(directory, ["src/a.ts", "src/c.generated.ts"]);
+		const exact = resolveExact(directory, ["src/a.ts", "src/c.generated.ts"]);
+
+		expect(has(exact!, directory, "src/c.generated.ts")).toBe(true);
+		expect(has(exact!, directory, "src/a.ts")).toBe(false);
+	});
+
+	it("stores its answer when the run may mutate", ({ expect, onTestFinished }) => {
+		expect.assertions(3);
+
+		const directory = createFixture(GLOB_CONFIG, onTestFinished);
+		touch(directory, ["generated/b.ts"]);
+		const ignored = resolveExact(directory, ["src/a.ts", "generated/b.ts"]);
+
+		expect(has(ignored!, directory, "generated/b.ts")).toBe(true);
+		expect(storedMode(directory)).toBe("predicate");
+		expect(storedCount(directory)).toBe(2);
+	});
+
+	it("answers without storing when the run may not mutate", ({ expect, onTestFinished }) => {
+		expect.assertions(2);
+
+		const directory = createFixture(GLOB_CONFIG, onTestFinished);
+		touch(directory, ["generated/b.ts"]);
+		const ignored = resolveExact(directory, ["src/a.ts", "generated/b.ts"], {
+			mutate: false,
+		});
+
+		expect(has(ignored!, directory, "generated/b.ts")).toBe(true);
+		expect(storedMode(directory)).toBeUndefined();
+	});
+
+	it("answers without a config hash (--no-cache) and stores nothing", ({
+		expect,
+		onTestFinished,
+	}) => {
+		expect.assertions(2);
+
+		const directory = createFixture(GLOB_CONFIG, onTestFinished);
+		touch(directory, ["generated/b.ts"]);
+		const ignored = resolveExact(directory, ["src/a.ts", "generated/b.ts"], {
+			cache: false,
+		});
+
+		expect(has(ignored!, directory, "generated/b.ts")).toBe(true);
+		expect(storedMode(directory)).toBeUndefined();
+	});
+
+	it.for([
+		["patterns", GLOB_CONFIG],
+		["answers", FUNCTION_CONFIG],
+	] as const)(
+		"keeps the whole-tree classification across a lintable-only run (%s)",
+		([, config], { expect, onTestFinished }) => {
+			expect.assertions(3);
+
+			const directory = createFixture(config, onTestFinished);
+			const whole = ["src/a.ts", "src/b.generated.ts", "README.md", "styles.css"];
+			touch(directory, whole.slice(1));
+			const first = resolveExact(directory, whole);
+
+			// Lintable-only and partial runs see fewer targets.
+			resolveAndStore(directory, ["src/a.ts"]);
+			resolveExact(directory, ["src/a.ts", "README.md"]);
+
+			expect(storedCount(directory)).toBe(whole.length);
+
+			poisonConfig(directory);
+			const again = resolveExact(directory, whole);
+
+			// The same answer, so no helper re-spawned against the new config.
+			expect([...again!].toSorted()).toStrictEqual([...first!].toSorted());
+			expect(has(again!, directory, "src/a.ts")).toBe(false);
+		},
+	);
+
+	it("prunes entries for deleted files when it stores", ({ expect, onTestFinished }) => {
+		expect.assertions(1);
+
+		const directory = createFixture(GLOB_CONFIG, onTestFinished);
+		touch(directory, ["src/gone.ts"]);
+		resolveExact(directory, ["src/a.ts", "src/gone.ts"]);
+		fs.rmSync(path.join(directory, "src/gone.ts"));
+		touch(directory, ["src/new.ts"]);
+		resolveExact(directory, ["src/a.ts", "src/new.ts"]);
+
+		expect(storedCount(directory)).toBe(2);
 	});
 });

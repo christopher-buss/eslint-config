@@ -51,6 +51,19 @@ function isPredicateEntryArray(value: unknown): value is Array<PredicateEntry> {
 /** Reused for every miss, so callers never allocate on the no-op path. */
 const EMPTY: ReadonlySet<string> = new Set<string>();
 
+/** What {@link classifyTargets} found. */
+interface TargetClassification {
+	/**
+	 * Whether any target was classified now rather than read from the stored
+	 * classification, so the merged one holds entries the stored one lacks.
+	 */
+	added: boolean;
+	/** The ignored subset of the targets, as {@link normalizePath} keys. */
+	ignored: Set<string>;
+	/** The stored classification with this run's new answers merged in. */
+	merged: Classification;
+}
+
 /**
  * Resolve the persisted ignore-set file for a config variant, keyed by the same
  * variant as the config hash it stores.
@@ -168,8 +181,9 @@ function coversTargets(cached: Classification | undefined, targets: Array<string
  * about the ones the stored classification does not already cover — which after
  * the first run means only the files added since it.
  *
- * The result covers exactly the current targets, so storing it also drops the
- * entries for files that have gone away.
+ * The new answers are merged into the stored classification rather than
+ * replacing it, so a run over fewer targets (a lintable-only run, or a hook's
+ * few files) does not shrink it for the next whole-tree run.
  *
  * @param cwd - The consumer project root.
  * @param payload - The patterns (or answers) to classify against.
@@ -182,7 +196,7 @@ function classifyTargets(
 	payload: IgnoredPayload,
 	targets: Array<string>,
 	cached: Classification | undefined,
-): Classification | undefined {
+): TargetClassification | undefined {
 	const known = new Map<string, boolean>();
 	const cachedIgnored = cached?.ignored ?? [];
 	const cachedLinted = cached?.linted ?? [];
@@ -212,31 +226,34 @@ function classifyTargets(
 		}
 	}
 
-	const classified: Classification = { ignored: [], linted: [] };
+	const ignored = new Set<string>();
 	for (const key of byKey.keys()) {
-		(known.get(key) === true ? classified.ignored : classified.linted).push(key);
+		if (known.get(key) === true) {
+			ignored.add(key);
+		}
 	}
 
-	return classified;
+	const merged: Classification = { ignored: [], linted: [] };
+	for (const [key, isIgnored] of known) {
+		(isIgnored ? merged.ignored : merged.linted).push(key);
+	}
+
+	return { added: unknown.length > 0, ignored, merged };
 }
 
 /**
- * Whether a classification is the one already on disk, so an unchanged run can
- * skip rewriting it.
+ * Drop the entries for files that no longer exist, so a merged classification
+ * does not grow without bound. Only run before a write, which happens only when
+ * the classification gained entries.
  *
- * @param classified - The classification this run computed.
- * @param cached - The stored classification, when one applies.
- * @returns True when the two cover the same targets.
+ * @param classification - The classification to prune.
+ * @returns The entries whose file still exists.
  */
-function sameClassification(
-	classified: Classification,
-	cached: Classification | undefined,
-): boolean {
-	return (
-		cached !== undefined &&
-		cached.ignored.length === classified.ignored.length &&
-		cached.linted.length === classified.linted.length
-	);
+function pruneMissing(classification: Classification): Classification {
+	return {
+		ignored: classification.ignored.filter((file) => fs.existsSync(file)),
+		linted: classification.linted.filter((file) => fs.existsSync(file)),
+	};
 }
 
 /**
@@ -342,13 +359,17 @@ function classifyWithMemo(
 		return undefined;
 	}
 
-	if (
-		configHash !== undefined &&
-		mutate &&
-		(queried || !sameClassification(classified, fresh?.classified))
-	) {
-		writeState(stateFile, { classified, hash: configHash, payload } satisfies IgnoredState);
+	// An `"answers"` payload read from the memo cannot answer a target it was
+	// not computed for; it reads as not-ignored. That guess must not be stored,
+	// or a later exact run would take it for an answer.
+	const answered = queried || payload.mode === "predicate";
+	if (configHash !== undefined && mutate && answered && (queried || classified.added)) {
+		writeState(stateFile, {
+			classified: pruneMissing(classified.merged),
+			hash: configHash,
+			payload,
+		} satisfies IgnoredState);
 	}
 
-	return new Set(classified.ignored);
+	return classified.ignored;
 }
