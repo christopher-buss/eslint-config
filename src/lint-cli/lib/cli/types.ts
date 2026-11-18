@@ -111,6 +111,11 @@ export interface ChildCommand {
 	 * leak into the full-config pass.
 	 */
 	env: Record<string, string | undefined>;
+	/**
+	 * A note for the spawn line when the heap worker cap lowered the planned
+	 * workers (see `PassHeap.capNote`).
+	 */
+	heapCapNote?: string | undefined;
 	/** Prefix/name used for concurrently output and logging. */
 	label: ToolLabel;
 	/**

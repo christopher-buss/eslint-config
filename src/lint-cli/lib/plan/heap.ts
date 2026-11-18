@@ -18,16 +18,20 @@ export const HEAP_ENV = "LINT_TYPED_HEAP_MB";
 export const HEAP_BUDGET_SHARE = 0.5;
 
 /**
- * The least heap `auto` gives each program-building worker, as a multiple of
- * Node's default. Every worker loads the program of every project its files
- * touch, and files are handed out interleaved, so each one ends up holding
- * nearly all of them. Measured on a 5,400-file roblox-ts workspace: about
- * 3.3 GB of programs per worker plus about 1.3 MB per file, so 940 files per
- * worker peaked near 4.8 GB, just over the default. Fewer, larger workers fit
- * a budget far better than more, smaller ones: half the workers cut the total
- * by a third.
+ * The heap `auto` counts for each program-building worker before its files, in
+ * MB. Every worker loads the program of every project its files touch, and
+ * files are handed out interleaved, so each one ends up holding nearly all of
+ * them. Measured on a 5,400-file roblox-ts workspace: about 3.3 GB of programs
+ * per worker plus about 1.3 MB per file, so 940 files per worker peaked near
+ * 4.8 GB. Rounded up, since that workspace is the largest measured.
  */
-export const AUTO_HEAP_FLOOR = 2;
+export const AUTO_HEAP_WORKER_MB = 3400;
+
+/**
+ * The heap `auto` counts for each file a program-building worker lints, in MB
+ * (see {@link AUTO_HEAP_WORKER_MB}).
+ */
+export const AUTO_HEAP_FILE_MB = 1.3;
 
 const BYTES_PER_MB = 1024 * 1024;
 
@@ -67,10 +71,20 @@ export interface HeapSizing {
 	concurrency: "off" | number;
 	/** The number of files the pass will lint. */
 	dirtyCount: number;
+	/**
+	 * The concurrency the pass would have had without the heap worker cap.
+	 * Equal to {@link HeapSizing.concurrency} when the cap did not bind.
+	 */
+	uncappedConcurrency: "off" | number;
 }
 
 /** The heap a program-building child runs with. */
 export interface PassHeap {
+	/**
+	 * A short note for the spawn line when the heap worker cap lowered the
+	 * planned workers, such as `heap cap: 2 of 3 workers`.
+	 */
+	capNote: string | undefined;
 	/**
 	 * The `NODE_OPTIONS` the child runs under, carrying its heap flag.
 	 * `undefined` leaves the inherited value alone.
@@ -146,21 +160,33 @@ export function heapBudgetMb(memory: MemoryFacts): number {
 
 /**
  * The most program-building workers the budget can hold, or `undefined` when
- * the setting places no limit. Each worker is counted at the heap it may grow
- * to: the requested size, or {@link AUTO_HEAP_FLOOR} times Node's default
- * under `auto`. Never below one.
+ * the setting places no limit. Never below one.
+ *
+ * A fixed size counts each worker at that size. `auto` counts each worker at
+ * what it needs for its share of the files: {@link AUTO_HEAP_WORKER_MB} plus
+ * {@link AUTO_HEAP_FILE_MB} for each file. The files split across the workers,
+ * so `w` workers need `w * AUTO_HEAP_WORKER_MB + dirtyCount *
+ * AUTO_HEAP_FILE_MB` together. When this cap binds, the budget split across
+ * the workers is never less than one worker needs.
  *
  * @param budget - The setting and the machine it applies to.
+ * @param dirtyCount - The files the pass will lint.
  * @returns How many workers fit, if the setting limits them.
  */
-export function heapWorkerCap({ memory, setting }: HeapBudget): number | undefined {
-	if (setting.kind !== "auto" && setting.kind !== "fixed") {
+export function heapWorkerCap(
+	{ memory, setting }: HeapBudget,
+	dirtyCount: number,
+): number | undefined {
+	if (setting.kind === "fixed") {
+		return Math.max(1, Math.floor(heapBudgetMb(memory) / setting.mb));
+	}
+
+	if (setting.kind !== "auto") {
 		return undefined;
 	}
 
-	const perWorker =
-		setting.kind === "fixed" ? setting.mb : memory.defaultHeapMb * AUTO_HEAP_FLOOR;
-	return Math.max(1, Math.floor(heapBudgetMb(memory) / perWorker));
+	const filesMb = Math.max(0, dirtyCount) * AUTO_HEAP_FILE_MB;
+	return Math.max(1, Math.floor((heapBudgetMb(memory) - filesMb) / AUTO_HEAP_WORKER_MB));
 }
 
 /**
@@ -211,14 +237,16 @@ export function resolveHeapBudget(environment: NodeJS.ProcessEnv, memory: Memory
  * @param maxWorkers - The pass's cap before the budget.
  * @param explicit - Whether `LINT_MAX_WORKERS` set that cap.
  * @param budget - The setting and the machine it applies to.
+ * @param dirtyCount - The files the pass will lint.
  * @returns The cap to size the pass against.
  */
 export function capWorkersForHeap(
 	maxWorkers: number,
 	explicit: boolean,
 	budget: HeapBudget,
+	dirtyCount: number,
 ): number {
-	const cap = explicit ? undefined : heapWorkerCap(budget);
+	const cap = explicit ? undefined : heapWorkerCap(budget, dirtyCount);
 	return cap === undefined ? maxWorkers : Math.min(maxWorkers, cap);
 }
 
@@ -232,7 +260,13 @@ export function capWorkersForHeap(
  */
 export function planPassHeap(label: ToolLabel, budget: HeapBudget, sizing: HeapSizing): PassHeap {
 	const heapMb = heapPerWorkerMb(budget, sizing.concurrency);
+	const workers = workerCount(sizing.concurrency);
+	const uncapped = workerCount(sizing.uncappedConcurrency);
 	return {
+		capNote:
+			uncapped > workers
+				? `heap cap: ${String(workers)} of ${String(uncapped)} workers`
+				: undefined,
 		nodeOptions: heapNodeOptions(budget, heapMb),
 		note: describeHeapPlan(label, budget, sizing, heapMb),
 		watch: budget.setting.kind !== "off",
