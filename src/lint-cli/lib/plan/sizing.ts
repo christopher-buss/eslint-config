@@ -238,25 +238,51 @@ function sizePass(descriptor: PassDescriptor, context: SizePassContext): PassPla
 	// memory budget bounds how many of them may run at once.
 	const program = buildsProgram(descriptor);
 	const passMaxWorkers = maxWorkersFor(descriptor, context.limits);
+	/**
+	 * Outside-cwd targets are absent from the cwd-relative listing, so the
+	 * dirty count under-counts them — size for the worker cap instead
+	 * (`cap * filesPerWorker` ceils back to exactly `cap`).
+	 *
+	 * @param cap - The worker cap to size for.
+	 * @returns The file count to size the pass with.
+	 */
+	function sizeFor(cap: number): number {
+		return conservative ? cap * filesPerWorker : dirtyCount;
+	}
+
+	/**
+	 * The pass's concurrency under a worker cap.
+	 *
+	 * @param cap - The worker cap.
+	 * @returns The concurrency the pass runs with under that cap.
+	 */
+	function workersFor(cap: number): "off" | number {
+		return (
+			context.options.concurrency ??
+			computeWorkerCount({ dirtyCount: sizeFor(cap), filesPerWorker, maxWorkers: cap })
+		);
+	}
+
 	const maxWorkers = program
-		? capWorkersForHeap(passMaxWorkers, context.limits.explicitMaxWorkers, context.heap)
+		? capWorkersForHeap(
+				passMaxWorkers,
+				context.limits.explicitMaxWorkers,
+				context.heap,
+				sizeFor(passMaxWorkers),
+			)
 		: passMaxWorkers;
 
-	// Outside-cwd targets are absent from the cwd-relative listing, so the dirty
-	// count under-counts them — size for the worker cap instead (maxWorkers *
-	// filesPerWorker ceils back to exactly maxWorkers).
-	const sizingDirtyCount = conservative ? maxWorkers * filesPerWorker : dirtyCount;
+	const sizingDirtyCount = sizeFor(maxWorkers);
 	// Cost sizing never counts fewer files than are known to be dirty.
 	const costDirtyCount = Math.max(dirtyCount, sizingDirtyCount);
 
-	const concurrency =
-		context.options.concurrency ??
-		computeWorkerCount({ dirtyCount: sizingDirtyCount, filesPerWorker, maxWorkers });
+	const concurrency = workersFor(maxWorkers);
 
 	const heap = program
 		? planPassHeap(descriptor.label, context.heap, {
 				concurrency,
 				dirtyCount: sizingDirtyCount,
+				uncappedConcurrency: workersFor(passMaxWorkers),
 			})
 		: undefined;
 

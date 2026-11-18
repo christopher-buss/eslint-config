@@ -15,18 +15,24 @@ import { resolveBootstrap } from "../src/lint-cli/lib/exec/resolve.ts";
 import { computeWorkerCount, resolveWorkerLimits } from "../src/lint-cli/lib/plan/concurrency.ts";
 import type { HeapBudget, MemoryFacts } from "../src/lint-cli/lib/plan/heap.ts";
 import {
+	AUTO_HEAP_FILE_MB,
+	AUTO_HEAP_WORKER_MB,
 	capWorkersForHeap,
 	heapPerWorkerMb,
 	heapWorkerCap,
+	planPassHeap,
 	resolveHeapBudget,
 	resolveHeapSetting,
 } from "../src/lint-cli/lib/plan/heap.ts";
 import { composeInDirectory } from "./lint-cli-helpers.ts";
 
-/**
- * A 32 GB machine with a 4 GB default heap: a 16 GB budget, which holds two
- * `auto` workers at twice the default each.
- */
+/** A 16 GB machine with a 4 GB default heap: an 8 GB budget. */
+const MACHINE_16_GB: MemoryFacts = { availableMb: 16_384, defaultHeapMb: 4096 };
+
+/** A 24 GB machine with a 4 GB default heap: a 12 GB budget. */
+const MACHINE_24_GB: MemoryFacts = { availableMb: 24_576, defaultHeapMb: 4192 };
+
+/** A 32 GB machine with a 4 GB default heap: a 16 GB budget. */
 const SMALL_MACHINE: MemoryFacts = { availableMb: 32_768, defaultHeapMb: 4096 };
 
 /** A 96 GB machine with a 4 GB default heap: a 48 GB budget. */
@@ -148,17 +154,42 @@ describe("heap budget", () => {
 		expect(heapPerWorkerMb(auto, 12)).toBeUndefined();
 	});
 
-	it("caps the workers so each keeps twice Node's default heap", ({ expect }) => {
+	it("caps the workers by what each needs for its share of the files", ({ expect }) => {
 		expect.assertions(5);
 
-		expect(heapWorkerCap(budget({}, SMALL_MACHINE))).toBe(2);
-		expect(heapPerWorkerMb(budget({}, SMALL_MACHINE), 2)).toBe(8192);
-		// Half of 16 GB holds one such worker, which gets all of it.
-		expect(heapWorkerCap(budget({}, { availableMb: 16_384, defaultHeapMb: 4096 }))).toBe(1);
-		// A requested size is what each worker may grow to.
-		expect(heapWorkerCap(budget({ LINT_TYPED_HEAP_MB: "16384" }, SMALL_MACHINE))).toBe(1);
-		// Never below one worker, however small the machine.
-		expect(heapWorkerCap(budget({}, { availableMb: 2048, defaultHeapMb: 2048 }))).toBe(1);
+		// 3,331 files: (budget - 3,331 * 1.3 MB) / 3,400 MB per worker.
+		expect(heapWorkerCap(budget({}, MACHINE_16_GB), 3331)).toBe(1);
+		expect(heapWorkerCap(budget({}, MACHINE_24_GB), 3331)).toBe(2);
+		expect(heapWorkerCap(budget({}, SMALL_MACHINE), 3331)).toBe(3);
+		// A small run splits less, so more workers fit.
+		expect(heapWorkerCap(budget({}, MACHINE_16_GB), 300)).toBe(2);
+		expect(heapWorkerCap(budget({}, SMALL_MACHINE), 300)).toBe(4);
+	});
+
+	it.for([
+		{ concurrency: "off", memory: MACHINE_16_GB, workers: 1 },
+		{ concurrency: 2, memory: MACHINE_24_GB, workers: 2 },
+		{ concurrency: 3, memory: SMALL_MACHINE, workers: 3 },
+	] as const)(
+		"gives each of $workers capped workers at least what it needs",
+		({ concurrency, memory, workers }, { expect }) => {
+			expect.assertions(2);
+
+			const auto = budget({}, memory);
+			const need = AUTO_HEAP_WORKER_MB + (3331 / workers) * AUTO_HEAP_FILE_MB;
+
+			expect(heapWorkerCap(auto, 3331)).toBe(workers);
+			expect(heapPerWorkerMb(auto, concurrency)).toBeGreaterThan(need);
+		},
+	);
+
+	it("counts a requested size, and never goes below one worker", ({ expect }) => {
+		expect.assertions(3);
+
+		// A requested size is what each worker may grow to, whatever the files.
+		expect(heapWorkerCap(budget({ LINT_TYPED_HEAP_MB: "8192" }, SMALL_MACHINE), 10)).toBe(2);
+		expect(heapWorkerCap(budget({ LINT_TYPED_HEAP_MB: "16384" }, SMALL_MACHINE), 10)).toBe(1);
+		expect(heapWorkerCap(budget({}, { availableMb: 2048, defaultHeapMb: 2048 }), 5000)).toBe(1);
 	});
 
 	it("places no cap and adds no flag when off or inherited", ({ expect }) => {
@@ -167,9 +198,9 @@ describe("heap budget", () => {
 		const off = budget({ LINT_TYPED_HEAP_MB: "off" }, SMALL_MACHINE);
 		const inherited = budget({ NODE_OPTIONS: "--max-old-space-size=2048" }, SMALL_MACHINE);
 
-		expect(heapWorkerCap(off)).toBeUndefined();
+		expect(heapWorkerCap(off, 3331)).toBeUndefined();
 		expect(heapPerWorkerMb(off, 6)).toBeUndefined();
-		expect(heapWorkerCap(inherited)).toBeUndefined();
+		expect(heapWorkerCap(inherited, 3331)).toBeUndefined();
 		expect(heapPerWorkerMb(inherited, 6)).toBeUndefined();
 	});
 
@@ -178,11 +209,29 @@ describe("heap budget", () => {
 
 		const explicit = resolveWorkerLimits({ LINT_MAX_WORKERS: "6" }, 32, false);
 		const derived = resolveWorkerLimits({}, 32, false);
+		const auto = budget({}, SMALL_MACHINE);
 
-		expect(capWorkersForHeap(6, explicit.explicitMaxWorkers, budget({}, SMALL_MACHINE))).toBe(
-			6,
-		);
-		expect(capWorkersForHeap(6, derived.explicitMaxWorkers, budget({}, SMALL_MACHINE))).toBe(2);
+		expect(capWorkersForHeap(6, explicit.explicitMaxWorkers, auto, 3331)).toBe(6);
+		expect(capWorkersForHeap(6, derived.explicitMaxWorkers, auto, 3331)).toBe(3);
+	});
+
+	it("notes in the spawn line when the cap lowered the plan", ({ expect }) => {
+		expect.assertions(2);
+
+		const auto = budget({}, MACHINE_24_GB);
+		const capped = planPassHeap("typed", auto, {
+			concurrency: 2,
+			dirtyCount: 3331,
+			uncappedConcurrency: 3,
+		});
+		const free = planPassHeap("typed", auto, {
+			concurrency: 3,
+			dirtyCount: 900,
+			uncappedConcurrency: 3,
+		});
+
+		expect(capped.capNote).toBe("heap cap: 2 of 3 workers");
+		expect(free.capNote).toBeUndefined();
 	});
 });
 
@@ -273,7 +322,7 @@ describe("heap flag on composed children", () => {
 		});
 		const typed = byLabel(commands, "typed");
 
-		// The 4 GB budget holds one default heap: one worker, at Node's default.
+		// The 4 GB budget holds one worker's need: one worker, at Node's default.
 		expect(concurrencyOf(typed)).toBe("off");
 		expect(Object.hasOwn(typed.env, "NODE_OPTIONS")).toBe(false);
 	});

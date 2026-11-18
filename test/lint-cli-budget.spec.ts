@@ -439,7 +439,12 @@ describe("worker demands on composed children", () => {
 	it("counts a program-building worker at its heap", ({ expect }) => {
 		expect.assertions(2);
 
-		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
+		const heap: PassHeap = {
+			capNote: undefined,
+			nodeOptions: undefined,
+			note: "",
+			watch: true,
+		};
 		const command = composeEslintCommand(
 			options(),
 			baseContext({
@@ -455,6 +460,33 @@ describe("worker demands on composed children", () => {
 		expect(command.workers!.pass).toBe("eslint-typed:medium");
 	});
 
+	it("carries the heap cap note to the spawn line", ({ expect }) => {
+		expect.assertions(2);
+
+		const capped = composeEslintCommand(
+			options(),
+			baseContext({
+				concurrency: 2,
+				dirtyCount: 3331,
+				eslintLabel: "typed",
+				heap: {
+					capNote: "heap cap: 2 of 3 workers",
+					nodeOptions: undefined,
+					note: "",
+					watch: true,
+				},
+				typeAwareEnv: "only",
+			}),
+		);
+		const fast = composeEslintCommand(
+			options(),
+			baseContext({ concurrency: 2, dirtyCount: 3331, eslintLabel: "fast" }),
+		);
+
+		expect(capped.heapCapNote).toBe("heap cap: 2 of 3 workers");
+		expect(Object.hasOwn(fast, "heapCapNote")).toBe(false);
+	});
+
 	it.for([
 		[1, "off", "small"],
 		[50, "off", "small"],
@@ -466,7 +498,12 @@ describe("worker demands on composed children", () => {
 		([dirtyCount, concurrency, size], { expect }) => {
 			expect.assertions(1);
 
-			const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
+			const heap: PassHeap = {
+				capNote: undefined,
+				nodeOptions: undefined,
+				note: "",
+				watch: true,
+			};
 			const command = composeEslintCommand(
 				options(),
 				baseContext({
@@ -485,7 +522,12 @@ describe("worker demands on composed children", () => {
 	it("counts each file past a medium worker's share", ({ expect }) => {
 		expect.assertions(1);
 
-		const heap: PassHeap = { nodeOptions: undefined, note: "", watch: true };
+		const heap: PassHeap = {
+			capNote: undefined,
+			nodeOptions: undefined,
+			note: "",
+			watch: true,
+		};
 		const command = composeEslintCommand(
 			options(),
 			baseContext({ concurrency: 5, dirtyCount: 3200, eslintLabel: "eslint", heap }),

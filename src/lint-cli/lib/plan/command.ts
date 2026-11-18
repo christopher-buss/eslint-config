@@ -176,6 +176,7 @@ export function composeEslintCommand(
 		args,
 		bin: "eslint",
 		env: environment,
+		...(context.heap?.capNote === undefined ? {} : { heapCapNote: context.heap.capNote }),
 		label: context.eslintLabel,
 		watchHeap: context.heap?.watch ?? false,
 		// A `--concurrency` in `--eslint-args` comes after the planned one, so
