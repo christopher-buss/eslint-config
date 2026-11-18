@@ -43,7 +43,6 @@ export function oxlintOxc(
 				"oxc/missing-throw": "error",
 				"oxc/no-accumulating-spread": "error",
 				"oxc/no-barrel-file": "error",
-				"oxc/no-map-spread": "error",
 				"oxc/no-this-in-exported-function": "error",
 				"oxc/number-arg-out-of-range": "error",
 				"oxc/only-used-in-recursion": "error",

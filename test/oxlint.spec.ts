@@ -392,7 +392,6 @@ const OXC_GLOBAL_RULES = [
 	"oxc/missing-throw",
 	"oxc/no-accumulating-spread",
 	"oxc/no-barrel-file",
-	"oxc/no-map-spread",
 	"oxc/no-this-in-exported-function",
 	"oxc/number-arg-out-of-range",
 	"oxc/only-used-in-recursion",
