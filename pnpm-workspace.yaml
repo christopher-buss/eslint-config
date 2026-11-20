@@ -116,7 +116,7 @@ catalogs:
     eslint-plugin-jsonc: 3.4.2
     eslint-plugin-oxfmt: 0.33.0
     eslint-plugin-package-json: 1.14.0
-    eslint-plugin-perfectionist: 5.13.0
+    eslint-plugin-perfectionist: 5.14.0
     eslint-plugin-pnpm: 1.9.1
     eslint-plugin-promise: 7.3.0
     eslint-plugin-roblox-ts: 1.5.0
