@@ -46,7 +46,7 @@ patchedDependencies:
 catalogs:
   dev:
     "@antfu/ni": 30.6.0
-    "@eslint-react/shared": 5.30.2
+    "@eslint-react/shared": 5.30.4
     "@eslint/config-inspector": 3.5.0
     "@isentinel/tsconfig": 3.0.0
     "@rbxts/types": 1.0.962
@@ -77,9 +77,9 @@ catalogs:
     eslint-plugin-jest-extended: 3.0.1
     eslint-plugin-n: 18.5.0
     eslint-plugin-project-structure: 3.14.6
-    eslint-plugin-react-jsx: 5.30.2
-    eslint-plugin-react-naming-convention: 5.30.2
-    eslint-plugin-react-x: 5.30.2
+    eslint-plugin-react-jsx: 5.30.4
+    eslint-plugin-react-naming-convention: 5.30.4
+    eslint-plugin-react-x: 5.30.4
     eslint-plugin-testing-library: 7.16.2
     oxlint: 1.94.0
     oxlint-tsgolint: 7.0.2007
