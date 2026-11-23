@@ -112,7 +112,7 @@ exports[`unicorn candidate rule coverage > records the existing rules that overl
 {
   "no-unsafe-sqlite-interpolation": "reports",
   "prefer-json-import": "reports",
-  "prefer-uint8array-hex": "silent",
+  "prefer-uint8array-hex": "reports",
 }
 `;
 

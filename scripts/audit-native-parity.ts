@@ -150,9 +150,7 @@ function createScratch(): string {
 }
 
 function addHit(hits: Map<string, Array<Hit>>, identifier: string, hit: Hit): void {
-	const list = hits.get(identifier) ?? [];
-	list.push(hit);
-	hits.set(identifier, list);
+	hits.getOrInsert(identifier, []).push(hit);
 }
 
 /**
