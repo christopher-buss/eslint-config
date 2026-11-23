@@ -314,8 +314,8 @@ catalogs:
       specifier: latest
       version: 1.0.24
     '@isentinel/machine-budget':
-      specifier: 0.2.0
-      version: 0.2.0
+      specifier: 0.2.1
+      version: 0.2.1
     '@oxlint/plugins':
       specifier: 1.94.0
       version: 1.94.0
@@ -492,7 +492,7 @@ importers:
         version: 1.0.24
       '@isentinel/machine-budget':
         specifier: catalog:prod
-        version: 0.2.0
+        version: 0.2.1
       '@oxlint/plugins':
         specifier: catalog:prod
         version: 1.94.0
@@ -765,17 +765,17 @@ packages:
     peerDependencies:
       '@types/json-schema': ^7.0.15
 
-  '@ark/schema@0.56.2':
-    resolution: {integrity: sha512-Qx4D2JFbBWpntiHZaTv7bGG4H/M2rigiknezKg/WVyDSaLdE4YCcWAOoFB7pjjDqHbbV2OqRfntm1nnXvwMexg==}
-
   '@ark/schema@0.56.8':
     resolution: {integrity: sha512-R05TOe85oQBGFFw2zKMuZpqkXibLKuC/aJt6VwFn5Cjc4x3NkWfhvGRpRDycNkj3ddcHnOPtIsmjVowJO9Yxdw==}
 
-  '@ark/util@0.56.2':
-    resolution: {integrity: sha512-9kU2sUE38FZEGG7l3hamYMBieLYEJh2L1mrYD2eXpT+78EnQSV1bhjxJhnxGBMSTbtwpBSDNSK+K60WvaI/DTQ==}
+  '@ark/schema@0.57.0-beta.1':
+    resolution: {integrity: sha512-OORWH7LDDI0sT3Sojbg2GuqcUcvmaVIFnqGVy8qS9nW1WgaCHYypx1f8eQFbkFlzaTCTWoEv4FObNGrEsclcvg==}
 
   '@ark/util@0.56.8':
     resolution: {integrity: sha512-XLiQyGfpJcws1zCtp2Cva8s1oheCdFn1Rt6JSyC4NnkDrpwCJnlaiawuuOc1Z97vMH+jEzW5vyyf0xOju5wUQA==}
+
+  '@ark/util@0.57.0-beta.1':
+    resolution: {integrity: sha512-Fkn5FrbemMU56TzT6STpf3jmIvP4hfjjyEfcPjhi03vDgH8phn2vSylInvieIAl5aKVzqhDEVongERZz/IkfHA==}
 
   '@cacheable/memory@2.2.0':
     resolution: {integrity: sha512-CTLKqLItRCEixEAewD3/j9DB3/o96gpTPD4eJ1v+DGOlxZRZncRQkGYqqnAGCscYd6RNeXfGeiuCphsPtqyIfQ==}
@@ -1269,9 +1269,9 @@ packages:
     resolution: {integrity: sha512-XikfdNx5F72xpv50QrFP4LpkbFFzdUqa0yTl2QFkaWctOlvM5v2RnbFrc4LBteaToqLzWS2icS/wQQ3sd423+w==}
     engines: {node: '>=20.18.0'}
 
-  '@isentinel/machine-budget@0.2.0':
-    resolution: {integrity: sha512-8/e42Y3XK8dwMQfoQ0t8DSQOI2zPYQw6yDwuNJpllCNo/QQ5sXyMRcrpRncHRb3wemOU8cCbnkCWjizGLIMkvA==}
-    engines: {node: '>=24.12.0'}
+  '@isentinel/machine-budget@0.2.1':
+    resolution: {integrity: sha512-/irOOnks7edkwso+bS1MCt5PxIKDU6H7lYxs2sKv3sXKEU+LlepnacFsd/rZjtLMC/eCzHU0EkQxs8ooEmuXxQ==}
+    engines: {node: '>=26.0.0'}
     hasBin: true
 
   '@isentinel/tsconfig@3.0.0':
@@ -2566,14 +2566,17 @@ packages:
   arkregex@0.0.14:
     resolution: {integrity: sha512-G3I/uCtWE0IKQiPh0qqmmAFDdtjZKZQ5mNPR6gJBeAMZ7VqYCpoaDeXnLju2Zo6ywExtmxZJELeVFb0MPDjPyA==}
 
-  arkregex@0.0.8:
-    resolution: {integrity: sha512-PJcx6G1kQTgLKPUbeYlYecDRaKq15AMSGVajlKFYWlPeJRQL+j3dKE6tyMs40HZ99djS1l9Vhl3ezAHy9JBIqQ==}
+  arkregex@0.0.16-beta.1:
+    resolution: {integrity: sha512-cCeEL92VwE0nuVNAo/+SFEYXVmv7y52tp9ZTwWzsebUABa/BAs3xO0H+3OEMp+eg0zFvUuFy3biN9/q08N30Pw==}
 
-  arktype@2.2.3:
-    resolution: {integrity: sha512-7W+0RLTUNJiBFIIZXwOQxSR8Z273IAd6IvqBeG9+gHnQKFsIx2C0iOtGTmMrPnlX4qLXyc5+ll7A0BIj9WrbTg==}
+  arksets@0.0.1-beta.1:
+    resolution: {integrity: sha512-t0v24b9XcUG05rzQ1jSp+LMGFl6nCtmYUh6X3TskVBLpVuSRlaqQ0+65IlFC/dPicWDszSZp328oqo/HyDHRvw==}
 
   arktype@2.2.9:
     resolution: {integrity: sha512-Cja0IMEn19rB35on9da1i1z6QMasuS7ULffXbetCry09jvCGYT8Bi1KgYiqri5FymF4nQAXkM90yksYkgSK2EA==}
+
+  arktype@3.0.0-beta.1:
+    resolution: {integrity: sha512-JNBPjXOyFT+vlkKTVaWj5X4SzG549cSNzvJ7qkD6D7VzSsYReBv4AATYRkRBzFjg/wBwMoEFvOtKXY1JQ08f8g==}
 
   array-timsort@1.0.3:
     resolution: {integrity: sha512-/+3GRL7dDAGEfM6TseQk/U+mi18TU2Ms9I3UlLdUMhz2hbvGNTKdj9xniwXfUqgYhHxRx0+8UnKkvlNwVU+cWQ==}
@@ -4535,6 +4538,7 @@ packages:
   yuku-parser@0.19.0:
     resolution: {integrity: sha512-XrBh9ZiQK5mJVRxZBAvD6LwRyAYrK3MFtH3+onyuxFL5hFD44EC3QOmIC1FjTj6H2MMwq46/NAI+NZxLZPZgxg==}
     engines: {node: '>=14.18.0'}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yuku@0.28.1:
     resolution: {integrity: sha512-l899L8rSywcq9OLHf8JNQKpgyrBUL7UNJ7JqefoSVy0oYaFpdf3HoF72EVQFNWYr9HqMw0nGw1r1DefNujOnLQ==}
@@ -4575,17 +4579,17 @@ snapshots:
       '@types/json-schema': 7.0.15
       js-yaml: 4.3.0
 
-  '@ark/schema@0.56.2':
-    dependencies:
-      '@ark/util': 0.56.2
-
   '@ark/schema@0.56.8':
     dependencies:
       '@ark/util': 0.56.8
 
-  '@ark/util@0.56.2': {}
+  '@ark/schema@0.57.0-beta.1':
+    dependencies:
+      '@ark/util': 0.57.0-beta.1
 
   '@ark/util@0.56.8': {}
+
+  '@ark/util@0.57.0-beta.1': {}
 
   '@cacheable/memory@2.2.0':
     dependencies:
@@ -5142,9 +5146,9 @@ snapshots:
 
   '@isentinel/dict-roblox@1.0.24': {}
 
-  '@isentinel/machine-budget@0.2.0':
+  '@isentinel/machine-budget@0.2.1':
     dependencies:
-      arktype: 2.2.3
+      arktype: 3.0.0-beta.1
       koffi: 3.3.3
       remeda: 2.52.0
 
@@ -6016,21 +6020,27 @@ snapshots:
     dependencies:
       '@ark/util': 0.56.8
 
-  arkregex@0.0.8:
+  arkregex@0.0.16-beta.1:
     dependencies:
-      '@ark/util': 0.56.2
+      '@ark/util': 0.57.0-beta.1
 
-  arktype@2.2.3:
+  arksets@0.0.1-beta.1:
     dependencies:
-      '@ark/schema': 0.56.2
-      '@ark/util': 0.56.2
-      arkregex: 0.0.8
+      '@ark/schema': 0.57.0-beta.1
+      '@ark/util': 0.57.0-beta.1
 
   arktype@2.2.9:
     dependencies:
       '@ark/schema': 0.56.8
       '@ark/util': 0.56.8
       arkregex: 0.0.14
+
+  arktype@3.0.0-beta.1:
+    dependencies:
+      '@ark/schema': 0.57.0-beta.1
+      '@ark/util': 0.57.0-beta.1
+      arkregex: 0.0.16-beta.1
+      arksets: 0.0.1-beta.1
 
   array-timsort@1.0.3: {}
 
