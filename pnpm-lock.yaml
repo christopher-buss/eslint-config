@@ -320,8 +320,8 @@ catalogs:
       specifier: 1.94.0
       version: 1.94.0
     '@pobammer-ts/small-rules':
-      specifier: 3.12.0
-      version: 3.12.0
+      specifier: 3.13.0
+      version: 3.13.0
     '@stylistic/eslint-plugin':
       specifier: 6.0.1
       version: 6.0.1
@@ -498,7 +498,7 @@ importers:
         version: 1.94.0
       '@pobammer-ts/small-rules':
         specifier: catalog:prod
-        version: 3.12.0(typescript@6.0.3)
+        version: 3.13.0(typescript@6.0.3)
       '@stylistic/eslint-plugin':
         specifier: catalog:prod
         version: 6.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(oxlint@1.94.0(oxlint-tsgolint@7.0.2007))(typescript@6.0.3)
@@ -1423,12 +1423,6 @@ packages:
     resolution: {integrity: sha512-rgR9yxSaAJ+bcsi/XroT/S2AfPiIWloXAnrdfYSCms9ivVju0ishu/wW0J21Ho6+ZOR1r7RyeRbjiRuF87ix5Q==}
     engines: {node: '>=20'}
 
-  '@napi-rs/wasm-runtime@1.1.6':
-    resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
-    peerDependencies:
-      '@emnapi/core': ^1.7.1
-      '@emnapi/runtime': ^1.7.1
-
   '@napi-rs/wasm-runtime@1.2.6':
     resolution: {integrity: sha512-mRyDmEw9/fCDXCGfL1sbgIw/GUK0PVxRW4YwgPN61F3LQ+fSyoBFarJVzgGyhF6kRzEQZ0FejDqm4WLXSeqQmw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
@@ -1972,8 +1966,8 @@ packages:
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  '@pobammer-ts/small-rules@3.12.0':
-    resolution: {integrity: sha512-bagTur9XjsKxESWLmsntZ+Q8uPafcCojjiw/beMYPQf0FYYHrMPBO/wypyMHAR6advv4XehW9OGBsNSYpbAeEA==}
+  '@pobammer-ts/small-rules@3.13.0':
+    resolution: {integrity: sha512-hZNeqVJMbGH+C+x49pBYR+d4NpqoQzv3OFjBWf9ni2KDJrcC7I2MIQ/pnthMg2P8NtT8eC4eeHRdxx84IHd76A==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       typescript: '>=5 <8'
@@ -2805,8 +2799,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  effect@4.1.2:
-    resolution: {integrity: sha512-d3Oah1WyKxFLFh19yWheS5IXIVaITzxZ71JkE1rkUozq/6EcJSU5nPk5bF2QrSygZ3SQoiNQB8TsxFriyMeMaQ==}
+  effect@4.1.4:
+    resolution: {integrity: sha512-Tgrv/9FN+TZYyOn8XSli+fVqAfwDrDAkiX5Uu9vztINb675VTQdhD0gWI5Kzvhlh9QqzjZvw72iugqw5pwoghQ==}
 
   electron-to-chromium@1.5.486:
     resolution: {integrity: sha512-rpybw4Ac4ak/An6G1Me2+61xzwobowDGyuJe71QHHOVpkZv4fPVobsLl7WH6zHSKusAMpaHxGKTpOvpy7+r3dQ==}
@@ -3783,6 +3777,10 @@ packages:
 
   minimatch@11.0.5:
     resolution: {integrity: sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==}
+    engines: {node: 20 || >=22}
+
+  minimatch@11.0.9:
+    resolution: {integrity: sha512-KCFkfyjqerNlSstjlhIGNXIKZGA/6O4V4RlhZ+Dsr621SPPw0mzlypE9D9ZOoPiVefHID+j7/XuMMlqfD/F60Q==}
     engines: {node: 20 || >=22}
 
   module-replacements@3.4.0:
@@ -5262,13 +5260,6 @@ snapshots:
       '@modelcontextprotocol/core': 2.4.0
       zod: 4.4.3
 
-  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
-    dependencies:
-      '@emnapi/core': 1.11.2
-      '@emnapi/runtime': 1.11.2
-      '@tybys/wasm-util': 0.10.3
-    optional: true
-
   '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:
       '@emnapi/core': 1.11.1
@@ -5420,7 +5411,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.2
       '@emnapi/runtime': 1.11.2
-      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
     optional: true
 
   '@oxc-resolver/binding-win32-arm64-msvc@11.24.2':
@@ -5567,12 +5558,12 @@ snapshots:
 
   '@pkgr/core@0.3.6': {}
 
-  '@pobammer-ts/small-rules@3.12.0(typescript@6.0.3)':
+  '@pobammer-ts/small-rules@3.13.0(typescript@6.0.3)':
     dependencies:
       arktype: 2.2.9
-      effect: 4.1.2
+      effect: 4.1.4
       ignore: 7.0.14
-      minimatch: 11.0.5
+      minimatch: 11.0.9
       oxc-resolver: 11.24.2
       oxlint-plugin-utilities: 1.1.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -6260,7 +6251,7 @@ snapshots:
       minimatch: 10.2.6
       semver: 7.8.6
 
-  effect@4.1.2: {}
+  effect@4.1.4: {}
 
   electron-to-chromium@1.5.486: {}
 
@@ -7482,6 +7473,11 @@ snapshots:
       brace-expansion: 5.0.12
 
   minimatch@11.0.5:
+    dependencies:
+      '@isaacs/nonrecursive-glob-match': 1.1.0
+      brace-expansion: 5.0.12
+
+  minimatch@11.0.9:
     dependencies:
       '@isaacs/nonrecursive-glob-match': 1.1.0
       brace-expansion: 5.0.12
