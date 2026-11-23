@@ -201,7 +201,7 @@ function readIdentity(specifier: string): PluginIdentity | undefined {
 }
 
 /**
- * Load a plugin synchronously. `engines.node` is `>=24.15.0`, where
+ * Load a plugin synchronously. `engines.node` is `>=26.0.0`, where
  * `require(esm)` is stable, so the ESM-only plugins need no async fallback.
  *
  * @param specifier - The plugin package to load.

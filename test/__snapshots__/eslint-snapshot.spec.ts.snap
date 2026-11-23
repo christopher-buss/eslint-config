@@ -2332,6 +2332,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
       "e18e/prefer-array-to-sorted",
       "e18e/prefer-array-to-spliced",
       "e18e/prefer-date-now",
+      "e18e/prefer-get-or-insert",
       "e18e/prefer-includes",
       "e18e/prefer-includes-over-regex-test",
       "e18e/prefer-nullish-coalescing",
@@ -2369,6 +2370,7 @@ exports[`config snapshots > package > should match the config snapshot 1`] = `
       "node/process-exit-as-throw",
       "unicorn/no-unsafe-sqlite-interpolation",
       "unicorn/prefer-json-import",
+      "unicorn/prefer-uint8array-hex",
     ],
   },
   {
@@ -8155,6 +8157,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
       "e18e/prefer-array-to-sorted",
       "e18e/prefer-array-to-spliced",
       "e18e/prefer-date-now",
+      "e18e/prefer-get-or-insert",
       "e18e/prefer-includes",
       "e18e/prefer-includes-over-regex-test",
       "e18e/prefer-nullish-coalescing",
@@ -8195,6 +8198,7 @@ exports[`config snapshots > scoped-roblox > should match the config snapshot 1`]
       "node/process-exit-as-throw",
       "unicorn/no-unsafe-sqlite-interpolation",
       "unicorn/prefer-json-import",
+      "unicorn/prefer-uint8array-hex",
     ],
   },
   {

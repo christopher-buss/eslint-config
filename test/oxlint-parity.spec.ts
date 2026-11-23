@@ -298,9 +298,7 @@ function collectEmittedJsPluginRules(
 				continue;
 			}
 
-			const rulesForPlugin = emitted.get(prefix) ?? new Set<string>();
-			rulesForPlugin.add(rule.slice(slashIndex + 1));
-			emitted.set(prefix, rulesForPlugin);
+			emitted.getOrInsert(prefix, new Set<string>()).add(rule.slice(slashIndex + 1));
 		}
 	}
 
