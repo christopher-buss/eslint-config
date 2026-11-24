@@ -6,7 +6,7 @@ experimental = true
 lockfile = true
 
 [tools]
-hk = "2.13.0"
+hk = "2.14.0"
 node = "lts"
 pkl = "latest"
 pnpm = "12.21.0"
