@@ -96,7 +96,7 @@ export function javascriptRules({
 		"no-duplicate-case": "error",
 		"no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
 		"no-else-return": ["error", { allowElseIf: false }],
-		"no-empty": ["error", { allowEmptyCatch: true }],
+		"no-empty": "error",
 		"no-empty-character-class": "error",
 		"no-empty-function": "error",
 		"no-empty-pattern": "error",
