@@ -282,13 +282,17 @@ async function leaseUnlessCancelled(
  * signal that the run is alive. They go to stderr so they never contaminate a
  * piped report.
  *
+ * The heap cap note comes first: it says why the planned count, which the
+ * grant is read against, is lower than the CPUs allow.
+ *
  * @param command - The child that was spawned.
  * @param grant - What the machine budget granted it, when it holds a lease.
  */
 function announce(command: ChildCommand, grant: string | undefined): void {
 	const prefix = ansis[PREFIX_COLOR[command.label]](`[${command.label}]`);
-	const granted = grant === undefined ? "" : ` (${grant})`;
-	process.stderr.write(`${prefix} spawned ${command.bin}${granted}\n`);
+	const notes = [command.heapCapNote, grant].filter((note) => note !== undefined);
+	const detail = notes.length === 0 ? "" : ` (${notes.join("; ")})`;
+	process.stderr.write(`${prefix} spawned ${command.bin}${detail}\n`);
 }
 
 /**
